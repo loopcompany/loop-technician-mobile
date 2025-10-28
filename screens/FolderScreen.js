@@ -10,7 +10,7 @@ import {
   ScrollView,
   FlatList,
 } from "react-native";
-import Footer from "./Footer";
+import { useFooter } from "../contexts/FooterContext";
 import Folder from "../components/Folder";
 import NewStyles from "../styles/NewStyles";
 import CustomStatusBar from './../components/CustomStatusBar';
@@ -20,6 +20,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function FolderScreen({ navigation }) {
   const userToken = useSelector(state=>state.auth.token)
+  const { showFooter, hideFooter, isFooterVisible } = useFooter();
+  
   // تابع دسترسی به ابجکت های یک استیت
   console.log(userToken);
   const fetchToken = async()=>{
@@ -176,7 +178,7 @@ export default function FolderScreen({ navigation }) {
           </View>
         </ScrollView>
         
-        <Footer />
+        {/* Footer is now managed globally through context */}
       </View>
     </ImageBackground>
   );

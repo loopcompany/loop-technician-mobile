@@ -1,205 +1,190 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
+  View,
+  Text,
   TextInput,
+  TouchableOpacity,
   Image,
   Platform,
   ImageBackground,
   StyleSheet,
   ScrollView,
-  ToastAndroid,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
 import TransparentButton from "../../components/TransparentButton";
 import Button from "../../components/Button";
-import axios from "axios";
-import { uri } from "../../services/URL";
-import { handleError, showToastOrAlert } from "../../helpers/Common";
+import CustomStatusBar from "../../components/CustomStatusBar";
 import NewStyles from "../../styles/NewStyles";
 import { themeColor0, themeColor1, themeColor10 } from "../../theme/Color";
 import { useTranslation } from "react-i18next";
-import { useDispatch } from "react-redux";
-export default function LoginScreen({ navigation }) {
-  const [phone, setPhone] = useState("");
-  const [error, setError] = useState("");
+import { useAuth } from "../../contexts/AuthContext";
+import { validateLoginForm } from "../../utils/validation";
 
+export default function LoginScreen({ navigation, route }) {
+  const [phone, setPhone] = useState(route?.params?.phone || "");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  
   const { t } = useTranslation();
-  // const sendVerificationCode = async () => {
-  //   try {
-  //     const response = await axios.post(`${uri}/sendVerificationCode`, {
-  //       phone: phone,
-  //     });
+  const { login, isLoggedIn } = useAuth();
 
-  //     if (response?.data?.success == "success") {
-  //       setError("");
-  //       navigation.navigate("ResetPasswordScreen", { phone: phone });
-  //     } else if (response?.data?.error == "error") {
-  //       setError(
-  //         `${t(
-  //           "Failed to send code. Please make sure the phone number you entered is correct."
-  //         )}`
-  //       );
-  //     }
-  //   } catch (error) {
-  //     console.log("====================================");
-  //     console.log(error);
-  //     console.log("====================================");
-  //     showToastOrAlert("خطایی رخ داده است.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigation.replace('FolderScreen');
+    }
+  }, [isLoggedIn]);
 
-  // const sendVerificationCode = async () => {
-  //   try {
-  //     const response = await axios.post(`${uri}/sendVerificationCode`, {
-  //       phone: phone,
-  //     });
-  //     console.log(response?.data);
-  //     if (response?.data?.success == "success") {
-  //       navigation.navigate("ResetPasswordScreen",{phone:phone});
+  const handleLogin = async () => {
+    // Validate form
+    const validation = validateLoginForm(phone, password);
+    if (!validation.isValid) {
+      const firstError = Object.values(validation.errors)[0];
+      Alert.alert('خطا', firstError);
+      return;
+    }
 
-  //     } else if (response?.data?.error == "error") {
-  //       showToastOrAlert("خطا رخ داد");
-  //     }
-  //   } catch (error) {
-  //     handleError(error, t);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-  const sendVerificationCode = async () => {
     try {
-      const response = await axios.post(`${uri}/sendVerificationCode`, {
-        phone: phone,
-      });
-      console.log(response);
-      
-      if (response?.data?.success == "success") {
-        navigation.navigate("ResetPasswordScreen", { phone: phone });
+      setLoading(true);
+      const result = await login(phone, password);
+
+      if (result.success) {
+        Alert.alert(
+          'موفقیت',
+          'ورود با موفقیت انجام شد',
+          [
+            {
+              text: 'تایید',
+              onPress: () => navigation.replace('FolderScreen'),
+            },
+          ]
+        );
+      } else {
+        Alert.alert('خطا', result.message);
       }
     } catch (error) {
-      handleError(error,t);
+      console.error('Login error:', error);
+      Alert.alert('خطا', 'خطا در ورود به سیستم');
     } finally {
       setLoading(false);
     }
   };
 
-  const validatePhone = () => {
-    if (phone.match(/^09\d{9}$/)) {
-      return true;
-    } else {
-      showToastOrAlert("فرمت شماره تلفن درست نیست");
-      return false;
+  const handleForgotPassword = () => {
+    if (!phone) {
+      Alert.alert('توجه', 'لطفاً ابتدا شماره تلفن خود را وارد کنید');
+      return;
     }
+    
+    navigation.navigate("ResetPasswordScreen", { phone });
   };
-  const style = { backgroundColor: "red" };
   return (
-    <ImageBackground
-      source={require("../../assets/background2.jpg")}
-      style={NewStyles.container}
-    >
-      <ScrollView
-        contentContainerStyle={styles.container}
-        keyboardShouldPersistTaps="handled"
+    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
+      <CustomStatusBar />
+      <ImageBackground
+        source={require("../../assets/background2.jpg")}
+        style={NewStyles.container}
       >
-        <Image
-          source={require("../../assets/logo.png")}
-          style={NewStyles.logo}
-          resizeMode={"contain"}
-        />
-
-        <TextInput
-          style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-          placeholder="شماره موبایل خود را وارد کنید"
-          placeholderTextColor={themeColor10.bgColor(0.9)}
-          value={phone}
-          onChangeText={setPhone}
-          keyboardType="phone-pad"
-        />
-        {/* <View style={styles.inputGroup}>
-          <Text style={NewStyles.text4}>نام کاربری</Text>
-          <TextInput
-            style={[NewStyles.textInput, NewStyles.border10, NewStyles.text10]}
-            placeholder="نام کاربری"
-            placeholderTextColor={themeColor10.bgColor(0.7)}
-            value={username}
-            onChangeText={setUsername}
+        <ScrollView
+          contentContainerStyle={styles.container}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Image
+            source={require("../../assets/logo.png")}
+            style={NewStyles.logo}
+            resizeMode={"contain"}
           />
-        </View> */}
 
-        {/* <View style={styles.inputGroup}>
-          <Text style={NewStyles.text4}>رمز عبور</Text>
-          <TextInput
-            style={[NewStyles.textInput, NewStyles.border10, NewStyles.text10]}
-            placeholder="رمز عبور"
-            placeholderTextColor={themeColor10.bgColor(0.7)}
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
-          <View style={NewStyles.rowWrapper}>
-            <View style={NewStyles.row}>
-              <TouchableOpacity
-                onPress={() => setRememberMe(!rememberMe)}
-                style={styles.checkbox}
-              >
-                <View
-                  style={
-                    rememberMe ? styles.checkboxChecked : styles.checkboxEmpty
-                  }
-                />
-              </TouchableOpacity>
-              <Text style={NewStyles.text4}>ذخیره رمز عبور</Text>
-            </View>
-
-            <TouchableOpacity
-              onPress={() => {
-                navigation.navigate("SignInScreen");
-              }}
-            >
-              <Text style={NewStyles.text4}>فراموشی رمز عبور</Text>
-            </TouchableOpacity>
+          {/* Phone Number Input */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>شماره تلفن همراه:</Text>
+            <TextInput
+              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+              placeholder="09123456789"
+              placeholderTextColor={themeColor10.bgColor(0.9)}
+              value={phone}
+              onChangeText={setPhone}
+              keyboardType="phone-pad"
+              maxLength={11}
+              editable={!loading}
+            />
           </View>
-        </View> */}
-        {/* 
-        <View style={styles.inputGroup}>
-          <Text style={NewStyles.text4}>کد امنیتی</Text>
-          <TextInput
-            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-            placeholder="کد امنیتی"
-            placeholderTextColor={themeColor10.bgColor(0.7)}
-            value={captcha}
-            onChangeText={setCaptcha}
-            keyboardType="number-pad"
+
+          {/* Password Input */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>رمز عبور:</Text>
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, { flex: 1 }]}
+                placeholder="رمز عبور خود را وارد کنید"
+                placeholderTextColor={themeColor10.bgColor(0.9)}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                editable={!loading}
+              />
+              <TouchableOpacity
+                style={styles.eyeButton}
+                onPress={() => setShowPassword(!showPassword)}
+              >
+                <Text style={styles.eyeText}>
+                  {showPassword ? '🙈' : '👁️'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Login Button */}
+          <Button
+            style={styles.loginButton}
+            title={loading ? "در حال ورود..." : "ورود"}
+            loading={loading}
+            onPress={handleLogin}
+            disabled={loading || !phone || !password}
           />
-        </View> */}
 
-        <Button
-          style={{ width: "50%" }}
-          title={"ورود"}
-          loading={loading}
-          // onPress={() => {
-          //   navigation.navigate("FolderScreen");
-          // }}
-          onPress={() => {
-            if (validatePhone()) {
-              setLoading(true);
-              sendVerificationCode();
-            } else {
-              setError("The mobile number you entered is not valid.");
-            }
-          }}
-        />
+          {loading && (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={themeColor1.bgColor(1)} />
+              <Text style={styles.loadingText}>در حال ورود به سیستم...</Text>
+            </View>
+          )}
 
-        <TransparentButton
-          customTextStyle={{ color: themeColor1.bgColor(1) }}
-          title={"ثبت نام کاربر جدید"}
-          onPress={() => {
-            navigation.navigate("SignInScreen");
-          }}
-        />
-      </ScrollView>
-    </ImageBackground>
+          {/* Forgot Password Link */}
+          <TouchableOpacity 
+            style={styles.forgotPasswordButton}
+            onPress={handleForgotPassword}
+            disabled={loading}
+          >
+            <Text style={styles.forgotPasswordText}>
+              فراموشی رمز عبور
+            </Text>
+          </TouchableOpacity>
+
+          {/* Sign Up Link */}
+          <TransparentButton
+            customTextStyle={{ color: themeColor1.bgColor(1) }}
+            title={"ثبت نام کاربر جدید"}
+            onPress={() => {
+              navigation.navigate("SignInScreen");
+            }}
+            disabled={loading}
+          />
+
+          {/* Verification Message */}
+          {route?.params?.verified && (
+            <View style={styles.successMessage}>
+              <Text style={styles.successText}>
+                ✅ شماره تلفن شما تأیید شد. رمز عبور به شماره شما ارسال شده است.
+              </Text>
+            </View>
+          )}
+        </ScrollView>
+      </ImageBackground>
+    </SafeAreaView>
   );
 }
 
@@ -216,85 +201,63 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
     backgroundColor: themeColor0.bgColor(0.22),
   },
-  logo: {
-    width: 200,
-    height: 100,
-    marginBottom: 150,
-  },
-  inputGroup: {
-    width: "100%",
+  inputContainer: {
+    width: '100%',
     marginBottom: 20,
-    gap: 5,
   },
   label: {
-    fontFamily: "VazirLight",
-    color: "#fff",
     fontSize: 16,
-    marginBottom: 5,
-    textAlign: "right",
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
+    textAlign: 'right',
   },
-  input: {
-    backgroundColor: "#000",
-    color: "#fff",
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderWidth: 1,
-    borderColor: "#00f",
-    textAlign: "right",
-    writingDirection: "rtl",
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  checkboxContainer: {
-    flexDirection: "row-reverse",
-    alignItems: "center",
-    marginTop: 10,
+  eyeButton: {
+    position: 'absolute',
+    right: 15,
+    padding: 5,
   },
-  checkbox: {
-    marginHorizontal: 5,
-  },
-  checkboxEmpty: {
-    width: 18,
-    height: 18,
-    borderWidth: 2,
-    borderColor: themeColor0.bgColor(1),
-    borderRadius: 4,
-  },
-  checkboxChecked: {
-    width: 18,
-    height: 18,
-    backgroundColor: themeColor1.bgColor(1),
-    borderRadius: 4,
-  },
-  checkboxLabel: {
-    color: "#fff",
-    marginRight: 10,
-    fontSize: 14,
-    textAlign: "right",
-  },
-  forgotText: {
-    color: "white",
-    marginRight: "90",
-    fontSize: 14,
+  eyeText: {
+    fontSize: 18,
   },
   loginButton: {
-    backgroundColor: "#3366ff",
-    borderRadius: 30,
-    paddingVertical: 12,
-    paddingHorizontal: 60,
-    marginTop: 20,
-    shadowColor: "#00f",
-    shadowOpacity: 0.7,
-    shadowRadius: 10,
-    elevation: 5,
+    width: "80%",
+    marginBottom: 20,
   },
-  loginButtonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
+  loadingContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
   },
-  registerText: {
-    color: "#00f",
-    marginTop: 20,
+  loadingText: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 10,
+  },
+  forgotPasswordButton: {
+    paddingVertical: 15,
+    marginBottom: 10,
+  },
+  forgotPasswordText: {
     fontSize: 16,
+    color: themeColor1.bgColor(1),
+    textDecorationLine: 'underline',
+  },
+  successMessage: {
+    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+    padding: 15,
+    borderRadius: 8,
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: '#4CAF50',
+  },
+  successText: {
+    fontSize: 14,
+    color: '#4CAF50',
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });
