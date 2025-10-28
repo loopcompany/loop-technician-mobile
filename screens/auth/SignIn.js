@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ImageBackground, } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ImageBackground, KeyboardAvoidingView, } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor4, themeColor10 } from '../../theme/Color';
@@ -8,9 +8,9 @@ import Button from '../../components/Button';
 import * as DocumentPicker from 'expo-document-picker';
 import { Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { 
-  registerTechnician, 
-  getExpertises, 
+import {
+  registerTechnician,
+  getExpertises,
   validateReferralCode,
   testApiConnection,
   testExpertisesEndpoint
@@ -54,13 +54,13 @@ export default function SignIn({ navigation }) {
   // Available expertises from API
   const [expertises, setExpertises] = useState([]);
   const [selectedExpertise, setSelectedExpertise] = useState('');
-  
+
   // Form states
   const [resumeFile, setResumeFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [currentPage, setCurrentPage] = useState('personal'); // 'personal' or 'computer'
-  
+
   // Test API connection and load expertises
   const testAndLoadExpertises = async () => {
     console.log('🧪 Testing API connection and loading expertises...');
@@ -68,7 +68,7 @@ export default function SignIn({ navigation }) {
       // Test connection first
       const testResult = await testApiConnection();
       console.log('Connection test result:', testResult);
-      
+
       if (testResult.success) {
         // If connection test succeeded, use the data it already fetched
         console.log('✅ Using data from connection test');
@@ -95,13 +95,13 @@ export default function SignIn({ navigation }) {
       console.log('📋 Loading expertises...');
       const result = await getExpertises();
       console.log('✅ Expertises result:', result);
-      
+
       if (result.success) {
         setExpertises(result.data);
       } else {
         console.warn('⚠️ Expertises load failed:', result.message);
         Alert.alert('خطا', 'خطا در دریافت لیست تخصص‌ها');
-        
+
         // Set some default expertises for testing
         setExpertises([
           { id: 1, title: 'کاربر سخت افزار' },
@@ -116,7 +116,7 @@ export default function SignIn({ navigation }) {
     } catch (error) {
       console.error('❌ Error loading expertises:', error);
       Alert.alert('خطا', 'خطا در ارتباط با سرور');
-      
+
       // Set some default expertises for testing
       setExpertises([
         { id: 1, title: 'کاربر سخت افزار' },
@@ -133,7 +133,7 @@ export default function SignIn({ navigation }) {
   // Validate referral code
   const handleValidateReferralCode = async () => {
     if (!formData.other_referral_code) return;
-    
+
     try {
       const result = await validateReferralCode(formData.other_referral_code);
       if (result.success) {
@@ -151,14 +151,14 @@ export default function SignIn({ navigation }) {
   const validateForm = () => {
     console.log('🔍 Validating form data:', formData);
     const validation = validateTechnicianRegistration(formData);
-    
+
     if (!validation.isValid) {
       console.log('❌ Validation errors:', validation.errors);
       const firstError = Object.values(validation.errors)[0];
       Alert.alert('خطا در اعتبارسنجی', firstError);
       return false;
     }
-    
+
     console.log('✅ Form validation passed');
     return true;
   };
@@ -166,13 +166,13 @@ export default function SignIn({ navigation }) {
   // Handle form submission
   const handleSubmit = async () => {
     if (!validateForm()) return;
-    
+
     try {
       setSubmitting(true);
-      
+
       // Create FormData for multipart submission
       const apiFormData = new FormData();
-      
+
       // Add all text fields
       Object.keys(formData).forEach(key => {
         if (key === 'expertise_ids' && Array.isArray(formData[key])) {
@@ -187,27 +187,27 @@ export default function SignIn({ navigation }) {
           apiFormData.append(key, formData[key]);
         }
       });
-      
+
       // Use phone as main phone field (API expects 'phone' for login)
       if (formData.mobile) {
         apiFormData.append('phone', formData.mobile);
       }
-      
+
       // Add expertise IDs as array
       if (formData.expertise_ids && formData.expertise_ids.length > 0) {
         formData.expertise_ids.forEach(id => {
           apiFormData.append('expertise_ids[]', id);
         });
       }
-      
+
       console.log('📋 Submitting registration data...');
-      
+
       // Submit registration with resume file
       const result = await registerTechnician(apiFormData, resumeFile);
-      
+
       if (result.success) {
         Alert.alert(
-          'موفقیت', 
+          'موفقیت',
           result.message,
           [
             {
@@ -252,14 +252,14 @@ export default function SignIn({ navigation }) {
 
       {/* Debug/Test buttons - for development only */}
       <View style={styles.debugContainer}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.debugButton, { backgroundColor: '#007AFF' }]}
           onPress={testAndLoadExpertises}
         >
           <Text style={styles.debugButtonText}>تست و بارگیری</Text>
         </TouchableOpacity>
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           style={[styles.debugButton, { backgroundColor: '#34C759' }]}
           onPress={loadExpertises}
         >
@@ -365,7 +365,7 @@ export default function SignIn({ navigation }) {
               onValueChange={(value) => updateField('marital_status', value)}
               style={styles.picker}
             >
-              <Picker.Item label="متاهل" value="متاهل" />
+              <Picker.Item label="متأهل" value="متأهل" />
               <Picker.Item label="مجرد" value="مجرد" />
             </Picker>
           </View>
@@ -639,8 +639,8 @@ export default function SignIn({ navigation }) {
       {/* Expertise Selection */}
       <View style={styles.activityContainer}>
         {expertises.map((expertise) => (
-          <TouchableOpacity 
-            key={expertise.id} 
+          <TouchableOpacity
+            key={expertise.id}
             style={[
               styles.activityButton,
               formData.expertise_ids.includes(expertise.id) && styles.selectedActivityButton
@@ -661,7 +661,7 @@ export default function SignIn({ navigation }) {
             </Text>
           </TouchableOpacity>
         ))}
-        
+
         {expertises.length === 0 && (
           <Text style={styles.loadingText}>در حال دریافت لیست تخصص‌ها...</Text>
         )}
@@ -782,12 +782,14 @@ export default function SignIn({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={NewStyles.container} edges={{top:'off', bottom:'additive'}}>
+    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
       <ImageBackground
         source={require('../../assets/background2.jpg')}
         style={styles.background}
       >
-        {currentPage === 'personal' ? renderPersonalInfoPage() : renderComputerSkillsPage()}
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+          {currentPage === 'personal' ? renderPersonalInfoPage() : renderComputerSkillsPage()}
+        </KeyboardAvoidingView>
       </ImageBackground>
     </SafeAreaView>
   );
