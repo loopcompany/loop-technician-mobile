@@ -116,7 +116,7 @@ export default function CompletionInfoScreen({ navigation }) {
         </View>
 
       </ScrollView>
-      <Footer />
+     
     </LinearGradient>
   );
 }

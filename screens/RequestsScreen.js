@@ -397,7 +397,7 @@ export default function RequestsScreen({ navigation }) {
         </View>
       </ScrollView>
       
-      <Footer />
+
     </LinearGradient>
   );
 }

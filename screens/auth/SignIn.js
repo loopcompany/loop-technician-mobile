@@ -201,6 +201,17 @@ export default function SignIn({ navigation }) {
       }
 
       console.log('📋 Submitting registration data...');
+      
+      if (resumeFile) {
+        console.log('📎 فایل رزومه برای ارسال:', {
+          name: resumeFile.name,
+          uri: resumeFile.uri,
+          type: resumeFile.mimeType || resumeFile.type,
+          size: resumeFile.size
+        });
+      } else {
+        console.log('⚠️ بدون فایل رزومه');
+      }
 
       // Submit registration with resume file
       const result = await registerTechnician(apiFormData, resumeFile);
@@ -678,7 +689,9 @@ export default function SignIn({ navigation }) {
         <View style={styles.resumeControls}>
           {resumeFile ? (
             <View style={styles.selectedFileRow}>
-              <Text style={styles.selectedFileName}>{resumeFile.name || resumeFile.uri.split('/').pop()}</Text>
+              <Text style={styles.selectedFileName}>
+                {resumeFile.name || (resumeFile.uri ? resumeFile.uri.split('/').pop() : 'فایل انتخاب شده')}
+              </Text>
               <TouchableOpacity style={styles.removeFileButton} onPress={() => setResumeFile(null)}>
                 <Text style={styles.removeFileText}>حذف</Text>
               </TouchableOpacity>
@@ -687,18 +700,6 @@ export default function SignIn({ navigation }) {
             <TouchableOpacity style={styles.pickFileButton} onPress={pickDocument}>
               <Text style={styles.pickFileText}>انتخاب فایل رزومه</Text>
             </TouchableOpacity>
-          )}
-
-          {resumeFile && (
-            <View style={styles.selectedFileContainer}>
-              <Text style={styles.selectedFileName}>{resumeFile.name}</Text>
-              <TouchableOpacity
-                onPress={() => setResumeFile(null)}
-                style={styles.removeFileButton}
-              >
-                <Text style={styles.removeFileText}>حذف</Text>
-              </TouchableOpacity>
-            </View>
           )}
         </View>
       </View>
@@ -732,11 +733,40 @@ export default function SignIn({ navigation }) {
   // Open document picker to select resume
   const pickDocument = async () => {
     try {
-      const result = await DocumentPicker.getDocumentAsync({ type: '*/*' });
-      if (result.type === 'success') {
-        setResumeFile(result);
+      const result = await DocumentPicker.getDocumentAsync({ 
+        type: '*/*',
+        copyToCacheDirectory: true 
+      });
+      
+      console.log('📄 نتیجه انتخاب فایل:', JSON.stringify(result, null, 2));
+      
+      // Expo DocumentPicker returns different structure based on version
+      // Check for both old (type: 'success') and new (!canceled) formats
+      if (result.type === 'success' || (result.assets && result.assets.length > 0) || !result.canceled) {
+        const file = result.assets ? result.assets[0] : result;
+        
+        console.log('✅ فایل انتخاب شد:', {
+          name: file.name,
+          uri: file.uri,
+          size: file.size,
+          mimeType: file.mimeType
+        });
+        
+        // Ensure we have all required fields
+        const resumeData = {
+          uri: file.uri,
+          name: file.name || file.uri.split('/').pop(),
+          type: file.mimeType || file.type || 'application/octet-stream',
+          size: file.size
+        };
+        
+        setResumeFile(resumeData);
+        Alert.alert('موفق', `فایل "${resumeData.name}" انتخاب شد`);
+      } else {
+        console.log('❌ انتخاب فایل لغو شد');
       }
     } catch (err) {
+      console.error('❌ خطا در انتخاب فایل:', err);
       Alert.alert('خطا', 'انتخاب فایل با خطا مواجه شد');
     }
   };

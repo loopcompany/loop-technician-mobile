@@ -97,7 +97,7 @@ export default function IndexScreen({ navigation }) {
 
       </ScrollView>
       
-      <Footer />
+
     </LinearGradient>
   );
 }

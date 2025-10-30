@@ -7,6 +7,8 @@ import {
   ImageBackground,
   StyleSheet,
   ScrollView,
+  Alert,
+  TextInput,
 } from "react-native";
 import NewStyles from "../../styles/NewStyles";
 import {
@@ -15,70 +17,118 @@ import {
   useBlurOnFulfill,
   useClearByFocusCell,
 } from "react-native-confirmation-code-field";
-import { themeColor0, themeColor3 } from "../../theme/Color";
+import { themeColor0, themeColor3, themeColor10 } from "../../theme/Color";
 import { setToken } from "../../slices/authSlice";
-import axios from "axios";
-import { uri } from "../../services/URL";
 import Button from "../../components/Button";
 import { useDispatch } from "react-redux";
-import AsyncStorage from "@react-native-async-storage/async-storage"; 
-export default function ResetPasswordScreen({ navigation,route }) {
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { verifyResetCode, resetPassword } from "../../services/Api";
+import { loginTechnician } from "../../services/Api";
+
+export default function ResetPasswordScreen({ navigation, route }) {
   const params = route?.params;
+  const dispatch = useDispatch();
+  
+  // Step 1: Verify Code
+  const [step, setStep] = useState(1); // 1: verify code, 2: set new password
   const [loading, setLoading] = useState(false);
   const [value, setValue] = useState("");
-
-  const dispatch = useDispatch();
-  const [phone, setPhone] = useState("");
-  // const [timer, setTimer] = useState(120);
   const [error, setError] = useState("");
+  
+  // Step 2: New Password
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  
   const ref = useBlurOnFulfill({ value, cellCount: 6 });
   const [props, getCellOnLayoutHandler] = useClearByFocusCell({
     value,
     setValue,
   });
 
-  // const codeVerification = async () => {
-  //   try {
-  //     const response = await axios.post(`${uri}/codeVerification`, {
-  //       phone: params?.phone,
-  //       code: value,
-  //     });
-  //     if (response?.data?.success == "success") {
-  //       setError("");
-  //     } else if (response?.data?.error == "error") {
-  //       setError("The entered code is not correct!");
-  //     }
-  //   } catch (error) {
-  //     console.log(error, route.params?.phone, "**");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-  const codeVerification = async () => {
+  // Step 1: Verify the code
+  const handleVerifyCode = async () => {
+    if (value.length !== 6) {
+      Alert.alert("خطا", "لطفاً کد 6 رقمی را وارد کنید");
+      return;
+    }
+
+    setLoading(true);
+    console.log('🔄 تأیید کد بازیابی رمز...');
+
     try {
-      const response = await axios.post(`${uri}/codeVerification`, {
+      const result = await verifyResetCode({
         phone: params?.phone,
         code: value,
       });
-      if (response?.data?.success == "success") {
-        const userId = JSON.stringify(response?.data?.userId);
-        const userToken = response?.data?.token?.replace('"', "");
-        await AsyncStorage.setItem("ui", userId);
-        await AsyncStorage.setItem("ut", userToken);
-        // ست کوکی 
-        dispatch(setToken(userToken));
-        navigation.navigate("FolderScreen")
-      } 
-      console.log(response?.data);
-      
+
+      console.log('📦 نتیجه تأیید کد:', result);
+
+      if (result.success) {
+        setError("");
+        console.log('✅ کد تأیید شد، انتقال به مرحله تنظیم رمز جدید');
+        setStep(2); // Move to password setting step
+      } else {
+        setError("کد وارد شده صحیح نیست");
+        Alert.alert("خطا", result.message || "کد وارد شده صحیح نمی‌باشد");
+      }
     } catch (error) {
-      console.log(error);
+      console.error('❌ خطا در تأیید کد:', error);
+      setError("خطا در ارتباط با سرور");
+      Alert.alert("خطا", "مشکلی در ارتباط با سرور پیش آمد");
     } finally {
-
-
-
       setLoading(false);
-  
+    }
+  };
+
+  // Step 2: Set new password
+  const handleResetPassword = async () => {
+    if (!newPassword || newPassword.length < 6) {
+      Alert.alert("خطا", "رمز عبور باید حداقل 6 کاراکتر باشد");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      Alert.alert("خطا", "رمز عبور و تکرار آن یکسان نیستند");
+      return;
+    }
+
+    setLoading(true);
+    console.log('🔄 تنظیم رمز عبور جدید...');
+
+    try {
+      const result = await resetPassword({
+        phone: params?.phone,
+        code: value, // ارسال کد verification نیز
+        new_password: newPassword,
+        new_password_confirmation: confirmPassword,
+      });
+
+      console.log('📦 نتیجه تنظیم رمز:', result);
+
+      if (result.success) {
+        Alert.alert(
+          "موفق",
+          "رمز عبور شما با موفقیت تغییر یافت. لطفاً دوباره وارد شوید.",
+          [
+            {
+              text: "تأیید",
+              onPress: () => {
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: 'Login' }],
+                });
+              },
+            },
+          ]
+        );
+      } else {
+        Alert.alert("خطا", result.message || "مشکلی در تغییر رمز عبور پیش آمد");
+      }
+    } catch (error) {
+      console.error('❌ خطا در تنظیم رمز:', error);
+      Alert.alert("خطا", "مشکلی در ارتباط با سرور پیش آمد");
+    } finally {
+      setLoading(false);
     }
   };
   return (
@@ -90,83 +140,88 @@ export default function ResetPasswordScreen({ navigation,route }) {
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
       >
-        {/* کد تأیید شبیه مستطیل‌های شش‌تایی */}
-        {/* <View style={styles.codeContainer}>
-          {Array(6).fill().map((_, index) => (
-            <View key={index} style={styles.codeBox} />
-          ))}
-        </View> */}
-
         {/* لوگو */}
         <Image
           source={require("../../assets/logo.png")}
           style={NewStyles.logo}
           resizeMode="contain"
         />
-        <View style={NewStyles.center}>
-          <CodeField
-            ref={ref}
-            {...props}
-            value={value}
-            onChangeText={(text) => {
-              setValue(text);
-            }}
-            cellCount={6}
-            keyboardType="number-pad"
-            textContentType="oneTimeCode"
-            autoComplete={Platform.select({
-              android: "sms-otp",
-              default: "one-time-code",
-            })}
-            renderCell={({ index, symbol, isFocused }) => (
-              <Text
-                key={index}
-                style={[styles.cell, NewStyles.border10]}
-                onLayout={getCellOnLayoutHandler(index)}
-              >
-                {symbol || (isFocused ? <Cursor /> : null)}
-              </Text>
-            )}
-          />
 
-          {error && <Text style={NewStyles.text6}>{error}</Text>}
-          <Button
-            title={"Submit"}
-            loading={loading}
-            onPress={() => {
-              if (value?.length === 6) {
-                setLoading(true);
-                codeVerification();
-              } else {
-                setError("Please enter the code correctly.");
-              }
-            }}
-          />
-        </View>
-        {/* فیلد رمز جدید */}
-        {/* <TextInput
-          style={styles.input}
-          placeholder="رمز عبور جدید خود را وارد کنید"
-          placeholderTextColor="#555"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        /> */}
+        {step === 1 ? (
+          // Step 1: Enter verification code
+          <View style={[NewStyles.center, { width: '100%' }]}>
+            <Text style={[NewStyles.text10, { marginBottom: 20, fontSize: 16 }]}>
+              کد 6 رقمی ارسال شده به شماره {params?.phone} را وارد کنید
+            </Text>
+            
+            <CodeField
+              ref={ref}
+              {...props}
+              value={value}
+              onChangeText={(text) => {
+                setValue(text);
+                setError("");
+              }}
+              cellCount={6}
+              keyboardType="number-pad"
+              textContentType="oneTimeCode"
+              autoComplete={Platform.select({
+                android: "sms-otp",
+                default: "one-time-code",
+              })}
+              renderCell={({ index, symbol, isFocused }) => (
+                <Text
+                  key={index}
+                  style={[styles.cell, NewStyles.border10]}
+                  onLayout={getCellOnLayoutHandler(index)}
+                >
+                  {symbol || (isFocused ? <Cursor /> : null)}
+                </Text>
+              )}
+            />
 
-        {/* فیلد تکرار رمز */}
-        {/* <TextInput
-          style={styles.input}
-          placeholder="مجدد رمز عبور جدید را وارد کنید"
-          placeholderTextColor="#555"
-          secureTextEntry
-          value={repeatPassword}
-          onChangeText={setRepeatPassword}
-        /> */}
+            {error && <Text style={[NewStyles.text6, { marginTop: 10 }]}>{error}</Text>}
+            
+            <Button
+              title={"تأیید کد"}
+              loading={loading}
+              onPress={handleVerifyCode}
+            />
+          </View>
+        ) : (
+          // Step 2: Enter new password
+          <View style={[NewStyles.center, { width: '100%', gap: 15 }]}>
+            <Text style={[NewStyles.text10, { marginBottom: 10, fontSize: 16 }]}>
+              رمز عبور جدید خود را وارد کنید
+            </Text>
 
-        {/* پیام موفقیت */}
-        <Text style={styles.successText}>
-          رمز عبور جدید با موفقیت ثبت شد / ورود مجدد
-        </Text>
+            <TextInput
+              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+              placeholder="رمز عبور جدید (حداقل 6 کاراکتر)"
+              placeholderTextColor={themeColor10.bgColor(0.9)}
+              secureTextEntry
+              value={newPassword}
+              onChangeText={setNewPassword}
+              autoCapitalize="none"
+            />
+
+            <TextInput
+              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+              placeholder="تکرار رمز عبور جدید"
+              placeholderTextColor={themeColor10.bgColor(0.9)}
+              secureTextEntry
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              autoCapitalize="none"
+            />
+
+            <Button
+              title={"تغییر رمز عبور"}
+              loading={loading}
+              onPress={handleResetPassword}
+            />
+          </View>
+        )}
       </ScrollView>
     </ImageBackground>
   );

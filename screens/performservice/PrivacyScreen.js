@@ -61,7 +61,7 @@ export default function PrivacyScreen({ navigation }) {
 
       </ScrollView>
       
-      <Footer />
+
     </LinearGradient>
   );
 }

@@ -52,7 +52,7 @@ export default function IncentivePlansScreen({ navigation }) {
         </View>
       </ScrollView>
       
-      <Footer />
+
     </LinearGradient>
   );
 }

@@ -113,7 +113,7 @@ export default function DeviceModelInfoScreen({ navigation }) {
           </TouchableOpacity>
 
         </ScrollView>
-        <Footer />
+   
       </SafeAreaView>
 
       

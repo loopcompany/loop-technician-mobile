@@ -111,7 +111,7 @@ export default function PerformanceScreen({ navigation }) {
         </View>
       </ScrollView>
       
-      <Footer />
+
     </LinearGradient>
   );
 }

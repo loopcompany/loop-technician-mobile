@@ -94,7 +94,7 @@ export default function PhotoArchiveScreen({ navigation }) {
         </View>
       </ScrollView>
       
-      <Footer />
+
     </LinearGradient>
   );
 }

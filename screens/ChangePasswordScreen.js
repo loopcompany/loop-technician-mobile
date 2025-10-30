@@ -12,6 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Footer from './Footer';
 import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
+import { themeColor0, themeColor1, themeColor2, themeColor3, themeColor8 } from '../theme/Color';
 
 export default function ChangePasswordScreen({ navigation }) {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -24,7 +25,7 @@ export default function ChangePasswordScreen({ navigation }) {
 
   return (
     <LinearGradient 
-      colors={['#7FDBFF', '#0074D9', '#001f3f']} 
+      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.background}
@@ -44,7 +45,7 @@ export default function ChangePasswordScreen({ navigation }) {
               value={currentPassword}
               onChangeText={setCurrentPassword}
               placeholder="رمز عبور فعلی"
-              placeholderTextColor="#999"
+              placeholderTextColor={themeColor3.bgColor(1)}
               secureTextEntry
             />
           </View>
@@ -56,7 +57,7 @@ export default function ChangePasswordScreen({ navigation }) {
               value={newPassword}
               onChangeText={setNewPassword}
               placeholder="رمز عبور جدید"
-              placeholderTextColor="#999"
+              placeholderTextColor={themeColor3.bgColor(1)}
               secureTextEntry
             />
           </View>
@@ -68,7 +69,7 @@ export default function ChangePasswordScreen({ navigation }) {
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               placeholder="تکرار رمز عبور جدید"
-              placeholderTextColor="#999"
+              placeholderTextColor={themeColor3.bgColor(1)}
               secureTextEntry
             />
           </View>
@@ -84,7 +85,7 @@ export default function ChangePasswordScreen({ navigation }) {
         </View>
       </ScrollView>
       
-      <Footer />
+
     </LinearGradient>
   );
 }

@@ -218,11 +218,30 @@ export const registerTechnician = async (formData, resumeFile = null) => {
     
     // Add resume file if provided
     if (resumeFile) {
+      console.log('📎 اضافه کردن فایل رزومه:', {
+        uri: resumeFile.uri,
+        name: resumeFile.name,
+        type: resumeFile.mimeType || resumeFile.type
+      });
+      
+      // React Native FormData format for file upload
       multipartData.append('resume', {
         uri: resumeFile.uri,
         name: resumeFile.name || 'resume.pdf',
-        type: resumeFile.type || 'application/pdf',
+        type: resumeFile.mimeType || resumeFile.type || 'application/pdf',
       });
+      
+      console.log('✅ فایل رزومه به FormData اضافه شد');
+    } else {
+      console.log('⚠️ هیچ فایل رزومه‌ای انتخاب نشده');
+    }
+    
+    // Log FormData contents for debugging
+    console.log('📋 محتویات FormData:');
+    for (const [key, value] of formData.entries()) {
+      if (key !== 'password') {
+        console.log(`  ${key}:`, typeof value === 'object' ? 'file' : value);
+      }
     }
     
     const response = await api.post('/technician/register', multipartData, {
@@ -286,23 +305,51 @@ export const validateReferralCode = async (referralCode) => {
 /**
  * Login technician
  */
-export const loginTechnician = async (phone, password) => {
+export const loginTechnician = async (referralCodeOrPhone, password) => {
   try {
-    const response = await api.post('/technician/login', {
-      phone,
+    console.log('📡 API loginTechnician فراخوانی شد');
+    console.log('ورودی اول:', referralCodeOrPhone);
+    console.log('رمز عبور:', password ? '***' : 'خالی');
+    
+    // Determine if input is phone or referral code
+    const isPhone = /^09\d{9}$/.test(referralCodeOrPhone);
+    console.log('نوع ورودی:', isPhone ? 'شماره تلفن' : 'کد معرف');
+    
+    const requestBody = {
+      ...(isPhone ? { phone: referralCodeOrPhone } : { referral_code: referralCodeOrPhone }),
       password,
-    });
+    };
+    console.log('Body ارسالی:', JSON.stringify(requestBody, null, 2));
+    console.log('URL کامل:', `${BASE_URL}/technician/login`);
+    
+    const response = await api.post('/technician/login', requestBody);
+    console.log('✅ پاسخ سرور دریافت شد:', response.status);
+    console.log('داده پاسخ:', JSON.stringify(response.data, null, 2));
     
     const result = handleResponse(response);
+    console.log('نتیجه پردازش شده:', JSON.stringify(result, null, 2));
     
     // Store token and user data if login successful
     if (result.success && result.data.token) {
+      console.log('ذخیره توکن و اطلاعات کاربر...');
       await AsyncStorage.setItem('userToken', result.data.token);
-      await AsyncStorage.setItem('userData', JSON.stringify(result.data.user));
+      await AsyncStorage.setItem('userData', JSON.stringify(result.data.technician || result.data.user));
+      console.log('✅ توکن ذخیره شد');
     }
     
     return result;
   } catch (error) {
+    console.error('❌ خطا در loginTechnician API:');
+    console.error('نوع خطا:', error.name);
+    console.error('پیام:', error.message);
+    if (error.response) {
+      console.error('Status:', error.response.status);
+      console.error('Response data:', JSON.stringify(error.response.data, null, 2));
+      console.error('Response headers:', error.response.headers);
+    }
+    if (error.request) {
+      console.error('Request:', error.request);
+    }
     return handleError(error);
   }
 };
@@ -312,17 +359,105 @@ export const loginTechnician = async (phone, password) => {
  */
 export const logoutTechnician = async () => {
   try {
+    console.log('🚪 شروع فرآیند خروج...');
     const response = await api.post('/technician/logout');
+    console.log('✅ پاسخ سرور logout:', response.status, response.data);
     
     // Clear stored data regardless of API response
+    console.log('🗑️ پاک کردن داده‌های ذخیره شده...');
     await AsyncStorage.removeItem('userToken');
     await AsyncStorage.removeItem('userData');
+    await AsyncStorage.removeItem('savedReferralCode');
+    await AsyncStorage.removeItem('savedPassword');
+    console.log('✅ تمام داده‌ها پاک شدند');
     
     return handleResponse(response);
   } catch (error) {
+    console.error('❌ خطا در logout API:', error);
     // Clear stored data even if logout API fails
+    console.log('🗑️ پاک کردن داده‌های ذخیره شده (در صورت خطا)...');
     await AsyncStorage.removeItem('userToken');
     await AsyncStorage.removeItem('userData');
+    await AsyncStorage.removeItem('savedReferralCode');
+    await AsyncStorage.removeItem('savedPassword');
+    console.log('✅ تمام داده‌ها پاک شدند');
+    return handleError(error);
+  }
+};
+
+/**
+ * Validate technician token
+ */
+export const validateToken = async () => {
+  try {
+    console.log('🔐 اعتبارسنجی توکن...');
+    const response = await api.post('/technician/validate-token');
+    console.log('✅ توکن معتبر است');
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ توکن نامعتبر یا منقضی شده');
+    return handleError(error);
+  }
+};
+
+/**
+ * Request password reset - Send OTP
+ * @param {Object} data - { referral_code, phone, melicode, email }
+ */
+export const requestPasswordReset = async (data) => {
+  try {
+    console.log('📧 درخواست ارسال کد بازیابی رمز...');
+    console.log('اطلاعات ارسالی:', data);
+    
+    const response = await api.post('/technician/forgot-password', data);
+    console.log('✅ کد بازیابی ارسال شد:', response.data);
+    
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در ارسال کد بازیابی:', error.response?.data || error.message);
+    return handleError(error);
+  }
+};
+
+/**
+ * Verify reset code (Step 2)
+ * @param {Object} data - { phone, code }
+ */
+export const verifyResetCode = async (data) => {
+  try {
+    console.log('� تأیید کد بازیابی...');
+    console.log('شماره:', data.phone, 'کد:', data.code);
+    
+    const response = await api.post('/technician/verify-reset-code', data);
+    console.log('✅ کد تأیید شد:', response.data);
+    
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در تأیید کد:', error.response?.data || error.message);
+    return handleError(error);
+  }
+};
+
+/**
+ * Reset password with new password (Step 3)
+ * @param {Object} data - { phone, new_password, new_password_confirmation }
+ */
+export const resetPassword = async (data) => {
+  try {
+    console.log('🔑 تنظیم رمز عبور جدید...');
+    console.log('📤 داده‌های ارسالی به API:', JSON.stringify({
+      phone: data.phone,
+      new_password: '***',
+      new_password_confirmation: '***',
+    }));
+    
+    const response = await api.post('/technician/reset-password', data);
+    console.log('✅ رمز عبور تغییر یافت:', response.data);
+    
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در تغییر رمز عبور:', error.response?.data || error.message);
+    console.error('📥 پاسخ کامل خطا:', JSON.stringify(error.response?.data, null, 2));
     return handleError(error);
   }
 };
@@ -332,9 +467,18 @@ export const logoutTechnician = async () => {
  */
 export const getTechnicianProfile = async () => {
   try {
+    console.log('🔍 درخواست دریافت پروفایل متخصص...');
+    console.log('📍 Endpoint: GET /technician/profile');
     const response = await api.get('/technician/profile');
+    console.log('✅ پاسخ دریافت شد:', response.status);
     return handleResponse(response);
   } catch (error) {
+    console.error('❌ خطا در دریافت پروفایل:', error.message);
+    console.error('📍 Endpoint: GET /technician/profile');
+    if (error.response) {
+      console.error('📥 Status:', error.response.status);
+      console.error('📥 Data:', error.response.data);
+    }
     return handleError(error);
   }
 };
@@ -347,6 +491,63 @@ export const updateTechnicianProfile = async (formData) => {
     const response = await api.put('/technician/profile', formData);
     return handleResponse(response);
   } catch (error) {
+    return handleError(error);
+  }
+};
+
+/**
+ * Update technician personal info (with photo upload support)
+ * @param {Object} data - Personal info data
+ * @param {Object} profilePhoto - Profile photo file (optional)
+ */
+export const updatePersonalInfo = async (data, profilePhoto = null) => {
+  try {
+    console.log('📝 به‌روزرسانی اطلاعات شخصی...');
+    
+    // If there's a photo, use multipart/form-data
+    if (profilePhoto) {
+      const formData = new FormData();
+      
+      // Add profile photo
+      formData.append('profile_photo', {
+        uri: profilePhoto.uri,
+        name: profilePhoto.name || 'profile.jpg',
+        type: profilePhoto.type || 'image/jpeg',
+      });
+      
+      // Add other fields
+      Object.keys(data).forEach(key => {
+        if (data[key] !== null && data[key] !== undefined && data[key] !== '') {
+          formData.append(key, data[key]);
+        }
+      });
+      
+      console.log('📤 ارسال با عکس پروفایل');
+      
+      const response = await api.put('/technician/profile/personal-info', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        timeout: 60000,
+      });
+      
+      console.log('✅ اطلاعات شخصی با عکس به‌روز شد:', response.data);
+      return handleResponse(response);
+    } else {
+      // Without photo, use JSON
+      console.log('📤 ارسال بدون عکس پروفایل');
+      
+      const response = await api.put('/technician/profile/personal-info', data, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      console.log('✅ اطلاعات شخصی به‌روز شد:', response.data);
+      return handleResponse(response);
+    }
+  } catch (error) {
+    console.error('❌ خطا در به‌روزرسانی اطلاعات شخصی:', error.response?.data || error.message);
     return handleError(error);
   }
 };

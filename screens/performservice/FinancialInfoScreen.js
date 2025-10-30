@@ -96,7 +96,7 @@ export default function FinancialInfoScreen({ navigation }) {
 
       </ScrollView>
       
-      <Footer />
+   
     </LinearGradient>
   );
 }

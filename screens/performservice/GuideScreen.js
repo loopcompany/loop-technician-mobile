@@ -57,7 +57,7 @@ export default function GuideScreen({ navigation }) {
   <Text style={styles.phoneText}>21164552</Text>
 </View> */}
       <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'flex-end' }}>
-        <Footer />
+  
       </View>
 
     </ImageBackground>

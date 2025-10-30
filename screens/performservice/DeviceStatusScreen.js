@@ -176,7 +176,7 @@ export default function DeviceStatusScreen({ navigation }) {
         </View>
 
       </ScrollView>
-      <Footer />
+
     </LinearGradient>
   );
 }

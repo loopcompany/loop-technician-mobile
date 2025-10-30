@@ -203,7 +203,7 @@ export default function LaptopDeliveryScreen({ navigation }) {
         </View>
 
       </ScrollView>
-      <Footer />
+  
     </LinearGradient>
   );
 }

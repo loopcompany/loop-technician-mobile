@@ -2,6 +2,7 @@
 import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useFooter } from '../contexts/FooterContext';
+import { themeColor0, themeColor1, themeColor10, themeColor4, themeColor6, themeColor7 } from '../theme/Color';
 
 export default function ExampleScreen({ navigation }) {
   const { 
@@ -36,31 +37,31 @@ export default function ExampleScreen({ navigation }) {
       <Text>مثال استفاده از Footer Context</Text>
       
       <TouchableOpacity 
-        style={{ backgroundColor: '#007bff', padding: 10, margin: 10 }}
+        style={{ backgroundColor: themeColor0.bgColor(1), padding: 10, margin: 10 }}
         onPress={showFooter}
       >
-        <Text style={{ color: 'white' }}>نمایش Footer</Text>
+        <Text style={{ color: themeColor4.bgColor(1) }}>نمایش Footer</Text>
       </TouchableOpacity>
 
       <TouchableOpacity 
-        style={{ backgroundColor: '#dc3545', padding: 10, margin: 10 }}
+        style={{ backgroundColor: themeColor6.bgColor(1), padding: 10, margin: 10 }}
         onPress={hideFooter}
       >
-        <Text style={{ color: 'white' }}>مخفی کردن Footer</Text>
+        <Text style={{ color: themeColor4.bgColor(1) }}>مخفی کردن Footer</Text>
       </TouchableOpacity>
 
       <TouchableOpacity 
-        style={{ backgroundColor: '#28a745', padding: 10, margin: 10 }}
+        style={{ backgroundColor: themeColor7.bgColor(1), padding: 10, margin: 10 }}
         onPress={toggleFooter}
       >
-        <Text style={{ color: 'white' }}>تغییر وضعیت Footer</Text>
+        <Text style={{ color: themeColor4.bgColor(1) }}>تغییر وضعیت Footer</Text>
       </TouchableOpacity>
 
       <TouchableOpacity 
-        style={{ backgroundColor: '#ffc107', padding: 10, margin: 10 }}
+        style={{ backgroundColor: themeColor1.bgColor(1), padding: 10, margin: 10 }}
         onPress={handleCustomizeMenu}
       >
-        <Text style={{ color: 'black' }}>سفارشی کردن منوی Footer</Text>
+        <Text style={{ color: themeColor10.bgColor(1) }}>سفارشی کردن منوی Footer</Text>
       </TouchableOpacity>
 
       <Text>وضعیت فعلی Footer: {isFooterVisible ? 'نمایش داده شده' : 'مخفی'}</Text>

@@ -186,7 +186,7 @@ export default function VehicleInfoScreen({ navigation }) {
           </View>
 
           <View style={styles.inputRow}>
-            <Text style={styles.label}>کد بیکاری بیمه شخص ثالث :</Text>
+            <Text style={styles.label}>کد یکتای بیمه شخص ثالث :</Text>
             <TextInput
               style={styles.input}
               value={vehicleData.insuranceExpiryCode}
@@ -218,8 +218,7 @@ export default function VehicleInfoScreen({ navigation }) {
         </View>
 
       </ScrollView>
-      
-      <Footer />
+   
     </LinearGradient>
   );
 }

@@ -119,7 +119,7 @@ export default function NewServiceScreen({ navigation }) {
         </View>
 
       </ScrollView>
-      <Footer />
+
     </LinearGradient>
   );
 }

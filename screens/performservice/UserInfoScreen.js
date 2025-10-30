@@ -147,7 +147,7 @@ export default function UserInfoScreen({ navigation }) {
         </View>
 
       </ScrollView>
-      <Footer />
+
     </LinearGradient>
   );
 }

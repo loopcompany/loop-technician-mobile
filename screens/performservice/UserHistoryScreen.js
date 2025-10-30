@@ -104,7 +104,7 @@ export default function UserHistoryScreen({ navigation }) {
         </TouchableOpacity>
 
       </ScrollView>
-      <Footer />
+
     </LinearGradient>
   );
 }

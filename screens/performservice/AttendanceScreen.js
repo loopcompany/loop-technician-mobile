@@ -78,7 +78,7 @@ export default function AttendanceScreen({ navigation }) {
         </View>
 
       </ScrollView>
-      <Footer />
+
     </LinearGradient>
   );
 }

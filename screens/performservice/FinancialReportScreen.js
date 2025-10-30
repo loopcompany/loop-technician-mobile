@@ -102,7 +102,7 @@ export default function FinancialReportScreen({ navigation }) {
 
       </ScrollView>
       
-      <Footer />
+     
     </LinearGradient>
   );
 }

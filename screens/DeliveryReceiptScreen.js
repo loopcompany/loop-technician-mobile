@@ -214,7 +214,7 @@ export default function DeliveryReceiptScreen({ navigation }) {
         </View>
       </ScrollView>
       
-      <Footer />
+
     </LinearGradient>
   );
 }

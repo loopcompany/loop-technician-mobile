@@ -8,6 +8,7 @@ import {
   ImageBackground,
   Image,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import Svg, { Text as SvgText, Line, Rect } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -17,32 +18,59 @@ import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor3, themeColor4, themeColor10, themeColor7 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import Button from '../../components/Button';
+import { useDispatch } from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { loginTechnician } from '../../services/Api';
+import { setToken } from '../../slices/authSlice';
+import { showToastOrAlert } from '../../helpers/Common';
 
 export default function Login() {
   const navigation = useNavigation();
-  const [staffCode, setStaffCode] = useState('');
+  const dispatch = useDispatch();
+  const [referralCode, setReferralCode] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberPassword, setRememberPassword] = useState(false);
   const [captcha, setCaptcha] = useState('');
-  const [captchaMeta, setCaptchaMeta] = useState([]); // per-char meta: {rotate,color,y}
+  const [captchaMeta, setCaptchaMeta] = useState([]);
   const [noiseMeta, setNoiseMeta] = useState([]);
   const [captchaInput, setCaptchaInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  // initialize captcha on mount
   useEffect(() => {
+    console.log('✅ کامپوننت Login بارگذاری شد');
     createNewCaptcha();
+    loadSavedCredentials();
   }, []);
 
-  // Render captcha characters using stored metadata
-
+  async function loadSavedCredentials() {
+    console.log('📂 بارگذاری اطلاعات ذخیره شده...');
+    try {
+      const savedReferralCode = await AsyncStorage.getItem('savedReferralCode');
+      const savedPassword = await AsyncStorage.getItem('savedPassword');
+      console.log('کد معرف ذخیره شده:', savedReferralCode || 'ندارد');
+      if (savedReferralCode && savedPassword) {
+        setReferralCode(savedReferralCode);
+        setPassword(savedPassword);
+        setRememberPassword(true);
+        console.log('✅ اطلاعات بارگذاری شد');
+      }
+    } catch (error) {
+      console.error('❌ خطا در بارگذاری اطلاعات:', error);
+    }
+  }
 
 
   function normalizeDigits(s) {
-    // convert Persian digits to a canonical form (use Persian as stored)
-    const persian = { '0': '0', '1': '1', '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8', '9': '9', '۰': '۰', '۱': '۱', '۲': '۲', '۳': '۳', '۴': '۴', '۵': '۵', '۶': '۶', '۷': '۷', '۸': '۸', '۹': '۹' };
+    const persian = { 
+      '0': '۰', '1': '۱', '2': '۲', '3': '۳', '4': '۴', 
+      '5': '۵', '6': '۶', '7': '۷', '8': '۸', '9': '۹',
+      '۰': '۰', '۱': '۱', '۲': '۲', '۳': '۳', '۴': '۴',
+      '۵': '۵', '۶': '۶', '۷': '۷', '۸': '۸', '۹': '۹'
+    };
     return s.split('').map(ch => (persian[ch] !== undefined ? persian[ch] : ch)).join('');
   }
+
 
 
   function generateCaptchaCode() {
@@ -53,21 +81,23 @@ export default function Login() {
   }
 
   function createNewCaptcha() {
+    console.log('🎨 ساخت کپچای جدید...');
     const code = generateCaptchaCode();
+    console.log('کد کپچای جدید:', code);
     const colors = ['#0D6EFD', '#FF5722', '#00897B', '#7B1FA2', '#E91E63'];
     const meta = [];
     for (let i = 0; i < code.length; i++) {
       meta.push({
-        rotate: (Math.random() - 0.5) * 20,
+        rotate: (Math.random() - 0.5) * 15,
         color: colors[Math.floor(Math.random() * colors.length)],
-        y: 28 + Math.floor((Math.random() - 0.5) * 8),
+        y: 30 + Math.floor((Math.random() - 0.5) * 6),
       });
     }
     const noises = [];
     for (let i = 0; i < 3; i++) {
       noises.push({
         top: Math.floor(Math.random() * 30) + 6,
-        left: Math.floor(Math.random() * 40) + 6,
+        left: Math.floor(Math.random() * 60) + 6,
         width: Math.floor(Math.random() * 80) + 30,
         rotate: (Math.random() - 0.5) * 60,
       });
@@ -76,6 +106,110 @@ export default function Login() {
     setCaptchaMeta(meta);
     setNoiseMeta(noises);
     setCaptchaInput('');
+  }
+
+  function validateInputs() {
+    console.log('🔍 شروع اعتبارسنجی...');
+    console.log('کد معرف وارد شده:', referralCode);
+    console.log('طول کد معرف:', referralCode.length);
+    console.log('رمز عبور:', password ? 'وارد شده' : 'خالی');
+    console.log('کپچا وارد شده:', captchaInput);
+    console.log('کپچا صحیح:', captcha);
+    
+    if (!referralCode.trim()) {
+      console.log('❌ کد معرف خالی است');
+      showToastOrAlert('خطا', 'لطفاً کد معرف را وارد کنید');
+      return false;
+    }
+    if (referralCode.trim().length < 6) {
+      console.log('❌ کد معرف کمتر از 6 کاراکتر است');
+      showToastOrAlert('خطا', 'کد معرف باید حداقل 6 کاراکتر باشد');
+      return false;
+    }
+    if (!password.trim()) {
+      console.log('❌ رمز عبور خالی است');
+      showToastOrAlert('خطا', 'لطفاً رمز عبور را وارد کنید');
+      return false;
+    }
+    if (!captchaInput.trim()) {
+      console.log('❌ کپچا خالی است');
+      showToastOrAlert('خطا', 'لطفاً کد امنیتی را وارد کنید');
+      return false;
+    }
+    const normalizedInput = normalizeDigits(captchaInput);
+    const normalizedCaptcha = normalizeDigits(captcha);
+    console.log('کپچا نرمال شده (ورودی):', normalizedInput);
+    console.log('کپچا نرمال شده (صحیح):', normalizedCaptcha);
+    
+    if (normalizedInput !== normalizedCaptcha) {
+      console.log('❌ کپچا اشتباه است');
+      showToastOrAlert('خطا', 'کد امنیتی اشتباه است');
+      createNewCaptcha();
+      return false;
+    }
+    console.log('✅ اعتبارسنجی موفق');
+    return true;
+  }
+
+  async function handleLogin() {
+    if (!validateInputs()) return;
+    
+    console.log('=== شروع فرآیند لاگین ===');
+    console.log('کد معرف:', referralCode);
+    console.log('رمز عبور وارد شده:', password ? '***' : 'خالی');
+    console.log('کپچا:', captchaInput);
+    
+    setIsLoading(true);
+    try {
+      console.log('در حال ارسال درخواست به سرور...');
+      const result = await loginTechnician(referralCode.trim(), password.trim());
+      console.log('پاسخ سرور:', JSON.stringify(result, null, 2));
+      
+      if (result.success && result.data?.token) {
+        console.log('✅ ورود موفق - توکن دریافت شد');
+        // Save token to Redux
+        dispatch(setToken(result.data.token));
+        
+        // Save credentials if remember me is checked
+        if (rememberPassword) {
+          console.log('ذخیره اطلاعات کاربر...');
+          await AsyncStorage.setItem('savedReferralCode', referralCode.trim());
+          await AsyncStorage.setItem('savedPassword', password.trim());
+        } else {
+          await AsyncStorage.removeItem('savedReferralCode');
+          await AsyncStorage.removeItem('savedPassword');
+        }
+        
+        showToastOrAlert('موفق', result.message || 'ورود با موفقیت انجام شد');
+        
+        // Navigate to FolderScreen
+        console.log('هدایت به FolderScreen...');
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'FolderScreen' }],
+        });
+      } else {
+        console.log('❌ ورود ناموفق:', result.message);
+        showToastOrAlert('خطا', result.message || 'خطا در ورود به سیستم');
+        createNewCaptcha();
+      }
+    } catch (error) {
+      console.error('❌❌❌ خطای لاگین:', error);
+      console.error('نوع خطا:', error.name);
+      console.error('پیام خطا:', error.message);
+      if (error.response) {
+        console.error('وضعیت HTTP:', error.response.status);
+        console.error('داده خطا:', error.response.data);
+      }
+      if (error.request) {
+        console.error('درخواست ارسال شده:', error.request);
+      }
+      showToastOrAlert('خطا', 'خطای غیرمنتظره در ورود');
+      createNewCaptcha();
+    } finally {
+      setIsLoading(false);
+      console.log('=== پایان فرآیند لاگین ===');
+    }
   }
 
 
@@ -88,16 +222,43 @@ export default function Login() {
         </View>
         <View style={styles.formContainer}>
           <View style={styles.inputContainer}>
-            <TextInput style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]} value={staffCode} onChangeText={setStaffCode} placeholder="کد پرسنلی" placeholderTextColor={themeColor10.bgColor(0.9)} textAlign="center" />
+            <TextInput 
+              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]} 
+              value={referralCode} 
+              onChangeText={setReferralCode} 
+              placeholder="کد معرف" 
+              placeholderTextColor={themeColor10.bgColor(0.9)} 
+              textAlign="center" 
+              editable={!isLoading}
+              autoCapitalize="characters"
+              maxLength={20}
+            />
           </View>
           <View style={styles.inputContainer}>
             <View style={styles.passwordContainer}>
-              <TouchableOpacity style={styles.eyeIcon} onPress={() => setShowPassword(!showPassword)}>
+              <TouchableOpacity 
+                style={styles.eyeIcon} 
+                onPress={() => setShowPassword(!showPassword)}
+                disabled={isLoading}
+              >
                 <Ionicons name={showPassword ? "eye" : "eye-off"} size={20} color={themeColor10.bgColor(0.9)} />
               </TouchableOpacity>
-              <TextInput style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.passwordInputStyle]} value={password} onChangeText={setPassword} placeholder="رمز عبور" placeholderTextColor={themeColor10.bgColor(0.9)} secureTextEntry={!showPassword} textAlign="center" />
+              <TextInput 
+                style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.passwordInputStyle]} 
+                value={password} 
+                onChangeText={setPassword} 
+                placeholder="رمز عبور" 
+                placeholderTextColor={themeColor10.bgColor(0.9)} 
+                secureTextEntry={!showPassword} 
+                textAlign="center" 
+                editable={!isLoading}
+              />
             </View>
-            <TouchableOpacity style={styles.checkboxContainer} onPress={() => setRememberPassword(!rememberPassword)}>
+            <TouchableOpacity 
+              style={styles.checkboxContainer} 
+              onPress={() => setRememberPassword(!rememberPassword)}
+              disabled={isLoading}
+            >
               <Text style={styles.checkboxText}>ذخیره رمز عبور</Text>
               <View style={[styles.checkbox, rememberPassword && styles.checkboxChecked]}>
                 {rememberPassword && (
@@ -108,16 +269,16 @@ export default function Login() {
           </View>
           <View style={styles.captchaContainer}>
             <View style={styles.captchaBox}>
-              <Svg width="100" height="50" viewBox="0 0 100 50">
+              <Svg width="140" height="50" viewBox="0 0 140 50">
                 <Rect x="0" y="0" width="140" height="50" rx="6" ry="6" fill="#F8FAFF" />
                 {captchaMeta.map((m, i) => (
                   <SvgText
                     key={`s${i}`}
-                    x={12 + i * 30}
+                    x={15 + i * 30}
                     y={m.y}
                     fontSize="22"
                     fill={m.color}
-                    transform={`rotate(${m.rotate} ${12 + i * 30} ${m.y})`}
+                    transform={`rotate(${m.rotate} ${15 + i * 30} ${m.y})`}
                   >
                     {captcha[i]}
                   </SvgText>
@@ -125,9 +286,9 @@ export default function Login() {
                 {noiseMeta.map((n, idx) => (
                   <Line
                     key={`n${idx}`}
-                    x1={Math.max(2, n.left % 90)}
+                    x1={Math.max(2, n.left % 120)}
                     y1={n.top}
-                    x2={Math.max(10, (n.left + n.width) % 90)}
+                    x2={Math.max(10, (n.left + n.width) % 120)}
                     y2={n.top + 2}
                     stroke="#999"
                     strokeWidth="1"
@@ -136,23 +297,57 @@ export default function Login() {
                 ))}
               </Svg>
             </View>
-            <TouchableOpacity onPress={() => { createNewCaptcha(); }} style={styles.captchaRefresh}>
+            <TouchableOpacity 
+              onPress={createNewCaptcha} 
+              style={styles.captchaRefresh}
+              disabled={isLoading}
+            >
               <Ionicons name="refresh" size={18} color={themeColor10.bgColor(1)} />
             </TouchableOpacity>
 
-            <TextInput style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.captchaInput]} value={captchaInput} onChangeText={setCaptchaInput} placeholder="کد امنیتی" placeholderTextColor={themeColor10.bgColor(0.9)} textAlign="center" />
+            <TextInput 
+              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.captchaInput]} 
+              value={captchaInput} 
+              onChangeText={setCaptchaInput} 
+              placeholder="کد امنیتی" 
+              placeholderTextColor={themeColor10.bgColor(0.9)} 
+              textAlign="center" 
+              editable={!isLoading}
+              keyboardType="numeric"
+              maxLength={4}
+            />
           </View>
           <View style={styles.buttonContainer}>
-            <Button title="ورود" onPress={() => { navigation.navigate("LoginScreen") }} style={styles.loginButtonCustom} />
+            {isLoading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={themeColor7.bgColor(1)} />
+                <Text style={styles.loadingText}>در حال ورود...</Text>
+              </View>
+            ) : (
+              <Button 
+                title="ورود" 
+                onPress={() => {
+                  console.log('🔘 دکمه ورود کلیک شد');
+                  handleLogin();
+                }} 
+                style={styles.loginButtonCustom} 
+              />
+            )}
           </View>
 
         </View>
 
         <View style={styles.bottomSection}>
-          <TouchableOpacity onPress={() => { navigation.navigate("SignInScreen") }}>
+          <TouchableOpacity 
+            onPress={() => navigation.navigate("SignInScreen")}
+            disabled={isLoading}
+          >
             <Text style={styles.bottomSubtitle}>رمز عبور خود را فراموش کرده اید؟</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => { }}>
+          <TouchableOpacity 
+            onPress={() => navigation.navigate("SignIn")}
+            disabled={isLoading}
+          >
             <Text style={styles.bottomFooter}>ثبت نام پرسنل جدید</Text>
           </TouchableOpacity>
         </View>
@@ -273,7 +468,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   captchaBox: {
-    width: 120,
+    width: 145,
     height: 50,
     backgroundColor: '#fff',
     borderRadius: 8,
@@ -336,5 +531,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'VazirLight',
     color: '#000000ff',
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+  },
+  loadingText: {
+    ...NewStyles.text10,
+    marginTop: 10,
+    fontSize: 14,
   },
 });

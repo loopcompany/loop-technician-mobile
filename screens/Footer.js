@@ -9,13 +9,18 @@ import {
   Modal,
   Linking,
   TouchableWithoutFeedback,
+  Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { themeColor0, themeColor10, themeColor13, themeColor4 } from "../theme/Color";
 import NewStyles from "../styles/NewStyles";
+import { logoutTechnician } from "../services/Api";
+import { useDispatch } from 'react-redux';
+import { setToken } from '../slices/authSlice';
 
 export default function Footer() {
   const navigation = useNavigation();
+  const dispatch = useDispatch();
   const [menuItems, setMenuItems] = useState([
     { id: 1, title: " سازمانی / شرکتی", screen: "DeviceOrderSummary" },
     { id: 2, title: " ثبت نام دوره های آموزشی ", screen: "CorporateScreen" },
@@ -24,6 +29,56 @@ export default function Footer() {
     { id: 5, title: " قوانین/درباره لوپ", screen: "CanceledOrdersScreen" },
   ]);
   const [menuVisible, setMenuVisible] = useState(false);
+
+  const handleLogout = async () => {
+    console.log('⚠️ handleLogout فراخوانی شد - نسخه جدید');
+    Alert.alert(
+      'خروج از حساب کاربری',
+      'آیا مطمئن هستید که می‌خواهید خارج شوید؟',
+      [
+        {
+          text: 'انصراف',
+          style: 'cancel',
+        },
+        {
+          text: 'خروج',
+          style: 'destructive',
+          onPress: async () => {
+            console.log('🚪 کاربر دکمه خروج را زد');
+            setMenuVisible(false);
+            
+            try {
+              // First clear Redux token to prevent auto-login
+              console.log('🗑️ پاک کردن Redux token...');
+              dispatch(setToken(null));
+              
+              // Call logout API (this will clear AsyncStorage)
+              const result = await logoutTechnician();
+              console.log('نتیجه logout:', result);
+              
+              // Navigate to Welcome screen AFTER clearing everything
+              console.log('➡️ انتقال به صفحه Welcome...');
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Welcome' }],
+              });
+              
+              console.log('✅ خروج موفقیت‌آمیز');
+            } catch (error) {
+              console.error('❌ خطا در خروج:', error);
+              // Even on error, logout locally
+              dispatch(setToken(null));
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Welcome' }],
+              });
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
@@ -76,14 +131,7 @@ export default function Footer() {
               
               <TouchableOpacity 
                 style={styles.exitButton}
-                onPress={() => {
-                  setMenuVisible(false);
-                  // Navigate to login or exit app
-                  navigation.reset({
-                    index: 0,
-                    routes: [{ name: 'Welcome' }],
-                  });
-                }}
+                onPress={handleLogout}
               >
                 <Text style={styles.exitButtonText}>خروج</Text>
               </TouchableOpacity>

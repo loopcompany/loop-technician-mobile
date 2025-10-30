@@ -152,7 +152,7 @@ export default function ServiceCompletionScreen({ navigation }) {
         </View>
 
       </ScrollView>
-      <Footer />
+
     </LinearGradient>
   );
 }

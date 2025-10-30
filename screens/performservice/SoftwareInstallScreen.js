@@ -97,7 +97,7 @@ export default function SoftwareInstallScreen({ navigation }) {
           style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
         />
       </View>
-      <Footer />
+   
     </ImageBackground>
   );
 }

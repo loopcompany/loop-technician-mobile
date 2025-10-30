@@ -74,7 +74,7 @@ export default function MessageScreen({ navigation }) {
 
       </ScrollView>
       
-      <Footer />
+
     </LinearGradient>
   );
 }

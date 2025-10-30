@@ -110,7 +110,7 @@ export default function TechnicalIssuesScreen({ navigation }) {
         </View>
 
       </ScrollView>
-      <Footer />
+
     </LinearGradient>
   );
 }

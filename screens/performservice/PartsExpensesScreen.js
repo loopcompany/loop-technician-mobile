@@ -112,7 +112,7 @@ export default function PartsExpensesScreen({ navigation }) {
         </View>
 
       </ScrollView>
-      <Footer />
+ 
     </LinearGradient>
   );
 }

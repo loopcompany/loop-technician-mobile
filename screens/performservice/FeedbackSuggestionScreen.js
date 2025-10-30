@@ -76,7 +76,7 @@ export default function FeedbackSuggestionScreen({ navigation }) {
 
       </ScrollView>
       
-      <Footer />
+
     </LinearGradient>
   );
 }

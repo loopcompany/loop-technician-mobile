@@ -415,7 +415,7 @@ export default function LaptopDispatchScreen({ navigation }) {
 
 
       </ScrollView>
-      <Footer />
+
     </LinearGradient>
   );
 }

@@ -9,11 +9,15 @@ import {
   Modal,
   Linking,
   TouchableWithoutFeedback,
+  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { themeColor0, themeColor10, themeColor13, themeColor4 } from '../theme/Color';
+import { themeColor0, themeColor10, themeColor13, themeColor4, themeColor6, themeColor7 } from '../theme/Color';
 import NewStyles from '../styles/NewStyles';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { logoutTechnician } from '../services/Api';
+import { useDispatch } from 'react-redux';
+import { setToken } from '../slices/authSlice';
 
 const FooterContext = createContext();
 
@@ -27,6 +31,7 @@ export const useFooter = () => {
 
 export const FooterProvider = ({ children }) => {
   const navigation = useNavigation();
+  const dispatch = useDispatch();
   const [isFooterVisible, setIsFooterVisible] = useState(true);
   const [menuItems, setMenuItems] = useState([
     { id: 1, title: ' سازمانی / شرکتی', screen: 'DeviceOrderSummary' },
@@ -40,6 +45,56 @@ export const FooterProvider = ({ children }) => {
   const showFooter = () => setIsFooterVisible(true);
   const hideFooter = () => setIsFooterVisible(false);
   const toggleFooter = () => setIsFooterVisible(!isFooterVisible);
+
+  const handleLogout = async () => {
+    console.log('⚠️ handleLogout فراخوانی شد - FooterContext');
+    Alert.alert(
+      'خروج از حساب کاربری',
+      'آیا مطمئن هستید که می‌خواهید خارج شوید؟',
+      [
+        {
+          text: 'انصراف',
+          style: 'cancel',
+        },
+        {
+          text: 'خروج',
+          style: 'destructive',
+          onPress: async () => {
+            console.log('🚪 کاربر دکمه خروج را زد');
+            setMenuVisible(false);
+            
+            try {
+              // First clear Redux token to prevent auto-login
+              console.log('🗑️ پاک کردن Redux token...');
+              dispatch(setToken(null));
+              
+              // Call logout API (this will clear AsyncStorage)
+              const result = await logoutTechnician();
+              console.log('نتیجه logout:', result);
+              
+              // Navigate to Welcome screen AFTER clearing everything
+              console.log('➡️ انتقال به صفحه Welcome...');
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Welcome' }],
+              });
+              
+              console.log('✅ خروج موفقیت‌آمیز');
+            } catch (error) {
+              console.error('❌ خطا در خروج:', error);
+              // Even on error, logout locally
+              dispatch(setToken(null));
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Welcome' }],
+              });
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
@@ -93,14 +148,7 @@ export const FooterProvider = ({ children }) => {
 
                   <TouchableOpacity
                     style={styles.exitButton}
-                    onPress={() => {
-                      setMenuVisible(false);
-                      // Navigate to login or exit app
-                      navigation.reset({
-                        index: 0,
-                        routes: [{ name: 'Welcome' }],
-                      });
-                    }}
+                    onPress={handleLogout}
                   >
                     <Text style={styles.exitButtonText}>خروج</Text>
                   </TouchableOpacity>
@@ -183,7 +231,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     margin: 12,
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.2)',
+    backgroundColor: themeColor10.bgColor(0.9),
     borderRadius: 8,
     padding: 10,
     marginVertical: 6,
@@ -198,7 +246,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
     fontSize: 15,
     fontWeight: 'bold',
-    color: '#fff',
+    color: themeColor4.bgColor(1),
     textAlign: 'center',
   },
   footer: {
@@ -212,25 +260,25 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   supportButton: {
-    backgroundColor: '#005b9f',
+    backgroundColor: themeColor0.bgColor(1),
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 5,
   },
   supportText: {
-    color: '#fff',
+    color: themeColor4.bgColor(1),
     fontWeight: 'bold',
   },
   language: {
-    color: '#fff',
+    color: themeColor4.bgColor(1),
     fontSize: 16,
   },
   phone: {
-    color: '#fff',
+    color: themeColor4.bgColor(1),
     fontSize: 16,
   },
   menuBox: {
-    backgroundColor: 'rgba(255,255,255,0.95)',
+    backgroundColor: themeColor10.bgColor(0.95),
     borderRadius: 8,
     padding: 10,
     width: '90%',
@@ -248,17 +296,17 @@ const styles = StyleSheet.create({
   menuText: {
     fontSize: 14,
     marginRight: 10,
-    color: '#000',
+    color: themeColor10.bgColor(1),
   },
   list: {},
   item: {
-    backgroundColor: '#fff',
+    backgroundColor: themeColor4.bgColor(1),
     paddingVertical: 10,
     paddingHorizontal: 20,
     width: '100%',
   },
   title: {
-    color: '#333',
+    color: themeColor10.bgColor(1),
     fontSize: 16,
     textAlign: 'right',
     fontWeight: 'bold',
@@ -272,7 +320,7 @@ const styles = StyleSheet.create({
   },
   toggleButton: {
     flex: 1,
-    backgroundColor: '#4CAF50',
+    backgroundColor: themeColor7.bgColor(1),
     paddingVertical: 12,
     paddingHorizontal: 15,
     borderRadius: 8,
@@ -284,14 +332,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   exitButton: {
-    backgroundColor: '#f44336',
+    backgroundColor: themeColor6.bgColor(1),
     paddingVertical: 15,
     paddingHorizontal: 10,
     borderRadius: 8,
     alignItems: 'center',
   },
   exitButtonText: {
-    color: 'white',
+    color: themeColor4.bgColor(1),
     fontSize: 14,
     fontWeight: '600',
   },

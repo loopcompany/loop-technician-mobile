@@ -49,7 +49,7 @@ export default function IncentiveSchemeScreen({ navigation }) {
 
       </ScrollView>
       
-      <Footer />
+
     </LinearGradient>
   );
 }

@@ -70,7 +70,7 @@ export default function ThinkingScreen({ navigation }) {
         </View>
       </ScrollView>
       
-      <Footer />
+
     </LinearGradient>
   );
 }
