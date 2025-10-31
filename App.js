@@ -1,7 +1,17 @@
-import { StyleSheet, Text, View } from "react-native";
-import React from "react";
+import { StyleSheet, Text, View, ActivityIndicator, I18nManager } from "react-native";
+import React, { useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { Provider, useDispatch } from "react-redux";
+import { useFonts } from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import store from "./store";
+import { FooterProvider, useFooter } from "./contexts/FooterContext";
+import { AuthProvider } from "./contexts/AuthContext";
+import { setToken } from "./slices/authSlice";
+import { setUserData } from "./slices/userSlice";
+import { validateToken } from "./services/Api";
 import FolderScreen from "./screens/FolderScreen";
 import SignInLanding from "./screens/auth/SignInLanding";
 
@@ -55,15 +65,9 @@ import VehicleInfoScreen from "./screens/performservice/VehicleInfoScreen";
 import FinancialInfoScreen from "./screens/performservice/FinancialInfoScreen";
 import SignInScreen from "./screens/auth/SignInScreen";
 import PhoneVerificationScreen from "./screens/auth/PhoneVerificationScreen";
-import { Provider } from "react-redux";
-import { useEffect } from "react";
-import { useFonts } from "expo-font";
-import * as SplashScreen from "expo-splash-screen";
-import { I18nManager } from "react-native";
-import store from "./store";
-import { FooterProvider, useFooter } from "./contexts/FooterContext";
-import { AuthProvider } from "./contexts/AuthContext";
+
 I18nManager.forceRTL(false);
+
 const Stack = createNativeStackNavigator();
 
 SplashScreen.preventAutoHideAsync();
@@ -72,24 +76,103 @@ SplashScreen.setOptions({
   fade: true,
 });
 
+// Initial Route Handler - Validates token and determines starting screen
+const InitialRouteHandler = ({ children }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [initialRoute, setInitialRoute] = useState('Welcome');
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const checkToken = async () => {
+      try {
+        const savedToken = await AsyncStorage.getItem('userToken');
+        
+        if (savedToken) {
+          // Token exists, validate it
+          const result = await validateToken();
+          
+          if (result.success) {
+            // Token is valid
+            dispatch(setToken(savedToken));
+            
+            // validateToken already returns complete user data
+            if (result.data) {
+              console.log('✅ اطلاعات کامل از validateToken دریافت شد در App.js');
+              console.log('🔍 داده‌های کامل:', JSON.stringify(result.data, null, 2));
+              
+              // Save complete user data
+              console.log('💾 ذخیره اطلاعات کامل در Redux و AsyncStorage');
+              await AsyncStorage.setItem('userData', JSON.stringify(result.data));
+              dispatch(setUserData(result.data));
+            } else {
+              console.log('⚠️ validateToken اطلاعات برنگرداند، تلاش برای بارگذاری از AsyncStorage...');
+              // Fallback: Try to load from AsyncStorage
+              const storedUserData = await AsyncStorage.getItem('userData');
+              if (storedUserData) {
+                const parsedData = JSON.parse(storedUserData);
+                console.log('✅ اطلاعات کاربر از AsyncStorage بارگذاری شد');
+                dispatch(setUserData(parsedData));
+              } else {
+                console.log('❌ هیچ اطلاعاتی در AsyncStorage نیست');
+              }
+            }
+            
+            setInitialRoute('FolderScreen');
+          } else {
+            // Token is invalid, clear it
+            await AsyncStorage.removeItem('userToken');
+            await AsyncStorage.removeItem('userData');
+            dispatch(setToken(null));
+            setInitialRoute('Welcome');
+          }
+        } else {
+          // No token, start at Welcome
+          setInitialRoute('Welcome');
+        }
+      } catch (error) {
+        console.error('Error checking token:', error);
+        // On error, start at Welcome
+        setInitialRoute('Welcome');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkToken();
+  }, [dispatch]);
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
+  return children(initialRoute);
+};
+
 // Wrapper component to access Footer context
 const AppNavigator = () => {
   const { FooterComponent } = useFooter();
   
   return (
-    <View style={{ flex: 1 }}>
-      <Stack.Navigator
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
-        <Stack.Screen
-          component={Welcome}
-          name="Welcome"
-          options={{
-            headerShown: false,
-          }}
-        />
+    <InitialRouteHandler>
+      {(initialRoute) => (
+        <View style={{ flex: 1 }}>
+          <Stack.Navigator
+            initialRouteName={initialRoute}
+            screenOptions={{
+              headerShown: false,
+            }}
+          >
+            <Stack.Screen
+              component={Welcome}
+              name="Welcome"
+              options={{
+                headerShown: false,
+              }}
+            />
         <Stack.Screen
           component={SignInLanding}
           name="SignInLanding"
@@ -390,6 +473,8 @@ const AppNavigator = () => {
       {/* Footer globally available through context */}
       <FooterComponent />
     </View>
+      )}
+    </InitialRouteHandler>
   );
 };
 

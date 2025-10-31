@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,15 +6,26 @@ import {
   StyleSheet,
   ScrollView,
   TextInput,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Footer from '../Footer';
 import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor3, themeColor10 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
+import { useSelector, useDispatch } from 'react-redux';
+import { updateVehicleInfo } from '../../services/Api';
+import { setUserData } from '../../slices/userSlice';
 
 export default function VehicleInfoScreen({ navigation }) {
+  const dispatch = useDispatch();
+  const userData = useSelector(state => state.user.data);
+  const [saving, setSaving] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(false);
+  
   const [vehicleData, setVehicleData] = useState({
     vehicleType: '',
     modelColor: '',
@@ -31,11 +42,148 @@ export default function VehicleInfoScreen({ navigation }) {
     insuranceExpiryDate: ''
   });
 
+  // Load user vehicle data from AsyncStorage if not in Redux
+  useEffect(() => {
+    const loadUserData = async () => {
+      // If no data in Redux, try to load from AsyncStorage
+      if (!userData) {
+        console.log('⚠️ userData در Redux خالی است، از AsyncStorage می‌خوانیم...');
+        setIsLoadingData(true);
+        try {
+          const storedData = await AsyncStorage.getItem('userData');
+          if (storedData) {
+            const parsedData = JSON.parse(storedData);
+            console.log('✅ داده از AsyncStorage خوانده شد');
+            dispatch(setUserData(parsedData));
+          }
+        } catch (error) {
+          console.error('خطا در خواندن از AsyncStorage:', error);
+        } finally {
+          setIsLoadingData(false);
+        }
+        return;
+      }
+
+      // API returns data in format: { technician: {...}, token_info: {...} }
+      const technicianData = userData.technician || userData;
+      
+      // Parse car plate if available (format: "12ب345ایران56")
+      let plateLeft = '';
+      let plateRight = '';
+      let plateLetter = 'ب';
+      let plateProvince = '11';
+      
+      if (technicianData.car_plate) {
+        const plate = technicianData.car_plate;
+        // Try to parse Iranian plate format: 12ب345ایران56
+        const match = plate.match(/^(\d{2})([آ-ی])(\d{3})(?:ایران)?(\d{2})$/);
+        if (match) {
+          plateLeft = match[1];
+          plateLetter = match[2];
+          plateRight = match[3];
+          plateProvince = match[4];
+        }
+      }
+      
+      setVehicleData(prevData => ({
+        vehicleType: technicianData.vehicle_type || prevData.vehicleType,
+        modelColor: `${technicianData.car_model || ''} ${technicianData.car_color || ''}`.trim() || prevData.modelColor,
+        motorPlate: technicianData.motor_plate || prevData.motorPlate,
+        bodyPlate: technicianData.body_plate || prevData.bodyPlate,
+        carPlateLeft: plateLeft || prevData.carPlateLeft,
+        carPlateRight: plateRight || prevData.carPlateRight,
+        carPlateLetter: plateLetter || prevData.carPlateLetter,
+        carPlateProvince: plateProvince || prevData.carPlateProvince,
+        manufacturingYear: technicianData.car_year || prevData.manufacturingYear,
+        softwareType: technicianData.car_fuel_type || prevData.softwareType,
+        vinNumber: technicianData.car_vin || prevData.vinNumber,
+        insuranceExpiryCode: technicianData.car_insurance_code || prevData.insuranceExpiryCode,
+        insuranceExpiryDate: technicianData.car_insurance_expiry_date || prevData.insuranceExpiryDate
+      }));
+    };
+    
+    loadUserData();
+  }, [userData, dispatch]);
+
   const updateField = (field, value) => {
     setVehicleData(prev => ({
       ...prev,
       [field]: value
     }));
+  };
+
+  // Save vehicle info
+  const handleSave = async () => {
+    // Validation
+    if (vehicleData.vinNumber && vehicleData.vinNumber.length > 17) {
+      Alert.alert('خطا', 'شماره VIN نباید بیشتر از 17 کاراکتر باشد');
+      return;
+    }
+
+    if (vehicleData.manufacturingYear && vehicleData.manufacturingYear.length > 4) {
+      Alert.alert('خطا', 'سال ساخت نباید بیشتر از 4 رقم باشد');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      // Build car_plate from components (only if all parts are filled)
+      let carPlate = null;
+      if (vehicleData.carPlateLeft && vehicleData.carPlateLetter && 
+          vehicleData.carPlateRight && vehicleData.carPlateProvince) {
+        carPlate = `${vehicleData.carPlateLeft}${vehicleData.carPlateLetter}${vehicleData.carPlateRight}ایران${vehicleData.carPlateProvince}`;
+      }
+      
+      // Parse model and color from combined field (format: "پراید 131 سفید")
+      const modelColorParts = vehicleData.modelColor.split(' ');
+      const car_model = modelColorParts.length > 0 ? modelColorParts.slice(0, -1).join(' ') : vehicleData.modelColor;
+      const car_color = modelColorParts.length > 1 ? modelColorParts[modelColorParts.length - 1] : '';
+      
+      // Prepare data in format expected by Backend
+      const apiData = {
+        car_model: car_model || null,
+        car_color: car_color || null,
+        car_plate: carPlate,
+        car_year: vehicleData.manufacturingYear || null,
+        car_fuel_type: vehicleData.softwareType || null,
+        car_vin: vehicleData.vinNumber || null,
+        car_insurance_code: vehicleData.insuranceExpiryCode || null,
+        car_insurance_expiry_date: vehicleData.insuranceExpiryDate || null,
+      };
+
+      console.log('📤 ارسال داده به API:', apiData);
+
+      const result = await updateVehicleInfo(apiData);
+      
+      if (result.success) {
+        Alert.alert('موفق', 'اطلاعات خودرو با موفقیت به‌روزرسانی شد');
+        
+        // Update Redux with new data
+        if (result.data && result.data.technician) {
+          const updatedUserData = {
+            ...userData,
+            technician: {
+              ...userData.technician,
+              ...result.data.technician
+            }
+          };
+          
+          // Update Redux
+          dispatch(setUserData(updatedUserData));
+          
+          // ⭐ IMPORTANT: Update AsyncStorage as well!
+          await AsyncStorage.setItem('userData', JSON.stringify(updatedUserData));
+          console.log('✅ AsyncStorage هم به‌روز شد');
+        }
+      } else {
+        Alert.alert('خطا', result.message || 'مشکلی در به‌روزرسانی پیش آمد');
+      }
+    } catch (error) {
+      console.error('خطا در ذخیره:', error);
+      Alert.alert('خطا', 'مشکلی در ارتباط با سرور پیش آمد');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -61,159 +209,195 @@ export default function VehicleInfoScreen({ navigation }) {
         {/* باکس نوع وسیله نقلیه */}
         <View style={styles.vehicleTypeBox}>
           <Text style={styles.vehicleTypeLabel}>
-            نوع وسیله نقلیه: موتور سیکلت / خودرو / دوچرخه / پیاده
+            نوع وسیله نقلیه: {vehicleData.vehicleType || 'مشخص نشده'}
           </Text>
         </View>
 
         {/* فرم اطلاعات وسیله */}
         <View style={styles.formContainer}>
-          
-          <View style={styles.inputRow}>
-            <Text style={styles.label}>مدل و رنگ :</Text>
-            <TextInput
-              style={styles.input}
-              value={vehicleData.modelColor}
-              onChangeText={(value) => updateField('modelColor', value)}
-              placeholder=""
-            />
-          </View>
 
-          {/* پلاک موتور سیکلت - دو باکس کنار هم */}
-          <View style={styles.plateSection}>
-            <Text style={styles.label}>پلاک موتور سیکلت :</Text>
-            <View style={styles.plateRow}>
-              <TextInput
-                style={[styles.input, styles.plateInput]}
-                value={vehicleData.motorPlate}
-                onChangeText={(value) => updateField('motorPlate', String(value).replace(/[^0-9]/g, '').slice(0,3))}
-                keyboardType="numeric"
-                placeholder=""
-                maxLength={3}
-              />
-              <TextInput
-                style={[styles.input, styles.plateInput]}
-                value={vehicleData.bodyPlate}
-                onChangeText={(value) => updateField('bodyPlate', String(value).replace(/[^0-9]/g, '').slice(0,5))}
-                keyboardType="numeric"
-                placeholder=""
-                maxLength={5}
-              />
+          {/* پیام برای دوچرخه و پیاده */}
+          {(vehicleData.vehicleType === 'دوچرخه' || vehicleData.vehicleType === 'پیاده') && (
+            <View style={styles.infoBox}>
+              <Text style={styles.infoText}>
+                برای {vehicleData.vehicleType}، نیازی به ثبت اطلاعات خاصی نیست.
+              </Text>
             </View>
-            <View style={styles.platePreviewWrap}>
-              <PlatePreviewMotorcycle left={vehicleData.motorPlate} right={vehicleData.bodyPlate} />
+          )}
+
+          {/* پلاک موتور سیکلت - فقط برای موتور */}
+          {vehicleData.vehicleType === 'موتور سیکلت' && (
+            <View style={styles.plateSection}>
+              <Text style={styles.label}>پلاک موتور سیکلت :</Text>
+              <View style={styles.plateRow}>
+                <TextInput
+                  style={[styles.input, styles.plateInput]}
+                  value={vehicleData.motorPlate}
+                  onChangeText={(value) => updateField('motorPlate', String(value).replace(/[^0-9]/g, '').slice(0,3))}
+                  keyboardType="numeric"
+                  placeholder=""
+                  maxLength={3}
+                  editable={!saving}
+                />
+                <TextInput
+                  style={[styles.input, styles.plateInput]}
+                  value={vehicleData.bodyPlate}
+                  onChangeText={(value) => updateField('bodyPlate', String(value).replace(/[^0-9]/g, '').slice(0,5))}
+                  keyboardType="numeric"
+                  placeholder=""
+                  maxLength={5}
+                  editable={!saving}
+                />
+              </View>
+              <View style={styles.platePreviewWrap}>
+                <PlatePreviewMotorcycle left={vehicleData.motorPlate} right={vehicleData.bodyPlate} />
+              </View>
             </View>
-          </View>
+          )}
 
-          {/* پلاک خودرو - دو باکس کنار هم */}
-          <View style={styles.plateSection}>
-            <Text style={styles.label}>پلاک خودرو :</Text>
-            <View style={styles.plateRow}>
-              <TextInput
-                style={[styles.input, styles.plateInput]}
-                value={vehicleData.carPlateLeft}
-                onChangeText={(v) => updateField('carPlateLeft', v)}
-                placeholder="مثال: 12"
-                keyboardType="numeric"
-                maxLength={2}
-              />
-              <TextInput
-                style={[styles.input, styles.plateInput]}
-                value={vehicleData.carPlateRight}
-                onChangeText={(v) => updateField('carPlateRight', v)}
-                placeholder="مثال: 345"
-                keyboardType="numeric"
-                maxLength={3}
-              />
+          {/* پلاک خودرو - فقط برای خودرو */}
+          {vehicleData.vehicleType === 'خودرو' && (
+            <View style={styles.plateSection}>
+              <Text style={styles.label}>پلاک خودرو :</Text>
+              <View style={styles.plateRow}>
+                <TextInput
+                  style={[styles.input, styles.plateInput]}
+                  value={vehicleData.carPlateLeft}
+                  onChangeText={(v) => updateField('carPlateLeft', v)}
+                  placeholder="مثال: 12"
+                  keyboardType="numeric"
+                  maxLength={2}
+                  editable={!saving}
+                />
+                <TextInput
+                  style={[styles.input, styles.plateInput]}
+                  value={vehicleData.carPlateRight}
+                  onChangeText={(v) => updateField('carPlateRight', v)}
+                  placeholder="مثال: 345"
+                  keyboardType="numeric"
+                  maxLength={3}
+                  editable={!saving}
+                />
+              </View>
+
+              <View style={styles.plateExtraRow}>
+                <TextInput
+                  style={[styles.input, styles.plateLetterInput]}
+                  value={vehicleData.carPlateLetter}
+                  onChangeText={(v) => updateField('carPlateLetter', v)}
+                  placeholder="حرف پلاک"
+                  maxLength={1}
+                  editable={!saving}
+                />
+                <TextInput
+                  style={[styles.input, styles.plateProvinceInput]}
+                  value={vehicleData.carPlateProvince}
+                  onChangeText={(v) => updateField('carPlateProvince', v)}
+                  placeholder="کد استان"
+                  keyboardType="numeric"
+                  maxLength={2}
+                  editable={!saving}
+                />
+              </View>
+
+              {/* Plate preview */}
+              <View style={styles.platePreviewWrap}>
+                <PlatePreview
+                  left={vehicleData.carPlateLeft}
+                  right={vehicleData.carPlateRight}
+                  letter={vehicleData.carPlateLetter}
+                  province={vehicleData.carPlateProvince}
+                />
+              </View>
             </View>
+          )}
 
-            <View style={styles.plateExtraRow}>
-              <TextInput
-                style={[styles.input, styles.plateLetterInput]}
-                value={vehicleData.carPlateLetter}
-                onChangeText={(v) => updateField('carPlateLetter', v)}
-                placeholder="حرف پلاک"
-                maxLength={1}
-              />
-              <TextInput
-                style={[styles.input, styles.plateProvinceInput]}
-                value={vehicleData.carPlateProvince}
-                onChangeText={(v) => updateField('carPlateProvince', v)}
-                placeholder="کد استان"
-                keyboardType="numeric"
-                maxLength={2}
-              />
-            </View>
+          {/* فیلدهای زیر فقط برای موتور و خودرو */}
+          {(vehicleData.vehicleType === 'موتور سیکلت' || vehicleData.vehicleType === 'خودرو') && (
+            <>
+              <View style={styles.inputRow}>
+                <Text style={styles.label}>مدل و رنگ :</Text>
+                <TextInput
+                  style={styles.input}
+                  value={vehicleData.modelColor}
+                  onChangeText={(value) => updateField('modelColor', value)}
+                  placeholder=""
+                  editable={!saving}
+                />
+              </View>
 
-            {/* Plate preview */}
-            <View style={styles.platePreviewWrap}>
-              <PlatePreview
-                left={vehicleData.carPlateLeft}
-                right={vehicleData.carPlateRight}
-                letter={vehicleData.carPlateLetter}
-                province={vehicleData.carPlateProvince}
-              />
-            </View>
-          </View>
+              <View style={styles.inputRow}>
+                <Text style={styles.label}>سال ساخت :</Text>
+                <TextInput
+                  style={styles.input}
+                  value={vehicleData.manufacturingYear}
+                  onChangeText={(value) => updateField('manufacturingYear', value)}
+                  placeholder=""
+                  editable={!saving}
+                />
+              </View>
 
-          <View style={styles.inputRow}>
-            <Text style={styles.label}>سال ساخت :</Text>
-            <TextInput
-              style={styles.input}
-              value={vehicleData.manufacturingYear}
-              onChangeText={(value) => updateField('manufacturingYear', value)}
-              placeholder=""
-            />
-          </View>
+              <View style={styles.inputRow}>
+                <Text style={styles.label}>نوع سوخت :</Text>
+                <TextInput
+                  style={styles.input}
+                  value={vehicleData.softwareType}
+                  onChangeText={(value) => updateField('softwareType', value)}
+                  placeholder=""
+                  editable={!saving}
+                />
+              </View>
 
-          <View style={styles.inputRow}>
-            <Text style={styles.label}>نوع سوخت :</Text>
-            <TextInput
-              style={styles.input}
-              value={vehicleData.softwareType}
-              onChangeText={(value) => updateField('softwareType', value)}
-              placeholder=""
-            />
-          </View>
+              <View style={styles.inputRow}>
+                <Text style={styles.label}>شماره شناسه وسیله (VIN) :</Text>
+                <TextInput
+                  style={styles.input}
+                  value={vehicleData.vinNumber}
+                  onChangeText={(value) => updateField('vinNumber', value)}
+                  placeholder=""
+                  maxLength={17}
+                  editable={!saving}
+                />
+              </View>
 
-          <View style={styles.inputRow}>
-            <Text style={styles.label}>شماره شناسه وسیله (VIN) :</Text>
-            <TextInput
-              style={styles.input}
-              value={vehicleData.vinNumber}
-              onChangeText={(value) => updateField('vinNumber', value)}
-              placeholder=""
-            />
-          </View>
+              <View style={styles.inputRow}>
+                <Text style={styles.label}>کد یکتای بیمه شخص ثالث :</Text>
+                <TextInput
+                  style={styles.input}
+                  value={vehicleData.insuranceExpiryCode}
+                  onChangeText={(value) => updateField('insuranceExpiryCode', value)}
+                  placeholder=""
+                  editable={!saving}
+                />
+              </View>
 
-          <View style={styles.inputRow}>
-            <Text style={styles.label}>کد یکتای بیمه شخص ثالث :</Text>
-            <TextInput
-              style={styles.input}
-              value={vehicleData.insuranceExpiryCode}
-              onChangeText={(value) => updateField('insuranceExpiryCode', value)}
-              placeholder=""
-            />
-          </View>
-
-          <View style={styles.inputRow}>
-            <Text style={styles.label}>تاریخ انقضاء بیمه شخص ثالث :</Text>
-            <TextInput
-              style={styles.input}
-              value={vehicleData.insuranceExpiryDate}
-              onChangeText={(value) => updateField('insuranceExpiryDate', value)}
-              placeholder=""
-            />
-          </View>
+              <View style={styles.inputRow}>
+                <Text style={styles.label}>تاریخ انقضاء بیمه شخص ثالث :</Text>
+                <TextInput
+                  style={styles.input}
+                  value={vehicleData.insuranceExpiryDate}
+                  onChangeText={(value) => updateField('insuranceExpiryDate', value)}
+                  placeholder=""
+                  editable={!saving}
+                />
+              </View>
+            </>
+          )}
 
         </View>
 
         {/* دکمه‌های ثبت و ویرایش */}
         <View style={styles.actionButtons}>
-          <TouchableOpacity style={[styles.actionButton, styles.editButton]}>
-            <Text style={styles.actionButtonText}>ویرایش مشخصات</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionButton, styles.saveButton]}>
-            <Text style={styles.actionButtonText}>ثبت مشخصات</Text>
+          <TouchableOpacity 
+            style={[styles.actionButton, styles.saveButton, saving && styles.saveButtonDisabled]}
+            onPress={handleSave}
+            disabled={saving}
+          >
+            {saving ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.actionButtonText}>ثبت مشخصات</Text>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -337,6 +521,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
+  infoBox: {
+    width: '100%',
+    backgroundColor: '#e3f2fd',
+    borderRadius: 8,
+    padding: 15,
+    marginVertical: 10,
+    borderLeftWidth: 4,
+    borderLeftColor: '#2196F3',
+  },
+  infoText: {
+    fontSize: 14,
+    color: '#1565C0',
+    textAlign: 'center',
+    fontWeight: '500',
+  },
   formContainer: {
     width: '100%',
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -391,6 +590,9 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     backgroundColor: '#4CAF50',
+  },
+  saveButtonDisabled: {
+    backgroundColor: '#9e9e9e',
   },
   actionButtonText: {
     color: 'white',

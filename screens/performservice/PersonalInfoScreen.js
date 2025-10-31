@@ -12,20 +12,27 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Footer from '../Footer';
 import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import { updatePersonalInfo } from '../../services/Api';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { setUserData } from '../../slices/userSlice';
+import { uri as BASE_URL } from '../../services/URL';
 
 export default function PersonalInfoScreen({ navigation }) {
+  const dispatch = useDispatch();
   const userToken = useSelector(state => state.auth.token);
+  const userData = useSelector(state => state.user.data);
+  const [isLoadingData, setIsLoadingData] = useState(false);
   
   const [saving, setSaving] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [profilePhotoUrl, setProfilePhotoUrl] = useState(null);
+  const [selectedPhotoUrl, setSelectedPhotoUrl] = useState(null); // For newly selected photo
   
   const [personalData, setPersonalData] = useState({
     birth_date: '',
@@ -40,8 +47,72 @@ export default function PersonalInfoScreen({ navigation }) {
     other_referral_code: ''
   });
 
-  // Note: Backend doesn't have GET /technician/profile endpoint yet
-  // So we start with empty fields for now
+  // Load user data from AsyncStorage if not in Redux
+  useEffect(() => {
+    const loadUserData = async () => {
+      console.log('🔄 PersonalInfoScreen: useEffect اجرا شد');
+      
+      // If no data in Redux, try to load from AsyncStorage
+      if (!userData) {
+        console.log('⚠️ PersonalInfoScreen: userData در Redux خالی است، از AsyncStorage می‌خوانیم...');
+        setIsLoadingData(true);
+        try {
+          const storedData = await AsyncStorage.getItem('userData');
+          if (storedData) {
+            const parsedData = JSON.parse(storedData);
+            console.log('✅ PersonalInfoScreen: داده از AsyncStorage خوانده شد:', parsedData.technician?.name);
+            dispatch(setUserData(parsedData));
+          } else {
+            console.log('❌ PersonalInfoScreen: هیچ داده‌ای در AsyncStorage نیست');
+          }
+        } catch (error) {
+          console.error('❌ PersonalInfoScreen: خطا در خواندن از AsyncStorage:', error);
+        } finally {
+          setIsLoadingData(false);
+        }
+        return;
+      }
+
+      // API returns data in format: { technician: {...}, token_info: {...} }
+      const technicianData = userData.technician || userData;
+      
+      // Update form with user data (use 'phone' as fallback for 'telephone')
+      setPersonalData({
+        birth_date: technicianData.birth_date || '',
+        telephone: technicianData.telephone || technicianData.phone || '',
+        email: technicianData.email || '',
+        certificate_number: technicianData.certificate_number || '',
+        certificate_expiry_date: technicianData.certificate_expiry_date || '',
+        certificate_issue_date: technicianData.certificate_issue_date || '',
+        home_address: technicianData.home_address || '',
+        home_postal_code: technicianData.home_postal_code || '',
+        technician_type: technicianData.technician_type || '',
+        other_referral_code: technicianData.other_referral_code || ''
+      });
+      
+      console.log('✅ فرم با این اطلاعات پر شد:', {
+        email: technicianData.email,
+        telephone: technicianData.telephone || technicianData.phone || '',
+        home_address: technicianData.home_address || ''
+      });
+      
+      // Set profile photo URL if available (only if no new photo is selected)
+      if (!selectedPhotoUrl) {
+        if (technicianData.profile_photo_path) {
+          // User has uploaded photo
+          const photoUrl = technicianData.profile_photo_path.startsWith('http') 
+            ? technicianData.profile_photo_path 
+            : `${BASE_URL}${technicianData.profile_photo_path}`;
+          setProfilePhotoUrl(photoUrl);
+        } else {
+          // No photo - will show default icon
+          setProfilePhotoUrl(null);
+        }
+      }
+    };
+    
+    loadUserData();
+  }, [userData, dispatch]);
 
   const updateField = (field, value) => {
     setPersonalData(prev => ({
@@ -60,7 +131,7 @@ export default function PersonalInfoScreen({ navigation }) {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
@@ -68,11 +139,15 @@ export default function PersonalInfoScreen({ navigation }) {
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const asset = result.assets[0];
+        
         setProfilePhoto({
           uri: asset.uri,
           name: 'profile.jpg',
           type: 'image/jpeg',
         });
+        // Set the selected photo URL for preview (won't be overwritten by useEffect)
+        setSelectedPhotoUrl(asset.uri);
+        
         Alert.alert('موفق', 'عکس انتخاب شد');
       }
     } catch (error) {
@@ -99,11 +174,73 @@ export default function PersonalInfoScreen({ navigation }) {
       const result = await updatePersonalInfo(personalData, profilePhoto);
       
       if (result.success) {
+        console.log('✅ نتیجه دریافتی از API:', JSON.stringify(result, null, 2));
+        
         Alert.alert('موفق', 'اطلاعات شخصی با موفقیت به‌روزرسانی شد');
-        if (result.data?.technician?.profile_photo_url) {
-          setProfilePhotoUrl(result.data.technician.profile_photo_url);
+        
+        // Update Redux with new user data
+        if (result.data) {
+          console.log('💾 به‌روزرسانی Redux با اطلاعات جدید');
+          console.log('🔍 result.data:', JSON.stringify(result.data, null, 2));
+          
+          // Preserve the original structure (technician and token_info)
+          const technicianData = userData.technician || userData;
+          const updatedTechnicianData = { ...technicianData, ...personalData };
+          
+          // Check if server returned photo (profile_photo_path or profile_photo_url)
+          const photoPath = result.data?.technician?.profile_photo_path;
+          const photoUrl = result.data?.technician?.profile_photo_url;
+          
+          if (photoPath && photoPath !== null) {
+            console.log('✅ سرور profile_photo_path را برگرداند:', photoPath);
+            updatedTechnicianData.profile_photo_path = photoPath;
+            
+            // Check if it's a full URL or relative path
+            const fullPhotoUrl = photoPath.startsWith('http')
+              ? photoPath
+              : `${BASE_URL}${photoPath}`;
+            
+            setProfilePhotoUrl(fullPhotoUrl);
+            setSelectedPhotoUrl(null);
+          } else if (photoUrl && photoUrl !== null) {
+            console.log('✅ سرور profile_photo_url را برگرداند:', photoUrl);
+            updatedTechnicianData.profile_photo_path = photoUrl;
+            
+            const fullPhotoUrl = photoUrl.startsWith('http')
+              ? photoUrl
+              : `${BASE_URL}${photoUrl}`;
+            
+            setProfilePhotoUrl(fullPhotoUrl);
+            setSelectedPhotoUrl(null);
+          } else {
+            console.log('❌ Backend هیچ URL عکسی برنگرداند!');
+            console.log('⚠️ عکس محلی نگه داشته می‌شود');
+            // Keep the selected photo URL - don't clear it
+            // Don't update Redux to keep showing local photo
+            Alert.alert(
+              'هشدار', 
+              'اطلاعات ذخیره شد ولی عکس آپلود نشد.\n\nلطفاً با تیم Backend تماس بگیرید:\n- Backend باید profile_photo_path یا profile_photo_url را با مقدار واقعی در response برگرداند',
+              [{ text: 'متوجه شدم' }]
+            );
+            return; // Don't update Redux
+          }
+          
+          // Keep the same structure as received from API
+          const updatedUserData = {
+            ...userData,
+            technician: updatedTechnicianData
+          };
+          
+          // Update Redux
+          dispatch(setUserData(updatedUserData));
+          
+          // ⭐ IMPORTANT: Update AsyncStorage as well!
+          await AsyncStorage.setItem('userData', JSON.stringify(updatedUserData));
+          console.log('✅ AsyncStorage هم به‌روز شد');
         }
-        setProfilePhoto(null); // Clear selected photo
+        
+        // Clear profile photo file object
+        setProfilePhoto(null);
       } else {
         Alert.alert('خطا', result.message || 'مشکلی در به‌روزرسانی پیش آمد');
       }
@@ -146,10 +283,16 @@ export default function PersonalInfoScreen({ navigation }) {
             </TouchableOpacity>
           </View>
           <TouchableOpacity onPress={pickImage}>
-            {profilePhoto ? (
-              <Image source={{ uri: profilePhoto.uri }} style={styles.avatar} />
-            ) : profilePhotoUrl ? (
-              <Image source={{ uri: profilePhotoUrl }} style={styles.avatar} />
+            {(selectedPhotoUrl || profilePhotoUrl) ? (
+              <Image 
+                source={{ uri: selectedPhotoUrl || profilePhotoUrl }} 
+                style={styles.avatar}
+                onError={(error) => {
+                  console.log('❌ خطا در بارگذاری عکس:', error.nativeEvent?.error);
+                  setSelectedPhotoUrl(null);
+                  setProfilePhotoUrl(null);
+                }}
+              />
             ) : (
               <View style={styles.avatar}>
                 <Text style={styles.avatarText}>📷</Text>
@@ -267,12 +410,11 @@ export default function PersonalInfoScreen({ navigation }) {
 
             <View style={styles.boxedRow}>
               <TextInput
-                style={styles.boxedInput}
+                style={[styles.boxedInput, styles.disabledInput]}
                 value={personalData.other_referral_code}
-                onChangeText={(value) => updateField('other_referral_code', value)}
-                placeholder="کد معرف (فقط یک بار قابل تنظیم):"
+                placeholder="کد معرف (غیرقابل ویرایش)"
                 placeholderTextColor="#999"
-                editable={!saving}
+                editable={false}
               />
             </View>
 
@@ -390,6 +532,10 @@ const styles = StyleSheet.create({
     color: '#000',
     minHeight: 36,
     textAlign: 'right',
+  },
+  disabledInput: {
+    backgroundColor: '#f0f0f0',
+    color: '#666',
   },
   loadingContainer: {
     padding: 40,

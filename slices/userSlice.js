@@ -36,10 +36,15 @@ const userSlice = createSlice({
             state.loading = false;
             state.data = null;
             state.error = '';
+        },
+        setUserData: (state, action) => {
+            state.loading = false;
+            state.data = action.payload;
+            state.error = '';
         }
     }
 });
 
-export const { emptyUser } = userSlice.actions;
+export const { emptyUser, setUserData } = userSlice.actions;
 
 export default userSlice.reducer

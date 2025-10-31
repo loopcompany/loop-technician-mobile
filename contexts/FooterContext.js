@@ -18,6 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { logoutTechnician } from '../services/Api';
 import { useDispatch } from 'react-redux';
 import { setToken } from '../slices/authSlice';
+import { emptyUser } from '../slices/userSlice';
 
 const FooterContext = createContext();
 
@@ -64,9 +65,10 @@ export const FooterProvider = ({ children }) => {
             setMenuVisible(false);
             
             try {
-              // First clear Redux token to prevent auto-login
-              console.log('🗑️ پاک کردن Redux token...');
+              // First clear Redux token and user data to prevent auto-login
+              console.log('🗑️ پاک کردن Redux token و user data...');
               dispatch(setToken(null));
+              dispatch(emptyUser());
               
               // Call logout API (this will clear AsyncStorage)
               const result = await logoutTechnician();

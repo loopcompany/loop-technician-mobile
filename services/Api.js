@@ -333,8 +333,9 @@ export const loginTechnician = async (referralCodeOrPhone, password) => {
     if (result.success && result.data.token) {
       console.log('ذخیره توکن و اطلاعات کاربر...');
       await AsyncStorage.setItem('userToken', result.data.token);
-      await AsyncStorage.setItem('userData', JSON.stringify(result.data.technician || result.data.user));
-      console.log('✅ توکن ذخیره شد');
+      // Store the complete data structure (not just technician)
+      await AsyncStorage.setItem('userData', JSON.stringify(result.data));
+      console.log('✅ توکن و userData کامل ذخیره شد');
     }
     
     return result;
@@ -363,24 +364,23 @@ export const logoutTechnician = async () => {
     const response = await api.post('/technician/logout');
     console.log('✅ پاسخ سرور logout:', response.status, response.data);
     
-    // Clear stored data regardless of API response
-    console.log('🗑️ پاک کردن داده‌های ذخیره شده...');
+    // Clear authentication data (but KEEP userData for next login!)
+    console.log('🗑️ پاک کردن توکن احراز هویت...');
     await AsyncStorage.removeItem('userToken');
-    await AsyncStorage.removeItem('userData');
     await AsyncStorage.removeItem('savedReferralCode');
     await AsyncStorage.removeItem('savedPassword');
-    console.log('✅ تمام داده‌ها پاک شدند');
+    console.log('✅ توکن پاک شد (userData حفظ شد برای بار بعد)');
+    // ⚠️ Note: We DON'T remove 'userData' so it can be used after next login
     
     return handleResponse(response);
   } catch (error) {
     console.error('❌ خطا در logout API:', error);
-    // Clear stored data even if logout API fails
-    console.log('🗑️ پاک کردن داده‌های ذخیره شده (در صورت خطا)...');
+    // Clear authentication data even if logout API fails
+    console.log('🗑️ پاک کردن توکن احراز هویت (در صورت خطا)...');
     await AsyncStorage.removeItem('userToken');
-    await AsyncStorage.removeItem('userData');
     await AsyncStorage.removeItem('savedReferralCode');
     await AsyncStorage.removeItem('savedPassword');
-    console.log('✅ تمام داده‌ها پاک شدند');
+    console.log('✅ توکن پاک شد (userData حفظ شد برای بار بعد)');
     return handleError(error);
   }
 };
@@ -509,35 +509,50 @@ export const updatePersonalInfo = async (data, profilePhoto = null) => {
       const formData = new FormData();
       
       // Add profile photo
-      formData.append('profile_photo', {
+      const photoData = {
         uri: profilePhoto.uri,
         name: profilePhoto.name || 'profile.jpg',
         type: profilePhoto.type || 'image/jpeg',
-      });
+      };
       
-      // Add other fields
+      console.log('📸 اطلاعات عکس برای ارسال:', photoData);
+      
+      // Try different field names that backend might expect
+      formData.append('profile_photo', photoData);
+      // Also try with _method for Laravel
+      formData.append('_method', 'PUT');
+      
+      // Add other fields (exclude fields that Backend doesn't allow to change)
+      const excludedFields = ['other_referral_code', 'referral_code']; // Backend doesn't allow changing these
       Object.keys(data).forEach(key => {
-        if (data[key] !== null && data[key] !== undefined && data[key] !== '') {
+        if (!excludedFields.includes(key) && data[key] !== null && data[key] !== undefined && data[key] !== '') {
           formData.append(key, data[key]);
         }
       });
       
-      console.log('📤 ارسال با عکس پروفایل');
+      console.log('📤 ارسال با عکس پروفایل به Backend (POST with _method=PUT)');
+      console.log('🔗 URL: /technician/profile/personal-info');
       
-      const response = await api.put('/technician/profile/personal-info', formData, {
+      // Use POST with _method=PUT for Laravel compatibility with file uploads
+      const response = await api.post('/technician/profile/personal-info', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
         timeout: 60000,
       });
       
-      console.log('✅ اطلاعات شخصی با عکس به‌روز شد:', response.data);
+      console.log('✅ اطلاعات شخصی با عکس به‌روز شد');
+      console.log('📦 Response کامل:', JSON.stringify(response.data, null, 2));
+      console.log('🖼️ profile_photo_path در response:', response.data?.data?.technician?.profile_photo_path);
       return handleResponse(response);
     } else {
       // Without photo, use JSON
       console.log('📤 ارسال بدون عکس پروفایل');
       
-      const response = await api.put('/technician/profile/personal-info', data, {
+      // Remove fields that Backend doesn't allow to change
+      const { other_referral_code, referral_code, ...editableData } = data;
+      
+      const response = await api.put('/technician/profile/personal-info', editableData, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -548,6 +563,72 @@ export const updatePersonalInfo = async (data, profilePhoto = null) => {
     }
   } catch (error) {
     console.error('❌ خطا در به‌روزرسانی اطلاعات شخصی:', error.response?.data || error.message);
+    return handleError(error);
+  }
+};
+
+/**
+ * Update vehicle info (car/motorcycle details)
+ * @param {Object} data - Vehicle info data
+ */
+export const updateVehicleInfo = async (data) => {
+  try {
+    console.log('🚗 به‌روزرسانی اطلاعات خودرو...');
+    
+    const response = await api.put('/technician/profile/vehicle-info', data, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    console.log('✅ اطلاعات خودرو به‌روز شد:', response.data);
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در به‌روزرسانی اطلاعات خودرو:', error.response?.data || error.message);
+    return handleError(error);
+  }
+};
+
+/**
+ * Update bank info (IBAN, card number, bank name)
+ * @param {Object} data - Bank info data
+ */
+export const updateBankInfo = async (data) => {
+  try {
+    console.log('💳 به‌روزرسانی اطلاعات بانکی...');
+    
+    const response = await api.put('/technician/profile/bank-info', data, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    console.log('✅ اطلاعات بانکی به‌روز شد:', response.data);
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در به‌روزرسانی اطلاعات بانکی:', error.response?.data || error.message);
+    return handleError(error);
+  }
+};
+
+/**
+ * Change technician password
+ * @param {Object} data - Password data (current_password, new_password, new_password_confirmation)
+ */
+export const changePassword = async (data) => {
+  try {
+    console.log('🔒 تغییر رمز عبور...');
+    
+    const response = await api.patch('/technician/profile/password', data, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    console.log('✅ رمز عبور تغییر یافت:', response.data);
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در تغییر رمز عبور:', error.response?.data || error.message);
     return handleError(error);
   }
 };

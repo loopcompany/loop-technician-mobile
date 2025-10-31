@@ -19,6 +19,7 @@ import {
 } from "react-native-confirmation-code-field";
 import { themeColor0, themeColor3, themeColor10 } from "../../theme/Color";
 import { setToken } from "../../slices/authSlice";
+import { setUserData } from "../../slices/userSlice";
 import Button from "../../components/Button";
 import { useDispatch } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -106,21 +107,72 @@ export default function ResetPasswordScreen({ navigation, route }) {
       console.log('📦 نتیجه تنظیم رمز:', result);
 
       if (result.success) {
-        Alert.alert(
-          "موفق",
-          "رمز عبور شما با موفقیت تغییر یافت. لطفاً دوباره وارد شوید.",
-          [
-            {
-              text: "تأیید",
-              onPress: () => {
-                navigation.reset({
-                  index: 0,
-                  routes: [{ name: 'Login' }],
-                });
+        // Password reset successful - now auto-login with new password
+        try {
+          const loginResult = await loginTechnician({
+            referralCode: params?.referralCode,
+            password: newPassword,
+          });
+
+          if (loginResult.success && loginResult.data?.token) {
+            // Save token to AsyncStorage and Redux
+            await AsyncStorage.setItem('userToken', loginResult.data.token);
+            await AsyncStorage.setItem('userData', JSON.stringify(loginResult.data));
+            dispatch(setToken(loginResult.data.token));
+            dispatch(setUserData(loginResult.data));
+
+            Alert.alert(
+              "موفق",
+              "رمز عبور شما با موفقیت تغییر یافت و وارد شدید.",
+              [
+                {
+                  text: "تأیید",
+                  onPress: () => {
+                    navigation.reset({
+                      index: 0,
+                      routes: [{ name: 'FolderScreen' }],
+                    });
+                  },
+                },
+              ]
+            );
+          } else {
+            // Login failed, navigate to login screen
+            Alert.alert(
+              "موفق",
+              "رمز عبور شما با موفقیت تغییر یافت. لطفاً دوباره وارد شوید.",
+              [
+                {
+                  text: "تأیید",
+                  onPress: () => {
+                    navigation.reset({
+                      index: 0,
+                      routes: [{ name: 'Login' }],
+                    });
+                  },
+                },
+              ]
+            );
+          }
+        } catch (loginError) {
+          console.error('❌ خطا در ورود خودکار:', loginError);
+          // Login failed, navigate to login screen
+          Alert.alert(
+            "موفق",
+            "رمز عبور شما با موفقیت تغییر یافت. لطفاً دوباره وارد شوید.",
+            [
+              {
+                text: "تأیید",
+                onPress: () => {
+                  navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'Login' }],
+                  });
+                },
               },
-            },
-          ]
-        );
+            ]
+          );
+        }
       } else {
         Alert.alert("خطا", result.message || "مشکلی در تغییر رمز عبور پیش آمد");
       }

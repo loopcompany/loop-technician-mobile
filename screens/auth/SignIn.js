@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ImageBackground, KeyboardAvoidingView, } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import NewStyles from '../../styles/NewStyles';
-import { themeColor0, themeColor1, themeColor4, themeColor10 } from '../../theme/Color';
+import { themeColor0, themeColor1, themeColor4, themeColor10, themeColor3, themeColor2 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import Button from '../../components/Button';
 import * as DocumentPicker from 'expo-document-picker';
@@ -258,29 +258,16 @@ export default function SignIn({ navigation }) {
   };
 
   const renderPersonalInfoPage = () => (
+    <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}> 
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <CustomStatusBar />
 
-      {/* Debug/Test buttons - for development only */}
-      <View style={styles.debugContainer}>
-        <TouchableOpacity
-          style={[styles.debugButton, { backgroundColor: '#007AFF' }]}
-          onPress={testAndLoadExpertises}
-        >
-          <Text style={styles.debugButtonText}>تست و بارگیری</Text>
-        </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.debugButton, { backgroundColor: '#34C759' }]}
-          onPress={loadExpertises}
-        >
-          <Text style={styles.debugButtonText}>بارگیری مستقیم</Text>
-        </TouchableOpacity>
-      </View>
+
 
       {/* Header */}
       <TouchableOpacity style={[styles.headerButton, { backgroundColor: themeColor0.bgColor(0.8) }]}>
-        <Text style={styles.headerButtonText}>اطلاعات تکمیلی</Text>
+        <Text style={[NewStyles.title4]}>اطلاعات تکمیلی</Text>
       </TouchableOpacity>
 
       {/* Form Fields */}
@@ -288,7 +275,7 @@ export default function SignIn({ navigation }) {
 
         {/* نام و نام خانوادگی */}
         <View style={styles.inputRow}>
-          <Text style={styles.label}>نام و نام خانوادگی :</Text>
+          <Text style={[NewStyles.text10]}>نام و نام خانوادگی :</Text>
           <TextInput
             style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
             value={formData.name}
@@ -297,7 +284,7 @@ export default function SignIn({ navigation }) {
           />
         </View>
         <View style={styles.inputRow}>
-          <Text style={styles.label}>شماره تلفن اصلی:</Text>
+          <Text style={[NewStyles.text10]}>شماره تلفن اصلی:</Text>
           <View style={styles.phoneContainer}>
             <TextInput
               style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.phoneInput]}
@@ -312,7 +299,7 @@ export default function SignIn({ navigation }) {
 
         {/* شماره ملی */}
         <View style={styles.inputRow}>
-          <Text style={styles.label}>شماره ملی :</Text>
+          <Text style={[NewStyles.text10]}>شماره ملی :</Text>
           <TextInput
             style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
             value={formData.melicode}
@@ -325,7 +312,7 @@ export default function SignIn({ navigation }) {
 
         {/* متولد */}
         <View style={styles.inputRow}>
-          <Text style={styles.label}>متولد (تاریخ شمسی) :</Text>
+          <Text style={[NewStyles.text10]}>متولد (تاریخ شمسی) :</Text>
           <TextInput
             style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
             value={formData.birth_date}
@@ -336,7 +323,7 @@ export default function SignIn({ navigation }) {
 
         {/* نام پدر */}
         <View style={styles.inputRow}>
-          <Text style={styles.label}>نام پدر :</Text>
+          <Text style={[NewStyles.text10]}>نام پدر :</Text>
           <TextInput
             style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
             value={formData.father_name}
@@ -347,7 +334,7 @@ export default function SignIn({ navigation }) {
 
         {/* صادره از */}
         <View style={styles.inputRow}>
-          <Text style={styles.label}>صادره از :</Text>
+          <Text style={[NewStyles.text10]}>صادره از :</Text>
           <TextInput
             style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
             value={formData.issued_from}
@@ -358,7 +345,7 @@ export default function SignIn({ navigation }) {
 
         {/* شماره شناسنامه */}
         <View style={styles.inputRow}>
-          <Text style={styles.label}>شماره شناسنامه :</Text>
+          <Text style={[NewStyles.text10]}>شماره شناسنامه :</Text>
           <TextInput
             style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
             value={formData.serial_number}
@@ -369,7 +356,7 @@ export default function SignIn({ navigation }) {
 
         {/* وضعیت تأهل */}
         <View style={styles.inputRow}>
-          <Text style={styles.label}>وضعیت تأهل :</Text>
+          <Text style={[NewStyles.text10]}>وضعیت تأهل :</Text>
           <View style={[NewStyles.textInput, NewStyles.border10, styles.pickerContainer]}>
             <Picker
               selectedValue={formData.marital_status}
@@ -384,7 +371,7 @@ export default function SignIn({ navigation }) {
 
         {/* وضعیت سربازی */}
         <View style={styles.inputRow}>
-          <Text style={styles.label}>وضعیت سربازی :</Text>
+          <Text style={[NewStyles.text10]}>وضعیت سربازی :</Text>
           <View style={[NewStyles.textInput, NewStyles.border10, styles.pickerContainer]}>
             <Picker
               selectedValue={formData.military_status}
@@ -400,7 +387,7 @@ export default function SignIn({ navigation }) {
 
         {/* وضعیت تحصیلات */}
         <View style={styles.inputRow}>
-          <Text style={styles.label}>وضعیت تحصیلات :</Text>
+          <Text style={[NewStyles.text10]}>وضعیت تحصیلات :</Text>
           <TextInput
             style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
             value={formData.education_status}
@@ -411,7 +398,7 @@ export default function SignIn({ navigation }) {
 
         {/* شماره تلفن ثابت */}
         <View style={styles.inputRow}>
-          <Text style={styles.label}>شماره تلفن ثابت ۰۲۱ ۸ رقمی :</Text>
+          <Text style={[NewStyles.text10]}>شماره تلفن ثابت ۰۲۱ ۸ رقمی :</Text>
           <View style={styles.phoneContainer}>
             <TextInput
               style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.phoneInput]}
@@ -425,7 +412,7 @@ export default function SignIn({ navigation }) {
 
         {/* شماره تلفن همراه */}
         <View style={styles.inputRow}>
-          <Text style={styles.label}>شماره تلفن همراه ۱۰ رقمی :</Text>
+          <Text style={[NewStyles.text10]}>شماره تلفن همراه ۱۰ رقمی :</Text>
           <View style={styles.phoneContainer}>
             <TextInput
               style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.phoneInput]}
@@ -440,7 +427,7 @@ export default function SignIn({ navigation }) {
 
         {/* آدرس ایمیل */}
         <View style={styles.inputRow}>
-          <Text style={styles.label}>آدرس ایمیل :</Text>
+          <Text style={[NewStyles.text10]}>آدرس ایمیل :</Text>
           <TextInput
             style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
             value={formData.email}
@@ -452,7 +439,7 @@ export default function SignIn({ navigation }) {
 
         {/* شماره کارت شناسایی */}
         <View style={styles.inputRow}>
-          <Text style={styles.label}>شماره کارت شناسایی :</Text>
+          <Text style={[NewStyles.text10]}>شماره کارت شناسایی :</Text>
           <TextInput
             style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
             value={formData.id_card_number}
@@ -463,7 +450,7 @@ export default function SignIn({ navigation }) {
 
         {/* تاریخ اعتبار گواهینامه */}
         <View style={styles.inputRow}>
-          <Text style={styles.label}>تاریخ اعتبار گواهینامه (تاریخ شمسی) :</Text>
+          <Text style={[NewStyles.text10]}>تاریخ اعتبار گواهینامه (تاریخ شمسی) :</Text>
           <TextInput
             style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
             value={formData.licence_date}
@@ -474,7 +461,7 @@ export default function SignIn({ navigation }) {
 
         {/* نوع وسیله نقلیه */}
         <View style={styles.inputRow}>
-          <Text style={styles.label}>نوع وسیله نقلیه : موتور سیکلت / خودرو / دوچرخه / پیاده</Text>
+          <Text style={[NewStyles.text10]}>نوع وسیله نقلیه : موتور سیکلت / خودرو / دوچرخه / پیاده</Text>
           <TextInput
             style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
             value={formData.vehicle_type}
@@ -485,7 +472,7 @@ export default function SignIn({ navigation }) {
 
         {/* کد پستی منزل */}
         <View style={styles.inputRow}>
-          <Text style={styles.label}>کد پستی منزل :</Text>
+          <Text style={[NewStyles.text10]}>کد پستی منزل :</Text>
           <TextInput
             style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
             value={formData.home_postal_code}
@@ -499,7 +486,7 @@ export default function SignIn({ navigation }) {
         {/* شهر + منطقه */}
         <View style={styles.cityRow}>
           <View style={styles.cityContainer}>
-            <Text style={styles.label}>شهر :</Text>
+            <Text style={[NewStyles.text10]}>شهر :</Text>
             <TextInput
               style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
               value={formData.city}
@@ -508,7 +495,7 @@ export default function SignIn({ navigation }) {
             />
           </View>
           <View style={styles.regionContainer}>
-            <Text style={styles.label}>منطقه :</Text>
+            <Text style={[NewStyles.text10]}>منطقه :</Text>
             <TextInput
               style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
               value={formData.region}
@@ -520,7 +507,7 @@ export default function SignIn({ navigation }) {
 
         {/* آدرس منزل */}
         <View style={styles.inputRow}>
-          <Text style={styles.label}>آدرس منزل :</Text>
+          <Text style={[NewStyles.text10]}>آدرس منزل :</Text>
           <TextInput
             style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.addressInput]}
             value={formData.home_address}
@@ -533,7 +520,7 @@ export default function SignIn({ navigation }) {
 
         {/* کد پرسنلی مصرف */}
         <View style={styles.inputRow}>
-          <Text style={styles.label}>کد پرسنلی مصرف :</Text>
+          <Text style={[NewStyles.text10]}>کد پرسنلی معرف :</Text>
           <View style={styles.referralContainer}>
             <TextInput
               style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, { flex: 1 }]}
@@ -545,7 +532,7 @@ export default function SignIn({ navigation }) {
               style={styles.validateButton}
               onPress={handleValidateReferralCode}
             >
-              <Text style={styles.validateButtonText}>بررسی</Text>
+              <Text style={[NewStyles.text10]}>بررسی</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -557,10 +544,11 @@ export default function SignIn({ navigation }) {
         style={styles.nextButton}
         onPress={() => setCurrentPage('computer')}
       >
-        <Text style={styles.nextButtonText}>بعدی - دانش کامپیوتر</Text>
+        <Text style={[NewStyles.text10]}>بعدی - دانش کامپیوتر</Text>
       </TouchableOpacity>
 
     </ScrollView>
+        </KeyboardAvoidingView>
   );
 
   const renderComputerSkillsPage = () => (
@@ -569,7 +557,7 @@ export default function SignIn({ navigation }) {
 
       {/* Header */}
       <TouchableOpacity style={[styles.headerButton, { backgroundColor: themeColor0.bgColor(0.8) }]}>
-        <Text style={styles.headerButtonText}>دانش کامپیوتر</Text>
+        <Text style={[NewStyles.title4]}>دانش کامپیوتر</Text>
       </TouchableOpacity>
 
       {/* Computer Skills Form */}
@@ -577,7 +565,7 @@ export default function SignIn({ navigation }) {
 
         {/* لیدز / شفافیت */}
         <View style={styles.inputRow}>
-          <Text style={styles.label}>ایده / خلاقیت :</Text>
+          <Text style={[NewStyles.text10]}>ایده / خلاقیت :</Text>
           <TextInput
             style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
             value={formData.idea}
@@ -590,7 +578,7 @@ export default function SignIn({ navigation }) {
 
         {/* تسلط / توانایی ها (نرم افزار) */}
         <View style={styles.inputRow}>
-          <Text style={styles.label}>تسلط / توانایی ها (نرم افزار) :</Text>
+          <Text style={[NewStyles.text10]}>تسلط / توانایی ها (نرم افزار) :</Text>
           <TextInput
             style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
             value={formData.software_skill}
@@ -603,7 +591,7 @@ export default function SignIn({ navigation }) {
 
         {/* تسلط / توانایی ها (سخت افزار) */}
         <View style={styles.inputRow}>
-          <Text style={styles.label}>تسلط / توانایی ها (سخت افزار) :</Text>
+          <Text style={[NewStyles.text10]}>تسلط / توانایی ها (سخت افزار) :</Text>
           <TextInput
             style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
             value={formData.hardware_skill}
@@ -616,7 +604,7 @@ export default function SignIn({ navigation }) {
 
         {/* تاکاکس / نقطه ضعف (نرم افزار) */}
         <View style={styles.inputRow}>
-          <Text style={styles.label}>ناآگاهی / نقطه ضعف (نرم افزار) :</Text>
+          <Text style={[NewStyles.text10]}>ناآگاهی / نقطه ضعف (نرم افزار) :</Text>
           <TextInput
             style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
             value={formData.software_weakness}
@@ -629,7 +617,7 @@ export default function SignIn({ navigation }) {
 
         {/* تاکاکس / نقطه ضعف (سخت افزار) */}
         <View style={styles.inputRow}>
-          <Text style={styles.label}>ناآگاهی / نقاط ضعف (سخت افزار) :</Text>
+          <Text style={[NewStyles.text10]}>ناآگاهی / نقاط ضعف (سخت افزار) :</Text>
           <TextInput
             style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
             value={formData.hardware_weakness}
@@ -644,7 +632,7 @@ export default function SignIn({ navigation }) {
 
       {/* گرایش فعالیت Header */}
       <TouchableOpacity style={[styles.headerButton, { backgroundColor: themeColor0.bgColor(0.8) }]}>
-        <Text style={styles.headerButtonText}>گرایش فعالیت / تخصص</Text>
+        <Text style={[NewStyles.title4]}>گرایش فعالیت / تخصص</Text>
       </TouchableOpacity>
 
       {/* Expertise Selection */}
@@ -674,14 +662,14 @@ export default function SignIn({ navigation }) {
         ))}
 
         {expertises.length === 0 && (
-          <Text style={styles.loadingText}>در حال دریافت لیست تخصص‌ها...</Text>
+          <Text style={[NewStyles.text10]}>در حال دریافت لیست تخصص‌ها...</Text>
         )}
       </View>
 
       {/* بارگذاری رزومه */}
       <View style={styles.resumeSection}>
-        <Text style={styles.resumeTitle}>بارگذاری رزومه (اختیاری)</Text>
-        <Text style={styles.resumeNote}>
+        <Text style={[NewStyles.title10]}>بارگذاری رزومه (اختیاری)</Text>
+        <Text style={[NewStyles.text10]}>
           می‌توانید رزومه / اطلاعات تکمیلی خود را امضا شده با موضوع (همکاری / فعالیت در لوپ) بارگزاری نمایید.
         </Text>
 
@@ -689,16 +677,16 @@ export default function SignIn({ navigation }) {
         <View style={styles.resumeControls}>
           {resumeFile ? (
             <View style={styles.selectedFileRow}>
-              <Text style={styles.selectedFileName}>
+              <Text style={[NewStyles.text10]}>
                 {resumeFile.name || (resumeFile.uri ? resumeFile.uri.split('/').pop() : 'فایل انتخاب شده')}
               </Text>
               <TouchableOpacity style={styles.removeFileButton} onPress={() => setResumeFile(null)}>
-                <Text style={styles.removeFileText}>حذف</Text>
+                <Text style={[NewStyles.text10]}>حذف</Text>
               </TouchableOpacity>
             </View>
           ) : (
             <TouchableOpacity style={styles.pickFileButton} onPress={pickDocument}>
-              <Text style={styles.pickFileText}>انتخاب فایل رزومه</Text>
+              <Text style={[NewStyles.text10]}>انتخاب فایل رزومه</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -844,7 +832,7 @@ const styles = StyleSheet.create({
     marginTop: 15
   },
   headerButtonText: {
-    color: 'white',
+    color: themeColor4.bgColor(1),
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -865,9 +853,11 @@ const styles = StyleSheet.create({
   pickerContainer: {
     justifyContent: 'center',
     paddingHorizontal: 0,
+
   },
   picker: {
     color: themeColor10.bgColor(1),
+  
   },
   phoneContainer: {
     flexDirection: 'row',
@@ -876,7 +866,7 @@ const styles = StyleSheet.create({
   },
   phonePrefix: {
     fontSize: 12,
-    color: '#666',
+    color: themeColor10.bgColor(0.7),
     fontWeight: '600',
   },
   phoneInput: {
@@ -904,7 +894,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   nextButtonText: {
-    color: 'white',
+    color: themeColor4.bgColor(1),
     fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'center',
@@ -914,23 +904,21 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   activityButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: themeColor4.bgColor(0.8),
     paddingVertical: 12,
     paddingHorizontal: 15,
     borderRadius: 8,
     alignItems: 'center',
   },
   activityButtonText: {
-    fontSize: 14,
-    color: '#333',
-    fontWeight: '600',
+    ...NewStyles.text10,
+ 
   },
   selectedActivityButton: {
     backgroundColor: themeColor1.bgColor(0.8),
   },
   selectedActivityText: {
-    color: 'white',
-    fontWeight: 'bold',
+ ...NewStyles.text4,
   },
   referralContainer: {
     flexDirection: 'row',
@@ -944,7 +932,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   validateButtonText: {
-    color: 'white',
+    color: themeColor0.bgColor(1),
     fontSize: 12,
     fontWeight: '600',
   },
@@ -953,14 +941,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   loadingText: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-    marginTop: 10,
+    ...NewStyles.text10,
   },
   resumeSection: {
     width: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: themeColor4.bgColor(0.95),
     borderRadius: 10,
     padding: 15,
     alignItems: 'center',
@@ -969,12 +954,12 @@ const styles = StyleSheet.create({
   resumeTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: themeColor10.bgColor(0.7),
     marginBottom: 10,
   },
   resumeNote: {
     fontSize: 12,
-    color: '#666',
+    color: themeColor10.bgColor(0.5),
     textAlign: 'center',
     lineHeight: 18,
   },
@@ -984,15 +969,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   pickFileButton: {
-    backgroundColor: '#fff',
+    backgroundColor: themeColor4.bgColor(0.8),
     paddingVertical: 12,
     paddingHorizontal: 18,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: themeColor10.bgColor(0.3),
   },
   pickFileText: {
-    color: '#333',
+    color: themeColor10.bgColor(0.7),
     fontWeight: '600',
   },
   selectedFileRow: {
@@ -1004,7 +989,7 @@ const styles = StyleSheet.create({
   },
   selectedFileName: {
     flex: 1,
-    color: '#333',
+    color: themeColor10.bgColor(0.7),
     fontSize: 13,
     textAlign: 'right',
   },
@@ -1012,38 +997,35 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     paddingVertical: 6,
     paddingHorizontal: 10,
-    backgroundColor: '#f2f2f2',
+    backgroundColor: themeColor4.bgColor(0.8),
     borderRadius: 6,
   },
   removeFileText: {
-    color: '#333',
+    color: themeColor10.bgColor(0.7),
     fontSize: 13,
   },
   uploadButton: {
-    backgroundColor: '#0074D9',
+    backgroundColor: themeColor2.bgColor(1),
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
   },
   uploadButtonText: {
-    color: '#fff',
+    color: themeColor4.bgColor(1),
     fontWeight: '700',
   },
   submitButton: {
-    marginTop: 20,
-    width: '100%',
+    ...NewStyles.title1,
   },
   backButton: {
-    backgroundColor: '#666',
+    backgroundColor: themeColor10.bgColor(0.5),
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 8,
     marginTop: 10,
   },
   backButtonText: {
-    color: 'white',
-    fontSize: 14,
-    textAlign: 'center',
+...NewStyles.text4,
   },
   debugContainer: {
     flexDirection: 'row',
@@ -1059,7 +1041,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   debugButtonText: {
-    color: 'white',
+    color: themeColor4.bgColor(1),
     fontSize: 12,
     fontWeight: 'bold',
   },
@@ -1069,7 +1051,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: themeColor4.bgColor(0.3),
     borderRadius: 8,
-    backgroundColor: 'white',
+    backgroundColor: themeColor4.bgColor(1),
     paddingHorizontal: 10,
   },
   phonePrefix: {

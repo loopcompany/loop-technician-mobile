@@ -20,8 +20,9 @@ import CustomStatusBar from '../../components/CustomStatusBar';
 import Button from '../../components/Button';
 import { useDispatch } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { loginTechnician } from '../../services/Api';
+import { loginTechnician, validateToken } from '../../services/Api';
 import { setToken } from '../../slices/authSlice';
+import { setUserData } from '../../slices/userSlice';
 import { showToastOrAlert } from '../../helpers/Common';
 
 export default function Login() {
@@ -167,12 +168,33 @@ export default function Login() {
       
       if (result.success && result.data?.token) {
         console.log('✅ ورود موفق - توکن دریافت شد');
-        // Save token to Redux
+        
+        // Save token first
+        await AsyncStorage.setItem('userToken', result.data.token);
         dispatch(setToken(result.data.token));
+        
+        // Fetch complete profile data using validateToken
+        console.log('🔄 در حال دریافت اطلاعات کامل از validateToken...');
+        const profileResult = await validateToken();
+        
+        if (profileResult.success && profileResult.data) {
+          console.log('✅ اطلاعات کامل از validateToken دریافت شد');
+          console.log('🔍 داده‌های کامل:', JSON.stringify(profileResult.data, null, 2));
+          
+          // Save complete user data
+          console.log('💾 ذخیره اطلاعات کامل در Redux و AsyncStorage');
+          await AsyncStorage.setItem('userData', JSON.stringify(profileResult.data));
+          dispatch(setUserData(profileResult.data));
+        } else {
+          console.log('⚠️ خطا در دریافت اطلاعات از validateToken، استفاده از داده‌های محدود');
+          // Fallback to basic data from login
+          await AsyncStorage.setItem('userData', JSON.stringify(result.data));
+          dispatch(setUserData(result.data));
+        }
         
         // Save credentials if remember me is checked
         if (rememberPassword) {
-          console.log('ذخیره اطلاعات کاربر...');
+          console.log('ذخیره اطلاعات ورود برای دفعات بعد...');
           await AsyncStorage.setItem('savedReferralCode', referralCode.trim());
           await AsyncStorage.setItem('savedPassword', password.trim());
         } else {
