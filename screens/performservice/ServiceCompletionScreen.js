@@ -20,7 +20,7 @@ export default function ServiceCompletionScreen({ navigation }) {
 
   return (
     <LinearGradient 
-      colors={['#7FDBFF', '#0074D9', '#001f3f']} 
+      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.background}

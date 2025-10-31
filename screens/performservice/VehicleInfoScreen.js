@@ -15,7 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Footer from '../Footer';
 import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
-import { themeColor0, themeColor1, themeColor3, themeColor10, themeColor8 } from '../../theme/Color';
+import { themeColor0, themeColor1, themeColor3, themeColor10, themeColor8, themeColor2 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateVehicleInfo } from '../../services/Api';

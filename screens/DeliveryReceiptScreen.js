@@ -11,7 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Footer from './Footer';
 import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
-import { themeColor10 } from '../theme/Color';
+import { themeColor0, themeColor10, themeColor2, themeColor8 } from '../theme/Color';
 
 export default function DeliveryReceiptScreen({ navigation }) {
   const [expandedSections, setExpandedSections] = useState({});
@@ -83,7 +83,7 @@ export default function DeliveryReceiptScreen({ navigation }) {
 
   return (
     <LinearGradient 
-      colors={['#7FDBFF', '#0074D9', '#001f3f']} 
+      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.background}
