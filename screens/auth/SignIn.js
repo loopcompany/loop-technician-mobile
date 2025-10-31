@@ -105,7 +105,13 @@ export default function SignIn({ navigation }) {
         setExpertises(result.data);
       } else {
         console.warn('⚠️ Expertises load failed:', result.message);
-        Alert.alert('خطا', 'خطا در دریافت لیست تخصص‌ها');
+        
+        let errorMessage = 'خطا در دریافت لیست تخصص‌ها\n\n';
+        if (result.message) {
+          errorMessage += result.message;
+        }
+        
+        Alert.alert('خطا', errorMessage);
 
         // Set some default expertises for testing
         setExpertises([
@@ -120,7 +126,21 @@ export default function SignIn({ navigation }) {
       }
     } catch (error) {
       console.error('❌ Error loading expertises:', error);
-      Alert.alert('خطا', 'خطا در ارتباط با سرور');
+      
+      let errorMessage = 'خطا در ارتباط با سرور\n\n';
+      
+      if (error.response) {
+        errorMessage += `وضعیت: ${error.response.status}\n`;
+        if (error.response.data?.message) {
+          errorMessage += `پیام: ${error.response.data.message}`;
+        }
+      } else if (error.request) {
+        errorMessage += 'سرور پاسخی نداد. لطفاً اتصال اینترنت خود را بررسی کنید.';
+      } else {
+        errorMessage += `پیام خطا: ${error.message}`;
+      }
+      
+      Alert.alert('خطا', errorMessage);
 
       // Set some default expertises for testing
       setExpertises([
@@ -137,18 +157,42 @@ export default function SignIn({ navigation }) {
 
   // Validate referral code
   const handleValidateReferralCode = async () => {
-    if (!formData.other_referral_code) return;
+    if (!formData.other_referral_code) {
+      Alert.alert('خطا', 'لطفاً ابتدا کد معرف را وارد کنید');
+      return;
+    }
 
     try {
       const result = await validateReferralCode(formData.other_referral_code);
       if (result.success) {
-        Alert.alert('موفقیت', result.data.message);
+        Alert.alert('موفقیت', result.data?.message || result.message || 'کد معرف معتبر است');
       } else {
-        Alert.alert('خطا', result.message);
+        let errorMessage = result.message || 'کد معرف نامعتبر است';
+        
+        if (result.errors) {
+          const errorList = Object.values(result.errors).flat();
+          errorMessage += '\n\n' + errorList.join('\n');
+        }
+        
+        Alert.alert('خطا', errorMessage);
       }
     } catch (error) {
       console.error('Error validating referral code:', error);
-      Alert.alert('خطا', 'خطا در بررسی کد معرف');
+      
+      let errorMessage = 'خطا در بررسی کد معرف\n\n';
+      
+      if (error.response) {
+        errorMessage += `وضعیت: ${error.response.status}\n`;
+        if (error.response.data?.message) {
+          errorMessage += `پیام: ${error.response.data.message}`;
+        }
+      } else if (error.request) {
+        errorMessage += 'سرور پاسخی نداد. لطفاً اتصال اینترنت خود را بررسی کنید.';
+      } else {
+        errorMessage += `پیام خطا: ${error.message}`;
+      }
+      
+      Alert.alert('خطا', errorMessage);
     }
   };
 
@@ -224,7 +268,7 @@ export default function SignIn({ navigation }) {
       if (result.success) {
         Alert.alert(
           'موفقیت',
-          result.message,
+          result.message || 'ثبت نام با موفقیت انجام شد',
           [
             {
               text: 'تایید',
@@ -239,17 +283,70 @@ export default function SignIn({ navigation }) {
           ]
         );
       } else {
-        if (result.errors) {
-          // Show validation errors
-          const errorMessages = Object.values(result.errors).join('\n');
-          Alert.alert('خطاهای اعتبارسنجی', errorMessages);
+        console.log('❌ Registration failed:', result);
+        
+        // Build detailed error message
+        let errorMessage = '';
+        
+        if (result.errors && typeof result.errors === 'object') {
+          // Format validation errors
+          const errorList = Object.entries(result.errors).map(([field, messages]) => {
+            const fieldName = field;
+            const messageList = Array.isArray(messages) ? messages : [messages];
+            return `• ${fieldName}: ${messageList.join(', ')}`;
+          });
+          errorMessage = errorList.join('\n\n');
+        } else if (result.message) {
+          errorMessage = result.message;
         } else {
-          Alert.alert('خطا', result.message);
+          errorMessage = 'خطای نامشخص در ثبت نام';
         }
+        
+        Alert.alert(
+          'خطا در ثبت نام',
+          errorMessage,
+          [{ text: 'متوجه شدم', style: 'cancel' }],
+          { cancelable: true }
+        );
       }
     } catch (error) {
       console.error('❌ Registration error:', error);
-      Alert.alert('خطا', 'خطا در ثبت نام');
+      
+      // Build detailed error message
+      let errorMessage = 'خطا در ارتباط با سرور\n\n';
+      
+      if (error.response) {
+        // Server responded with error
+        errorMessage += `وضعیت: ${error.response.status}\n`;
+        
+        if (error.response.data) {
+          if (error.response.data.message) {
+            errorMessage += `پیام: ${error.response.data.message}\n`;
+          }
+          
+          if (error.response.data.errors) {
+            errorMessage += '\nجزئیات خطاها:\n';
+            const errorList = Object.entries(error.response.data.errors).map(([field, messages]) => {
+              const messageList = Array.isArray(messages) ? messages : [messages];
+              return `• ${field}: ${messageList.join(', ')}`;
+            });
+            errorMessage += errorList.join('\n');
+          }
+        }
+      } else if (error.request) {
+        // Request made but no response
+        errorMessage += 'سرور پاسخی نداد. لطفاً اتصال اینترنت خود را بررسی کنید.';
+      } else {
+        // Something else happened
+        errorMessage += `پیام خطا: ${error.message}`;
+      }
+      
+      Alert.alert(
+        'خطا',
+        errorMessage,
+        [{ text: 'متوجه شدم', style: 'cancel' }],
+        { cancelable: true }
+      );
     } finally {
       setSubmitting(false);
     }
@@ -679,7 +776,7 @@ export default function SignIn({ navigation }) {
       <View style={styles.resumeSection}>
         <Text style={[NewStyles.title10]}>بارگذاری رزومه (اختیاری)</Text>
         <Text style={[NewStyles.text10]}>
-          می‌توانید رزومه / اطلاعات تکمیلی خود را امضا شده با موضوع (همکاری / فعالیت در لوپ) بارگزاری نمایید.
+          می‌توانید رزومه / اطلاعات تکمیلی خود را امضا شده با موضوع (همکاری / فعالیت در لوپ) بارگذاری نمایید.
         </Text>
 
         {/* File picker + upload controls */}
@@ -764,7 +861,13 @@ export default function SignIn({ navigation }) {
       }
     } catch (err) {
       console.error('❌ خطا در انتخاب فایل:', err);
-      Alert.alert('خطا', 'انتخاب فایل با خطا مواجه شد');
+      
+      let errorMessage = 'انتخاب فایل با خطا مواجه شد\n\n';
+      if (err.message) {
+        errorMessage += `پیام خطا: ${err.message}`;
+      }
+      
+      Alert.alert('خطا', errorMessage);
     }
   };
 
@@ -792,15 +895,30 @@ export default function SignIn({ navigation }) {
       });
 
       if (!res.ok) {
-        throw new Error('Upload failed');
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP Error ${res.status}`);
       }
 
       const data = await res.json();
-      Alert.alert('موفقیت', 'رزومه با موفقیت بارگذاری شد');
+      Alert.alert('موفقیت', data.message || 'رزومه با موفقیت بارگذاری شد');
       setResumeFile(null);
     } catch (err) {
-      console.warn('uploadResume err', err);
-      Alert.alert('خطا', 'بارگذاری رزومه ناموفق بود');
+      console.error('❌ uploadResume error:', err);
+      
+      let errorMessage = 'بارگذاری رزومه ناموفق بود\n\n';
+      
+      if (err.response) {
+        errorMessage += `وضعیت: ${err.response.status}\n`;
+        if (err.response.data?.message) {
+          errorMessage += `پیام: ${err.response.data.message}`;
+        }
+      } else if (err.message) {
+        errorMessage += `پیام خطا: ${err.message}`;
+      } else {
+        errorMessage += 'خطای نامشخص';
+      }
+      
+      Alert.alert('خطا', errorMessage);
     } finally {
       setUploading(false);
     }

@@ -18,7 +18,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Footer from '../Footer';
 import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
-import { themeColor0, themeColor1 } from '../../theme/Color';
+import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor3, themeColor4, themeColor7, themeColor8 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import { updatePersonalInfo } from '../../services/Api';
 import { useSelector, useDispatch } from 'react-redux';
@@ -258,7 +258,7 @@ export default function PersonalInfoScreen({ navigation }) {
      <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
     <LinearGradient
-      colors={["#7FDBFF", "#0074D9", "#001f3f"]}
+      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.background}
@@ -313,7 +313,7 @@ export default function PersonalInfoScreen({ navigation }) {
                 value={personalData.birth_date}
                 onChangeText={(value) => updateField('birth_date', value)}
                 placeholder="متولد : روز / ماه / سال (مثال: 1370/05/15)"
-                placeholderTextColor="#999"
+                placeholderTextColor={themeColor3.bgColor(1)}
                 editable={!saving}
               />
             </View>
@@ -324,7 +324,7 @@ export default function PersonalInfoScreen({ navigation }) {
                 value={personalData.telephone}
                 onChangeText={(value) => updateField('telephone', value)}
                 placeholder="شماره تلفن ثابت : 02112345678"
-                placeholderTextColor="#999"
+                placeholderTextColor={themeColor3.bgColor(1)}
                 keyboardType="phone-pad"
                 editable={!saving}
               />
@@ -336,7 +336,7 @@ export default function PersonalInfoScreen({ navigation }) {
                 value={personalData.email}
                 onChangeText={(value) => updateField('email', value)}
                 placeholder="آدرس ایمیل :"
-                placeholderTextColor="#999"
+                placeholderTextColor={themeColor3.bgColor(1)}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 editable={!saving}
@@ -349,7 +349,7 @@ export default function PersonalInfoScreen({ navigation }) {
                 value={personalData.certificate_number}
                 onChangeText={(value) => updateField('certificate_number', value)}
                 placeholder="شماره گواهینامه :"
-                placeholderTextColor="#999"
+                placeholderTextColor={themeColor3.bgColor(1)}
                 editable={!saving}
               />
             </View>
@@ -360,7 +360,7 @@ export default function PersonalInfoScreen({ navigation }) {
                 value={personalData.certificate_expiry_date}
                 onChangeText={(value) => updateField('certificate_expiry_date', value)}
                 placeholder="مدت اعتبار گواهینامه : 1405/05/15"
-                placeholderTextColor="#999"
+                placeholderTextColor={themeColor3.bgColor(1)}
                 editable={!saving}
               />
             </View>
@@ -371,7 +371,7 @@ export default function PersonalInfoScreen({ navigation }) {
                 value={personalData.certificate_issue_date}
                 onChangeText={(value) => updateField('certificate_issue_date', value)}
                 placeholder="تاریخ صدور گواهینامه : 1400/05/15"
-                placeholderTextColor="#999"
+                placeholderTextColor={themeColor3.bgColor(1)}
                 editable={!saving}
               />
             </View>
@@ -382,7 +382,7 @@ export default function PersonalInfoScreen({ navigation }) {
                 value={personalData.home_address}
                 onChangeText={(value) => updateField('home_address', value)}
                 placeholder="آدرس منزل :"
-                placeholderTextColor="#999"
+                placeholderTextColor={themeColor3.bgColor(1)}
                 multiline
                 editable={!saving}
               />
@@ -394,7 +394,7 @@ export default function PersonalInfoScreen({ navigation }) {
                 value={personalData.home_postal_code}
                 onChangeText={(value) => updateField('home_postal_code', value)}
                 placeholder="کد پستی منزل : 10 رقم"
-                placeholderTextColor="#999"
+                placeholderTextColor={themeColor3.bgColor(1)}
                 keyboardType="number-pad"
                 maxLength={10}
                 editable={!saving}
@@ -407,7 +407,7 @@ export default function PersonalInfoScreen({ navigation }) {
                 value={personalData.technician_type}
                 onChangeText={(value) => updateField('technician_type', value)}
                 placeholder="نوع پرسنلی :"
-                placeholderTextColor="#999"
+                placeholderTextColor={themeColor3.bgColor(1)}
                 editable={!saving}
               />
             </View>
@@ -417,7 +417,7 @@ export default function PersonalInfoScreen({ navigation }) {
                 style={[styles.boxedInput, styles.disabledInput]}
                 value={personalData.other_referral_code}
                 placeholder="کد معرف (غیرقابل ویرایش)"
-                placeholderTextColor="#999"
+                placeholderTextColor={themeColor3.bgColor(1)}
                 editable={false}
               />
             </View>
@@ -429,7 +429,7 @@ export default function PersonalInfoScreen({ navigation }) {
               disabled={saving}
             >
               {saving ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={themeColor4.bgColor(1)} />
               ) : (
                 <Text style={styles.saveButtonText}>ذخیره تغییرات</Text>
               )}
@@ -457,13 +457,13 @@ const styles = StyleSheet.create({
   },
   bigHeader: {
     width: '100%',
-    backgroundColor: '#0D6EFD',
+    backgroundColor: themeColor0.bgColor(0.8),
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
   },
   bigHeaderText: {
-    color: '#fff',
+    color:themeColor4.bgColor(1),
     fontSize: 20,
     fontWeight: 'bold',
   },
@@ -472,7 +472,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   triangleText: {
-    color: '#FFEA00',
+    color: themeColor1.bgColor(1),
     fontSize: 18,
   },
   accountBox: {
@@ -488,11 +488,11 @@ const styles = StyleSheet.create({
   accountLabel: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#222',
+    color: themeColor10.bgColor(1),
   },
   accountNumber: {
     fontSize: 14,
-    color: '#2B9AE1',
+    color: themeColor8.bgColor(1),
     fontWeight: '700',
     marginTop: 6,
   },
@@ -500,9 +500,9 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#fff',
+    backgroundColor: themeColor4.bgColor(1),
     borderWidth: 2,
-    borderColor: '#ccc',
+    borderColor: themeColor3.bgColor(1),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -512,11 +512,11 @@ const styles = StyleSheet.create({
   changePhotoButton: {
     paddingVertical: 8,
     paddingHorizontal: 12,
-    backgroundColor: '#0D6EFD',
+    backgroundColor: themeColor0.bgColor(0.5),
     borderRadius: 8,
   },
   changePhotoText: {
-    color: '#fff',
+    color: themeColor4.bgColor(1),
     fontSize: 14,
     fontWeight: 'bold',
   },
@@ -526,8 +526,8 @@ const styles = StyleSheet.create({
   },
   boxedRow: {
     borderWidth: 2,
-    borderColor: '#222',
-    backgroundColor: '#fff',
+    borderColor: themeColor10.bgColor(1),
+    backgroundColor: themeColor4.bgColor(1),
     borderRadius: 6,
     marginVertical: 8,
     paddingHorizontal: 10,
@@ -535,13 +535,13 @@ const styles = StyleSheet.create({
   },
   boxedInput: {
     fontSize: 16,
-    color: '#000',
+    color: themeColor10.bgColor(1),
     minHeight: 36,
     textAlign: 'right',
   },
   disabledInput: {
-    backgroundColor: '#f0f0f0',
-    color: '#666',
+    backgroundColor: themeColor4.bgColor(1),
+    color: themeColor3.bgColor(1),
   },
   loadingContainer: {
     padding: 40,
@@ -550,10 +550,10 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     fontSize: 16,
-    color: '#fff',
+    color: themeColor4.bgColor(1),
   },
   saveButton: {
-    backgroundColor: '#28a745',
+    backgroundColor: themeColor7.bgColor(1),
     paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',
@@ -561,10 +561,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   saveButtonDisabled: {
-    backgroundColor: '#6c757d',
+    backgroundColor: themeColor3.bgColor(1),
   },
   saveButtonText: {
-    color: '#fff',
+    color: themeColor4.bgColor(1),
     fontSize: 18,
     fontWeight: 'bold',
   },
