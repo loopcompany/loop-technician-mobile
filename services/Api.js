@@ -681,6 +681,59 @@ export const changePassword = async (data) => {
 };
 
 // =============================================================================
+// TECHNICIAN ORDERS APIs
+// =============================================================================
+
+/**
+ * Get list of technician orders with optional filters
+ * @param {String} status - Filter by status (pending, in_progress, completed, cancelled)
+ * @param {Number} page - Page number (default: 1)
+ * @param {Number} perPage - Items per page (default: 15)
+ */
+export const getTechnicianOrders = async (status = null, page = 1, perPage = 15) => {
+  try {
+    console.log('📋 دریافت لیست سفارشات متخصص...');
+    
+    // Build query parameters
+    const params = new URLSearchParams();
+    if (status) params.append('status', status);
+    params.append('page', page);
+    params.append('per_page', perPage);
+    
+    const queryString = params.toString();
+    const endpoint = `/technician/orders${queryString ? '?' + queryString : ''}`;
+    
+    console.log('📍 Endpoint:', endpoint);
+    
+    const response = await api.get(endpoint);
+    console.log('✅ سفارشات دریافت شد:', response.data);
+    
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت سفارشات:', error.response?.data || error.message);
+    return handleError(error);
+  }
+};
+
+/**
+ * Get single order details by ID
+ * @param {Number} orderId - Order ID
+ */
+export const getTechnicianOrderById = async (orderId) => {
+  try {
+    console.log(`📋 دریافت جزئیات سفارش #${orderId}...`);
+    
+    const response = await api.get(`/technician/orders/${orderId}`);
+    console.log('✅ جزئیات سفارش دریافت شد:', response.data);
+    
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت جزئیات سفارش:', error.response?.data || error.message);
+    return handleError(error);
+  }
+};
+
+// =============================================================================
 // UTILITY FUNCTIONS
 // =============================================================================
 
