@@ -9,8 +9,10 @@ import {
   Alert,
   Image,
   ActivityIndicator,
+   KeyboardAvoidingView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Footer from '../Footer';
@@ -253,6 +255,8 @@ export default function PersonalInfoScreen({ navigation }) {
   };
 
   return (
+     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
     <LinearGradient
       colors={["#7FDBFF", "#0074D9", "#001f3f"]}
       start={{ x: 0, y: 0 }}
@@ -436,6 +440,8 @@ export default function PersonalInfoScreen({ navigation }) {
 
 
     </LinearGradient>
+    </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 

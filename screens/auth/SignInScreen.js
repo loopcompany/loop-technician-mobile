@@ -8,12 +8,14 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+   KeyboardAvoidingView,
   Alert,
 } from "react-native";
 import Button from "../../components/Button";
 import NewStyles from "../../styles/NewStyles";
 import { themeColor10, themeColor4 } from "../../theme/Color";
 import { requestPasswordReset } from "../../services/Api";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SignInScreen({ navigation }) {
   const [referralCode, setReferralCode] = useState("");
@@ -86,6 +88,9 @@ export default function SignInScreen({ navigation }) {
   };
 
   return (
+     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+           
     <ImageBackground
       source={require("../../assets/background2.jpg")}
       style={styles.background}
@@ -151,6 +156,9 @@ export default function SignInScreen({ navigation }) {
         </View>
       </ScrollView>
     </ImageBackground>
+
+  </KeyboardAvoidingView>
+  </SafeAreaView>
   );
 }
 

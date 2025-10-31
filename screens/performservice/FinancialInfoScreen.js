@@ -8,6 +8,7 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  KeyboardAvoidingView
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -19,7 +20,7 @@ import CustomStatusBar from '../../components/CustomStatusBar';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateBankInfo } from '../../services/Api';
 import { setUserData } from '../../slices/userSlice';
-
+import { SafeAreaView } from 'react-native-safe-area-context';
 export default function FinancialInfoScreen({ navigation }) {
   const dispatch = useDispatch();
   const userData = useSelector(state => state.user.data);
@@ -153,6 +154,8 @@ export default function FinancialInfoScreen({ navigation }) {
   };
 
   return (
+     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
     <LinearGradient 
       colors={['#7FDBFF', '#0074D9', '#001f3f']} 
       start={{ x: 0, y: 0 }}
@@ -228,9 +231,10 @@ export default function FinancialInfoScreen({ navigation }) {
         </View>
 
       </ScrollView>
-      
-   
+    
     </LinearGradient>
+  </KeyboardAvoidingView>
+      </SafeAreaView>
   );
 }
 

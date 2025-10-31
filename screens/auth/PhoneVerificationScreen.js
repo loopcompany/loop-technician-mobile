@@ -7,6 +7,8 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+   KeyboardAvoidingView,
+   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NewStyles from '../../styles/NewStyles';
@@ -15,6 +17,7 @@ import CustomStatusBar from '../../components/CustomStatusBar';
 import Button from '../../components/Button';
 import { verifyPhoneNumber, resendVerificationCode } from '../../services/Api';
 import { validateVerificationCode } from '../../utils/validation';
+
 
 export default function PhoneVerificationScreen({ navigation, route }) {
   const { phone, technicianId } = route.params;
@@ -97,7 +100,8 @@ export default function PhoneVerificationScreen({ navigation, route }) {
 
   return (
     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
-      
+       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+        <ScrollView>
       <CustomStatusBar />
 
       <View style={styles.container}>
@@ -171,6 +175,8 @@ export default function PhoneVerificationScreen({ navigation, route }) {
           <Text style={[NewStyles.text10]}>بازگشت به صفحه ثبت نام</Text>
         </TouchableOpacity>
       </View>
+      </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

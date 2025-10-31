@@ -9,6 +9,8 @@ import {
   Image,
   Alert,
   ActivityIndicator,
+ KeyboardAvoidingView,
+   ScrollView,
 } from 'react-native';
 import Svg, { Text as SvgText, Line, Rect } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -24,7 +26,7 @@ import { loginTechnician, validateToken } from '../../services/Api';
 import { setToken } from '../../slices/authSlice';
 import { setUserData } from '../../slices/userSlice';
 import { showToastOrAlert } from '../../helpers/Common';
-
+import { SafeAreaView } from 'react-native-safe-area-context';
 export default function Login() {
   const navigation = useNavigation();
   const dispatch = useDispatch();
@@ -236,7 +238,11 @@ export default function Login() {
 
 
   return (
+     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+           
     <ImageBackground source={require('../../assets/background2.jpg')} style={styles.background} >
+       <ScrollView>
       <CustomStatusBar />
       <View style={styles.spaceContainer}>
         <View style={styles.logoContainer}>
@@ -375,7 +381,11 @@ export default function Login() {
         </View>
 
       </View>
+        </ScrollView>
     </ImageBackground>
+
+    </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 

@@ -9,6 +9,7 @@ import {
   ScrollView,
   Alert,
   TextInput,
+  KeyboardAvoidingView,
 } from "react-native";
 import NewStyles from "../../styles/NewStyles";
 import {
@@ -17,7 +18,7 @@ import {
   useBlurOnFulfill,
   useClearByFocusCell,
 } from "react-native-confirmation-code-field";
-import { themeColor0, themeColor3, themeColor10 } from "../../theme/Color";
+import { themeColor0, themeColor3, themeColor10, themeColor2 } from "../../theme/Color";
 import { setToken } from "../../slices/authSlice";
 import { setUserData } from "../../slices/userSlice";
 import Button from "../../components/Button";
@@ -25,7 +26,7 @@ import { useDispatch } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { verifyResetCode, resetPassword } from "../../services/Api";
 import { loginTechnician } from "../../services/Api";
-
+import { SafeAreaView } from 'react-native-safe-area-context';
 export default function ResetPasswordScreen({ navigation, route }) {
   const params = route?.params;
   const dispatch = useDispatch();
@@ -184,6 +185,8 @@ export default function ResetPasswordScreen({ navigation, route }) {
     }
   };
   return (
+    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
     <ImageBackground
       source={require("../../assets/background2.jpg")}
       style={styles.background}
@@ -202,7 +205,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
         {step === 1 ? (
           // Step 1: Enter verification code
           <View style={[NewStyles.center, { width: '100%' }]}>
-            <Text style={[NewStyles.text10, { marginBottom: 20, fontSize: 16 }]}>
+            <Text style={[NewStyles.title1, { marginBottom: 20, fontSize: 15 }]}>
               کد 6 رقمی ارسال شده به شماره {params?.phone} را وارد کنید
             </Text>
             
@@ -243,7 +246,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
         ) : (
           // Step 2: Enter new password
           <View style={[NewStyles.center, { width: '100%', gap: 15 }]}>
-            <Text style={[NewStyles.text10, { marginBottom: 10, fontSize: 16 }]}>
+            <Text style={[NewStyles.title4, { marginBottom: 10, fontSize: 16 }]}>
               رمز عبور جدید خود را وارد کنید
             </Text>
 
@@ -276,6 +279,8 @@ export default function ResetPasswordScreen({ navigation, route }) {
         )}
       </ScrollView>
     </ImageBackground>
+    </KeyboardAvoidingView>
+        </SafeAreaView>
   );
 }
 
@@ -299,7 +304,7 @@ const styles = StyleSheet.create({
   codeBox: {
     width: 40,
     height: 50,
-    backgroundColor: "#1f4ed8",
+    backgroundColor: themeColor2.bgColor(1),
     borderRadius: 5,
     marginHorizontal: 4,
   },
