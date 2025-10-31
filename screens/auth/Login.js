@@ -51,7 +51,7 @@ export default function Login() {
     try {
       const savedReferralCode = await AsyncStorage.getItem('savedReferralCode');
       const savedPassword = await AsyncStorage.getItem('savedPassword');
-      console.log('کد معرف ذخیره شده:', savedReferralCode || 'ندارد');
+      console.log('کد پرسنلی ذخیره شده:', savedReferralCode || 'ندارد');
       if (savedReferralCode && savedPassword) {
         setReferralCode(savedReferralCode);
         setPassword(savedPassword);
@@ -113,20 +113,20 @@ export default function Login() {
 
   function validateInputs() {
     console.log('🔍 شروع اعتبارسنجی...');
-    console.log('کد معرف وارد شده:', referralCode);
-    console.log('طول کد معرف:', referralCode.length);
+    console.log('کد پرسنلی وارد شده:', referralCode);
+    console.log('طول کد پرسنلی:', referralCode.length);
     console.log('رمز عبور:', password ? 'وارد شده' : 'خالی');
     console.log('کپچا وارد شده:', captchaInput);
     console.log('کپچا صحیح:', captcha);
     
     if (!referralCode.trim()) {
-      console.log('❌ کد معرف خالی است');
-      showToastOrAlert('خطا', 'لطفاً کد معرف را وارد کنید');
+      console.log('❌ کد پرسنلی خالی است');
+      showToastOrAlert('خطا', 'لطفاً کد پرسنلی را وارد کنید');
       return false;
     }
     if (referralCode.trim().length < 6) {
-      console.log('❌ کد معرف کمتر از 6 کاراکتر است');
-      showToastOrAlert('خطا', 'کد معرف باید حداقل 6 کاراکتر باشد');
+      console.log('❌ کد پرسنلی کمتر از 6 کاراکتر است');
+      showToastOrAlert('خطا', 'کد پرسنلی باید حداقل 6 کاراکتر باشد');
       return false;
     }
     if (!password.trim()) {
@@ -158,7 +158,7 @@ export default function Login() {
     if (!validateInputs()) return;
     
     console.log('=== شروع فرآیند لاگین ===');
-    console.log('کد معرف:', referralCode);
+    console.log('کد پرسنلی:', referralCode);
     console.log('رمز عبور وارد شده:', password ? '***' : 'خالی');
     console.log('کپچا:', captchaInput);
     
@@ -254,7 +254,7 @@ export default function Login() {
               style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]} 
               value={referralCode} 
               onChangeText={setReferralCode} 
-              placeholder="کد معرف" 
+              placeholder="کد پرسنلی" 
               placeholderTextColor={themeColor10.bgColor(0.9)} 
               textAlign="center" 
               editable={!isLoading}

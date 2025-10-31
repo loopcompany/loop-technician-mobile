@@ -86,9 +86,15 @@ export default function VehicleInfoScreen({ navigation }) {
         }
       }
       
+      // Combine car_model and car_color with proper spacing
+      const modelColorValue = [
+        technicianData.car_model || '',
+        technicianData.car_color || ''
+      ].filter(Boolean).join(' ').trim();
+      
       setVehicleData(prevData => ({
         vehicleType: technicianData.vehicle_type || prevData.vehicleType,
-        modelColor: `${technicianData.car_model || ''} ${technicianData.car_color || ''}`.trim() || prevData.modelColor,
+        modelColor: modelColorValue || prevData.modelColor,
         motorPlate: technicianData.motor_plate || prevData.motorPlate,
         bodyPlate: technicianData.body_plate || prevData.bodyPlate,
         carPlateLeft: plateLeft || prevData.carPlateLeft,
@@ -135,15 +141,16 @@ export default function VehicleInfoScreen({ navigation }) {
         carPlate = `${vehicleData.carPlateLeft}${vehicleData.carPlateLetter}${vehicleData.carPlateRight}ایران${vehicleData.carPlateProvince}`;
       }
       
-      // Parse model and color from combined field (format: "پراید 131 سفید")
-      const modelColorParts = vehicleData.modelColor.split(' ');
-      const car_model = modelColorParts.length > 0 ? modelColorParts.slice(0, -1).join(' ') : vehicleData.modelColor;
-      const car_color = modelColorParts.length > 1 ? modelColorParts[modelColorParts.length - 1] : '';
+      // Parse model and color from combined field
+      // Keep the entire modelColor as car_model for now
+      // User can separate model and color manually if needed
+      const car_model = vehicleData.modelColor.trim() || null;
+      const car_color = null; // Let user input full "model + color" in one field
       
       // Prepare data in format expected by Backend
       const apiData = {
-        car_model: car_model || null,
-        car_color: car_color || null,
+        car_model: car_model,
+        car_color: car_color,
         car_plate: carPlate,
         car_year: vehicleData.manufacturingYear || null,
         car_fuel_type: vehicleData.softwareType || null,
@@ -157,10 +164,15 @@ export default function VehicleInfoScreen({ navigation }) {
       const result = await updateVehicleInfo(apiData);
       
       if (result.success) {
+        console.log('✅ پاسخ موفق از API دریافت شد');
+        console.log('📦 result.data:', JSON.stringify(result.data, null, 2));
+        
         Alert.alert('موفق', 'اطلاعات خودرو با موفقیت به‌روزرسانی شد');
         
         // Update Redux with new data
         if (result.data && result.data.technician) {
+          console.log('🔄 به‌روزرسانی Redux و AsyncStorage...');
+          
           const updatedUserData = {
             ...userData,
             technician: {
@@ -169,12 +181,16 @@ export default function VehicleInfoScreen({ navigation }) {
             }
           };
           
+          console.log('💾 داده‌های جدید technician:', result.data.technician);
+          
           // Update Redux
           dispatch(setUserData(updatedUserData));
           
           // ⭐ IMPORTANT: Update AsyncStorage as well!
           await AsyncStorage.setItem('userData', JSON.stringify(updatedUserData));
-          console.log('✅ AsyncStorage هم به‌روز شد');
+          console.log('✅ AsyncStorage به‌روز شد با car_model:', result.data.technician.car_model);
+        } else {
+          console.log('⚠️ result.data یا result.data.technician خالی است');
         }
       } else {
         Alert.alert('خطا', result.message || 'مشکلی در به‌روزرسانی پیش آمد');

@@ -5,6 +5,7 @@ import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor4, themeColor10, themeColor3, themeColor2 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import Button from '../../components/Button';
+import DatePickerModal from '../../components/DatePickerModal';
 import * as DocumentPicker from 'expo-document-picker';
 import { Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -60,6 +61,10 @@ export default function SignIn({ navigation }) {
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [currentPage, setCurrentPage] = useState('personal'); // 'personal' or 'computer'
+  
+  // Date picker modals
+  const [birthDateModal, setBirthDateModal] = useState(false);
+  const [licenceDateModal, setLicenceDateModal] = useState(false);
 
   // Test API connection and load expertises
   const testAndLoadExpertises = async () => {
@@ -313,12 +318,14 @@ export default function SignIn({ navigation }) {
         {/* متولد */}
         <View style={styles.inputRow}>
           <Text style={[NewStyles.text10]}>متولد (تاریخ شمسی) :</Text>
-          <TextInput
-            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-            value={formData.birth_date}
-            onChangeText={(value) => updateField('birth_date', value)}
-            placeholder="1379/08/27"
-          />
+          <TouchableOpacity
+            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, { justifyContent: 'center' }]}
+            onPress={() => setBirthDateModal(true)}
+          >
+            <Text style={[NewStyles.text10, { color: formData.birth_date ? themeColor10.bgColor(1) : themeColor10.bgColor(0.5) }]}>
+              {formData.birth_date || '1379/08/27'}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* نام پدر */}
@@ -451,12 +458,14 @@ export default function SignIn({ navigation }) {
         {/* تاریخ اعتبار گواهینامه */}
         <View style={styles.inputRow}>
           <Text style={[NewStyles.text10]}>تاریخ اعتبار گواهینامه (تاریخ شمسی) :</Text>
-          <TextInput
-            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-            value={formData.licence_date}
-            onChangeText={(value) => updateField('licence_date', value)}
-            placeholder="1408/06/20"
-          />
+          <TouchableOpacity
+            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, { justifyContent: 'center' }]}
+            onPress={() => setLicenceDateModal(true)}
+          >
+            <Text style={[NewStyles.text10, { color: formData.licence_date ? themeColor10.bgColor(1) : themeColor10.bgColor(0.5) }]}>
+              {formData.licence_date || '1408/06/20'}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* نوع وسیله نقلیه */}
@@ -809,6 +818,21 @@ export default function SignIn({ navigation }) {
           {currentPage === 'personal' ? renderPersonalInfoPage() : renderComputerSkillsPage()}
         </KeyboardAvoidingView>
       </ImageBackground>
+      
+      {/* Date Picker Modals */}
+      <DatePickerModal
+        datePickerModal={birthDateModal}
+        setDatePickerModal={setBirthDateModal}
+        birthDate={formData.birth_date}
+        setBirthDate={(date) => updateField('birth_date', date)}
+      />
+      
+      <DatePickerModal
+        datePickerModal={licenceDateModal}
+        setDatePickerModal={setLicenceDateModal}
+        birthDate={formData.licence_date}
+        setBirthDate={(date) => updateField('licence_date', date)}
+      />
     </SafeAreaView>
   );
 }
