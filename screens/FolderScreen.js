@@ -65,7 +65,7 @@ export default function FolderScreen({ navigation }) {
     {
       id: 1,
       title: " انجام سرویس",
-      screen:'DeviceModelInfoScreen'
+      screen:'OrderListScreen'
     },
     {
       id: 2,

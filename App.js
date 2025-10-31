@@ -30,6 +30,7 @@ import SoftwareInstallScreen from "./screens/performservice/SoftwareInstallScree
 // import PartsSupplyScreen from "./screens/PartsSupplyScreen";
 // import TechnicianBookingScreen from "./screens/TechnicianBookingScreen";
 import DeviceModelInfoScreen from "./screens/performservice/DeviceModelInfoScreen";
+import OrderListScreen from "./screens/performservice/OrderListScreen";
 import DeviceStatusScreen from "./screens/performservice/DeviceStatusScreen";
 import UserInfoScreen from "./screens/performservice/UserInfoScreen";
 import CompletionInfoScreen from "./screens/performservice/CompletionInfoScreen";
@@ -254,6 +255,13 @@ const AppNavigator = () => {
         <Stack.Screen
           component={DeviceModelInfoScreen}
           name="DeviceModelInfoScreen"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          component={OrderListScreen}
+          name="OrderListScreen"
           options={{
             headerShown: false,
           }}
