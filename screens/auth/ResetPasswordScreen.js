@@ -18,7 +18,7 @@ import {
   useBlurOnFulfill,
   useClearByFocusCell,
 } from "react-native-confirmation-code-field";
-import { themeColor0, themeColor3, themeColor10, themeColor2 } from "../../theme/Color";
+import { themeColor0, themeColor3, themeColor10, themeColor2, themeColor4, themeColor6 } from "../../theme/Color";
 import { setToken } from "../../slices/authSlice";
 import { setUserData } from "../../slices/userSlice";
 import Button from "../../components/Button";
@@ -204,8 +204,8 @@ export default function ResetPasswordScreen({ navigation, route }) {
 
         {step === 1 ? (
           // Step 1: Enter verification code
-          <View style={[NewStyles.center, { width: '100%' }]}>
-            <Text style={[NewStyles.title1, { marginBottom: 20, fontSize: 15 }]}>
+          <View style={[NewStyles.center, { backgroundColor:themeColor10.bgColor(0.5),height:"40%",width:"100%",borderRadius:15 }]}>
+            <Text style={[NewStyles.title1, { marginBottom: 20, fontSize: 17,textAlign:"center",paddingHorizontal:20 }]}>
               کد 6 رقمی ارسال شده به شماره {params?.phone} را وارد کنید
             </Text>
             
@@ -236,20 +236,21 @@ export default function ResetPasswordScreen({ navigation, route }) {
             />
 
             {error && <Text style={[NewStyles.text6, { marginTop: 10 }]}>{error}</Text>}
-            
-            <Button
-              title={"تأیید کد"}
-              loading={loading}
-              onPress={handleVerifyCode}
-            />
+            <View style={{ paddingVertical: 15, paddingHorizontal: 20,width:"100%" }}>
+              <Button
+                title={"تأیید کد"}
+                loading={loading}
+                onPress={handleVerifyCode}
+              />
+            </View>
           </View>
         ) : (
           // Step 2: Enter new password
-          <View style={[NewStyles.center, { width: '100%', gap: 15 }]}>
-            <Text style={[NewStyles.title4, { marginBottom: 10, fontSize: 16 }]}>
+          <View style={[NewStyles.center, {  gap: 15, backgroundColor:themeColor10.bgColor(0.5),height:"60%",width:"100%",borderRadius:15  }]}>
+            <Text style={[NewStyles.title1, { marginBottom: 10, fontSize: 16 }]}>
               رمز عبور جدید خود را وارد کنید
             </Text>
-
+<View style={{ paddingHorizontal: 1,width:"90%",paddingVertical:15 }}>
             <TextInput
               style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
               placeholder="رمز عبور جدید (حداقل 6 کاراکتر)"
@@ -259,7 +260,8 @@ export default function ResetPasswordScreen({ navigation, route }) {
               onChangeText={setNewPassword}
               autoCapitalize="none"
             />
-
+</View>
+<View style={{ paddingVertical: 15, paddingHorizontal: 1,width:"90%" }}>
             <TextInput
               style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
               placeholder="تکرار رمز عبور جدید"
@@ -269,12 +271,15 @@ export default function ResetPasswordScreen({ navigation, route }) {
               onChangeText={setConfirmPassword}
               autoCapitalize="none"
             />
-
+</View>
+<View style={{ paddingVertical: 15, paddingHorizontal: 1,width:"90%" }}>
             <Button
               title={"تغییر رمز عبور"}
               loading={loading}
               onPress={handleResetPassword}
             />
+
+            </View>
           </View>
         )}
       </ScrollView>
@@ -314,7 +319,7 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   input: {
-    backgroundColor: "#fff",
+    backgroundColor: themeColor4.bgColor(1),
     width: "100%",
     paddingVertical: 12,
     paddingHorizontal: 20,
@@ -325,7 +330,7 @@ const styles = StyleSheet.create({
   },
   successText: {
     marginTop: 30,
-    color: "#e60000",
+    color: themeColor6.bgColor(1),
     fontWeight: "bold",
     fontSize: 15,
     textAlign: "center",

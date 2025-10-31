@@ -12,7 +12,7 @@ const api = axios.create({
   },
 });
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token and log requests
 api.interceptors.request.use(
   async (config) => {
     try {
@@ -23,22 +23,69 @@ api.interceptors.request.use(
     } catch (error) {
       console.warn('Error getting token from AsyncStorage:', error);
     }
+    
+    // Log all API requests
+    console.log('📤 API Request:', {
+      method: config.method?.toUpperCase(),
+      url: config.url,
+      baseURL: config.baseURL,
+      fullURL: `${config.baseURL}${config.url}`,
+      hasToken: !!config.headers.Authorization
+    });
+    
     return config;
   },
   (error) => {
+    console.error('❌ Request Setup Error:', error.message);
     return Promise.reject(error);
   }
 );
 
-// Response interceptor for error handling
+// Response interceptor for error handling and logging
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Log successful responses
+    console.log('✅ API Response:', {
+      method: response.config.method?.toUpperCase(),
+      url: response.config.url,
+      status: response.status,
+      statusText: response.statusText
+    });
+    return response;
+  },
   (error) => {
-    if (error.response?.status === 401) {
-      // Token expired or invalid - logout user
-      AsyncStorage.removeItem('userToken');
-      AsyncStorage.removeItem('userData');
+    // Detailed error logging
+    if (error.response) {
+      // Server responded with error status
+      console.error('❌ API Error Response:', {
+        method: error.config?.method?.toUpperCase(),
+        url: error.config?.url,
+        fullURL: `${error.config?.baseURL}${error.config?.url}`,
+        status: error.response.status,
+        statusText: error.response.statusText,
+        message: error.response.data?.message || 'No message',
+        data: error.response.data
+      });
+      
+      // Handle 401 Unauthorized
+      if (error.response.status === 401) {
+        console.warn('🔒 Token expired or invalid - clearing auth data');
+        AsyncStorage.removeItem('userToken');
+        AsyncStorage.removeItem('userData');
+      }
+    } else if (error.request) {
+      // Request made but no response received
+      console.error('❌ No Response from Server:', {
+        method: error.config?.method?.toUpperCase(),
+        url: error.config?.url,
+        fullURL: `${error.config?.baseURL}${error.config?.url}`,
+        message: 'سرور پاسخی نداد'
+      });
+    } else {
+      // Something else happened
+      console.error('❌ Request Error:', error.message);
     }
+    
     return Promise.reject(error);
   }
 );

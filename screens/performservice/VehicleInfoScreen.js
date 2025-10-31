@@ -15,7 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Footer from '../Footer';
 import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
-import { themeColor0, themeColor1, themeColor3, themeColor10 } from '../../theme/Color';
+import { themeColor0, themeColor1, themeColor3, themeColor10, themeColor8 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateVehicleInfo } from '../../services/Api';
@@ -207,7 +207,7 @@ export default function VehicleInfoScreen({ navigation }) {
      <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
     <LinearGradient 
-      colors={['#7FDBFF', '#0074D9', '#001f3f']} 
+      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.background}
@@ -526,7 +526,7 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
   buttonText: {
-    color: 'white',
+    ...NewStyles.text4,
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -537,8 +537,8 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   vehicleTypeLabel: {
+    ...NewStyles.text10,
     fontSize: 14,
-    color: '#333',
     textAlign: 'center',
     lineHeight: 20,
   },
@@ -552,8 +552,8 @@ const styles = StyleSheet.create({
     borderLeftColor: '#2196F3',
   },
   infoText: {
+    ...NewStyles.text,
     fontSize: 14,
-    color: '#1565C0',
     textAlign: 'center',
     fontWeight: '500',
   },
@@ -579,8 +579,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   label: {
+    ...NewStyles.text10,
     fontSize: 14,
-    color: '#333',
     fontWeight: '600',
     marginBottom: 5,
     textAlign: 'right',
@@ -616,6 +616,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#9e9e9e',
   },
   actionButtonText: {
+    ...NewStyles.text4,
     color: 'white',
     fontSize: 14,
     fontWeight: '600',
@@ -702,6 +703,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 6,
   },
   plateLetterText: {
+    ...NewStyles.text10,
     fontSize: 28,
     fontWeight: '900',
     marginHorizontal: 4,
@@ -730,9 +732,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   plateCityTop: {
+    ...NewStyles.text10,
     fontSize: 10,
     fontWeight: '700',
-    color: '#000',
+
   },
   plateCityNumber: {
     fontSize: 20,

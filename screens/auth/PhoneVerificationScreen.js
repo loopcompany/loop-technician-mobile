@@ -7,17 +7,14 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
-   KeyboardAvoidingView,
-   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NewStyles from '../../styles/NewStyles';
-import { themeColor0, themeColor1, themeColor10, themeColor4 } from '../../theme/Color';
+import { themeColor0, themeColor1, themeColor3, themeColor4 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import Button from '../../components/Button';
 import { verifyPhoneNumber, resendVerificationCode } from '../../services/Api';
 import { validateVerificationCode } from '../../utils/validation';
-
 
 export default function PhoneVerificationScreen({ navigation, route }) {
   const { phone, technicianId } = route.params;
@@ -58,7 +55,7 @@ export default function PhoneVerificationScreen({ navigation, route }) {
               text: 'تایید',
               onPress: () => {
                 // Navigate to login screen
-                navigation.navigate('Login', {
+                navigation.navigate('LoginScreen', {
                   phone,
                   verified: true,
                 });
@@ -100,22 +97,20 @@ export default function PhoneVerificationScreen({ navigation, route }) {
 
   return (
     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
-       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-        <ScrollView>
       <CustomStatusBar />
 
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={[NewStyles.title10]}>تأیید شماره تلفن</Text>
-          <Text style={[NewStyles.text10]}>
+          <Text style={styles.title}>تأیید شماره تلفن</Text>
+          <Text style={styles.subtitle}>
             کد تأیید به شماره {phone} ارسال شد
           </Text>
         </View>
 
         {/* Verification Code Input */}
         <View style={styles.formContainer}>
-          <Text style={[NewStyles.text10]}>کد تأیید :</Text>
+          <Text style={styles.label}>کد تأیید :</Text>
           <TextInput
             style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.codeInput]}
             value={verificationCode}
@@ -126,7 +121,7 @@ export default function PhoneVerificationScreen({ navigation, route }) {
             textAlign="center"
           />
 
-          <Text style={[NewStyles.text10]}>
+          <Text style={styles.hint}>
             کد تأیید 4 تا 6 رقمی که به شماره شما پیامک شده را وارد کنید
           </Text>
         </View>
@@ -142,14 +137,14 @@ export default function PhoneVerificationScreen({ navigation, route }) {
         {loading && (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={themeColor1.bgColor(1)} />
-            <Text style={[NewStyles.text10]}>در حال تأیید کد...</Text>
+            <Text style={styles.loadingText}>در حال تأیید کد...</Text>
           </View>
         )}
 
         {/* Resend Section */}
         <View style={styles.resendSection}>
           {!canResend ? (
-            <Text style={[NewStyles.text10]}>
+            <Text style={styles.countdownText}>
               ارسال مجدد کد در {countdown} ثانیه
             </Text>
           ) : (
@@ -161,7 +156,7 @@ export default function PhoneVerificationScreen({ navigation, route }) {
               {resendLoading ? (
                 <ActivityIndicator size="small" color={themeColor1.bgColor(1)} />
               ) : (
-                <Text style={[NewStyles.text1]}>ارسال مجدد کد</Text>
+                <Text style={styles.resendButtonText}>ارسال مجدد کد</Text>
               )}
             </TouchableOpacity>
           )}
@@ -172,11 +167,9 @@ export default function PhoneVerificationScreen({ navigation, route }) {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Text style={[NewStyles.text10]}>بازگشت به صفحه ثبت نام</Text>
+          <Text style={styles.backButtonText}>بازگشت به صفحه ثبت نام</Text>
         </TouchableOpacity>
       </View>
-      </ScrollView>
-      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -193,14 +186,15 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   title: {
+    ...NewStyles.title10,
     fontSize: 24,
     fontWeight: 'bold',
-    color: themeColor10.bgColor(1),
     marginBottom: 10,
   },
   subtitle: {
+    ...NewStyles.text3,
     fontSize: 16,
-    color: themeColor10.bgColor(1),
+    color: themeColor3.bgColor(1),
     textAlign: 'center',
     lineHeight: 24,
   },
@@ -208,9 +202,9 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   label: {
+    ...NewStyles.text10,
     fontSize: 16,
     fontWeight: '600',
-    color: themeColor10.bgColor(1),
     marginBottom: 10,
     textAlign: 'center',
   },
@@ -221,8 +215,8 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   hint: {
+    ...NewStyles.text3,
     fontSize: 14,
-    color: themeColor10.bgColor(1),
     textAlign: 'center',
     lineHeight: 20,
   },
@@ -234,8 +228,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   loadingText: {
+    ...NewStyles.text3,
     fontSize: 14,
-    color: themeColor10.bgColor(1),
+
     marginTop: 10,
   },
   resendSection: {
@@ -243,14 +238,16 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   countdownText: {
+    ...NewStyles.text3,
     fontSize: 14,
-    color: themeColor10.bgColor(1),
+
   },
   resendButton: {
     paddingVertical: 10,
     paddingHorizontal: 20,
   },
   resendButtonText: {
+    ...NewStyles.text1,
     fontSize: 16,
     color: themeColor1.bgColor(1),
     fontWeight: '600',
@@ -261,6 +258,6 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 14,
-    color: themeColor10.bgColor(1),
+    color: themeColor3.bgColor(1),
   },
 });

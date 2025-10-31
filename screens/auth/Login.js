@@ -17,7 +17,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import NewStyles from '../../styles/NewStyles';
-import { themeColor0, themeColor1, themeColor3, themeColor4, themeColor10, themeColor7 } from '../../theme/Color';
+import { themeColor0, themeColor1, themeColor3, themeColor4, themeColor10, themeColor7, themeColor2, themeColor6, themeColor9 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import Button from '../../components/Button';
 import { useDispatch } from 'react-redux';
@@ -87,7 +87,7 @@ export default function Login() {
     console.log('🎨 ساخت کپچای جدید...');
     const code = generateCaptchaCode();
     console.log('کد کپچای جدید:', code);
-    const colors = ['#0D6EFD', '#FF5722', '#00897B', '#7B1FA2', '#E91E63'];
+    const colors = [themeColor2.bgColor(1), themeColor6.bgColor(1), themeColor7.bgColor(1), themeColor9.bgColor(1), themeColor6.bgColor(1)];
     const meta = [];
     for (let i = 0; i < code.length; i++) {
       meta.push({
@@ -121,22 +121,22 @@ export default function Login() {
     
     if (!referralCode.trim()) {
       console.log('❌ کد پرسنلی خالی است');
-      showToastOrAlert('خطا', 'لطفاً کد پرسنلی را وارد کنید');
+      Alert.alert('خطا', 'لطفاً کد پرسنلی را وارد کنید');
       return false;
     }
     if (referralCode.trim().length < 6) {
       console.log('❌ کد پرسنلی کمتر از 6 کاراکتر است');
-      showToastOrAlert('خطا', 'کد پرسنلی باید حداقل 6 کاراکتر باشد');
+      Alert.alert('خطا', 'کد پرسنلی باید حداقل 6 کاراکتر باشد');
       return false;
     }
     if (!password.trim()) {
       console.log('❌ رمز عبور خالی است');
-      showToastOrAlert('خطا', 'لطفاً رمز عبور را وارد کنید');
+      Alert.alert('خطا', 'لطفاً رمز عبور را وارد کنید');
       return false;
     }
     if (!captchaInput.trim()) {
       console.log('❌ کپچا خالی است');
-      showToastOrAlert('خطا', 'لطفاً کد امنیتی را وارد کنید');
+      Alert.alert('خطا', 'لطفاً کد امنیتی را وارد کنید');
       return false;
     }
     const normalizedInput = normalizeDigits(captchaInput);
@@ -146,7 +146,11 @@ export default function Login() {
     
     if (normalizedInput !== normalizedCaptcha) {
       console.log('❌ کپچا اشتباه است');
-      showToastOrAlert('خطا', 'کد امنیتی اشتباه است');
+      Alert.alert(
+        'کد امنیتی اشتباه',
+        `کد وارد شده: ${captchaInput}\n\nلطفاً کد امنیتی جدید را وارد کنید.`,
+        [{ text: 'متوجه شدم', style: 'cancel' }]
+      );
       createNewCaptcha();
       return false;
     }
@@ -177,18 +181,27 @@ export default function Login() {
         
         // Fetch complete profile data using validateToken
         console.log('🔄 در حال دریافت اطلاعات کامل از validateToken...');
-        const profileResult = await validateToken();
         
-        if (profileResult.success && profileResult.data) {
-          console.log('✅ اطلاعات کامل از validateToken دریافت شد');
-          console.log('🔍 داده‌های کامل:', JSON.stringify(profileResult.data, null, 2));
+        try {
+          const profileResult = await validateToken();
           
-          // Save complete user data
-          console.log('💾 ذخیره اطلاعات کامل در Redux و AsyncStorage');
-          await AsyncStorage.setItem('userData', JSON.stringify(profileResult.data));
-          dispatch(setUserData(profileResult.data));
-        } else {
-          console.log('⚠️ خطا در دریافت اطلاعات از validateToken، استفاده از داده‌های محدود');
+          if (profileResult.success && profileResult.data) {
+            console.log('✅ اطلاعات کامل از validateToken دریافت شد');
+            console.log('🔍 داده‌های کامل:', JSON.stringify(profileResult.data, null, 2));
+            
+            // Save complete user data
+            console.log('💾 ذخیره اطلاعات کامل در Redux و AsyncStorage');
+            await AsyncStorage.setItem('userData', JSON.stringify(profileResult.data));
+            dispatch(setUserData(profileResult.data));
+          } else {
+            console.log('⚠️ validateToken موفق نبود، استفاده از داده‌های اولیه');
+            // Fallback to basic data from login
+            await AsyncStorage.setItem('userData', JSON.stringify(result.data));
+            dispatch(setUserData(result.data));
+          }
+        } catch (validateError) {
+          console.error('❌ خطا در validateToken:', validateError);
+          console.log('⚠️ استفاده از داده‌های اولیه login به دلیل خطا در validateToken');
           // Fallback to basic data from login
           await AsyncStorage.setItem('userData', JSON.stringify(result.data));
           dispatch(setUserData(result.data));
@@ -214,21 +227,75 @@ export default function Login() {
         });
       } else {
         console.log('❌ ورود ناموفق:', result.message);
-        showToastOrAlert('خطا', result.message || 'خطا در ورود به سیستم');
+        
+        // Build detailed error message
+        let errorMessage = '';
+        
+        if (result.errors && typeof result.errors === 'object') {
+          // Format validation errors
+          const errorList = Object.entries(result.errors).map(([field, messages]) => {
+            const messageList = Array.isArray(messages) ? messages : [messages];
+            return `• ${field}: ${messageList.join(', ')}`;
+          });
+          errorMessage = errorList.join('\n\n');
+        } else if (result.message) {
+          errorMessage = result.message;
+        } else {
+          errorMessage = 'خطا در ورود به سیستم';
+        }
+        
+        Alert.alert(
+          'خطا در ورود',
+          errorMessage,
+          [{ text: 'متوجه شدم', style: 'cancel' }],
+          { cancelable: true }
+        );
         createNewCaptcha();
       }
     } catch (error) {
       console.error('❌❌❌ خطای لاگین:', error);
       console.error('نوع خطا:', error.name);
       console.error('پیام خطا:', error.message);
+      
+      // Build detailed error message
+      let errorMessage = 'خطا در ورود به سیستم\n\n';
+      
       if (error.response) {
         console.error('وضعیت HTTP:', error.response.status);
         console.error('داده خطا:', error.response.data);
-      }
-      if (error.request) {
+        
+        // Server responded with error
+        errorMessage += `وضعیت: ${error.response.status}\n`;
+        
+        if (error.response.data) {
+          if (error.response.data.message) {
+            errorMessage += `پیام: ${error.response.data.message}\n`;
+          }
+          
+          if (error.response.data.errors) {
+            errorMessage += '\nجزئیات خطاها:\n';
+            const errorList = Object.entries(error.response.data.errors).map(([field, messages]) => {
+              const messageList = Array.isArray(messages) ? messages : [messages];
+              return `• ${field}: ${messageList.join(', ')}`;
+            });
+            errorMessage += errorList.join('\n');
+          }
+        }
+      } else if (error.request) {
         console.error('درخواست ارسال شده:', error.request);
+        // Request made but no response
+        errorMessage += 'سرور پاسخی نداد. لطفاً اتصال اینترنت خود را بررسی کنید.';
+      } else {
+        // Something else happened
+        errorMessage += `پیام خطا: ${error.message}`;
       }
-      showToastOrAlert('خطا', 'خطای غیرمنتظره در ورود');
+      
+      Alert.alert(
+        'خطا',
+        errorMessage,
+        [{ text: 'متوجه شدم', style: 'cancel' }],
+        { cancelable: true }
+      );
       createNewCaptcha();
     } finally {
       setIsLoading(false);
@@ -298,7 +365,7 @@ export default function Login() {
           <View style={styles.captchaContainer}>
             <View style={styles.captchaBox}>
               <Svg width="140" height="50" viewBox="0 0 140 50">
-                <Rect x="0" y="0" width="140" height="50" rx="6" ry="6" fill="#F8FAFF" />
+                <Rect x="0" y="0" width="140" height="50" rx="6" ry="6" fill={themeColor4.bgColor(1)} />
                 {captchaMeta.map((m, i) => (
                   <SvgText
                     key={`s${i}`}
@@ -318,7 +385,7 @@ export default function Login() {
                     y1={n.top}
                     x2={Math.max(10, (n.left + n.width) % 120)}
                     y2={n.top + 2}
-                    stroke="#999"
+                    stroke={themeColor3.bgColor(1)}
                     strokeWidth="1"
                     opacity="0.4"
                   />
@@ -392,7 +459,7 @@ export default function Login() {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
-    backgroundColor: '#001122',
+    backgroundColor: themeColor0.bgColor(1),
   },
   spaceContainer: {
     flex: 1,
@@ -502,12 +569,12 @@ const styles = StyleSheet.create({
   captchaBox: {
     width: 145,
     height: 50,
-    backgroundColor: '#fff',
+    backgroundColor: themeColor4.bgColor(1),
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: themeColor3.bgColor(1),
   },
   captchaCanvas: {
     width: '100%',
@@ -522,11 +589,11 @@ const styles = StyleSheet.create({
   noiseLine: {
     position: 'absolute',
     height: 1,
-    backgroundColor: '#000',
+    backgroundColor: themeColor10.bgColor(1),
   },
   captchaText: {
     fontSize: 25,
-    color: '#000',
+    color: themeColor10.bgColor(1),
     fontWeight: '700',
   },
   captchaRefresh: {
@@ -550,19 +617,17 @@ const styles = StyleSheet.create({
   bottomTitle: {
     fontSize: 24,
     fontFamily: 'VazirBold',
-    color: '#FFD700',
+    color: themeColor1.bgColor(1),
     marginBottom: 10,
   },
   bottomSubtitle: {
+    ...NewStyles.title10,
     fontSize: 14,
-    fontFamily: 'VazirLight',
-    color: '#000000ff',
     marginBottom: 5,
   },
   bottomFooter: {
+    ...NewStyles.title10,
     fontSize: 14,
-    fontFamily: 'VazirLight',
-    color: '#000000ff',
   },
   loadingContainer: {
     flex: 1,
