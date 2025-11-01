@@ -102,8 +102,30 @@ export default function OrderListScreen({ navigation }) {
     return formatDateTime(sendToLoop);
   };
 
+  const formatPrice = (price) => {
+    if (!price || price === 0) {
+      return '-';
+    }
+    return price.toLocaleString() + ' تومان';
+  };
+
+  const getFinalPrice = (order) => {
+    if (order.technician_price && order.technician_price > 0) {
+      return order.technician_price;
+    }
+    return order.pakar_price || 0;
+  };
+
   const renderOrderCard = (order) => (
     <View key={order.id} style={styles.orderCard}>
+      {/* شماره سفارش */}
+      <View style={styles.cardSection}>
+        <Text style={styles.orderIdText}>سفارش #{order.id}</Text>
+      </View>
+
+      {/* خط جداکننده */}
+      <View style={styles.divider} />
+
       {/* اطلاعات کاربر */}
       <View style={styles.cardSection}>
         <Text style={styles.customerName}>
@@ -152,15 +174,37 @@ export default function OrderListScreen({ navigation }) {
       {/* ارسال به لوپ */}
       <View style={styles.cardSection}>
         <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>ارسال به لوپ: </Text>
+          <Text style={styles.infoLabel}>اعزام به لوپ: </Text>
           <Text style={styles.infoValue}>{formatSendToLoop(order.send_to_loop)}</Text>
+        </View>
+      </View>
+
+      {/* خط جداکننده */}
+      <View style={styles.divider} />
+
+      {/* قیمت نهایی */}
+      <View style={styles.cardSection}>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>قیمت نهایی: </Text>
+          <Text style={styles.priceValue}>{formatPrice(getFinalPrice(order))}</Text>
+        </View>
+      </View>
+
+      {/* خط جداکننده */}
+      <View style={styles.divider} />
+
+      {/* هزینه اضافی */}
+      <View style={styles.cardSection}>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>هزینه مازاد: </Text>
+          <Text style={styles.priceValue}>{formatPrice(order.extra_price)}</Text>
         </View>
       </View>
 
       {/* دکمه جزئیات */}
       <TouchableOpacity
         style={styles.detailsButton}
-        onPress={() => navigation.navigate('DeviceModelInfoScreen', { orderId: order.id })}
+        onPress={() => navigation.navigate('OrderDetailScreen', { orderId: order.id })}
       >
         <Text style={styles.detailsButtonText}>مشاهده جزئیات</Text>
       </TouchableOpacity>
@@ -380,6 +424,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0E0E0',
     marginVertical: 8,
   },
+  orderIdText: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#0074D9',
+    textAlign: 'right',
+  },
   customerName: {
     fontSize: 16,
     fontWeight: 'bold',
@@ -437,6 +487,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#333',
     fontWeight: '500',
+  },
+  priceValue: {
+    fontSize: 14,
+    color: '#4CAF50',
+    fontWeight: 'bold',
   },
   detailsButton: {
     backgroundColor: '#0074D9',

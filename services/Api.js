@@ -722,13 +722,18 @@ export const getTechnicianOrders = async (status = null, page = 1, perPage = 15)
 export const getTechnicianOrderById = async (orderId) => {
   try {
     console.log(`📋 دریافت جزئیات سفارش #${orderId}...`);
+    console.log('📋 Type of orderId:', typeof orderId);
     
-    const response = await api.get(`/technician/orders/${orderId}`);
+    const response = await api.get(`/technician/orders/${orderId}/detail`);
     console.log('✅ جزئیات سفارش دریافت شد:', response.data);
     
     return handleResponse(response);
   } catch (error) {
     console.error('❌ خطا در دریافت جزئیات سفارش:', error.response?.data || error.message);
+    if (error.response) {
+      console.error('❌ Status:', error.response.status);
+      console.error('❌ Data:', error.response.data);
+    }
     return handleError(error);
   }
 };
