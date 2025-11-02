@@ -11,7 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Footer from '../Footer';
 import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
-import { themeColor0, themeColor1, themeColor3, themeColor10 } from '../../theme/Color';
+import { themeColor0, themeColor1, themeColor3, themeColor10, themeColor8, themeColor2 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 
 export default function FinancialReportScreen({ navigation }) {

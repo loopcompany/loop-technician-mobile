@@ -12,7 +12,7 @@ import Footer from '../Footer';
 import ScreenHeaders from '../../components/ScreenHeaders';
 import ScreenTitle from '../../components/ScreenTitle';
 import NewStyles from '../../styles/NewStyles';
-import { themeColor10 } from '../../theme/Color';
+import { themeColor0, themeColor10, themeColor2, themeColor8 } from '../../theme/Color';
 
 export default function PartsExpensesScreen({ navigation }) {
   const [selectedItems, setSelectedItems] = useState([]);

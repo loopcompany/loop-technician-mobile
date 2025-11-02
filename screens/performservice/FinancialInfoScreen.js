@@ -15,7 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Footer from '../Footer';
 import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
-import { themeColor0, themeColor1, themeColor3, themeColor10, themeColor2, themeColor8 } from '../../theme/Color';
+import { themeColor0, themeColor1, themeColor3, themeColor10, themeColor2, themeColor8, themeColor4, themeColor7 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateBankInfo } from '../../services/Api';
@@ -222,7 +222,7 @@ export default function FinancialInfoScreen({ navigation }) {
             disabled={saving}
           >
             {saving ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={themeColor4.bgColor(1)} />
             ) : (
               <Text style={styles.saveButtonText}>ثبت اطلاعات</Text>
             )}
@@ -256,13 +256,13 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
   buttonText: {
-    color: 'white',
+    color: themeColor4.bgColor(1),
     fontSize: 16,
     fontWeight: 'bold',
   },
   formContainer: {
     width: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: themeColor4.bgColor(1),
     borderRadius: 10,
     padding: 15,
     gap: 15,
@@ -272,33 +272,33 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#333',
+    color: themeColor10.bgColor(1),
     fontWeight: '600',
     marginBottom: 8,
     textAlign: 'right',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: themeColor3.bgColor(0.3),
     borderRadius: 8,
     padding: 12,
     fontSize: 14,
-    backgroundColor: '#fff',
+    backgroundColor: themeColor4.bgColor(1),
     textAlign: 'right',
     minHeight: 45,
   },
   saveButton: {
-    backgroundColor: '#28a745',
+    backgroundColor: themeColor7.bgColor(1),
     paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 10,
   },
   saveButtonDisabled: {
-    backgroundColor: '#9e9e9e',
+    backgroundColor: themeColor4.bgColor(1),
   },
   saveButtonText: {
-    color: '#fff',
+    color: themeColor4.bgColor(1),
     fontSize: 16,
     fontWeight: 'bold',
   },

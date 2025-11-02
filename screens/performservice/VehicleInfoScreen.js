@@ -15,7 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Footer from '../Footer';
 import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
-import { themeColor0, themeColor1, themeColor3, themeColor10, themeColor8, themeColor2 } from '../../theme/Color';
+import { themeColor0, themeColor1, themeColor3, themeColor10, themeColor8, themeColor2, themeColor4, themeColor7, themeColor6, themeColor11 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateVehicleInfo } from '../../services/Api';
@@ -413,7 +413,7 @@ export default function VehicleInfoScreen({ navigation }) {
             disabled={saving}
           >
             {saving ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={themeColor4.bgColor(1)} />
             ) : (
               <Text style={styles.actionButtonText}>ثبت مشخصات</Text>
             )}
@@ -452,9 +452,9 @@ export default function VehicleInfoScreen({ navigation }) {
         {/* left vertical flag/blue strip */}
         <View style={styles.plateFlagStrip}>
           <View style={styles.flagColors}>
-            <View style={[styles.flagStripe, { backgroundColor: '#239e3b' }]} />
-            <View style={[styles.flagStripe, { backgroundColor: '#fff' }]} />
-            <View style={[styles.flagStripe, { backgroundColor: '#da0000' }]} />
+            <View style={[styles.flagStripe, { backgroundColor: themeColor7.bgColor(1)}]} />
+            <View style={[styles.flagStripe, { backgroundColor: themeColor4.bgColor(1) }]} />
+            <View style={[styles.flagStripe, { backgroundColor: themeColor6.bgColor(1) }]} />
           </View>
           <Text style={styles.flagText}>I.R.{"\n"}IRAN</Text>
         </View>
@@ -494,9 +494,9 @@ export default function VehicleInfoScreen({ navigation }) {
       <View style={styles.motorPlateBox}>
         <View style={styles.motorFlagStrip}>
           <View style={styles.flagColors}>
-            <View style={[styles.flagStripe, { backgroundColor: '#239e3b' }]} />
-            <View style={[styles.flagStripe, { backgroundColor: '#fff' }]} />
-            <View style={[styles.flagStripe, { backgroundColor: '#da0000' }]} />
+            <View style={[styles.flagStripe, { backgroundColor:themeColor7.bgColor(1)}]} />
+            <View style={[styles.flagStripe, { backgroundColor:themeColor4.bgColor(1)}]} />
+            <View style={[styles.flagStripe, { backgroundColor:themeColor6.bgColor(1)}]} />
           </View>
           <Text style={styles.flagText}>I.R.{"\n"}IRAN</Text>
         </View>
@@ -532,7 +532,7 @@ const styles = StyleSheet.create({
   },
   vehicleTypeBox: {
     width: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: themeColor4.bgColor(1),
     borderRadius: 10,
     padding: 15,
   },
@@ -544,12 +544,12 @@ const styles = StyleSheet.create({
   },
   infoBox: {
     width: '100%',
-    backgroundColor: '#e3f2fd',
+    backgroundColor: themeColor4.bgColor(1),
     borderRadius: 8,
     padding: 15,
     marginVertical: 10,
     borderLeftWidth: 4,
-    borderLeftColor: '#2196F3',
+    borderLeftColor: themeColor8.bgColor(1),
   },
   infoText: {
     ...NewStyles.text,
@@ -559,7 +559,7 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     width: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: themeColor4.bgColor(1),
     borderRadius: 10,
     padding: 15,
     gap: 10,
@@ -587,11 +587,11 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: themeColor3.bgColor(0.3),
     borderRadius: 8,
     padding: 10,
     fontSize: 14,
-    backgroundColor: '#fff',
+    backgroundColor: themeColor4.bgColor(1),
     textAlign: 'right',
     minHeight: 40,
   },
@@ -607,17 +607,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   editButton: {
-    backgroundColor: '#FF9800',
+    backgroundColor: themeColor11.bgColor(1),
   },
   saveButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: themeColor7.bgColor(1),
   },
   saveButtonDisabled: {
-    backgroundColor: '#9e9e9e',
+    backgroundColor: themeColor3.bgColor(1),
   },
   actionButtonText: {
     ...NewStyles.text4,
-    color: 'white',
+    color: themeColor4.bgColor(1),
     fontSize: 14,
     fontWeight: '600',
   },
@@ -645,10 +645,10 @@ const styles = StyleSheet.create({
   plateBox: {
     width: 260,
     height: 90,
-    backgroundColor: '#fff',
+    backgroundColor: themeColor4.bgColor(1),
     borderRadius: 8,
     borderWidth: 3,
-    borderColor: '#000',
+    borderColor: themeColor10.bgColor(1),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -657,7 +657,7 @@ const styles = StyleSheet.create({
   plateFlagStrip: {
     width: 34,
     height: '100%',
-    backgroundColor: '#0b5394',
+    backgroundColor: themeColor2.bgColor(1),
     borderTopLeftRadius: 4,
     borderBottomLeftRadius: 4,
     alignItems: 'center',
@@ -675,7 +675,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   flagText: {
-    color: '#fff',
+    color: themeColor4.bgColor(1),
     fontSize: 8,
     fontWeight: '700',
     textAlign: 'center',
@@ -711,13 +711,13 @@ const styles = StyleSheet.create({
   plateCityBox: {
     width: 60,
     height: '100%',
-    backgroundColor: '#000',
+    backgroundColor: themeColor10.bgColor(1),
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 4,
   },
   plateCityText: {
-    color: '#fff',
+    color: themeColor10.bgColor(1),
     fontSize: 12,
     fontWeight: '700',
     transform: [{ rotate: '-90deg' }],
@@ -725,9 +725,9 @@ const styles = StyleSheet.create({
   plateCityBoxNew: {
     width: 56,
     height: '100%',
-    backgroundColor: '#fff',
+    backgroundColor: themeColor4.bgColor(1),
     borderLeftWidth: 2,
-    borderLeftColor: '#000',
+    borderLeftColor: themeColor10.bgColor(1),
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -740,16 +740,16 @@ const styles = StyleSheet.create({
   plateCityNumber: {
     fontSize: 20,
     fontWeight: '900',
-    color: '#000',
+    color: themeColor10.bgColor(1),
     marginTop: 4,
   },
   motorPlateBox: {
     width: 220,
     height: 120,
-    backgroundColor: '#fff',
+    backgroundColor: themeColor4.bgColor(1),
     borderRadius: 8,
     borderWidth: 3,
-    borderColor: '#000',
+    borderColor: themeColor10.bgColor(1),
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 10,
@@ -757,7 +757,7 @@ const styles = StyleSheet.create({
   motorFlagStrip: {
     width: 30,
     height: '100%',
-    backgroundColor: '#0b5394',
+    backgroundColor: themeColor2.bgColor(1),
     borderTopLeftRadius: 4,
     borderBottomLeftRadius: 4,
   },
