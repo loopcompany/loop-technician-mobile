@@ -9,8 +9,8 @@ import {
   Image,
   Alert,
   ActivityIndicator,
- KeyboardAvoidingView,
-   ScrollView,
+  KeyboardAvoidingView,
+  ScrollView,
 } from 'react-native';
 import Svg, { Text as SvgText, Line, Rect } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -65,8 +65,8 @@ export default function Login() {
 
 
   function normalizeDigits(s) {
-    const persian = { 
-      '0': '۰', '1': '۱', '2': '۲', '3': '۳', '4': '۴', 
+    const persian = {
+      '0': '۰', '1': '۱', '2': '۲', '3': '۳', '4': '۴',
       '5': '۵', '6': '۶', '7': '۷', '8': '۸', '9': '۹',
       '۰': '۰', '۱': '۱', '۲': '۲', '۳': '۳', '۴': '۴',
       '۵': '۵', '۶': '۶', '۷': '۷', '۸': '۸', '۹': '۹'
@@ -118,7 +118,7 @@ export default function Login() {
     console.log('رمز عبور:', password ? 'وارد شده' : 'خالی');
     console.log('کپچا وارد شده:', captchaInput);
     console.log('کپچا صحیح:', captcha);
-    
+
     if (!referralCode.trim()) {
       console.log('❌ کد پرسنلی خالی است');
       Alert.alert('خطا', 'لطفاً کد پرسنلی را وارد کنید');
@@ -143,7 +143,7 @@ export default function Login() {
     const normalizedCaptcha = normalizeDigits(captcha);
     console.log('کپچا نرمال شده (ورودی):', normalizedInput);
     console.log('کپچا نرمال شده (صحیح):', normalizedCaptcha);
-    
+
     if (normalizedInput !== normalizedCaptcha) {
       console.log('❌ کپچا اشتباه است');
       Alert.alert(
@@ -160,35 +160,35 @@ export default function Login() {
 
   async function handleLogin() {
     if (!validateInputs()) return;
-    
+
     console.log('=== شروع فرآیند لاگین ===');
     console.log('کد پرسنلی:', referralCode);
     console.log('رمز عبور وارد شده:', password ? '***' : 'خالی');
     console.log('کپچا:', captchaInput);
-    
+
     setIsLoading(true);
     try {
       console.log('در حال ارسال درخواست به سرور...');
       const result = await loginTechnician(referralCode.trim(), password.trim());
       console.log('پاسخ سرور:', JSON.stringify(result, null, 2));
-      
+
       if (result.success && result.data?.token) {
         console.log('✅ ورود موفق - توکن دریافت شد');
-        
+
         // Save token first
         await AsyncStorage.setItem('userToken', result.data.token);
         dispatch(setToken(result.data.token));
-        
+
         // Fetch complete profile data using validateToken
         console.log('🔄 در حال دریافت اطلاعات کامل از validateToken...');
-        
+
         try {
           const profileResult = await validateToken();
-          
+
           if (profileResult.success && profileResult.data) {
             console.log('✅ اطلاعات کامل از validateToken دریافت شد');
             console.log('🔍 داده‌های کامل:', JSON.stringify(profileResult.data, null, 2));
-            
+
             // Save complete user data
             console.log('💾 ذخیره اطلاعات کامل در Redux و AsyncStorage');
             await AsyncStorage.setItem('userData', JSON.stringify(profileResult.data));
@@ -206,7 +206,7 @@ export default function Login() {
           await AsyncStorage.setItem('userData', JSON.stringify(result.data));
           dispatch(setUserData(result.data));
         }
-        
+
         // Save credentials if remember me is checked
         if (rememberPassword) {
           console.log('ذخیره اطلاعات ورود برای دفعات بعد...');
@@ -216,9 +216,9 @@ export default function Login() {
           await AsyncStorage.removeItem('savedReferralCode');
           await AsyncStorage.removeItem('savedPassword');
         }
-        
+
         showToastOrAlert('موفق', result.message || 'ورود با موفقیت انجام شد');
-        
+
         // Navigate to FolderScreen
         console.log('هدایت به FolderScreen...');
         navigation.reset({
@@ -227,10 +227,10 @@ export default function Login() {
         });
       } else {
         console.log('❌ ورود ناموفق:', result.message);
-        
+
         // Build detailed error message
         let errorMessage = '';
-        
+
         if (result.errors && typeof result.errors === 'object') {
           // Format validation errors
           const errorList = Object.entries(result.errors).map(([field, messages]) => {
@@ -243,7 +243,7 @@ export default function Login() {
         } else {
           errorMessage = 'خطا در ورود به سیستم';
         }
-        
+
         Alert.alert(
           'خطا در ورود',
           errorMessage,
@@ -256,22 +256,22 @@ export default function Login() {
       console.error('❌❌❌ خطای لاگین:', error);
       console.error('نوع خطا:', error.name);
       console.error('پیام خطا:', error.message);
-      
+
       // Build detailed error message
       let errorMessage = 'خطا در ورود به سیستم\n\n';
-      
+
       if (error.response) {
         console.error('وضعیت HTTP:', error.response.status);
         console.error('داده خطا:', error.response.data);
-        
+
         // Server responded with error
         errorMessage += `وضعیت: ${error.response.status}\n`;
-        
+
         if (error.response.data) {
           if (error.response.data.message) {
             errorMessage += `پیام: ${error.response.data.message}\n`;
           }
-          
+
           if (error.response.data.errors) {
             errorMessage += '\nجزئیات خطاها:\n';
             const errorList = Object.entries(error.response.data.errors).map(([field, messages]) => {
@@ -289,7 +289,7 @@ export default function Login() {
         // Something else happened
         errorMessage += `پیام خطا: ${error.message}`;
       }
-      
+
       Alert.alert(
         'خطا',
         errorMessage,
@@ -305,153 +305,153 @@ export default function Login() {
 
 
   return (
-     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
+    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-           
-    <ImageBackground source={require('../../assets/background2.jpg')} style={styles.background} >
-       <ScrollView>
-      <CustomStatusBar />
-      <View style={styles.spaceContainer}>
-        <View style={styles.logoContainer}>
-          <Image source={require('../../assets/logo.png')} style={styles.logo} resizeMode="contain" />
-        </View>
-        <View style={styles.formContainer}>
-          <View style={styles.inputContainer}>
-            <TextInput 
-              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]} 
-              value={referralCode} 
-              onChangeText={setReferralCode} 
-              placeholder="کد پرسنلی" 
-              placeholderTextColor={themeColor10.bgColor(0.9)} 
-              textAlign="center" 
-              editable={!isLoading}
-              autoCapitalize="characters"
-              maxLength={20}
-            />
-          </View>
-          <View style={styles.inputContainer}>
-            <View style={styles.passwordContainer}>
-              <TouchableOpacity 
-                style={styles.eyeIcon} 
-                onPress={() => setShowPassword(!showPassword)}
-                disabled={isLoading}
-              >
-                <Ionicons name={showPassword ? "eye" : "eye-off"} size={20} color={themeColor10.bgColor(0.9)} />
-              </TouchableOpacity>
-              <TextInput 
-                style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.passwordInputStyle]} 
-                value={password} 
-                onChangeText={setPassword} 
-                placeholder="رمز عبور" 
-                placeholderTextColor={themeColor10.bgColor(0.9)} 
-                secureTextEntry={!showPassword} 
-                textAlign="center" 
-                editable={!isLoading}
-              />
-            </View>
-            <TouchableOpacity 
-              style={styles.checkboxContainer} 
-              onPress={() => setRememberPassword(!rememberPassword)}
-              disabled={isLoading}
-            >
-              <Text style={styles.checkboxText}>ذخیره رمز عبور</Text>
-              <View style={[styles.checkbox, rememberPassword && styles.checkboxChecked]}>
-                {rememberPassword && (
-                  <Ionicons name="checkmark" size={14} color="white" />
-                )}
+
+        <ImageBackground source={require('../../assets/background2.jpg')} style={styles.background} >
+          <ScrollView>
+            <CustomStatusBar />
+            <View style={styles.spaceContainer}>
+              <View style={styles.logoContainer}>
+                <Image source={require('../../assets/logo.png')} style={styles.logo} resizeMode="contain" />
               </View>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.captchaContainer}>
-            <View style={styles.captchaBox}>
-              <Svg width="140" height="50" viewBox="0 0 140 50">
-                <Rect x="0" y="0" width="140" height="50" rx="6" ry="6" fill={themeColor4.bgColor(1)} />
-                {captchaMeta.map((m, i) => (
-                  <SvgText
-                    key={`s${i}`}
-                    x={15 + i * 30}
-                    y={m.y}
-                    fontSize="22"
-                    fill={m.color}
-                    transform={`rotate(${m.rotate} ${15 + i * 30} ${m.y})`}
-                  >
-                    {captcha[i]}
-                  </SvgText>
-                ))}
-                {noiseMeta.map((n, idx) => (
-                  <Line
-                    key={`n${idx}`}
-                    x1={Math.max(2, n.left % 120)}
-                    y1={n.top}
-                    x2={Math.max(10, (n.left + n.width) % 120)}
-                    y2={n.top + 2}
-                    stroke={themeColor3.bgColor(1)}
-                    strokeWidth="1"
-                    opacity="0.4"
+              <View style={styles.formContainer}>
+                <View style={styles.inputContainer}>
+                  <TextInput
+                    style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+                    value={referralCode}
+                    onChangeText={setReferralCode}
+                    placeholder="کد پرسنلی"
+                    placeholderTextColor={themeColor10.bgColor(0.9)}
+                    textAlign="center"
+                    editable={!isLoading}
+                    autoCapitalize="characters"
+                    maxLength={20}
                   />
-                ))}
-              </Svg>
-            </View>
-            <TouchableOpacity 
-              onPress={createNewCaptcha} 
-              style={styles.captchaRefresh}
-              disabled={isLoading}
-            >
-              <Ionicons name="refresh" size={18} color={themeColor10.bgColor(1)} />
-            </TouchableOpacity>
+                </View>
+                <View style={styles.inputContainer}>
+                  <View style={styles.passwordContainer}>
+                    <TouchableOpacity
+                      style={styles.eyeIcon}
+                      onPress={() => setShowPassword(!showPassword)}
+                      disabled={isLoading}
+                    >
+                      <Ionicons name={showPassword ? "eye" : "eye-off"} size={20} color={themeColor10.bgColor(0.9)} />
+                    </TouchableOpacity>
+                    <TextInput
+                      style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.passwordInputStyle]}
+                      value={password}
+                      onChangeText={setPassword}
+                      placeholder="رمز عبور"
+                      placeholderTextColor={themeColor10.bgColor(0.9)}
+                      secureTextEntry={!showPassword}
+                      textAlign="center"
+                      editable={!isLoading}
+                    />
+                  </View>
+                  <TouchableOpacity
+                    style={styles.checkboxContainer}
+                    onPress={() => setRememberPassword(!rememberPassword)}
+                    disabled={isLoading}
+                  >
+                    <Text style={styles.checkboxText}>ذخیره رمز عبور</Text>
+                    <View style={[styles.checkbox, rememberPassword && styles.checkboxChecked]}>
+                      {rememberPassword && (
+                        <Ionicons name="checkmark" size={14} color="white" />
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.captchaContainer}>
+                  <View style={styles.captchaBox}>
+                    <Svg width="140" height="50" viewBox="0 0 140 50">
+                      <Rect x="0" y="0" width="140" height="50" rx="6" ry="6" fill={themeColor4.bgColor(1)} />
+                      {captchaMeta.map((m, i) => (
+                        <SvgText
+                          key={`s${i}`}
+                          x={15 + i * 30}
+                          y={m.y}
+                          fontSize="22"
+                          fill={m.color}
+                          transform={`rotate(${m.rotate} ${15 + i * 30} ${m.y})`}
+                        >
+                          {captcha[i]}
+                        </SvgText>
+                      ))}
+                      {noiseMeta.map((n, idx) => (
+                        <Line
+                          key={`n${idx}`}
+                          x1={Math.max(2, n.left % 120)}
+                          y1={n.top}
+                          x2={Math.max(10, (n.left + n.width) % 120)}
+                          y2={n.top + 2}
+                          stroke={themeColor3.bgColor(1)}
+                          strokeWidth="1"
+                          opacity="0.4"
+                        />
+                      ))}
+                    </Svg>
+                  </View>
+                  <TouchableOpacity
+                    onPress={createNewCaptcha}
+                    style={styles.captchaRefresh}
+                    disabled={isLoading}
+                  >
+                    <Ionicons name="refresh" size={18} color={themeColor10.bgColor(1)} />
+                  </TouchableOpacity>
 
-            <TextInput 
-              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.captchaInput]} 
-              value={captchaInput} 
-              onChangeText={setCaptchaInput} 
-              placeholder="کد امنیتی" 
-              placeholderTextColor={themeColor10.bgColor(0.9)} 
-              textAlign="center" 
-              editable={!isLoading}
-              keyboardType="numeric"
-              maxLength={4}
-            />
-          </View>
-          <View style={styles.buttonContainer}>
-            {isLoading ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={themeColor7.bgColor(1)} />
-                <Text style={styles.loadingText}>در حال ورود...</Text>
+                  <TextInput
+                    style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.captchaInput]}
+                    value={captchaInput}
+                    onChangeText={setCaptchaInput}
+                    placeholder="کد امنیتی"
+                    placeholderTextColor={themeColor10.bgColor(0.9)}
+                    textAlign="center"
+                    editable={!isLoading}
+                    keyboardType="numeric"
+                    maxLength={4}
+                  />
+                </View>
+                <View style={styles.buttonContainer}>
+                  {isLoading ? (
+                    <View style={styles.loadingContainer}>
+                      <ActivityIndicator size="large" color={themeColor7.bgColor(1)} />
+                      <Text style={styles.loadingText}>در حال ورود...</Text>
+                    </View>
+                  ) : (
+                    <Button
+                      title="ورود"
+                      onPress={() => {
+                        console.log('🔘 دکمه ورود کلیک شد');
+                        handleLogin();
+                      }}
+                      style={styles.loginButtonCustom}
+                    />
+                  )}
+                </View>
+
               </View>
-            ) : (
-              <Button 
-                title="ورود" 
-                onPress={() => {
-                  console.log('🔘 دکمه ورود کلیک شد');
-                  handleLogin();
-                }} 
-                style={styles.loginButtonCustom} 
-              />
-            )}
-          </View>
 
-        </View>
+              <View style={styles.bottomSection}>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate("SignInScreen")}
+                  disabled={isLoading}
+                >
+                  <Text style={styles.bottomSubtitle}>رمز عبور خود را فراموش کرده اید؟</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate("SignIn")}
+                  disabled={isLoading}
+                >
+                  <Text style={styles.bottomFooter}>ثبت نام پرسنل جدید</Text>
+                </TouchableOpacity>
+              </View>
 
-        <View style={styles.bottomSection}>
-          <TouchableOpacity 
-            onPress={() => navigation.navigate("SignInScreen")}
-            disabled={isLoading}
-          >
-            <Text style={styles.bottomSubtitle}>رمز عبور خود را فراموش کرده اید؟</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            onPress={() => navigation.navigate("SignIn")}
-            disabled={isLoading}
-          >
-            <Text style={styles.bottomFooter}>ثبت نام پرسنل جدید</Text>
-          </TouchableOpacity>
-        </View>
+            </View>
+          </ScrollView>
+        </ImageBackground>
 
-      </View>
-        </ScrollView>
-    </ImageBackground>
-
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

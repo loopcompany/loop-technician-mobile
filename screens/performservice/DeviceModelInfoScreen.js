@@ -16,7 +16,8 @@ import ScreenHeaders from '../../components/ScreenHeaders';
 import ScreenTitle from '../../components/ScreenTitle';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor10 } from '../../theme/Color';
-export default function DeviceModelInfoScreen({ navigation }) {
+export default function DeviceModelInfoScreen({ navigation, route }) {
+  const { orderId } = route?.params || {};
 
   return (
     <LinearGradient
@@ -76,7 +77,7 @@ export default function DeviceModelInfoScreen({ navigation }) {
 
           <TouchableOpacity
             style={styles.sectionButton}
-            onPress={() => navigation.navigate('AttendanceScreen')}
+            onPress={() => navigation.navigate('AttendanceScreen', { orderId })}
           >
             <Text style={NewStyles.text4}> مراجعه / حضور</Text>
           </TouchableOpacity>

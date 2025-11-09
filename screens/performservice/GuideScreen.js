@@ -1,19 +1,8 @@
 // GuideScreen.js
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  ImageBackground,
-  I18nManager,
-} from 'react-native';
-import Footer from '../Footer';
+import { View, Text, StyleSheet, Image, ImageBackground, } from 'react-native';
 import NewStyles from '../../styles/NewStyles';
-import ScreenTitle from '../../components/ScreenTitle';
 import Button from '../../components/Button';
-I18nManager.forceRTL(true); // فعال کردن RTL برای زبان فارسی
 
 export default function GuideScreen({ navigation }) {
   return (
@@ -25,15 +14,15 @@ export default function GuideScreen({ navigation }) {
       <Image source={require('../../assets/logo.png')} style={NewStyles.logo} />
 
       {/* دکمه نرم افزار */}
-      <View style={{ width: '100%', paddingHorizontal:20 }}>
-        <Button title={'نرم افزار'} onPress={() => navigation.navigate('SoftwareInstallScreen')}/>
+      <View style={{ width: '100%', paddingHorizontal: 20 }}>
+        <Button title={'نرم افزار'} onPress={() => navigation.navigate('SoftwareInstallScreen')} />
       </View>
-      <View style={{ width: '100%', paddingHorizontal:20 }}>
-        <Button title={'سخت افزار'} onPress={() => navigation.navigate('HardwareIssueScreen')}/>
+      <View style={{ width: '100%', paddingHorizontal: 20 }}>
+        <Button title={'سخت افزار'} onPress={() => navigation.navigate('HardwareIssueScreen')} />
       </View>
 
       {/* دکمه سخت افزار */}
-      
+
 
       {/* راهنمایی‌ها */}
       <View style={[styles.guideBox, NewStyles.border10]}>
@@ -57,7 +46,7 @@ export default function GuideScreen({ navigation }) {
   <Text style={styles.phoneText}>21164552</Text>
 </View> */}
       <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'flex-end' }}>
-  
+
       </View>
 
     </ImageBackground>

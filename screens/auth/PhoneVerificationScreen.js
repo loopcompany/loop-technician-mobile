@@ -2,60 +2,84 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   Alert,
-  ActivityIndicator,
+  ImageBackground,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
 } from 'react-native';
+import {
+  CodeField,
+  Cursor,
+  useBlurOnFulfill,
+  useClearByFocusCell,
+} from 'react-native-confirmation-code-field';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NewStyles from '../../styles/NewStyles';
-import { themeColor0, themeColor1, themeColor3, themeColor4 } from '../../theme/Color';
+import { themeColor0, themeColor1, themeColor3, themeColor10 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import Button from '../../components/Button';
 import { verifyPhoneNumber, resendVerificationCode } from '../../services/Api';
-import { validateVerificationCode } from '../../utils/validation';
+import { formatTime } from '../../helpers/Common';
 
 export default function PhoneVerificationScreen({ navigation, route }) {
   const { phone, technicianId } = route.params;
   const [verificationCode, setVerificationCode] = useState('');
   const [loading, setLoading] = useState(false);
-  const [resendLoading, setResendLoading] = useState(false);
-  const [countdown, setCountdown] = useState(60);
+  const [error, setError] = useState('');
+  const [timer, setTimer] = useState(120); // 2 minutes
   const [canResend, setCanResend] = useState(false);
 
-  // Countdown timer for resend button
+  // CodeField hooks
+  const ref = useBlurOnFulfill({ value: verificationCode, cellCount: 6 });
+  const [props, getCellOnLayoutHandler] = useClearByFocusCell({
+    value: verificationCode,
+    setValue: setVerificationCode,
+  });
+
+  // Timer for resend button
   useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
+    if (timer > 0) {
+      const interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(interval);
     } else {
       setCanResend(true);
     }
-  }, [countdown]);
+  }, [timer]);
+
+  // Auto-submit when code is complete
+  useEffect(() => {
+    if (verificationCode.length === 6) {
+      handleVerifyCode();
+    }
+  }, [verificationCode]);
 
   const handleVerifyCode = async () => {
-    // Validate input
-    const validation = validateVerificationCode(verificationCode);
-    if (!validation.isValid) {
-      Alert.alert('خطا', validation.message);
+    if (verificationCode.length !== 6) {
+      setError('لطفاً کد 6 رقمی را کامل وارد کنید');
       return;
     }
 
+    setLoading(true);
+    setError('');
+
     try {
-      setLoading(true);
       const result = await verifyPhoneNumber(phone, verificationCode);
 
       if (result.success) {
         Alert.alert(
           'موفقیت',
-          result.message,
+          result.message || 'ثبت نام با موفقیت انجام شد',
           [
             {
               text: 'تایید',
               onPress: () => {
                 // Navigate to login screen
-                navigation.navigate('LoginScreen', {
+                navigation.navigate('Login', {
                   phone,
                   verified: true,
                 });
@@ -64,193 +88,276 @@ export default function PhoneVerificationScreen({ navigation, route }) {
           ]
         );
       } else {
-        Alert.alert('خطا', result.message);
+        setError(result.message || 'کد وارد شده صحیح نیست');
+        setVerificationCode('');
       }
     } catch (error) {
       console.error('Verification error:', error);
-      Alert.alert('خطا', 'خطا در تأیید شماره تلفن');
+      
+      let errorMessage = 'خطا در تأیید شماره تلفن';
+      
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        
+        if (errorData.errors) {
+          const validationErrors = Object.values(errorData.errors).flat();
+          errorMessage = validationErrors[0] || errorMessage;
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      }
+      
+      setError(errorMessage);
+      setVerificationCode('');
     } finally {
       setLoading(false);
     }
   };
 
   const handleResendCode = async () => {
+    if (!canResend) return;
+
+    setLoading(true);
+    setError('');
+    
     try {
-      setResendLoading(true);
       const result = await resendVerificationCode(phone);
 
       if (result.success) {
-        Alert.alert('موفقیت', result.message);
-        setCountdown(60);
+        Alert.alert('موفقیت', result.message || 'کد تأیید مجدداً ارسال شد');
+        setTimer(120);
         setCanResend(false);
         setVerificationCode('');
       } else {
-        Alert.alert('خطا', result.message);
+        setError(result.message || 'خطا در ارسال مجدد کد');
       }
     } catch (error) {
       console.error('Resend error:', error);
-      Alert.alert('خطا', 'خطا در ارسال مجدد کد');
+      
+      let errorMessage = 'خطا در ارسال مجدد کد';
+      
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        
+        if (errorData.errors) {
+          const validationErrors = Object.values(errorData.errors).flat();
+          errorMessage = validationErrors[0] || errorMessage;
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      }
+      
+      setError(errorMessage);
     } finally {
-      setResendLoading(false);
+      setLoading(false);
     }
+  };
+
+  const handleEditMobile = () => {
+    Alert.alert(
+      'ویرایش شماره موبایل',
+      'آیا می‌خواهید شماره موبایل را ویرایش کنید؟',
+      [
+        { text: 'لغو', style: 'cancel' },
+        { text: 'بله', onPress: () => navigation.goBack() }
+      ]
+    );
   };
 
   return (
     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
-      <CustomStatusBar />
-
-      <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>تأیید شماره تلفن</Text>
-          <Text style={styles.subtitle}>
-            کد تأیید به شماره {phone} ارسال شد
-          </Text>
-        </View>
-
-        {/* Verification Code Input */}
-        <View style={styles.formContainer}>
-          <Text style={styles.label}>کد تأیید :</Text>
-          <TextInput
-            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.codeInput]}
-            value={verificationCode}
-            onChangeText={setVerificationCode}
-            placeholder="123456"
-            keyboardType="number-pad"
-            maxLength={6}
-            textAlign="center"
-          />
-
-          <Text style={styles.hint}>
-            کد تأیید 4 تا 6 رقمی که به شماره شما پیامک شده را وارد کنید
-          </Text>
-        </View>
-
-        {/* Verify Button */}
-        <Button
-          title={loading ? 'در حال تأیید...' : 'تأیید شماره تلفن'}
-          onPress={handleVerifyCode}
-          style={styles.verifyButton}
-          disabled={loading || verificationCode.length < 4}
-        />
-
-        {loading && (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={themeColor1.bgColor(1)} />
-            <Text style={styles.loadingText}>در حال تأیید کد...</Text>
-          </View>
-        )}
-
-        {/* Resend Section */}
-        <View style={styles.resendSection}>
-          {!canResend ? (
-            <Text style={styles.countdownText}>
-              ارسال مجدد کد در {countdown} ثانیه
-            </Text>
-          ) : (
-            <TouchableOpacity
-              style={styles.resendButton}
-              onPress={handleResendCode}
-              disabled={resendLoading}
-            >
-              {resendLoading ? (
-                <ActivityIndicator size="small" color={themeColor1.bgColor(1)} />
-              ) : (
-                <Text style={styles.resendButtonText}>ارسال مجدد کد</Text>
-              )}
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* Back Button */}
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
+      <ImageBackground
+        source={require('../../assets/background2.jpg')}
+        style={styles.background}
+      >
+        <CustomStatusBar />
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
         >
-          <Text style={styles.backButtonText}>بازگشت به صفحه ثبت نام</Text>
-        </TouchableOpacity>
-      </View>
+          <ScrollView
+            contentContainerStyle={styles.container}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={[styles.card, NewStyles.center]}>
+              {/* Instructions */}
+              <View style={styles.instructionContainer}>
+                <Text style={NewStyles.title4}>
+                  کد تأیید ارسال شده را وارد کنید
+                </Text>
+                <Text style={NewStyles.text4}>
+                  کد 6 رقمی به شماره موبایل
+                </Text>
+                <TouchableOpacity onPress={handleEditMobile}>
+                  <Text style={styles.mobileNumber}>
+                    {phone}
+                  </Text>
+                </TouchableOpacity>
+                <Text style={NewStyles.text4}>
+                  ارسال شده است
+                </Text>
+              </View>
+
+              {/* Code Input Field */}
+              <View style={styles.codeContainer}>
+                <CodeField
+                  ref={ref}
+                  {...props}
+                  value={verificationCode}
+                  onChangeText={setVerificationCode}
+                  cellCount={6}
+                  keyboardType="number-pad"
+                  textContentType="oneTimeCode"
+                  autoComplete={Platform.select({
+                    android: 'sms-otp',
+                    default: 'one-time-code',
+                  })}
+                  renderCell={({ index, symbol, isFocused }) => (
+                    <Text
+                      key={index}
+                      style={[
+                        styles.codeCell,
+                        isFocused && styles.codeCellFocused,
+                        NewStyles.border10
+                      ]}
+                      onLayout={getCellOnLayoutHandler(index)}
+                    >
+                      {symbol || (isFocused ? <Cursor /> : null)}
+                    </Text>
+                  )}
+                />
+              </View>
+
+              {/* Error Message */}
+              {error ? (
+                <Text style={styles.errorText}>{error}</Text>
+              ) : null}
+
+              {/* Timer and Resend */}
+              <View style={styles.timerContainer}>
+                {!canResend ? (
+                  <Text style={NewStyles.text4}>
+                    ارسال مجدد کد در {formatTime(timer)}
+                  </Text>
+                ) : (
+                  <TouchableOpacity
+                    onPress={handleResendCode}
+                    disabled={loading}
+                    style={styles.resendButton}
+                  >
+                    <Text style={styles.resendButtonText}>
+                      ارسال مجدد کد
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {/* Verify Button */}
+              <Button
+                title="تأیید"
+                loading={loading}
+                onPress={handleVerifyCode}
+                style={styles.verifyButton}
+              />
+
+              {/* Back Button */}
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => navigation.goBack()}
+              >
+                <Text style={NewStyles.text1}>بازگشت به صفحه ثبت نام</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </ImageBackground>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  background: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingVertical: 30,
+  },
+  container: {
+    flexGrow: 1,
     justifyContent: 'center',
-  },
-  header: {
     alignItems: 'center',
-    marginBottom: 40,
+    paddingHorizontal: 20,
+    paddingVertical: 40,
   },
-  title: {
-    ...NewStyles.title10,
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
+  card: {
+    width: '95%',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingVertical: 30,
+    paddingHorizontal: 20,
+    borderRadius: 15,
+    alignItems: 'center',
+    gap: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
-  subtitle: {
-    ...NewStyles.text3,
+  instructionContainer: {
+    alignItems: 'center',
+    gap: 8,
+  },
+  mobileNumber: {
     fontSize: 16,
-    color: themeColor3.bgColor(1),
+    fontFamily: 'VazirBold',
+    color: themeColor1.bgColor(1),
     textAlign: 'center',
-    lineHeight: 24,
+    textDecorationLine: 'underline',
   },
-  formContainer: {
-    marginBottom: 30,
-  },
-  label: {
-    ...NewStyles.text10,
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  codeInput: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    letterSpacing: 5,
-    marginBottom: 15,
-  },
-  hint: {
-    ...NewStyles.text3,
-    fontSize: 14,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  verifyButton: {
-    marginBottom: 20,
-  },
-  loadingContainer: {
+  codeContainer: {
+    width: '100%',
     alignItems: 'center',
-    marginBottom: 20,
+    marginVertical: 20,
   },
-  loadingText: {
-    ...NewStyles.text3,
+  codeCell: {
+    width: 45,
+    height: 50,
+    backgroundColor: themeColor3.bgColor(0.7),
+    fontSize: 20,
+    color: themeColor0.bgColor(1),
+    fontFamily: 'VazirBold',
+    textAlign: 'center',
+    lineHeight: 50,
+    marginHorizontal: 5,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  codeCellFocused: {
+    borderColor: themeColor1.bgColor(1),
+    backgroundColor: themeColor3.bgColor(0.9),
+  },
+  errorText: {
+    color: '#ff4444',
+    fontFamily: 'VazirLight',
     fontSize: 14,
-
-    marginTop: 10,
+    textAlign: 'center',
   },
-  resendSection: {
+  timerContainer: {
     alignItems: 'center',
-    marginBottom: 30,
-  },
-  countdownText: {
-    ...NewStyles.text3,
-    fontSize: 14,
-
+    minHeight: 40,
+    justifyContent: 'center',
   },
   resendButton: {
     paddingVertical: 10,
     paddingHorizontal: 20,
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: themeColor1.bgColor(1),
+    borderRadius: 8,
   },
   resendButtonText: {
-    ...NewStyles.text1,
-    fontSize: 16,
+    fontSize: 14,
+    fontFamily: 'VazirBold',
     color: themeColor1.bgColor(1),
-    fontWeight: '600',
+  },
+  verifyButton: {
+    width: '100%',
+    marginTop: 10,
   },
   backButton: {
     alignItems: 'center',
@@ -258,6 +365,7 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 14,
-    color: themeColor3.bgColor(1),
+    fontFamily: 'VazirLight',
+    color: themeColor10.bgColor(0.7),
   },
 });

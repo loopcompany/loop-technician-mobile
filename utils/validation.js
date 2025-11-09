@@ -133,7 +133,7 @@ export const convertShamsiToGregorian = (shamsiDate) => {
   
   // Simple conversion (approximate)
   // For more accurate conversion, you could use a proper Persian calendar library
-  const gregorianYear = persianYear + 621;
+  let gregorianYear = persianYear + 621;  // تغییر از const به let
   let gregorianMonth = persianMonth + 3;
   let gregorianDay = persianDay + 21;
   

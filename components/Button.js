@@ -9,36 +9,32 @@ import React from "react";
 import { themeColor0, themeColor10, themeColor4 } from "../theme/Color";
 import NewStyles from "../styles/NewStyles";
 
-export default function Button({ onPress, title, style, loading }) {
+// Pre-calculate colors to prevent re-renders
+const BUTTON_BG_COLOR = themeColor0.bgColor(1);
+const LOADING_COLOR = themeColor4.bgColor(1);
+
+export default function Button({ onPress, title, style, loading, disabled, textStyle }) {
   return (
     <TouchableOpacity
-      disabled={loading}
-      style={[styles.button, NewStyles.shadow, NewStyles.border10,NewStyles.center, style]}
+      disabled={loading || disabled}
+      style={[styles.button, NewStyles.shadow, NewStyles.border10, NewStyles.center, style]}
       onPress={onPress}
     >
       {loading && (
-        <ActivityIndicator size={"small"} color={themeColor4.bgColor(1)} />
+        <ActivityIndicator size={"small"} color={LOADING_COLOR} />
       )}
-      {!loading && <Text style={NewStyles.title1}>{title}</Text>}
+      {!loading && <Text style={[NewStyles.title1,textStyle]}>{title}</Text>}
     </TouchableOpacity>
   );
 }
 const styles = StyleSheet.create({
   button: {
-    backgroundColor:themeColor0.bgColor(1),
-    
-    
-    // paddingVertical: 12,
+    backgroundColor: BUTTON_BG_COLOR,
     paddingHorizontal: 40,
     marginVertical: 10,
-    // shadowColor: "#00f",
-    // shadowOffset: { width: 0, height: 0 },
-    // shadowOpacity: 0.9,
-    // shadowRadius: 10,
-    // elevation: 5,
     width: "100%",
-    height:50,
+    height: 50,
     alignItems: "center",
   },
-  
+
 });

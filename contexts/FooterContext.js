@@ -37,9 +37,9 @@ export const FooterProvider = ({ children }) => {
   const [menuItems, setMenuItems] = useState([
     { id: 1, title: ' سازمانی / شرکتی', screen: 'DeviceOrderSummary' },
     { id: 2, title: ' ثبت نام دوره های آموزشی ', screen: 'CorporateScreen' },
-    { id: 3, title: 'ضمانت نامه/گارانتی', screen: 'OrdersScreen' },
-    { id: 4, title: 'سوالات متداول', screen: 'TransactionsScreen' },
-    { id: 5, title: ' قوانین/درباره لوپ', screen: 'CanceledOrdersScreen' },
+    { id: 3, title: 'ضمانت نامه/گارانتی', screen: 'WarrantyScreen' },
+    { id: 4, title: 'سوالات متداول', screen: 'LearnMoreScreen' },
+    { id: 5, title: ' قوانین/درباره لوپ', screen: 'AboutScreen' },
   ]);
   const [menuVisible, setMenuVisible] = useState(false);
 

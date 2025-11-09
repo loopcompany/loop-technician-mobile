@@ -14,7 +14,9 @@ import ScreenTitle from '../../components/ScreenTitle';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor10, themeColor2, themeColor8 } from '../../theme/Color';
 
-export default function UserHistoryScreen({ navigation }) {
+export default function UserHistoryScreen({ navigation, route }) {
+  const { orderId } = route?.params || {};
+  
   return (
     <LinearGradient 
       colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
@@ -25,7 +27,7 @@ export default function UserHistoryScreen({ navigation }) {
       <ScreenHeaders 
         title={' انجام سرویس'} 
         onPressLeft={() => navigation.goBack()} 
-        onPressRight={() => navigation.navigate('AttendanceScreen')} 
+        onPressRight={() => navigation.navigate('AttendanceScreen', { orderId })} 
       />
       <ScrollView contentContainerStyle={styles.container}>
         <ScreenTitle title={'سابقه کاربر'} />

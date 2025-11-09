@@ -10,6 +10,7 @@ import {
   ActivityIndicator
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Footer from './Footer';
 import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
@@ -87,46 +88,73 @@ export default function ChangePasswordScreen({ navigation }) {
 
     setLoading(true);
     try {
+      console.log('📤 ارسال درخواست تغییر رمز عبور به API...');
+      
       const result = await changePassword({
         current_password: currentPassword,
         new_password: newPassword,
         new_password_confirmation: confirmPassword
       });
 
+      console.log('📥 پاسخ API:', result);
+
       if (result.success) {
         Alert.alert(
           'موفقیت',
-          'رمز عبور با موفقیت تغییر یافت.\n\nتوجه: از سایر دستگاه‌ها خارج شدید.',
+          'رمز عبور با موفقیت تغییر یافت.\n\nلطفاً با رمز جدید وارد شوید.',
           [
             {
-              text: 'باشه',
-              onPress: () => {
-                // Clear inputs
-                setCurrentPassword('');
-                setNewPassword('');
-                setConfirmPassword('');
-                navigation.goBack();
+              text: 'ورود مجدد',
+              onPress: async () => {
+                try {
+                  // Clear authentication data
+                  console.log('🚪 در حال خروج و پاک کردن اطلاعات...');
+                  await AsyncStorage.removeItem('userToken');
+                  await AsyncStorage.removeItem('userData');
+                  
+                  // Clear inputs
+                  setCurrentPassword('');
+                  setNewPassword('');
+                  setConfirmPassword('');
+                  
+                  // Navigate to login screen and reset navigation stack
+                  navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'Login' }],
+                  });
+                  
+                  console.log('✅ خروج موفق - هدایت به صفحه ورود');
+                } catch (error) {
+                  console.error('❌ خطا در پاک کردن اطلاعات:', error);
+                  // Even if clearing fails, still navigate to login
+                  navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'Login' }],
+                  });
+                }
               }
             }
           ]
         );
       } else {
-        // Handle specific error codes
+        // Handle specific error codes from API
         if (result.error_code === 'INCORRECT_PASSWORD') {
           Alert.alert('خطا', 'رمز عبور فعلی نادرست است');
         } else if (result.error_code === 'SAME_PASSWORD') {
           Alert.alert('خطا', 'رمز عبور جدید نباید با رمز عبور فعلی یکسان باشد');
         } else if (result.errors) {
           // Show validation errors from backend
-          const errorMessages = Object.values(result.errors).flat().join('\n');
+          const errorMessages = Object.values(result.errors)
+            .flat()
+            .join('\n\n');
           Alert.alert('خطای اعتبارسنجی', errorMessages);
         } else {
           Alert.alert('خطا', result.message || 'مشکلی در تغییر رمز عبور پیش آمد');
         }
       }
     } catch (error) {
-      console.error('خطا در تغییر رمز:', error);
-      Alert.alert('خطا', 'مشکلی در ارتباط با سرور پیش آمد');
+      console.error('❌ خطا در تغییر رمز:', error);
+      Alert.alert('خطا', 'مشکلی در ارتباط با سرور پیش آمد. لطفاً دوباره تلاش کنید.');
     } finally {
       setLoading(false);
     }

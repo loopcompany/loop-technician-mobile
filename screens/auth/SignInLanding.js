@@ -1,22 +1,8 @@
 import React from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  ImageBackground,
-  TouchableOpacity,
-  I18nManager,
-} from "react-native";
+import { StyleSheet, Text, View, Image, ImageBackground, TouchableOpacity } from "react-native";
 import Button from "../../components/Button";
 import NewStyles from "../../styles/NewStyles";
-// import * as SplashScreen from 'expo-splash-screen';
 
-// قفل کردن نمایش صفحه تا فونت ها و RTL ست بشه
-// SplashScreen.preventAutoHideAsync();
-
-// اطمینان از راست‌چین بودن اپ
-I18nManager.forceRTL(false);
 
 export default function SignInLanding({ navigation }) {
   return (
@@ -31,12 +17,6 @@ export default function SignInLanding({ navigation }) {
         style={NewStyles.logo}
         resizeMode="contain"
       />
-
-      {/* <TouchableOpacity style={styles.button} onPress={()=>{
-            navigation.navigate('LoginScreen')
-        }}>
-          <Text style={styles.buttonText}>ورود</Text>
-        </TouchableOpacity> */}
       <Button
         style={{ width: "70%" }}
         title={"ورود"}

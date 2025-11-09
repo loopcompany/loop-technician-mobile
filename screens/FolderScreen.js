@@ -1,15 +1,5 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  ImageBackground,
-  I18nManager,
-  ScrollView,
-  FlatList,
-} from "react-native";
+import { View, StyleSheet, Image, ImageBackground, ScrollView, } from "react-native";
 import { useFooter } from "../contexts/FooterContext";
 import Folder from "../components/Folder";
 import NewStyles from "../styles/NewStyles";
@@ -19,16 +9,16 @@ import { useSelector } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function FolderScreen({ navigation }) {
-  const userToken = useSelector(state=>state.auth.token)
+  const userToken = useSelector(state => state.auth.token)
   const { showFooter, hideFooter, isFooterVisible } = useFooter();
-  
+
   // تابع دسترسی به ابجکت های یک استیت
   console.log(userToken);
-  const fetchToken = async()=>{
+  const fetchToken = async () => {
     const userId = await AsyncStorage.getItem("userId");
     // گت کوکی
     console.log(userId);
-    
+
   }
   // const [menuVisible, setMenuVisible] = useState(false);
   // const [selectedItems, setSelectedItems] = useState({});
@@ -65,7 +55,7 @@ export default function FolderScreen({ navigation }) {
     {
       id: 1,
       title: " انجام سرویس",
-      screen:'OrderListScreen'
+      screen: 'OrderListScreen'
     },
     {
       id: 2,
@@ -85,76 +75,81 @@ export default function FolderScreen({ navigation }) {
     {
       id: 5,
       title: "عملکرد من",
-      screen:'PerformanceScreen'
+      screen: 'PerformanceScreen'
     },
     {
       id: 6,
       title: " تغییر رمز",
-      screen:'ChangePasswordScreen'
+      screen: 'ChangePasswordScreen'
     },
     {
       id: 7,
       title: " درخواست ها",
-      screen:'RequestsScreen'
+      screen: 'RequestsScreen'
     },
     {
       id: 8,
       title: " پیام ",
-      screen:'MessageScreen'
+      screen: 'MessageScreen'
     },
+    // {
+    //   id: 9,
+    //   title: "چت با کاربران",
+    //   screen:'ChatListScreen'
+    // },
     {
       id: 9,
       title: " حریم خصوصی",
-      screen:'PrivacyScreen'
+      screen: 'PrivacyScreen'
     },
     {
       id: 10,
       title: "نظرات و پیشنهادات ",
-      screen:'FeedbackSuggestionScreen'
+      screen: 'FeedbackSuggestionScreen'
     },
-    {
-      id: 11,
-      title: " لپ تاپ امانت",
-      screen:'LoanerLaptopScreen'
-    },
-    {
-      id: 12,
-      title: "تحویل/دریافت ",
-      screen:'DeliveryReceiptScreen'
-    },
+    // {
+    //   id: 11,
+    //   title: " لپ تاپ امانت",
+    //   screen: 'LoanerLaptopScreen'
+    // },
+    // {
+    //   id: 12,
+    //   title: "تحویل/دریافت ",
+    //   screen: 'DeliveryReceiptScreen'
+    // },
     {
       id: 13,
       title: "طرح های تشویقی ",
-      screen:'IncentiveSchemeScreen'
+      screen: 'IncentivePlansScreen'
     },
     {
       id: 14,
       title: "آرشیو عکس ",
-      screen:'PhotoArchiveScreen'
+      screen: 'PhotoArchiveScreen'
     },
     {
       id: 15,
       title: " نرخنامه",
-      screen:'RateListScreen'
+      screen: 'RateListScreen'
     },
     {
       id: 16,
       title: "فکر و بکر ",
-      screen:'ThinkingScreen'
+      screen: 'GameMenu'
     },
     {
       id: 17,
       title: " یادداشت",
-      screen:'NotesScreen'
+      screen: 'NotesScreen'
     },
   ];
-  fetchToken() 
+  fetchToken()
   return (
     <ImageBackground
       source={require("../assets/background2.jpg")}
       style={NewStyles.container}
     >
-      <CustomStatusBar/>
+      <CustomStatusBar />
       <View style={{ flex: 1 }}>
         {/* لوگو بالا */}
         <View style={styles.logoWrapper}>
@@ -163,21 +158,21 @@ export default function FolderScreen({ navigation }) {
         <ScrollView contentContainerStyle={styles.folderList}>
           <View style={styles.folderContainer}>
             {folders.map((item, index) => (
-              <Folder 
+              <Folder
                 key={item.id}
-                title={item?.title} 
-                onPress={()=>{
-                  if(item?.screen){
+                title={item?.title}
+                onPress={() => {
+                  if (item?.screen) {
                     navigation.navigate(item?.screen)
-                  }else{
+                  } else {
                     showToastOrAlert('به زودی')
                   }
-                }} 
+                }}
               />
             ))}
           </View>
         </ScrollView>
-        
+
         {/* Footer is now managed globally through context */}
       </View>
     </ImageBackground>

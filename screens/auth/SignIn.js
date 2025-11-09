@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ImageBackground, KeyboardAvoidingView, } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import NewStyles from '../../styles/NewStyles';
-import { themeColor0, themeColor1, themeColor4, themeColor10, themeColor3, themeColor2 } from '../../theme/Color';
+import { themeColor0, themeColor1, themeColor4, themeColor10, themeColor3, themeColor2, themeColor6 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import Button from '../../components/Button';
 import DatePickerModal from '../../components/DatePickerModal';
 import * as DocumentPicker from 'expo-document-picker';
 import { Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { getFormatedDate } from 'react-native-modern-datepicker';
 import {
   registerTechnician,
   getExpertises,
@@ -17,6 +18,25 @@ import {
   testExpertisesEndpoint
 } from '../../services/Api';
 import { validateTechnicianRegistration } from '../../utils/validation';
+
+// Pre-calculate colors outside component to prevent re-renders
+const HEADER_BG_COLOR = themeColor0.bgColor(0.8);
+const TEXT_COLOR_FULL = themeColor10.bgColor(1);
+const TEXT_COLOR_HALF = themeColor10.bgColor(0.5);
+const TEXT_COLOR_07 = themeColor10.bgColor(0.7);
+const TEXT_COLOR_03 = themeColor10.bgColor(0.3);
+const SELECTED_ACTIVITY_BG = themeColor1.bgColor(0.8);
+const BUTTON_BG_COLOR = themeColor1.bgColor(1);
+const BUTTON_TEXT_COLOR = themeColor4.bgColor(1);
+const VALIDATE_BUTTON_BG = themeColor1.bgColor(1);
+const VALIDATE_BUTTON_TEXT = themeColor0.bgColor(1);
+const BACK_BUTTON_BG = themeColor10.bgColor(0.5);
+const LOADING_COLOR = themeColor1.bgColor(1);
+const FORM_BG_095 = themeColor4.bgColor(0.95);
+const FORM_BG_08 = themeColor4.bgColor(0.8);
+const FORM_BG_FULL = themeColor4.bgColor(1);
+const FORM_BORDER_03 = themeColor4.bgColor(0.3);
+const UPLOAD_BUTTON_BG = themeColor2.bgColor(1);
 
 export default function SignIn({ navigation }) {
   const [formData, setFormData] = useState({
@@ -61,56 +81,72 @@ export default function SignIn({ navigation }) {
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [currentPage, setCurrentPage] = useState('personal'); // 'personal' or 'computer'
-  
+  const [fieldErrors, setFieldErrors] = useState({}); // نگهداری خطاهای هر فیلد
+
   // Date picker modals
   const [birthDateModal, setBirthDateModal] = useState(false);
   const [licenceDateModal, setLicenceDateModal] = useState(false);
 
-  // Test API connection and load expertises
-  const testAndLoadExpertises = async () => {
-    console.log('🧪 Testing API connection and loading expertises...');
-    try {
-      // Test connection first
-      const testResult = await testApiConnection();
-      console.log('Connection test result:', testResult);
+  // محاسبه تاریخ امروز به صورت شمسی (یک بار)
+  const todayDate = useMemo(() => {
+    return getFormatedDate(new Date(), 'jYYYY/jMM/jDD');
+  }, []);
 
-      if (testResult.success) {
-        // If connection test succeeded, use the data it already fetched
-        console.log('✅ Using data from connection test');
-        setExpertises(testResult.data?.data || []);
-      } else {
-        // If failed, try direct fetch as fallback
-        console.log('⚠️ Connection test failed, trying direct fetch...');
-        await loadExpertises();
-      }
-    } catch (error) {
-      console.error('❌ Test and load failed:', error);
-      await loadExpertises(); // Fallback to direct load
-    }
-  };
+  // محاسبه تاریخ 10 سال آینده برای گواهینامه (یک بار)
+  const tenYearsLater = useMemo(() => {
+    const futureDate = new Date();
+    futureDate.setFullYear(futureDate.getFullYear() + 10);
+    return getFormatedDate(futureDate, 'jYYYY/jMM/jDD');
+  }, []);
 
   // Load expertises when component mounts
   useEffect(() => {
-    testAndLoadExpertises();
-  }, []);
+    // Load available expertises from API
+    const loadExpertises = async () => {
+      try {
+        console.log('📋 Loading expertises...');
+        const result = await getExpertises();
+        console.log('✅ Expertises result:', result);
 
-  // Load available expertises from API
-  const loadExpertises = async () => {
-    try {
-      console.log('📋 Loading expertises...');
-      const result = await getExpertises();
-      console.log('✅ Expertises result:', result);
+        if (result.success) {
+          setExpertises(result.data);
+        } else {
+          console.warn('⚠️ Expertises load failed:', result.message);
 
-      if (result.success) {
-        setExpertises(result.data);
-      } else {
-        console.warn('⚠️ Expertises load failed:', result.message);
-        
-        let errorMessage = 'خطا در دریافت لیست تخصص‌ها\n\n';
-        if (result.message) {
-          errorMessage += result.message;
+          let errorMessage = 'خطا در دریافت لیست تخصص‌ها\n\n';
+          if (result.message) {
+            errorMessage += result.message;
+          }
+
+          Alert.alert('خطا', errorMessage);
+
+          // Set some default expertises for testing
+          setExpertises([
+            { id: 1, title: 'کاربر سخت افزار' },
+            { id: 2, title: 'کاربر نرم افزار' },
+            { id: 3, title: 'کاربر شبکه' },
+            { id: 4, title: 'کاربر پرینتر / کپی صنعتی' },
+            { id: 5, title: 'کاربر جامع' },
+            { id: 6, title: 'کاربر هارد دیسک' },
+            { id: 7, title: 'کاربر دوربین مداربسته' }
+          ]);
         }
-        
+      } catch (error) {
+        console.error('❌ Error loading expertises:', error);
+
+        let errorMessage = 'خطا در ارتباط با سرور\n\n';
+
+        if (error.response) {
+          errorMessage += `وضعیت: ${error.response.status}\n`;
+          if (error.response.data?.message) {
+            errorMessage += `پیام: ${error.response.data.message}`;
+          }
+        } else if (error.request) {
+          errorMessage += 'سرور پاسخی نداد. لطفاً اتصال اینترنت خود را بررسی کنید.';
+        } else {
+          errorMessage += `پیام خطا: ${error.message}`;
+        }
+
         Alert.alert('خطا', errorMessage);
 
         // Set some default expertises for testing
@@ -124,36 +160,11 @@ export default function SignIn({ navigation }) {
           { id: 7, title: 'کاربر دوربین مداربسته' }
         ]);
       }
-    } catch (error) {
-      console.error('❌ Error loading expertises:', error);
-      
-      let errorMessage = 'خطا در ارتباط با سرور\n\n';
-      
-      if (error.response) {
-        errorMessage += `وضعیت: ${error.response.status}\n`;
-        if (error.response.data?.message) {
-          errorMessage += `پیام: ${error.response.data.message}`;
-        }
-      } else if (error.request) {
-        errorMessage += 'سرور پاسخی نداد. لطفاً اتصال اینترنت خود را بررسی کنید.';
-      } else {
-        errorMessage += `پیام خطا: ${error.message}`;
-      }
-      
-      Alert.alert('خطا', errorMessage);
+    };
 
-      // Set some default expertises for testing
-      setExpertises([
-        { id: 1, title: 'کاربر سخت افزار' },
-        { id: 2, title: 'کاربر نرم افزار' },
-        { id: 3, title: 'کاربر شبکه' },
-        { id: 4, title: 'کاربر پرینتر / کپی صنعتی' },
-        { id: 5, title: 'کاربر جامع' },
-        { id: 6, title: 'کاربر هارد دیسک' },
-        { id: 7, title: 'کاربر دوربین مداربسته' }
-      ]);
-    }
-  };
+    // Call loadExpertises
+    loadExpertises();
+  }, []); // Empty dependency array - only run once on mount
 
   // Validate referral code
   const handleValidateReferralCode = async () => {
@@ -168,19 +179,19 @@ export default function SignIn({ navigation }) {
         Alert.alert('موفقیت', result.data?.message || result.message || 'کد معرف معتبر است');
       } else {
         let errorMessage = result.message || 'کد معرف نامعتبر است';
-        
+
         if (result.errors) {
           const errorList = Object.values(result.errors).flat();
           errorMessage += '\n\n' + errorList.join('\n');
         }
-        
+
         Alert.alert('خطا', errorMessage);
       }
     } catch (error) {
       console.error('Error validating referral code:', error);
-      
+
       let errorMessage = 'خطا در بررسی کد معرف\n\n';
-      
+
       if (error.response) {
         errorMessage += `وضعیت: ${error.response.status}\n`;
         if (error.response.data?.message) {
@@ -191,38 +202,111 @@ export default function SignIn({ navigation }) {
       } else {
         errorMessage += `پیام خطا: ${error.message}`;
       }
-      
+
       Alert.alert('خطا', errorMessage);
     }
   };
 
-  // Form validation
+  // Form validation با نمایش دقیق خطاها
   const validateForm = () => {
-    console.log('🔍 Validating form data:', formData);
-    const validation = validateTechnicianRegistration(formData);
+    try {
+      console.log('🔍 Validating form data:', formData);
+      console.log('🔍 Calling validateTechnicianRegistration...');
+      
+      const validation = validateTechnicianRegistration(formData);
+      
+      console.log('📊 Validation completed successfully!');
+      console.log('📊 Validation result object:', validation);
+      console.log('📊 validation.isValid:', validation.isValid);
+      console.log('📊 validation type:', typeof validation);
 
-    if (!validation.isValid) {
-      console.log('❌ Validation errors:', validation.errors);
-      const firstError = Object.values(validation.errors)[0];
-      Alert.alert('خطا در اعتبارسنجی', firstError);
+      if (!validation.isValid) {
+        console.log('❌ Validation errors:', validation.errors);
+      
+      // ذخیره خطاها برای نمایش در فیلدها
+      setFieldErrors(validation.errors);
+      
+      // ساخت پیام خطای کامل با نام فیلدها
+      const errorMessages = Object.entries(validation.errors).map(([field, message]) => {
+        // ترجمه نام فیلدها به فارسی
+        const fieldNames = {
+          name: 'نام و نام خانوادگی',
+          melicode: 'شماره ملی',
+          phone: 'شماره تلفن اصلی',
+          mobile: 'شماره تلفن همراه',
+          telephone: 'شماره تلفن ثابت',
+          birth_date: 'تاریخ تولد',
+          father_name: 'نام پدر',
+          issued_from: 'صادره از',
+          serial_number: 'شماره شناسنامه',
+          marital_status: 'وضعیت تأهل',
+          military_status: 'وضعیت نظام وظیفه',
+          education_status: 'وضعیت تحصیلات',
+          email: 'آدرس ایمیل',
+          id_card_number: 'شماره کارت شناسایی',
+          licence_date: 'تاریخ اعتبار گواهینامه',
+          vehicle_type: 'نوع وسیله نقلیه',
+          home_postal_code: 'کد پستی منزل',
+          city: 'شهر',
+          region: 'منطقه',
+          home_address: 'آدرس منزل',
+          expertise_ids: 'تخصص‌ها'
+        };
+        
+        const persianFieldName = fieldNames[field] || field;
+        return `❌ ${persianFieldName}:\n   ${message}`;
+      });
+      
+      Alert.alert(
+        'خطا در اعتبارسنجی فرم',
+        errorMessages.join('\n\n'),
+        [{ text: 'متوجه شدم', style: 'cancel' }]
+      );
       return false;
     }
 
     console.log('✅ Form validation passed');
+    setFieldErrors({}); // پاک کردن خطاها
     return true;
+    
+    } catch (error) {
+      console.error('💥 EXCEPTION in validateForm:', error);
+      console.error('💥 Error message:', error.message);
+      console.error('💥 Error stack:', error.stack);
+      
+      Alert.alert(
+        'خطای سیستمی',
+        `خطای غیرمنتظره در اعتبارسنجی:\n${error.message}`,
+        [{ text: 'متوجه شدم', style: 'cancel' }]
+      );
+      return false;
+    }
   };
 
   // Handle form submission
   const handleSubmit = async () => {
-    if (!validateForm()) return;
+    console.log('🚀 handleSubmit called');
+    
+    const validationResult = validateForm();
+    console.log('✅ validateForm returned:', validationResult);
+    
+    if (!validationResult) {
+      console.log('❌ Validation failed, stopping submission');
+      return;
+    }
+    
+    console.log('✅ Validation passed, proceeding with submission');
 
     try {
+      console.log('📤 Setting submitting state to true');
       setSubmitting(true);
 
       // Create FormData for multipart submission
+      console.log('📋 Creating FormData object');
       const apiFormData = new FormData();
 
       // Add all text fields
+      console.log('📝 Adding form fields to FormData');
       Object.keys(formData).forEach(key => {
         if (key === 'expertise_ids' && Array.isArray(formData[key])) {
           // Skip expertise_ids, will be handled separately
@@ -234,23 +318,26 @@ export default function SignIn({ navigation }) {
         }
         if (formData[key] !== '' && formData[key] !== null && formData[key] !== undefined) {
           apiFormData.append(key, formData[key]);
+          console.log(`  ✓ Added ${key}: ${key === 'password' ? '[HIDDEN]' : formData[key]}`);
         }
       });
 
       // Use phone as main phone field (API expects 'phone' for login)
       if (formData.mobile) {
         apiFormData.append('phone', formData.mobile);
+        console.log('  ✓ Added phone from mobile:', formData.mobile);
       }
 
       // Add expertise IDs as array
       if (formData.expertise_ids && formData.expertise_ids.length > 0) {
+        console.log('  ✓ Adding expertise_ids:', formData.expertise_ids);
         formData.expertise_ids.forEach(id => {
           apiFormData.append('expertise_ids[]', id);
         });
       }
 
-      console.log('📋 Submitting registration data...');
-      
+      console.log('📋 FormData preparation complete, submitting registration data...');
+
       if (resumeFile) {
         console.log('📎 فایل رزومه برای ارسال:', {
           name: resumeFile.name,
@@ -263,9 +350,12 @@ export default function SignIn({ navigation }) {
       }
 
       // Submit registration with resume file
+      console.log('🌐 Calling registerTechnician API...');
       const result = await registerTechnician(apiFormData, resumeFile);
+      console.log('📦 API response received:', result);
 
       if (result.success) {
+        console.log('✅ Registration successful!');
         Alert.alert(
           'موفقیت',
           result.message || 'ثبت نام با موفقیت انجام شد',
@@ -284,10 +374,10 @@ export default function SignIn({ navigation }) {
         );
       } else {
         console.log('❌ Registration failed:', result);
-        
+
         // Build detailed error message
         let errorMessage = '';
-        
+
         if (result.errors && typeof result.errors === 'object') {
           // Format validation errors
           const errorList = Object.entries(result.errors).map(([field, messages]) => {
@@ -301,7 +391,7 @@ export default function SignIn({ navigation }) {
         } else {
           errorMessage = 'خطای نامشخص در ثبت نام';
         }
-        
+
         Alert.alert(
           'خطا در ثبت نام',
           errorMessage,
@@ -310,20 +400,26 @@ export default function SignIn({ navigation }) {
         );
       }
     } catch (error) {
-      console.error('❌ Registration error:', error);
-      
+      console.error('❌ Registration exception caught:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        response: error.response,
+        request: error.request,
+        stack: error.stack
+      });
+
       // Build detailed error message
       let errorMessage = 'خطا در ارتباط با سرور\n\n';
-      
+
       if (error.response) {
         // Server responded with error
         errorMessage += `وضعیت: ${error.response.status}\n`;
-        
+
         if (error.response.data) {
           if (error.response.data.message) {
             errorMessage += `پیام: ${error.response.data.message}\n`;
           }
-          
+
           if (error.response.data.errors) {
             errorMessage += '\nجزئیات خطاها:\n';
             const errorList = Object.entries(error.response.data.errors).map(([field, messages]) => {
@@ -340,7 +436,7 @@ export default function SignIn({ navigation }) {
         // Something else happened
         errorMessage += `پیام خطا: ${error.message}`;
       }
-      
+
       Alert.alert(
         'خطا',
         errorMessage,
@@ -348,6 +444,7 @@ export default function SignIn({ navigation }) {
         { cancelable: true }
       );
     } finally {
+      console.log('🔚 handleSubmit finally block - resetting submitting state');
       setSubmitting(false);
     }
   };
@@ -357,304 +454,395 @@ export default function SignIn({ navigation }) {
       ...prev,
       [field]: value
     }));
+    
+    // پاک کردن خطای فیلد هنگام تغییر
+    if (fieldErrors[field]) {
+      setFieldErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
+
+  // کامپوننت نمایش خطا برای هر فیلد
+  const FieldError = ({ field }) => {
+    if (!fieldErrors[field]) return null;
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>⚠️ {fieldErrors[field]}</Text>
+      </View>
+    );
   };
 
   const renderPersonalInfoPage = () => (
-    <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}> 
-    <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-      <CustomStatusBar />
+    <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+        <CustomStatusBar />
+        <TouchableOpacity style={[styles.headerButton, styles.headerButtonBg]}>
+          <Text style={[NewStyles.title4]}>اطلاعات تکمیلی</Text>
+        </TouchableOpacity>
 
+        {/* Form Fields */}
+        <View style={styles.formContainer}>
 
-
-
-      {/* Header */}
-      <TouchableOpacity style={[styles.headerButton, { backgroundColor: themeColor0.bgColor(0.8) }]}>
-        <Text style={[NewStyles.title4]}>اطلاعات تکمیلی</Text>
-      </TouchableOpacity>
-
-      {/* Form Fields */}
-      <View style={styles.formContainer}>
-
-        {/* نام و نام خانوادگی */}
-        <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>نام و نام خانوادگی :</Text>
-          <TextInput
-            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-            value={formData.name}
-            onChangeText={(value) => updateField('name', value)}
-            placeholder=""
-          />
-        </View>
-        <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>شماره تلفن اصلی:</Text>
-          <View style={styles.phoneContainer}>
+          {/* نام و نام خانوادگی */}
+          <View style={styles.inputRow}>
+            <Text style={[NewStyles.text10]}>نام و نام خانوادگی :</Text>
             <TextInput
-              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.phoneInput]}
-              value={formData.phone}
-              onChangeText={(value) => updateField('phone', value)}
-              placeholder="09XXXXXXXXX"
-              keyboardType="phone-pad"
-              maxLength={11}
+              style={[
+                NewStyles.textInput, 
+                NewStyles.text10, 
+                NewStyles.border10,
+                fieldErrors.name && styles.inputError
+              ]}
+              value={formData.name}
+              onChangeText={(value) => updateField('name', value)}
+              placeholder="مثال: علی احمدی"
             />
+            <FieldError field="name" />
           </View>
-        </View>
-
-        {/* شماره ملی */}
-        <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>شماره ملی :</Text>
-          <TextInput
-            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-            value={formData.melicode}
-            onChangeText={(value) => updateField('melicode', value)}
-            placeholder=""
-            keyboardType="number-pad"
-            maxLength={10}
-          />
-        </View>
-
-        {/* متولد */}
-        <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>متولد (تاریخ شمسی) :</Text>
-          <TouchableOpacity
-            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, { justifyContent: 'center' }]}
-            onPress={() => setBirthDateModal(true)}
-          >
-            <Text style={[NewStyles.text10, { color: formData.birth_date ? themeColor10.bgColor(1) : themeColor10.bgColor(0.5) }]}>
-              {formData.birth_date || '1379/08/27'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* نام پدر */}
-        <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>نام پدر :</Text>
-          <TextInput
-            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-            value={formData.father_name}
-            onChangeText={(value) => updateField('father_name', value)}
-            placeholder=""
-          />
-        </View>
-
-        {/* صادره از */}
-        <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>صادره از :</Text>
-          <TextInput
-            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-            value={formData.issued_from}
-            onChangeText={(value) => updateField('issued_from', value)}
-            placeholder=""
-          />
-        </View>
-
-        {/* شماره شناسنامه */}
-        <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>شماره شناسنامه :</Text>
-          <TextInput
-            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-            value={formData.serial_number}
-            onChangeText={(value) => updateField('serial_number', value)}
-            placeholder=""
-          />
-        </View>
-
-        {/* وضعیت تأهل */}
-        <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>وضعیت تأهل :</Text>
-          <View style={[NewStyles.textInput, NewStyles.border10, styles.pickerContainer]}>
-            <Picker
-              selectedValue={formData.marital_status}
-              onValueChange={(value) => updateField('marital_status', value)}
-              style={styles.picker}
-            >
-              <Picker.Item label="متأهل" value="متأهل" />
-              <Picker.Item label="مجرد" value="مجرد" />
-            </Picker>
+          
+          <View style={styles.inputRow}>
+            <Text style={[NewStyles.text10]}>شماره تلفن اصلی:</Text>
+            <View style={styles.phoneContainer}>
+              <TextInput
+                style={[
+                  NewStyles.textInput, 
+                  NewStyles.text10, 
+                  NewStyles.border10, 
+                  styles.phoneInput,
+                  fieldErrors.phone && styles.inputError
+                ]}
+                value={formData.phone}
+                onChangeText={(value) => updateField('phone', value)}
+                placeholder="09123456789"
+                keyboardType="phone-pad"
+                maxLength={11}
+              />
+            </View>
+            <FieldError field="phone" />
           </View>
-        </View>
 
-        {/* وضعیت سربازی */}
-        <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>وضعیت سربازی :</Text>
-          <View style={[NewStyles.textInput, NewStyles.border10, styles.pickerContainer]}>
-            <Picker
-              selectedValue={formData.military_status}
-              onValueChange={(value) => updateField('military_status', value)}
-              style={styles.picker}
-            >
-              <Picker.Item label="پایان خدمت" value="پایان خدمت" />
-              <Picker.Item label="معاف" value="معاف" />
-              <Picker.Item label="در حال خدمت" value="در حال خدمت" />
-            </Picker>
-          </View>
-        </View>
-
-        {/* وضعیت تحصیلات */}
-        <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>وضعیت تحصیلات :</Text>
-          <TextInput
-            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-            value={formData.education_status}
-            onChangeText={(value) => updateField('education_status', value)}
-            placeholder=""
-          />
-        </View>
-
-        {/* شماره تلفن ثابت */}
-        <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>شماره تلفن ثابت ۰۲۱ ۸ رقمی :</Text>
-          <View style={styles.phoneContainer}>
+          {/* شماره ملی */}
+          <View style={styles.inputRow}>
+            <Text style={[NewStyles.text10]}>شماره ملی :</Text>
             <TextInput
-              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.phoneInput]}
-              value={formData.telephone}
-              onChangeText={(value) => updateField('telephone', value)}
-              placeholder=""
-              keyboardType="phone-pad"
+              style={[
+                NewStyles.textInput, 
+                NewStyles.text10, 
+                NewStyles.border10,
+                fieldErrors.melicode && styles.inputError
+              ]}
+              value={formData.melicode}
+              onChangeText={(value) => updateField('melicode', value)}
+              placeholder="0123456789"
+              keyboardType="number-pad"
+              maxLength={10}
             />
+            <FieldError field="melicode" />
           </View>
-        </View>
 
-        {/* شماره تلفن همراه */}
-        <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>شماره تلفن همراه ۱۰ رقمی :</Text>
-          <View style={styles.phoneContainer}>
-            <TextInput
-              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.phoneInput]}
-              value={formData.mobile}
-              onChangeText={(value) => updateField('mobile', value)}
-              placeholder=""
-              keyboardType="phone-pad"
-              maxLength={11}
-            />
-          </View>
-        </View>
-
-        {/* آدرس ایمیل */}
-        <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>آدرس ایمیل :</Text>
-          <TextInput
-            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-            value={formData.email}
-            onChangeText={(value) => updateField('email', value)}
-            placeholder=""
-            keyboardType="email-address"
-          />
-        </View>
-
-        {/* شماره کارت شناسایی */}
-        <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>شماره کارت شناسایی :</Text>
-          <TextInput
-            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-            value={formData.id_card_number}
-            onChangeText={(value) => updateField('id_card_number', value)}
-            placeholder=""
-          />
-        </View>
-
-        {/* تاریخ اعتبار گواهینامه */}
-        <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>تاریخ اعتبار گواهینامه (تاریخ شمسی) :</Text>
-          <TouchableOpacity
-            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, { justifyContent: 'center' }]}
-            onPress={() => setLicenceDateModal(true)}
-          >
-            <Text style={[NewStyles.text10, { color: formData.licence_date ? themeColor10.bgColor(1) : themeColor10.bgColor(0.5) }]}>
-              {formData.licence_date || '1408/06/20'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* نوع وسیله نقلیه */}
-        <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>نوع وسیله نقلیه : موتور سیکلت / خودرو / دوچرخه / پیاده</Text>
-          <TextInput
-            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-            value={formData.vehicle_type}
-            onChangeText={(value) => updateField('vehicle_type', value)}
-            placeholder=""
-          />
-        </View>
-
-        {/* کد پستی منزل */}
-        <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>کد پستی منزل :</Text>
-          <TextInput
-            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-            value={formData.home_postal_code}
-            onChangeText={(value) => updateField('home_postal_code', value)}
-            placeholder=""
-            keyboardType="number-pad"
-            maxLength={10}
-          />
-        </View>
-
-        {/* شهر + منطقه */}
-        <View style={styles.cityRow}>
-          <View style={styles.cityContainer}>
-            <Text style={[NewStyles.text10]}>شهر :</Text>
-            <TextInput
-              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-              value={formData.city}
-              onChangeText={(value) => updateField('city', value)}
-              placeholder="تهران"
-            />
-          </View>
-          <View style={styles.regionContainer}>
-            <Text style={[NewStyles.text10]}>منطقه :</Text>
-            <TextInput
-              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-              value={formData.region}
-              onChangeText={(value) => updateField('region', value)}
-              placeholder="5"
-            />
-          </View>
-        </View>
-
-        {/* آدرس منزل */}
-        <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>آدرس منزل :</Text>
-          <TextInput
-            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.addressInput]}
-            value={formData.home_address}
-            onChangeText={(value) => updateField('home_address', value)}
-            placeholder=""
-            multiline
-            numberOfLines={3}
-          />
-        </View>
-
-        {/* کد پرسنلی مصرف */}
-        <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>کد پرسنلی معرف :</Text>
-          <View style={styles.referralContainer}>
-            <TextInput
-              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, { flex: 1 }]}
-              value={formData.other_referral_code}
-              onChangeText={(value) => updateField('other_referral_code', value)}
-              placeholder=""
-            />
+          {/* متولد */}
+          <View style={styles.inputRow}>
+            <Text style={[NewStyles.text10]}>متولد (تاریخ شمسی) :</Text>
             <TouchableOpacity
-              style={styles.validateButton}
-              onPress={handleValidateReferralCode}
+              style={[
+                NewStyles.textInput, 
+                NewStyles.text10, 
+                NewStyles.border10, 
+                styles.datePickerTouchable,
+                fieldErrors.birth_date && styles.inputError
+              ]}
+              onPress={() => setBirthDateModal(true)}
             >
-              <Text style={[NewStyles.text10]}>بررسی</Text>
+              <Text style={[NewStyles.text10, formData.birth_date ? styles.dateTextFull : styles.dateTextHalf]}>
+                {formData.birth_date || '1379/08/27'}
+              </Text>
             </TouchableOpacity>
+            <FieldError field="birth_date" />
           </View>
+
+          {/* نام پدر */}
+          <View style={styles.inputRow}>
+            <Text style={[NewStyles.text10]}>نام پدر :</Text>
+            <TextInput
+              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+              value={formData.father_name}
+              onChangeText={(value) => updateField('father_name', value)}
+              placeholder=""
+            />
+          </View>
+
+          {/* صادره از */}
+          <View style={styles.inputRow}>
+            <Text style={[NewStyles.text10]}>صادره از :</Text>
+            <TextInput
+              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+              value={formData.issued_from}
+              onChangeText={(value) => updateField('issued_from', value)}
+              placeholder=""
+            />
+          </View>
+
+          {/* شماره شناسنامه */}
+          <View style={styles.inputRow}>
+            <Text style={[NewStyles.text10]}>شماره شناسنامه :</Text>
+            <TextInput
+              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+              value={formData.serial_number}
+              onChangeText={(value) => updateField('serial_number', value)}
+              placeholder=""
+            />
+          </View>
+
+          {/* وضعیت تأهل */}
+          <View style={styles.inputRow}>
+            <Text style={[NewStyles.text10]}>وضعیت تأهل :</Text>
+            <View style={[NewStyles.textInput, NewStyles.border10, styles.pickerContainer]}>
+              <Picker
+                selectedValue={formData.marital_status}
+                onValueChange={(value) => updateField('marital_status', value)}
+                style={styles.picker}
+              >
+                <Picker.Item label="متأهل" value="متأهل" />
+                <Picker.Item label="مجرد" value="مجرد" />
+              </Picker>
+            </View>
+          </View>
+
+          {/* وضعیت سربازی */}
+          <View style={styles.inputRow}>
+            <Text style={[NewStyles.text10]}>وضعیت سربازی :</Text>
+            <View style={[NewStyles.textInput, NewStyles.border10, styles.pickerContainer]}>
+              <Picker
+                selectedValue={formData.military_status}
+                onValueChange={(value) => updateField('military_status', value)}
+                style={styles.picker}
+              >
+                <Picker.Item label="پایان خدمت" value="پایان خدمت" />
+                <Picker.Item label="معاف" value="معاف" />
+                <Picker.Item label="در حال خدمت" value="در حال خدمت" />
+              </Picker>
+            </View>
+          </View>
+
+          {/* وضعیت تحصیلات */}
+          <View style={styles.inputRow}>
+            <Text style={[NewStyles.text10]}>وضعیت تحصیلات :</Text>
+            <TextInput
+              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+              value={formData.education_status}
+              onChangeText={(value) => updateField('education_status', value)}
+              placeholder=""
+            />
+          </View>
+
+          {/* شماره تلفن ثابت */}
+          <View style={styles.inputRow}>
+            <Text style={[NewStyles.text10]}>شماره تلفن ثابت ۰۲۱ ۸ رقمی :</Text>
+            <View style={styles.phoneContainer}>
+              <TextInput
+                style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.phoneInput]}
+                value={formData.telephone}
+                onChangeText={(value) => updateField('telephone', value)}
+                placeholder=""
+                keyboardType="phone-pad"
+              />
+            </View>
+          </View>
+
+          {/* شماره تلفن همراه */}
+          <View style={styles.inputRow}>
+            <Text style={[NewStyles.text10]}>شماره تلفن همراه ۱۱ رقمی :</Text>
+            <View style={styles.phoneContainer}>
+              <TextInput
+                style={[
+                  NewStyles.textInput, 
+                  NewStyles.text10, 
+                  NewStyles.border10, 
+                  styles.phoneInput,
+                  fieldErrors.mobile && styles.inputError
+                ]}
+                value={formData.mobile}
+                onChangeText={(value) => updateField('mobile', value)}
+                placeholder="09123456789"
+                keyboardType="phone-pad"
+                maxLength={11}
+              />
+            </View>
+            <FieldError field="mobile" />
+          </View>
+
+          {/* آدرس ایمیل */}
+          <View style={styles.inputRow}>
+            <Text style={[NewStyles.text10]}>آدرس ایمیل :</Text>
+            <TextInput
+              style={[
+                NewStyles.textInput, 
+                NewStyles.text10, 
+                NewStyles.border10,
+                fieldErrors.email && styles.inputError
+              ]}
+              value={formData.email}
+              onChangeText={(value) => updateField('email', value)}
+              placeholder="example@email.com"
+              keyboardType="email-address"
+            />
+            <FieldError field="email" />
+          </View>
+
+          {/* شماره کارت شناسایی */}
+          <View style={styles.inputRow}>
+            <Text style={[NewStyles.text10]}>شماره کارت شناسایی :</Text>
+            <TextInput
+              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+              value={formData.id_card_number}
+              onChangeText={(value) => updateField('id_card_number', value)}
+              placeholder=""
+            />
+          </View>
+
+          {/* تاریخ اعتبار گواهینامه */}
+          <View style={styles.inputRow}>
+            <Text style={[NewStyles.text10]}>تاریخ اعتبار گواهینامه (تاریخ شمسی) :</Text>
+            <TouchableOpacity
+              style={[
+                NewStyles.textInput, 
+                NewStyles.text10, 
+                NewStyles.border10, 
+                styles.datePickerTouchable,
+                fieldErrors.licence_date && styles.inputError
+              ]}
+              onPress={() => setLicenceDateModal(true)}
+            >
+              <Text style={[NewStyles.text10, formData.licence_date ? styles.dateTextFull : styles.dateTextHalf]}>
+                {formData.licence_date || '1408/06/20'}
+              </Text>
+            </TouchableOpacity>
+            <FieldError field="licence_date" />
+          </View>
+
+          {/* نوع وسیله نقلیه */}
+          <View style={styles.inputRow}>
+            <Text style={[NewStyles.text10]}>نوع وسیله نقلیه : موتور سیکلت / خودرو / دوچرخه / پیاده</Text>
+            <TextInput
+              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+              value={formData.vehicle_type}
+              onChangeText={(value) => updateField('vehicle_type', value)}
+              placeholder=""
+            />
+          </View>
+
+          {/* کد پستی منزل */}
+          <View style={styles.inputRow}>
+            <Text style={[NewStyles.text10]}>کد پستی منزل :</Text>
+            <TextInput
+              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+              value={formData.home_postal_code}
+              onChangeText={(value) => updateField('home_postal_code', value)}
+              placeholder=""
+              keyboardType="number-pad"
+              maxLength={10}
+            />
+          </View>
+
+          {/* شهر + منطقه */}
+          <View style={styles.cityRow}>
+            <View style={styles.cityContainer}>
+              <Text style={[NewStyles.text10]}>شهر :</Text>
+              <TextInput
+                style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+                value={formData.city}
+                onChangeText={(value) => updateField('city', value)}
+                placeholder="تهران"
+              />
+            </View>
+            <View style={styles.regionContainer}>
+              <Text style={[NewStyles.text10]}>منطقه :</Text>
+              <TextInput
+                style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+                value={formData.region}
+                keyboardType='number-pad'
+                onChangeText={(value) => updateField('region', value)}
+                placeholder="5"
+              />
+            </View>
+          </View>
+
+          {/* آدرس منزل */}
+          <View style={styles.inputRow}>
+            <Text style={[NewStyles.text10]}>آدرس منزل :</Text>
+            <TextInput
+              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.addressInput]}
+              value={formData.home_address}
+              onChangeText={(value) => updateField('home_address', value)}
+              placeholder=""
+              multiline
+              numberOfLines={3}
+            />
+          </View>
+
+          {/* کد پرسنلی مصرف */}
+          <View style={styles.inputRow}>
+            <Text style={[NewStyles.text10]}>کد پرسنلی معرف :</Text>
+            <View style={styles.referralContainer}>
+              <TextInput
+                style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, { flex: 1 }]}
+                value={formData.other_referral_code}
+                onChangeText={(value) => updateField('other_referral_code', value)}
+                placeholder=""
+              />
+              <TouchableOpacity
+                style={styles.validateButton}
+                onPress={handleValidateReferralCode}
+              >
+                <Text style={[NewStyles.text10]}>بررسی</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
         </View>
 
-      </View>
+        {/* Navigation Button */}
+        <TouchableOpacity
+          style={styles.nextButton}
+          onPress={() => {
+            // بررسی فیلدهای صفحه اول
+            const personalFields = {
+              name: formData.name,
+              melicode: formData.melicode,
+              phone: formData.phone,
+              mobile: formData.mobile,
+              birth_date: formData.birth_date,
+              email: formData.email,
+            };
+            
+            // اگر فیلدهای ضروری پر نشده، هشدار بده
+            const emptyFields = [];
+            if (!personalFields.name) emptyFields.push('نام و نام خانوادگی');
+            if (!personalFields.melicode) emptyFields.push('شماره ملی');
+            if (!personalFields.phone) emptyFields.push('شماره تلفن اصلی');
+            if (!personalFields.mobile) emptyFields.push('شماره تلفن همراه');
+            if (!personalFields.birth_date) emptyFields.push('تاریخ تولد');
+            
+            if (emptyFields.length > 0) {
+              Alert.alert(
+                'فیلدهای ضروری',
+                `لطفاً فیلدهای زیر را تکمیل کنید:\n\n${emptyFields.map(f => `• ${f}`).join('\n')}`,
+                [{ text: 'متوجه شدم' }]
+              );
+              return;
+            }
+            
+            setCurrentPage('computer');
+          }}
+        >
+          <Text style={[NewStyles.text10]}>بعدی - دانش کامپیوتر</Text>
+        </TouchableOpacity>
 
-      {/* Navigation Button */}
-      <TouchableOpacity
-        style={styles.nextButton}
-        onPress={() => setCurrentPage('computer')}
-      >
-        <Text style={[NewStyles.text10]}>بعدی - دانش کامپیوتر</Text>
-      </TouchableOpacity>
-
-    </ScrollView>
-        </KeyboardAvoidingView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 
   const renderComputerSkillsPage = () => (
@@ -662,7 +850,7 @@ export default function SignIn({ navigation }) {
       <CustomStatusBar />
 
       {/* Header */}
-      <TouchableOpacity style={[styles.headerButton, { backgroundColor: themeColor0.bgColor(0.8) }]}>
+      <TouchableOpacity style={[styles.headerButton, styles.headerButtonBg]}>
         <Text style={[NewStyles.title4]}>دانش کامپیوتر</Text>
       </TouchableOpacity>
 
@@ -737,7 +925,7 @@ export default function SignIn({ navigation }) {
       </View>
 
       {/* گرایش فعالیت Header */}
-      <TouchableOpacity style={[styles.headerButton, { backgroundColor: themeColor0.bgColor(0.8) }]}>
+      <TouchableOpacity style={[styles.headerButton, styles.headerButtonBg]}>
         <Text style={[NewStyles.title4]}>گرایش فعالیت / تخصص</Text>
       </TouchableOpacity>
 
@@ -770,6 +958,8 @@ export default function SignIn({ navigation }) {
         {expertises.length === 0 && (
           <Text style={[NewStyles.text10]}>در حال دریافت لیست تخصص‌ها...</Text>
         )}
+        
+        <FieldError field="expertise_ids" />
       </View>
 
       {/* بارگذاری رزومه */}
@@ -787,7 +977,7 @@ export default function SignIn({ navigation }) {
                 {resumeFile.name || (resumeFile.uri ? resumeFile.uri.split('/').pop() : 'فایل انتخاب شده')}
               </Text>
               <TouchableOpacity style={styles.removeFileButton} onPress={() => setResumeFile(null)}>
-                <Text style={[NewStyles.text10]}>حذف</Text>
+                <Text style={[NewStyles.text4]}>حذف</Text>
               </TouchableOpacity>
             </View>
           ) : (
@@ -827,25 +1017,25 @@ export default function SignIn({ navigation }) {
   // Open document picker to select resume
   const pickDocument = async () => {
     try {
-      const result = await DocumentPicker.getDocumentAsync({ 
+      const result = await DocumentPicker.getDocumentAsync({
         type: '*/*',
-        copyToCacheDirectory: true 
+        copyToCacheDirectory: true
       });
-      
+
       console.log('📄 نتیجه انتخاب فایل:', JSON.stringify(result, null, 2));
-      
+
       // Expo DocumentPicker returns different structure based on version
       // Check for both old (type: 'success') and new (!canceled) formats
       if (result.type === 'success' || (result.assets && result.assets.length > 0) || !result.canceled) {
         const file = result.assets ? result.assets[0] : result;
-        
+
         console.log('✅ فایل انتخاب شد:', {
           name: file.name,
           uri: file.uri,
           size: file.size,
           mimeType: file.mimeType
         });
-        
+
         // Ensure we have all required fields
         const resumeData = {
           uri: file.uri,
@@ -853,7 +1043,7 @@ export default function SignIn({ navigation }) {
           type: file.mimeType || file.type || 'application/octet-stream',
           size: file.size
         };
-        
+
         setResumeFile(resumeData);
         Alert.alert('موفق', `فایل "${resumeData.name}" انتخاب شد`);
       } else {
@@ -861,12 +1051,12 @@ export default function SignIn({ navigation }) {
       }
     } catch (err) {
       console.error('❌ خطا در انتخاب فایل:', err);
-      
+
       let errorMessage = 'انتخاب فایل با خطا مواجه شد\n\n';
       if (err.message) {
         errorMessage += `پیام خطا: ${err.message}`;
       }
-      
+
       Alert.alert('خطا', errorMessage);
     }
   };
@@ -904,9 +1094,9 @@ export default function SignIn({ navigation }) {
       setResumeFile(null);
     } catch (err) {
       console.error('❌ uploadResume error:', err);
-      
+
       let errorMessage = 'بارگذاری رزومه ناموفق بود\n\n';
-      
+
       if (err.response) {
         errorMessage += `وضعیت: ${err.response.status}\n`;
         if (err.response.data?.message) {
@@ -917,7 +1107,7 @@ export default function SignIn({ navigation }) {
       } else {
         errorMessage += 'خطای نامشخص';
       }
-      
+
       Alert.alert('خطا', errorMessage);
     } finally {
       setUploading(false);
@@ -936,20 +1126,25 @@ export default function SignIn({ navigation }) {
           {currentPage === 'personal' ? renderPersonalInfoPage() : renderComputerSkillsPage()}
         </KeyboardAvoidingView>
       </ImageBackground>
-      
+ 
       {/* Date Picker Modals */}
+      {/* تاریخ تولد: حداکثر امروز */}
       <DatePickerModal
         datePickerModal={birthDateModal}
         setDatePickerModal={setBirthDateModal}
         birthDate={formData.birth_date}
         setBirthDate={(date) => updateField('birth_date', date)}
+        maximumDate={todayDate}
       />
-      
+
+      {/* تاریخ اعتبار گواهینامه: حداقل امروز، حداکثر 10 سال بعد */}
       <DatePickerModal
         datePickerModal={licenceDateModal}
         setDatePickerModal={setLicenceDateModal}
         birthDate={formData.licence_date}
         setBirthDate={(date) => updateField('licence_date', date)}
+        minimumDate={todayDate}
+        maximumDate={tenYearsLater}
       />
     </SafeAreaView>
   );
@@ -973,20 +1168,42 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     marginTop: 15
   },
+  headerButtonBg: {
+    backgroundColor: HEADER_BG_COLOR,
+  },
   headerButtonText: {
-    color: themeColor4.bgColor(1),
+    color: BUTTON_TEXT_COLOR,
     fontSize: 16,
     fontWeight: 'bold',
   },
   formContainer: {
     width: '100%',
-    backgroundColor: themeColor4.bgColor(0.95),
+    backgroundColor: FORM_BG_095,
     borderRadius: 10,
     padding: 20,
     gap: 12,
   },
   inputRow: {
     marginVertical: 3,
+  },
+  errorContainer: {
+    marginTop: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: 'rgba(255, 0, 0, 0.1)',
+    borderRadius: 5,
+    borderLeftWidth: 3,
+    borderLeftColor: '#ff0000',
+  },
+  errorText: {
+    color: '#ff0000',
+    fontSize: 12,
+    fontFamily: 'VazirLight',
+    textAlign: 'right',
+  },
+  inputError: {
+    borderWidth: 2,
+    borderColor: '#ff0000',
   },
   label: {
     ...NewStyles.text10,
@@ -995,11 +1212,9 @@ const styles = StyleSheet.create({
   pickerContainer: {
     justifyContent: 'center',
     paddingHorizontal: 0,
-
   },
   picker: {
-    color: themeColor10.bgColor(1),
-  
+    color: TEXT_COLOR_FULL,
   },
   phoneContainer: {
     flexDirection: 'row',
@@ -1008,11 +1223,20 @@ const styles = StyleSheet.create({
   },
   phonePrefix: {
     fontSize: 12,
-    color: themeColor10.bgColor(0.7),
+    color: TEXT_COLOR_07,
     fontWeight: '600',
   },
   phoneInput: {
     flex: 1,
+  },
+  datePickerTouchable: {
+    justifyContent: 'center',
+  },
+  dateTextFull: {
+    color: TEXT_COLOR_FULL,
+  },
+  dateTextHalf: {
+    color: TEXT_COLOR_HALF,
   },
   cityRow: {
     flexDirection: 'row',
@@ -1029,14 +1253,14 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   nextButton: {
-    backgroundColor: themeColor1.bgColor(1),
+    backgroundColor: BUTTON_BG_COLOR,
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 10,
     marginTop: 20,
   },
   nextButtonText: {
-    color: themeColor4.bgColor(1),
+    color: BUTTON_TEXT_COLOR,
     fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'center',
@@ -1046,7 +1270,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   activityButton: {
-    backgroundColor: themeColor4.bgColor(0.8),
+    backgroundColor: FORM_BG_08,
     paddingVertical: 12,
     paddingHorizontal: 15,
     borderRadius: 8,
@@ -1054,13 +1278,12 @@ const styles = StyleSheet.create({
   },
   activityButtonText: {
     ...NewStyles.text10,
- 
   },
   selectedActivityButton: {
-    backgroundColor: themeColor1.bgColor(0.8),
+    backgroundColor: SELECTED_ACTIVITY_BG,
   },
   selectedActivityText: {
- ...NewStyles.text4,
+    ...NewStyles.text4,
   },
   referralContainer: {
     flexDirection: 'row',
@@ -1068,13 +1291,13 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   validateButton: {
-    backgroundColor: themeColor1.bgColor(1),
+    backgroundColor: VALIDATE_BUTTON_BG,
     paddingVertical: 12,
     paddingHorizontal: 15,
     borderRadius: 8,
   },
   validateButtonText: {
-    color: themeColor0.bgColor(1),
+    color: VALIDATE_BUTTON_TEXT,
     fontSize: 12,
     fontWeight: '600',
   },
@@ -1087,7 +1310,7 @@ const styles = StyleSheet.create({
   },
   resumeSection: {
     width: '100%',
-    backgroundColor: themeColor4.bgColor(0.95),
+    backgroundColor: FORM_BG_095,
     borderRadius: 10,
     padding: 15,
     alignItems: 'center',
@@ -1096,12 +1319,12 @@ const styles = StyleSheet.create({
   resumeTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: themeColor10.bgColor(0.7),
+    color: TEXT_COLOR_07,
     marginBottom: 10,
   },
   resumeNote: {
     fontSize: 12,
-    color: themeColor10.bgColor(0.5),
+    color: TEXT_COLOR_HALF,
     textAlign: 'center',
     lineHeight: 18,
   },
@@ -1111,27 +1334,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   pickFileButton: {
-    backgroundColor: themeColor4.bgColor(0.8),
+    backgroundColor: FORM_BG_08,
     paddingVertical: 12,
     paddingHorizontal: 18,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: themeColor10.bgColor(0.3),
+    borderColor: TEXT_COLOR_03,
   },
   pickFileText: {
-    color: themeColor10.bgColor(0.7),
+    color: TEXT_COLOR_07,
     fontWeight: '600',
   },
   selectedFileRow: {
     width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 10,
   },
   selectedFileName: {
     flex: 1,
-    color: themeColor10.bgColor(0.7),
+    color: TEXT_COLOR_07,
     fontSize: 13,
     textAlign: 'right',
   },
@@ -1139,35 +1360,35 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     paddingVertical: 6,
     paddingHorizontal: 10,
-    backgroundColor: themeColor4.bgColor(0.8),
+    backgroundColor: themeColor6.bgColor(1),
     borderRadius: 6,
   },
   removeFileText: {
-    color: themeColor10.bgColor(0.7),
+    color: TEXT_COLOR_07,
     fontSize: 13,
   },
   uploadButton: {
-    backgroundColor: themeColor2.bgColor(1),
+    backgroundColor: UPLOAD_BUTTON_BG,
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
   },
   uploadButtonText: {
-    color: themeColor4.bgColor(1),
+    color: BUTTON_TEXT_COLOR,
     fontWeight: '700',
   },
   submitButton: {
     ...NewStyles.title1,
   },
   backButton: {
-    backgroundColor: themeColor10.bgColor(0.5),
+    backgroundColor: BACK_BUTTON_BG,
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 8,
     marginTop: 10,
   },
   backButtonText: {
-...NewStyles.text4,
+    ...NewStyles.text4,
   },
   debugContainer: {
     flexDirection: 'row',
@@ -1183,26 +1404,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   debugButtonText: {
-    color: themeColor4.bgColor(1),
+    color: BUTTON_TEXT_COLOR,
     fontSize: 12,
     fontWeight: 'bold',
   },
-  phoneContainer: {
+  phoneContainerAlt: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: themeColor4.bgColor(0.3),
+    borderColor: FORM_BORDER_03,
     borderRadius: 8,
-    backgroundColor: themeColor4.bgColor(1),
+    backgroundColor: FORM_BG_FULL,
     paddingHorizontal: 10,
   },
-  phonePrefix: {
+  phonePrefixAlt: {
     fontSize: 14,
-    color: themeColor10.bgColor(0.7),
+    color: TEXT_COLOR_07,
     marginRight: 8,
     fontWeight: 'bold',
   },
-  phoneInput: {
+  phoneInputAlt: {
     flex: 1,
     borderWidth: 0,
     paddingVertical: 12,

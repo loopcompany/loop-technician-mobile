@@ -1,6 +1,7 @@
 import axios from 'axios';
-import { uri as BASE_URL } from './URL';
+import { uri as BASE_URL, Technician_Orders, Technician_DeliveryReports } from './URL';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_ENDPOINTS } from './ApiEndpoints';
 
 // Create axios instance with base configuration
 const api = axios.create({
@@ -23,7 +24,7 @@ api.interceptors.request.use(
     } catch (error) {
       console.warn('Error getting token from AsyncStorage:', error);
     }
-    
+
     // Log all API requests
     console.log('📤 API Request:', {
       method: config.method?.toUpperCase(),
@@ -32,7 +33,7 @@ api.interceptors.request.use(
       fullURL: `${config.baseURL}${config.url}`,
       hasToken: !!config.headers.Authorization
     });
-    
+
     return config;
   },
   (error) => {
@@ -66,7 +67,7 @@ api.interceptors.response.use(
         message: error.response.data?.message || 'No message',
         data: error.response.data
       });
-      
+
       // Handle 401 Unauthorized
       if (error.response.status === 401) {
         console.warn('🔒 Token expired or invalid - clearing auth data');
@@ -85,7 +86,7 @@ api.interceptors.response.use(
       // Something else happened
       console.error('❌ Request Error:', error.message);
     }
-    
+
     return Promise.reject(error);
   }
 );
@@ -102,11 +103,154 @@ const handleResponse = (response) => {
 };
 
 /**
+ * Get extra services registered for an order (user view)
+ * GET /orders/{orderId}/extra-services
+ */
+export const getOrderExtras = async (orderId) => {
+  try {
+    const response = await api.get(`/orders/${orderId}/extra-services`);
+    return handleResponse(response);
+  } catch (error) {
+    return handleError(error);
+  }
+};
+
+/**
+ * اعلام شروع تعمیر
+ * POST /technician/orders/{orderId}/start
+ */
+export const startRepair = async (orderId) => {
+  try {
+    console.log(`🔧 اعلام شروع تعمیر برای سفارش #${orderId}...`);
+
+    const response = await api.post(`/technician/orders/${orderId}/start`);
+    console.log('✅ شروع کار با موفقیت ثبت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در ثبت شروع تعمیر:', error.response?.data || error.message);
+    if (error.response) {
+      console.error('❌ Status:', error.response.status);
+      console.error('❌ Data:', error.response.data);
+    }
+    return handleError(error);
+  }
+};
+
+/**
+ * ثبت گزارش تحویل جدید
+ */
+export const createDeliveryReport = async (reportData) => {
+  try {
+    console.log('📝 ثبت گزارش تحویل:', reportData);
+    const response = await api.post(
+      `${Technician_DeliveryReports}`,
+      reportData
+    );
+    console.log('✅ گزارش تحویل ثبت شد:', response.data);
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در ثبت گزارش تحویل:', error.response?.data || error.message);
+    if (error.response) {
+      console.error('❌ Status:', error.response.status);
+      console.error('❌ Data:', error.response.data);
+    }
+    return handleError(error);
+  }
+};
+
+/**
+ * ویرایش گزارش تحویل
+ */
+export const updateDeliveryReport = async (reportId, reportData) => {
+  try {
+    console.log(`📝 ویرایش گزارش تحویل ${reportId}:`, reportData);
+    const response = await api.put(
+      `${Technician_DeliveryReports}/${reportId}`,
+      reportData
+    );
+    console.log('✅ گزارش تحویل ویرایش شد:', response.data);
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در ویرایش گزارش تحویل:', error.response?.data || error.message);
+    if (error.response) {
+      console.error('❌ Status:', error.response.status);
+      console.error('❌ Data:', error.response.data);
+    }
+    return handleError(error);
+  }
+};
+
+/**
+ * دریافت گزارش تحویل بر اساس سفارش
+ */
+export const getDeliveryReportByOrderId = async (orderId) => {
+  try {
+    console.log(`📋 دریافت گزارش تحویل برای سفارش ${orderId}`);
+    const response = await api.get(
+      `${Technician_DeliveryReports}/order/${orderId}`
+    );
+    console.log('✅ گزارش تحویل دریافت شد:', response.data);
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت گزارش تحویل:', error.response?.data || error.message);
+    if (error.response) {
+      console.error('❌ Status:', error.response.status);
+      console.error('❌ Data:', error.response.data);
+    }
+    return handleError(error);
+  }
+};
+
+/**
+ * تایید گزارش تحویل با کد 6 رقمی
+ */
+export const verifyDeliveryReportWithCode = async (orderId, code) => {
+  try {
+    console.log(`🔐 تایید گزارش تحویل با کد برای سفارش ${orderId}`);
+    const response = await api.post(
+      `${Technician_DeliveryReports}/order/${orderId}/verify-code`,
+      { code }
+    );
+    console.log('✅ گزارش تحویل تایید شد:', response.data);
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در تایید گزارش تحویل:', error.response?.data || error.message);
+    if (error.response) {
+      console.error('❌ Status:', error.response.status);
+      console.error('❌ Data:', error.response.data);
+    }
+    return handleError(error);
+  }
+};
+
+/**
+ * ثبت پایان کار
+ */
+export const endOrder = async (orderId) => {
+  try {
+    console.log(`🏁 ثبت پایان کار برای سفارش ${orderId}`);
+    const response = await api.post(
+      `${Technician_Orders}/${orderId}/end`
+    );
+    console.log('✅ پایان کار ثبت شد:', response.data);
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در ثبت پایان کار:', error.response?.data || error.message);
+    if (error.response) {
+      console.error('❌ Status:', error.response.status);
+      console.error('❌ Data:', error.response.data);
+    }
+    return handleError(error);
+  }
+};
+
+/**
  * Handle API errors and format them consistently
  */
 const handleError = (error) => {
   console.error('API Error:', error);
-  
+
   if (error.response) {
     // Server responded with error
     const { status, data } = error.response;
@@ -144,28 +288,28 @@ const handleError = (error) => {
 export const testApiConnection = async () => {
   try {
     console.log('🧪 Testing API connection to:', BASE_URL);
-    
+
     // Use expertises endpoint for testing since it's guaranteed to exist
     const response = await api.get('/expertises', { timeout: 5000 });
     console.log('✅ API connection test successful');
-    return { 
-      success: true, 
+    return {
+      success: true,
       message: 'API connection working',
       data: response.data
     };
   } catch (error) {
     console.error('❌ API connection test failed:', error.message);
-    
+
     if (error.code === 'NETWORK_ERROR' || error.message.includes('Network Error')) {
-      return { 
-        success: false, 
-        message: 'خطا در اتصال به شبکه - لطفاً اتصال اینترنت خود را بررسی کنید' 
+      return {
+        success: false,
+        message: 'خطا در اتصال به شبکه - لطفاً اتصال اینترنت خود را بررسی کنید'
       };
     }
-    
-    return { 
-      success: false, 
-      message: `خطا در اتصال به سرور: ${error.message}` 
+
+    return {
+      success: false,
+      message: `خطا در اتصال به سرور: ${error.message}`
     };
   }
 };
@@ -176,7 +320,7 @@ export const testApiConnection = async () => {
 export const testExpertisesEndpoint = async () => {
   const fullUrl = `${BASE_URL}/expertises`;
   console.log('🔍 Testing expertises endpoint:', fullUrl);
-  
+
   try {
     // Test with fetch first to see raw response
     const fetchResponse = await fetch(fullUrl, {
@@ -187,10 +331,10 @@ export const testExpertisesEndpoint = async () => {
       },
       timeout: 10000,
     });
-    
+
     console.log('📡 Fetch response status:', fetchResponse.status);
     console.log('📡 Fetch response headers:', fetchResponse.headers);
-    
+
     if (!fetchResponse.ok) {
       const errorText = await fetchResponse.text();
       console.error('❌ Fetch error response body:', errorText);
@@ -199,16 +343,16 @@ export const testExpertisesEndpoint = async () => {
         message: `HTTP ${fetchResponse.status}: ${errorText}`
       };
     }
-    
+
     const data = await fetchResponse.json();
     console.log('✅ Fetch response data:', data);
-    
+
     return {
       success: true,
       data,
       message: 'Expertises endpoint working'
     };
-    
+
   } catch (error) {
     console.error('❌ Test expertises endpoint failed:', error);
     return {
@@ -247,10 +391,10 @@ export const getExpertises = async () => {
 export const registerTechnician = async (formData, resumeFile = null) => {
   try {
     console.log('🚀 Registering technician...');
-    
+
     // Create multipart form data
     const multipartData = new FormData();
-    
+
     // Add all form fields
     for (const [key, value] of formData.entries()) {
       if (key === 'expertise_ids' && Array.isArray(value)) {
@@ -262,7 +406,7 @@ export const registerTechnician = async (formData, resumeFile = null) => {
         multipartData.append(key, value);
       }
     }
-    
+
     // Add resume file if provided
     if (resumeFile) {
       console.log('📎 اضافه کردن فایل رزومه:', {
@@ -270,19 +414,19 @@ export const registerTechnician = async (formData, resumeFile = null) => {
         name: resumeFile.name,
         type: resumeFile.mimeType || resumeFile.type
       });
-      
+
       // React Native FormData format for file upload
       multipartData.append('resume', {
         uri: resumeFile.uri,
         name: resumeFile.name || 'resume.pdf',
         type: resumeFile.mimeType || resumeFile.type || 'application/pdf',
       });
-      
+
       console.log('✅ فایل رزومه به FormData اضافه شد');
     } else {
       console.log('⚠️ هیچ فایل رزومه‌ای انتخاب نشده');
     }
-    
+
     // Log FormData contents for debugging
     console.log('📋 محتویات FormData:');
     for (const [key, value] of formData.entries()) {
@@ -290,14 +434,14 @@ export const registerTechnician = async (formData, resumeFile = null) => {
         console.log(`  ${key}:`, typeof value === 'object' ? 'file' : value);
       }
     }
-    
+
     const response = await api.post('/technician/register', multipartData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
       timeout: 60000, // 60 seconds for file upload
     });
-    
+
     console.log('✅ Registration successful:', response.data);
     return handleResponse(response);
   } catch (error) {
@@ -357,25 +501,25 @@ export const loginTechnician = async (referralCodeOrPhone, password) => {
     console.log('📡 API loginTechnician فراخوانی شد');
     console.log('ورودی اول:', referralCodeOrPhone);
     console.log('رمز عبور:', password ? '***' : 'خالی');
-    
+
     // Determine if input is phone or referral code
     const isPhone = /^09\d{9}$/.test(referralCodeOrPhone);
     console.log('نوع ورودی:', isPhone ? 'شماره تلفن' : 'کد معرف');
-    
+
     const requestBody = {
       ...(isPhone ? { phone: referralCodeOrPhone } : { referral_code: referralCodeOrPhone }),
       password,
     };
     console.log('Body ارسالی:', JSON.stringify(requestBody, null, 2));
     console.log('URL کامل:', `${BASE_URL}/technician/login`);
-    
+
     const response = await api.post('/technician/login', requestBody);
     console.log('✅ پاسخ سرور دریافت شد:', response.status);
     console.log('داده پاسخ:', JSON.stringify(response.data, null, 2));
-    
+
     const result = handleResponse(response);
     console.log('نتیجه پردازش شده:', JSON.stringify(result, null, 2));
-    
+
     // Store token and user data if login successful
     if (result.success && result.data.token) {
       console.log('ذخیره توکن و اطلاعات کاربر...');
@@ -384,7 +528,7 @@ export const loginTechnician = async (referralCodeOrPhone, password) => {
       await AsyncStorage.setItem('userData', JSON.stringify(result.data));
       console.log('✅ توکن و userData کامل ذخیره شد');
     }
-    
+
     return result;
   } catch (error) {
     console.error('❌ خطا در loginTechnician API:');
@@ -410,7 +554,7 @@ export const logoutTechnician = async () => {
     console.log('🚪 شروع فرآیند خروج...');
     const response = await api.post('/technician/logout');
     console.log('✅ پاسخ سرور logout:', response.status, response.data);
-    
+
     // Clear authentication data (but KEEP userData for next login!)
     console.log('🗑️ پاک کردن توکن احراز هویت...');
     await AsyncStorage.removeItem('userToken');
@@ -418,7 +562,7 @@ export const logoutTechnician = async () => {
     await AsyncStorage.removeItem('savedPassword');
     console.log('✅ توکن پاک شد (userData حفظ شد برای بار بعد)');
     // ⚠️ Note: We DON'T remove 'userData' so it can be used after next login
-    
+
     return handleResponse(response);
   } catch (error) {
     console.error('❌ خطا در logout API:', error);
@@ -432,6 +576,100 @@ export const logoutTechnician = async () => {
   }
 };
 
+
+export const notesAPI = {
+  // Get all user notes
+  getAll: async () => {
+    try {
+      const response = await api.get('/technician/notes');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Get note by ID
+  getById: async (id) => {
+    try {
+      const response = await api.get(`/technician/notes/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Create new note
+  create: async (data) => {
+    try {
+      const response = await api.post('/technician/notes', data);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Update note
+  update: async (id, data) => {
+    try {
+      const response = await api.put(`/technician/notes/${id}`, data);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Delete note
+  delete: async (id) => {
+    try {
+      const response = await api.delete(`/technician/notes/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+};
+
+export const infoAPI = {
+  // Get FAQs
+  getFAQs: async () => {
+    try {
+      const response = await api.get(API_ENDPOINTS.INFO.FAQS);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Get Terms
+  getTerms: async () => {
+    try {
+      const response = await api.get(API_ENDPOINTS.INFO.TERMS);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Get Privacy Policy
+  getPrivacy: async () => {
+    try {
+      const response = await api.get(API_ENDPOINTS.INFO.PRIVACY);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Get Warranty Information
+  getWarranty: async () => {
+    try {
+      const response = await api.get(API_ENDPOINTS.INFO.WARRANTY);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+};
 /**
  * Validate technician token
  */
@@ -455,10 +693,10 @@ export const requestPasswordReset = async (data) => {
   try {
     console.log('📧 درخواست ارسال کد بازیابی رمز...');
     console.log('اطلاعات ارسالی:', data);
-    
+
     const response = await api.post('/technician/forgot-password', data);
     console.log('✅ کد بازیابی ارسال شد:', response.data);
-    
+
     return handleResponse(response);
   } catch (error) {
     console.error('❌ خطا در ارسال کد بازیابی:', error.response?.data || error.message);
@@ -474,10 +712,10 @@ export const verifyResetCode = async (data) => {
   try {
     console.log('� تأیید کد بازیابی...');
     console.log('شماره:', data.phone, 'کد:', data.code);
-    
+
     const response = await api.post('/technician/verify-reset-code', data);
     console.log('✅ کد تأیید شد:', response.data);
-    
+
     return handleResponse(response);
   } catch (error) {
     console.error('❌ خطا در تأیید کد:', error.response?.data || error.message);
@@ -497,10 +735,10 @@ export const resetPassword = async (data) => {
       new_password: '***',
       new_password_confirmation: '***',
     }));
-    
+
     const response = await api.post('/technician/reset-password', data);
     console.log('✅ رمز عبور تغییر یافت:', response.data);
-    
+
     return handleResponse(response);
   } catch (error) {
     console.error('❌ خطا در تغییر رمز عبور:', error.response?.data || error.message);
@@ -550,25 +788,25 @@ export const updateTechnicianProfile = async (formData) => {
 export const updatePersonalInfo = async (data, profilePhoto = null) => {
   try {
     console.log('📝 به‌روزرسانی اطلاعات شخصی...');
-    
+
     // If there's a photo, use multipart/form-data
     if (profilePhoto) {
       const formData = new FormData();
-      
+
       // Add profile photo
       const photoData = {
         uri: profilePhoto.uri,
         name: profilePhoto.name || 'profile.jpg',
         type: profilePhoto.type || 'image/jpeg',
       };
-      
+
       console.log('📸 اطلاعات عکس برای ارسال:', photoData);
-      
+
       // Try different field names that backend might expect
       formData.append('profile_photo', photoData);
       // Also try with _method for Laravel
       formData.append('_method', 'PUT');
-      
+
       // Add other fields (exclude fields that Backend doesn't allow to change)
       const excludedFields = ['other_referral_code', 'referral_code']; // Backend doesn't allow changing these
       Object.keys(data).forEach(key => {
@@ -576,10 +814,10 @@ export const updatePersonalInfo = async (data, profilePhoto = null) => {
           formData.append(key, data[key]);
         }
       });
-      
+
       console.log('📤 ارسال با عکس پروفایل به Backend (POST with _method=PUT)');
       console.log('🔗 URL: /technician/profile/personal-info');
-      
+
       // Use POST with _method=PUT for Laravel compatibility with file uploads
       const response = await api.post('/technician/profile/personal-info', formData, {
         headers: {
@@ -587,7 +825,7 @@ export const updatePersonalInfo = async (data, profilePhoto = null) => {
         },
         timeout: 60000,
       });
-      
+
       console.log('✅ اطلاعات شخصی با عکس به‌روز شد');
       console.log('📦 Response کامل:', JSON.stringify(response.data, null, 2));
       console.log('🖼️ profile_photo_path در response:', response.data?.data?.technician?.profile_photo_path);
@@ -595,16 +833,16 @@ export const updatePersonalInfo = async (data, profilePhoto = null) => {
     } else {
       // Without photo, use JSON
       console.log('📤 ارسال بدون عکس پروفایل');
-      
+
       // Remove fields that Backend doesn't allow to change
       const { other_referral_code, referral_code, ...editableData } = data;
-      
+
       const response = await api.put('/technician/profile/personal-info', editableData, {
         headers: {
           'Content-Type': 'application/json',
         },
       });
-      
+
       console.log('✅ اطلاعات شخصی به‌روز شد:', response.data);
       return handleResponse(response);
     }
@@ -621,13 +859,13 @@ export const updatePersonalInfo = async (data, profilePhoto = null) => {
 export const updateVehicleInfo = async (data) => {
   try {
     console.log('🚗 به‌روزرسانی اطلاعات خودرو...');
-    
+
     const response = await api.put('/technician/profile/vehicle-info', data, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    
+
     console.log('✅ اطلاعات خودرو به‌روز شد:', response.data);
     return handleResponse(response);
   } catch (error) {
@@ -643,13 +881,13 @@ export const updateVehicleInfo = async (data) => {
 export const updateBankInfo = async (data) => {
   try {
     console.log('💳 به‌روزرسانی اطلاعات بانکی...');
-    
+
     const response = await api.put('/technician/profile/bank-info', data, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    
+
     console.log('✅ اطلاعات بانکی به‌روز شد:', response.data);
     return handleResponse(response);
   } catch (error) {
@@ -665,13 +903,13 @@ export const updateBankInfo = async (data) => {
 export const changePassword = async (data) => {
   try {
     console.log('🔒 تغییر رمز عبور...');
-    
+
     const response = await api.patch('/technician/profile/password', data, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    
+
     console.log('✅ رمز عبور تغییر یافت:', response.data);
     return handleResponse(response);
   } catch (error) {
@@ -693,21 +931,20 @@ export const changePassword = async (data) => {
 export const getTechnicianOrders = async (status = null, page = 1, perPage = 15) => {
   try {
     console.log('📋 دریافت لیست سفارشات متخصص...');
-    
     // Build query parameters
     const params = new URLSearchParams();
-    if (status) params.append('status', status);
+    if (status?.toString()) params.append('status', status?.toString());
     params.append('page', page);
     params.append('per_page', perPage);
-    
+
     const queryString = params.toString();
     const endpoint = `/technician/orders${queryString ? '?' + queryString : ''}`;
-    
+
     console.log('📍 Endpoint:', endpoint);
-    
+
     const response = await api.get(endpoint);
     console.log('✅ سفارشات دریافت شد:', response.data);
-    
+
     return handleResponse(response);
   } catch (error) {
     console.error('❌ خطا در دریافت سفارشات:', error.response?.data || error.message);
@@ -723,13 +960,227 @@ export const getTechnicianOrderById = async (orderId) => {
   try {
     console.log(`📋 دریافت جزئیات سفارش #${orderId}...`);
     console.log('📋 Type of orderId:', typeof orderId);
-    
+
     const response = await api.get(`/technician/orders/${orderId}/detail`);
     console.log('✅ جزئیات سفارش دریافت شد:', response.data);
-    
+
     return handleResponse(response);
   } catch (error) {
     console.error('❌ خطا در دریافت جزئیات سفارش:', error.response?.data || error.message);
+    if (error.response) {
+      console.error('❌ Status:', error.response.status);
+      console.error('❌ Data:', error.response.data);
+    }
+    return handleError(error);
+  }
+};
+
+/**
+ * ثبت توضیحات متخصص
+ * @param {number} orderId - شناسه سفارش
+ * @param {Object} data - داده‌های توضیحات شامل technician_des, date, time
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const submitTechnicianDescription = async (orderId, data) => {
+  try {
+    console.log(`📝 ثبت توضیحات متخصص برای سفارش #${orderId}...`);
+    console.log('📝 Data:', data);
+
+    const response = await api.post(`/technician/orders/${orderId}/technician-description`, data);
+    console.log('✅ توضیحات متخصص با موفقیت ثبت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در ثبت توضیحات متخصص:', error.response?.data || error.message);
+    if (error.response) {
+      console.error('❌ Status:', error.response.status);
+      console.error('❌ Data:', error.response.data);
+    }
+    return handleError(error);
+  }
+};
+
+/**
+ * ثبت زمان حرکت (راه افتادن)
+ * @param {number} orderId - شناسه سفارش
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const setOffToOrder = async (orderId) => {
+  try {
+    console.log(`🚗 ثبت زمان حرکت برای سفارش #${orderId}...`);
+
+    const response = await api.post(`/technician/orders/${orderId}/set-off`);
+    console.log('✅ زمان حرکت با موفقیت ثبت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در ثبت زمان حرکت:', error.response?.data || error.message);
+    if (error.response) {
+      console.error('❌ Status:', error.response.status);
+      console.error('❌ Data:', error.response.data);
+    }
+    return handleError(error);
+  }
+};
+
+/**
+ * ثبت زمان رسیدن
+ * @param {number} orderId - شناسه سفارش
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const arriveToOrder = async (orderId) => {
+  try {
+    console.log(`📍 ثبت زمان رسیدن برای سفارش #${orderId}...`);
+
+    const response = await api.post(`/technician/orders/${orderId}/arrive`);
+    console.log('✅ زمان رسیدن با موفقیت ثبت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در ثبت زمان رسیدن:', error.response?.data || error.message);
+    if (error.response) {
+      console.error('❌ Status:', error.response.status);
+      console.error('❌ Data:', error.response.data);
+    }
+    return handleError(error);
+  }
+};
+
+/**
+ * ثبت گزارش محصول توسط متخصص
+ * @param {Object} data - اطلاعات گزارش محصول
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const createOrderReport = async (data) => {
+  try {
+    console.log('📝 ثبت گزارش محصول...');
+    console.log('📝 Data:', data);
+
+    const response = await api.post('/technician/order-reports', data);
+    console.log('✅ گزارش محصول با موفقیت ثبت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در ثبت گزارش محصول:', error.response?.data || error.message);
+    if (error.response) {
+      console.error('❌ Status:', error.response.status);
+      console.error('❌ Data:', error.response.data);
+    }
+    return handleError(error);
+  }
+};
+
+/**
+ * به‌روزرسانی گزارش محصول
+ * @param {number} reportId - شناسه گزارش
+ * @param {Object} data - اطلاعات به‌روزرسانی شده
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const updateOrderReport = async (reportId, data) => {
+  try {
+    console.log(`📝 به‌روزرسانی گزارش #${reportId}...`);
+    console.log('📝 Data:', data);
+
+    const response = await api.put(`/technician/order-reports/${reportId}`, data);
+    console.log('✅ گزارش محصول با موفقیت به‌روزرسانی شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در به‌روزرسانی گزارش محصول:', error.response?.data || error.message);
+    if (error.response) {
+      console.error('❌ Status:', error.response.status);
+      console.error('❌ Data:', error.response.data);
+    }
+    return handleError(error);
+  }
+};
+
+/**
+ * مشاهده گزارش محصول
+ * @param {number} reportId - شناسه گزارش
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const getOrderReport = async (reportId) => {
+  try {
+    console.log(`📋 دریافت گزارش #${reportId}...`);
+
+    const response = await api.get(`/technician/order-reports/${reportId}`);
+    console.log('✅ گزارش محصول دریافت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت گزارش محصول:', error.response?.data || error.message);
+    if (error.response) {
+      console.error('❌ Status:', error.response.status);
+      console.error('❌ Data:', error.response.data);
+    }
+    return handleError(error);
+  }
+};
+
+/**
+ * مشاهده گزارش بر اساس سفارش
+ * @param {number} orderId - شناسه سفارش
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const getOrderReportByOrderId = async (orderId) => {
+  try {
+    console.log(`📋 دریافت گزارش برای سفارش #${orderId}...`);
+
+    const response = await api.get(`/order-reports/by-order/${orderId}`);
+    console.log('✅ گزارش سفارش دریافت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت گزارش سفارش:', error.response?.data || error.message);
+    if (error.response) {
+      console.error('❌ Status:', error.response.status);
+      console.error('❌ Data:', error.response.data);
+    }
+    return handleError(error);
+  }
+};
+
+/**
+ * ارسال سفارش به لوپ
+ * @param {number} orderId - شناسه سفارش
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const sendOrderToLoop = async (orderId) => {
+  try {
+    console.log(`🚀 ارسال سفارش #${orderId} به لوپ...`);
+
+    const response = await api.post(`/technician/orders/${orderId}/send-to-loop`);
+    console.log('✅ سفارش با موفقیت به لوپ ارسال شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در ارسال سفارش به لوپ:', error.response?.data || error.message);
+    if (error.response) {
+      console.error('❌ Status:', error.response.status);
+      console.error('❌ Data:', error.response.data);
+    }
+    return handleError(error);
+  }
+};
+
+/**
+ * به‌روزرسانی اطلاعات لوپ
+ * @param {number} orderId - شناسه سفارش
+ * @param {Object} data - اطلاعات لوپ (duration, loop_cost_estimate, loop_description)
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const updateLoopInfo = async (orderId, data) => {
+  try {
+    console.log(`📝 به‌روزرسانی اطلاعات لوپ برای سفارش #${orderId}...`);
+    console.log('📝 Data:', data);
+
+    const response = await api.patch(`/technician/orders/${orderId}/loop-info`, data);
+    console.log('✅ اطلاعات لوپ با موفقیت به‌روزرسانی شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در به‌روزرسانی اطلاعات لوپ:', error.response?.data || error.message);
     if (error.response) {
       console.error('❌ Status:', error.response.status);
       console.error('❌ Data:', error.response.data);
@@ -780,5 +1231,1078 @@ export const clearAuthData = async () => {
   }
 };
 
+// ==================== Chat APIs ====================
+
+/**
+ * دریافت لیست چت‌های متخصص
+ */
+export const getTechnicianChats = async () => {
+  try {
+    console.log('📋 دریافت لیست چت‌های متخصص');
+    const response = await api.get('/technician/chats');
+    console.log('✅ لیست چت‌ها دریافت شد:', response.data);
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت لیست چت‌ها:', error.response?.data || error.message);
+    return handleError(error);
+  }
+};
+
+/**
+ * دریافت پیام‌های یک چت با کاربر
+ */
+export const getTechnicianChatMessages = async (userId) => {
+  try {
+    console.log(`📨 دریافت پیام‌های چت با کاربر ${userId}`);
+    const response = await api.get('/technician/chats/messages', {
+      params: { user_id: userId }
+    });
+    console.log('✅ پیام‌ها دریافت شد:', response.data);
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت پیام‌ها:', error.response?.data || error.message);
+    return handleError(error);
+  }
+};
+
+/**
+ * ارسال پیام به کاربر
+ */
+export const sendTechnicianMessage = async (userId, message) => {
+  try {
+    console.log(`📤 ارسال پیام به کاربر ${userId}:`, message);
+    const response = await api.post('/technician/chats/send', {
+      user_id: userId,
+      message: message
+    });
+    console.log('✅ پیام ارسال شد:', response.data);
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در ارسال پیام:', error.response?.data || error.message);
+    if (error.response?.status === 403) {
+      return {
+        success: false,
+        message: error.response.data.message || 'چت بسته شده است. سفارش فعالی وجود ندارد.',
+        error_code: 'CHAT_CLOSED'
+      };
+    }
+    return handleError(error);
+  }
+};
+
+/**
+ * علامت‌گذاری پیام‌ها به عنوان خوانده شده
+ */
+export const markTechnicianMessagesAsRead = async (userId) => {
+  try {
+    console.log(`✓ علامت‌گذاری پیام‌های کاربر ${userId} به عنوان خوانده شده`);
+    const response = await api.post('/technician/chats/mark-read', {
+      user_id: userId
+    });
+    console.log('✅ پیام‌ها خوانده شدند:', response.data);
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در علامت‌گذاری پیام‌ها:', error.response?.data || error.message);
+    // این خطا را نادیده می‌گیریم چون critical نیست
+    return { success: false, silent: true };
+  }
+};
+
+/**
+ * لغو سفارش توسط متخصص
+ */
+export const cancelOrderByTechnician = async (orderId, cancelReason) => {
+  try {
+    console.log(`✓ درخواست لغو سفارش ${orderId} توسط متخصص`);
+    const response = await api.post(`/technician/orders/${orderId}/cancel`, {
+      technician_cancel_reason: cancelReason
+    });
+    console.log('✅ سفارش با موفقیت لغو شد:', response.data);
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در لغو سفارش:', error.response?.data || error.message);
+
+    // مدیریت خطاهای مختلف
+    if (error.response?.status === 404) {
+      throw new Error('سفارش مورد نظر یافت نشد یا به شما تعلق ندارد');
+    } else if (error.response?.status === 409) {
+      const errorCode = error.response?.data?.error;
+      if (errorCode === 'ORDER_ALREADY_STARTED') {
+        throw new Error('امکان لغو سفارش پس از شروع کار وجود ندارد');
+      } else if (errorCode === 'ORDER_ALREADY_COMPLETED') {
+        throw new Error('امکان لغو سفارش تکمیل شده وجود ندارد');
+      } else if (errorCode === 'ORDER_ALREADY_CANCELLED') {
+        throw new Error('این سفارش قبلاً لغو شده است');
+      }
+    } else if (error.response?.status === 422) {
+      throw new Error('لطفاً دلیل لغو را وارد کنید');
+    }
+
+    throw new Error(error.response?.data?.message || 'خطا در لغو سفارش. لطفاً دوباره تلاش کنید');
+  }
+};
+
+/**
+ * ثبت درخواست کمک اضطراری
+ */
+export const submitEmergencyHelp = async (orderId, emergencyHelp) => {
+  try {
+    console.log(`✓ ثبت درخواست کمک اضطراری برای سفارش ${orderId}`);
+    const response = await api.post(`/technician/orders/${orderId}/emergency-help`, {
+      emergency_help: emergencyHelp
+    });
+    console.log('✅ درخواست کمک اضطراری با موفقیت ثبت شد:', response.data);
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در ثبت درخواست کمک اضطراری:', error.response?.data || error.message);
+
+    // مدیریت خطاهای مختلف
+    if (error.response?.status === 404) {
+      throw new Error('سفارش مورد نظر یافت نشد');
+    } else if (error.response?.status === 409) {
+      const errorCode = error.response?.data?.error_code;
+      if (errorCode === 'INVALID_ORDER_STATUS') {
+        throw new Error('فقط سفارشات در حال انجام می‌توانند درخواست کمک اضطراری داشته باشند');
+      } else if (errorCode === 'ORDER_NOT_STARTED') {
+        throw new Error('برای ثبت درخواست کمک، ابتدا باید کار را شروع کرده باشید');
+      }
+    } else if (error.response?.status === 422) {
+      throw new Error('لطفاً توضیحات درخواست را وارد کنید');
+    }
+
+    throw new Error(error.response?.data?.message || 'خطا در ثبت درخواست. لطفاً دوباره تلاش کنید');
+  }
+};
+
+/**
+ * ثبت نظر متخصص در مورد سفارش
+ * @param {number} orderId - شناسه سفارش
+ * @param {string} technicianOpinion - نظر متخصص (حداکثر 2000 کاراکتر)
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const submitTechnicianOpinion = async (orderId, technicianOpinion) => {
+  try {
+    console.log(`💬 ثبت نظر متخصص برای سفارش #${orderId}...`);
+
+    const response = await api.post(`${Technician_Orders}/${orderId}/technician-opinion`, {
+      technician_opinion: technicianOpinion
+    });
+
+    console.log('✅ نظر متخصص با موفقیت ثبت شد:', response.data);
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در ثبت نظر متخصص:', error.response?.data || error.message);
+
+    const errorCode = error.response?.data?.error_code;
+
+    if (error.response?.status === 404) {
+      throw new Error('سفارش مورد نظر یافت نشد');
+    } else if (error.response?.status === 409) {
+      if (errorCode === 'ORDER_NOT_FINISHED') {
+        throw new Error('فقط سفارشات تمام شده می‌توانند نظر متخصص داشته باشند');
+      }
+      throw new Error('سفارش هنوز به اتمام نرسیده است');
+    } else if (error.response?.status === 422) {
+      throw new Error('لطفاً نظر خود را وارد کنید (حداکثر 2000 کاراکتر)');
+    }
+
+    throw new Error(error.response?.data?.message || 'خطا در ثبت نظر. لطفاً دوباره تلاش کنید');
+  }
+};
+
+// =============================================================================
+// EDUCATION REQUESTS APIs
+// =============================================================================
+
+/**
+ * ثبت درخواست آموزش/مراجعه جدید
+ * @param {Object} data - { section, description }
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const createEducationRequest = async (data) => {
+  try {
+    console.log('📝 ثبت درخواست جدید:', data);
+
+    const response = await api.post('/technician/education-requests', data);
+    console.log('✅ درخواست با موفقیت ثبت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در ثبت درخواست:', error.response?.data || error.message);
+
+    if (error.response?.status === 422) {
+      const errors = error.response?.data?.errors;
+      if (errors) {
+        const errorMessages = Object.values(errors).flat().join('\n');
+        throw new Error(errorMessages);
+      }
+      throw new Error('لطفاً تمام فیلدها را به درستی پر کنید');
+    }
+
+    throw new Error(error.response?.data?.message || 'خطا در ثبت درخواست. لطفاً دوباره تلاش کنید');
+  }
+};
+
+/**
+ * دریافت لیست درخواست‌های آموزش/مراجعه
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const getEducationRequests = async () => {
+  try {
+    console.log('📋 دریافت لیست درخواست‌ها');
+
+    const response = await api.get('/technician/education-requests');
+    console.log('✅ لیست درخواست‌ها دریافت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت لیست درخواست‌ها:', error.response?.data || error.message);
+    return handleError(error);
+  }
+};
+
+/**
+ * دریافت جزئیات یک درخواست آموزش/مراجعه
+ * @param {number} requestId - شناسه درخواست
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const getEducationRequestById = async (requestId) => {
+  try {
+    console.log(`📋 دریافت جزئیات درخواست #${requestId}`);
+
+    const response = await api.get(`/technician/education-requests/${requestId}`);
+    console.log('✅ جزئیات درخواست دریافت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت جزئیات درخواست:', error.response?.data || error.message);
+
+    if (error.response?.status === 404) {
+      throw new Error('درخواست مورد نظر یافت نشد');
+    } else if (error.response?.status === 403) {
+      throw new Error('دسترسی غیرمجاز');
+    }
+
+    return handleError(error);
+  }
+};
+
 // Export the configured axios instance for custom requests
+/**
+ * ثبت درخواست مرخصی جدید
+ * @param {Object} data - اطلاعات درخواست مرخصی
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const createLeaveRequest = async (data) => {
+  try {
+    console.log('📝 ثبت درخواست مرخصی:', data);
+
+    const response = await api.post('/technician/leave-requests', data);
+    console.log('✅ درخواست مرخصی ثبت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در ثبت درخواست مرخصی:', error.response?.data || error.message);
+
+    if (error.response?.status === 422) {
+      const errors = error.response.data.errors;
+      const firstError = Object.values(errors)[0][0];
+      throw new Error(firstError);
+    } else if (error.response?.status === 403) {
+      throw new Error('دسترسی غیرمجاز');
+    }
+
+    return handleError(error);
+  }
+};
+
+/**
+ * دریافت لیست درخواست‌های مرخصی
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const getLeaveRequests = async () => {
+  try {
+    console.log('📋 دریافت لیست درخواست‌های مرخصی');
+
+    const response = await api.get('/technician/leave-requests');
+    console.log('✅ لیست درخواست‌های مرخصی دریافت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت لیست درخواست‌های مرخصی:', error.response?.data || error.message);
+    return handleError(error);
+  }
+};
+
+/**
+ * دریافت جزئیات یک درخواست مرخصی
+ * @param {number} requestId - شناسه درخواست
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const getLeaveRequestById = async (requestId) => {
+  try {
+    console.log(`📋 دریافت جزئیات درخواست مرخصی #${requestId}`);
+
+    const response = await api.get(`/technician/leave-requests/${requestId}`);
+    console.log('✅ جزئیات درخواست مرخصی دریافت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت جزئیات درخواست مرخصی:', error.response?.data || error.message);
+
+    if (error.response?.status === 404) {
+      throw new Error('درخواست مورد نظر یافت نشد');
+    } else if (error.response?.status === 403) {
+      throw new Error('دسترسی غیرمجاز');
+    }
+
+    return handleError(error);
+  }
+};
+
+// =============================================================================
+// DEBT REQUESTS APIs (تسهیلات / وام بدون بهره)
+// =============================================================================
+
+/**
+ * ثبت درخواست وام/تسهیلات جدید
+ * @param {Object} data - اطلاعات درخواست وام
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const createDebtRequest = async (data) => {
+  try {
+    console.log('💰 ثبت درخواست وام:', data);
+
+    const response = await api.post('/technician/debt-requests', data);
+    console.log('✅ درخواست وام ثبت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در ثبت درخواست وام:', error.response?.data || error.message);
+
+    if (error.response?.status === 422) {
+      const errors = error.response.data.errors;
+      const firstError = Object.values(errors)[0][0];
+      throw new Error(firstError);
+    } else if (error.response?.status === 403) {
+      throw new Error('دسترسی غیرمجاز');
+    }
+
+    return handleError(error);
+  }
+};
+
+/**
+ * دریافت لیست درخواست‌های وام
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const getDebtRequests = async () => {
+  try {
+    console.log('📋 دریافت لیست درخواست‌های وام');
+
+    const response = await api.get('/technician/debt-requests');
+    console.log('✅ لیست درخواست‌های وام دریافت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت لیست درخواست‌های وام:', error.response?.data || error.message);
+    return handleError(error);
+  }
+};
+
+/**
+ * دریافت جزئیات یک درخواست وام
+ * @param {number} requestId - شناسه درخواست
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const getDebtRequestById = async (requestId) => {
+  try {
+    console.log(`📋 دریافت جزئیات درخواست وام #${requestId}`);
+
+    const response = await api.get(`/technician/debt-requests/${requestId}`);
+    console.log('✅ جزئیات درخواست وام دریافت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت جزئیات درخواست وام:', error.response?.data || error.message);
+
+    if (error.response?.status === 404) {
+      throw new Error('درخواست مورد نظر یافت نشد');
+    } else if (error.response?.status === 403) {
+      throw new Error('دسترسی غیرمجاز');
+    }
+
+    return handleError(error);
+  }
+};
+
+// =============================================================================
+// ============================= Transfer Requests =============================
+// =============================================================================
+
+/**
+ * ثبت درخواست انتقال/سمت جدید
+ * @param {Object} data - اطلاعات درخواست انتقال/سمت
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const createTransferRequest = async (data) => {
+  try {
+    console.log('🔄 ثبت درخواست انتقال/سمت:', data);
+
+    const response = await api.post('/technician/transfer-requests', data);
+    console.log('✅ درخواست انتقال/سمت ثبت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در ثبت درخواست انتقال/سمت:', error.response?.data || error.message);
+
+    if (error.response?.status === 422) {
+      const errors = error.response.data.errors;
+      const firstError = Object.values(errors)[0][0];
+      throw new Error(firstError);
+    } else if (error.response?.status === 403) {
+      throw new Error('دسترسی غیرمجاز');
+    }
+
+    return handleError(error);
+  }
+};
+
+/**
+ * دریافت لیست درخواست‌های انتقال/سمت
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const getTransferRequests = async () => {
+  try {
+    console.log('📋 دریافت لیست درخواست‌های انتقال/سمت');
+
+    const response = await api.get('/technician/transfer-requests');
+    console.log('✅ لیست درخواست‌های انتقال/سمت دریافت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت لیست درخواست‌های انتقال/سمت:', error.response?.data || error.message);
+    return handleError(error);
+  }
+};
+
+/**
+ * دریافت جزئیات یک درخواست انتقال/سمت
+ * @param {number} requestId - شناسه درخواست
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const getTransferRequestById = async (requestId) => {
+  try {
+    console.log(`📋 دریافت جزئیات درخواست انتقال/سمت #${requestId}`);
+
+    const response = await api.get(`/technician/transfer-requests/${requestId}`);
+    console.log('✅ جزئیات درخواست انتقال/سمت دریافت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت جزئیات درخواست انتقال/سمت:', error.response?.data || error.message);
+
+    if (error.response?.status === 404) {
+      throw new Error('درخواست مورد نظر یافت نشد');
+    } else if (error.response?.status === 403) {
+      throw new Error('دسترسی غیرمجاز');
+    }
+
+    return handleError(error);
+  }
+};
+
+// =============================================================================
+// ============================= Manpower Requests =============================
+// =============================================================================
+
+/**
+ * ثبت درخواست نیروی انسانی جدید
+ * @param {Object} data - اطلاعات درخواست نیروی انسانی
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const createManpowerRequest = async (data) => {
+  try {
+    console.log('👥 ثبت درخواست نیروی انسانی:', data);
+
+    const response = await api.post('/technician/manpower-requests', data);
+    console.log('✅ درخواست نیروی انسانی ثبت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در ثبت درخواست نیروی انسانی:', error.response?.data || error.message);
+
+    if (error.response?.status === 422) {
+      const errors = error.response.data.errors;
+      const firstError = Object.values(errors)[0][0];
+      throw new Error(firstError);
+    } else if (error.response?.status === 403) {
+      throw new Error('دسترسی غیرمجاز');
+    }
+
+    return handleError(error);
+  }
+};
+
+/**
+ * دریافت لیست درخواست‌های نیروی انسانی
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const getManpowerRequests = async () => {
+  try {
+    console.log('📋 دریافت لیست درخواست‌های نیروی انسانی');
+
+    const response = await api.get('/technician/manpower-requests');
+    console.log('✅ لیست درخواست‌های نیروی انسانی دریافت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت لیست درخواست‌های نیروی انسانی:', error.response?.data || error.message);
+    return handleError(error);
+  }
+};
+
+/**
+ * دریافت جزئیات یک درخواست نیروی انسانی
+ * @param {number} requestId - شناسه درخواست
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const getManpowerRequestById = async (requestId) => {
+  try {
+    console.log(`📋 دریافت جزئیات درخواست نیروی انسانی #${requestId}`);
+
+    const response = await api.get(`/technician/manpower-requests/${requestId}`);
+    console.log('✅ جزئیات درخواست نیروی انسانی دریافت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت جزئیات درخواست نیروی انسانی:', error.response?.data || error.message);
+
+    if (error.response?.status === 404) {
+      throw new Error('درخواست مورد نظر یافت نشد');
+    } else if (error.response?.status === 403) {
+      throw new Error('دسترسی غیرمجاز');
+    }
+
+    return handleError(error);
+  }
+};
+
+// =============================================================================
+// =========================== Termination Requests ============================
+// =============================================================================
+
+/**
+ * ثبت درخواست قطع همکاری جدید
+ * @param {Object} data - اطلاعات درخواست قطع همکاری
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const createTerminationRequest = async (data) => {
+  try {
+    console.log('🔌 ثبت درخواست قطع همکاری:', data);
+
+    const response = await api.post('/technician/termination-requests', data);
+    console.log('✅ درخواست قطع همکاری ثبت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در ثبت درخواست قطع همکاری:', error.response?.data || error.message);
+
+    if (error.response?.status === 422) {
+      const errors = error.response.data.errors;
+      const firstError = Object.values(errors)[0][0];
+      throw new Error(firstError);
+    } else if (error.response?.status === 403) {
+      throw new Error('دسترسی غیرمجاز');
+    }
+
+    return handleError(error);
+  }
+};
+
+/**
+ * دریافت لیست درخواست‌های قطع همکاری
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const getTerminationRequests = async () => {
+  try {
+    console.log('📋 دریافت لیست درخواست‌های قطع همکاری');
+
+    const response = await api.get('/technician/termination-requests');
+    console.log('✅ لیست درخواست‌های قطع همکاری دریافت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت لیست درخواست‌های قطع همکاری:', error.response?.data || error.message);
+    return handleError(error);
+  }
+};
+
+/**
+ * دریافت جزئیات یک درخواست قطع همکاری
+ * @param {number} requestId - شناسه درخواست
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const getTerminationRequestById = async (requestId) => {
+  try {
+    console.log(`📋 دریافت جزئیات درخواست قطع همکاری #${requestId}`);
+
+    const response = await api.get(`/technician/termination-requests/${requestId}`);
+    console.log('✅ جزئیات درخواست قطع همکاری دریافت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت جزئیات درخواست قطع همکاری:', error.response?.data || error.message);
+
+    if (error.response?.status === 404) {
+      throw new Error('درخواست مورد نظر یافت نشد');
+    } else if (error.response?.status === 403) {
+      throw new Error('دسترسی غیرمجاز');
+    }
+
+    return handleError(error);
+  }
+};
+
+// =============================================================================
+// ============================== Transactions =================================
+// =============================================================================
+
+/**
+ * دریافت لیست تراکنش‌های متخصص
+ * @param {Object} filters - فیلترهای تاریخ (اختیاری)
+ * @param {string} filters.date - تاریخ خاص (YYYY-MM-DD)
+ * @param {string} filters.from_date - از تاریخ (YYYY-MM-DD)
+ * @param {string} filters.to_date - تا تاریخ (YYYY-MM-DD)
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const getTransactions = async (filters = {}) => {
+  try {
+    console.log('💰 دریافت لیست تراکنش‌ها با فیلترها:', filters);
+
+    // ساخت query parameters
+    const params = new URLSearchParams();
+    if (filters.date) params.append('date', filters.date);
+    if (filters.from_date) params.append('from_date', filters.from_date);
+    if (filters.to_date) params.append('to_date', filters.to_date);
+
+    const queryString = params.toString();
+    const url = queryString ? `/technician/transactions?${queryString}` : '/technician/transactions';
+
+    const response = await api.get(url);
+    console.log('✅ لیست تراکنش‌ها دریافت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت لیست تراکنش‌ها:', error.response?.data || error.message);
+
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      throw new Error('دسترسی غیرمجاز');
+    }
+
+    return handleError(error);
+  }
+};
+
+// =====================================================
+// Archive Images APIs
+// =====================================================
+
+export const uploadArchiveImages = async (images) => {
+  try {
+    console.log('📤 آپلود تصاویر آرشیو...', images.length, 'تصویر');
+
+    const formData = new FormData();
+
+    images.forEach((image, index) => {
+      // استخراج نام فایل و پسوند
+      const uriParts = image.uri.split('/');
+      const fileName = uriParts[uriParts.length - 1];
+
+      // تشخیص mime type
+      let mimeType = 'image/jpeg';
+      if (fileName.toLowerCase().endsWith('.png')) {
+        mimeType = 'image/png';
+      } else if (fileName.toLowerCase().endsWith('.jpg') || fileName.toLowerCase().endsWith('.jpeg')) {
+        mimeType = 'image/jpeg';
+      } else if (fileName.toLowerCase().endsWith('.webp')) {
+        mimeType = 'image/webp';
+      }
+
+      console.log(`📸 آماده‌سازی تصویر ${index + 1}:`, { fileName, mimeType, uri: image.uri });
+
+      // اضافه کردن به FormData
+      formData.append('images[]', {
+        uri: image.uri,
+        type: mimeType,
+        name: fileName || `photo_${Date.now()}_${index}.jpg`,
+      });
+    });
+
+    console.log('📦 FormData آماده شد، در حال ارسال...');
+
+    const response = await api.post('/technician/archive-images', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      timeout: 60000, // 60 ثانیه برای آپلود
+    });
+
+    console.log('✅ تصاویر آپلود شدند:', response.data);
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در آپلود تصاویر:', error.response?.data || error.message);
+    console.error('❌ جزئیات خطا:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+    });
+
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      throw new Error('دسترسی غیرمجاز');
+    }
+
+    if (error.response?.status === 422) {
+      const errors = error.response?.data?.errors;
+      if (errors) {
+        const errorMessages = Object.values(errors).flat().join('\n');
+        throw new Error(errorMessages);
+      }
+    }
+
+    return handleError(error);
+  }
+};
+
+export const getArchiveImages = async () => {
+  try {
+    console.log('📥 دریافت لیست تصاویر آرشیو...');
+
+    const response = await api.get('/technician/archive-images');
+    console.log('✅ لیست تصاویر دریافت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت لیست تصاویر:', error.response?.data || error.message);
+
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      throw new Error('دسترسی غیرمجاز');
+    }
+
+    return handleError(error);
+  }
+};
+
+export const deleteArchiveImage = async (imageId) => {
+  try {
+    console.log('🗑️ حذف تصویر:', imageId);
+
+    const response = await api.delete(`/technician/archive-images/${imageId}`);
+    console.log('✅ تصویر حذف شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در حذف تصویر:', error.response?.data || error.message);
+
+    if (error.response?.status === 404) {
+      throw new Error('تصویر یافت نشد یا دسترسی به حذف آن را ندارید');
+    }
+
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      throw new Error('دسترسی غیرمجاز');
+    }
+
+    return handleError(error);
+  }
+};
+
+// =====================================================
+// Incentive Plans APIs
+// =====================================================
+
+export const getIncentivePlans = async () => {
+  try {
+    console.log('🎁 دریافت لیست طرح‌های تشویقی...');
+    
+    const response = await api.get('/technician/incentive-plans');
+    console.log('✅ لیست طرح‌های تشویقی دریافت شد:', response.data);
+    
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت لیست طرح‌های تشویقی:', error.response?.data || error.message);
+    
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      throw new Error('دسترسی غیرمجاز');
+    }
+    
+    return handleError(error);
+  }
+};
+
+// =====================================================
+// Poll/Feedback APIs
+// =====================================================
+
+export const checkPollStatus = async () => {
+  try {
+    console.log('🔍 بررسی وضعیت ثبت نظر...');
+    
+    const response = await api.get('/technician/poll/check');
+    console.log('✅ وضعیت نظر دریافت شد:', response.data);
+    
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در بررسی وضعیت نظر:', error.response?.data || error.message);
+    
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      throw new Error('دسترسی غیرمجاز');
+    }
+    
+    return handleError(error);
+  }
+};
+
+export const submitPoll = async (pollData) => {
+  try {
+    console.log('📝 ثبت نظرات و پیشنهادات...');
+    
+    const response = await api.post('/technician/poll', pollData);
+    console.log('✅ نظرات ثبت شد:', response.data);
+    
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در ثبت نظرات:', error.response?.data || error.message);
+    
+    if (error.response?.status === 400) {
+      throw new Error(error.response?.data?.message || 'شما قبلاً نظر خود را ثبت کرده‌اید');
+    }
+    
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      throw new Error('دسترسی غیرمجاز');
+    }
+    
+    if (error.response?.status === 422) {
+      const errors = error.response?.data?.errors;
+      if (errors) {
+        const errorMessages = Object.values(errors).flat().join('\n');
+        throw new Error(errorMessages);
+      }
+      throw new Error(error.response?.data?.message || 'خطا در اعتبارسنجی داده‌ها');
+    }
+    
+    return handleError(error);
+  }
+};
+
+/**
+ * Get yearly income chart data
+ */
+export const getYearlyIncomeChart = async (year) => {
+  try {
+    console.log('════════════════════════════════════════');
+    console.log('📊 شروع درخواست نمودار درآمد سالانه');
+    console.log('════════════════════════════════════════');
+    console.log('📥 پارامتر ورودی year:', year);
+    console.log('📥 نوع year:', typeof year);
+    console.log('📥 آیا number است؟', typeof year === 'number');
+    
+    // ساخت URL با یا بدون query parameter
+    let url = '/technician/transactions/yearly-income-chart';
+    
+    // فقط اگر year یک عدد معتبر باشه، به URL اضافه کن
+    if (typeof year === 'number' && !isNaN(year) && year > 0) {
+      url = `${url}?year=${year}`;
+      console.log('✅ year به عنوان query parameter اضافه شد:', year);
+    } else {
+      console.log('⚠️ year معتبر نیست، بدون query parameter ارسال می‌شود');
+      console.log('   - year value:', year);
+      console.log('   - isNaN:', isNaN(year));
+    }
+    
+    console.log('🔗 URL نهایی:', url);
+    console.log('🔗 Full URL:', `${api.defaults.baseURL}${url}`);
+    console.log('════════════════════════════════════════');
+    
+    const response = await api.get(url);
+    
+    console.log('════════════════════════════════════════');
+    console.log('✅ پاسخ موفق دریافت شد');
+    console.log('📊 Status:', response.status);
+    console.log('📊 Data:', JSON.stringify(response.data, null, 2));
+    console.log('════════════════════════════════════════');
+    
+    return handleResponse(response);
+  } catch (error) {
+    console.log('════════════════════════════════════════');
+    console.error('❌ خطا در دریافت نمودار');
+    console.error('❌ Message:', error.message);
+    console.error('❌ Status:', error.response?.status);
+    console.error('❌ Response Data:', JSON.stringify(error.response?.data, null, 2));
+    console.error('❌ Request URL:', error.config?.url);
+    console.log('════════════════════════════════════════');
+    
+    return handleError(error);
+  }
+};
+
+/**
+ * دریافت لیست گزارش‌های تخلف ادمین
+ * Get list of admin violation reports for the technician
+ * @returns {Promise<Object>} پاسخ API با لیست گزارش‌ها
+ */
+export const getAdminReportViolations = async () => {
+  try {
+    console.log('📋 دریافت لیست گزارش‌های تخلف ادمین...');
+
+    const response = await api.get(API_ENDPOINTS.ADMIN_VIOLATIONS.LIST);
+    
+    console.log('✅ لیست گزارش‌های تخلف دریافت شد:', {
+      total: response.data.total,
+      count: response.data.data?.length
+    });
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت لیست گزارش‌های تخلف:', error.response?.data || error.message);
+    return handleError(error);
+  }
+};
+
+/**
+ * دریافت جزئیات یک گزارش تخلف
+ * Get details of a specific violation report
+ * @param {number} reportId - شناسه گزارش
+ * @returns {Promise<Object>} پاسخ API با جزئیات گزارش
+ */
+export const getAdminReportViolationById = async (reportId) => {
+  try {
+    console.log(`📋 دریافت جزئیات گزارش تخلف #${reportId}...`);
+
+    const endpoint = API_ENDPOINTS.ADMIN_VIOLATIONS.DETAIL.replace('{id}', reportId);
+    const response = await api.get(endpoint);
+    
+    console.log('✅ جزئیات گزارش تخلف دریافت شد:', response.data.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت جزئیات گزارش تخلف:', error.response?.data || error.message);
+
+    if (error.response?.status === 404) {
+      throw new Error('گزارش تخلف یافت نشد');
+    } else if (error.response?.status === 403) {
+      throw new Error('دسترسی غیرمجاز');
+    }
+
+    return handleError(error);
+  }
+};
+
+/**
+ * ارسال پاسخ به گزارش تخلف
+ * Reply to an admin violation report
+ * @param {number} reportId - شناسه گزارش
+ * @param {string} responseText - متن پاسخ (حداکثر 5000 کاراکتر)
+ * @returns {Promise<Object>} پاسخ API
+ */
+export const replyToAdminReportViolation = async (reportId, responseText) => {
+  try {
+    console.log(`💬 ارسال پاسخ به گزارش تخلف #${reportId}...`);
+    console.log('📝 طول متن پاسخ:', responseText?.length || 0);
+
+    const endpoint = API_ENDPOINTS.ADMIN_VIOLATIONS.REPLY.replace('{id}', reportId);
+    const response = await api.post(endpoint, { response: responseText });
+    
+    console.log('✅ پاسخ با موفقیت ثبت شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در ارسال پاسخ:', error.response?.data || error.message);
+
+    if (error.response?.status === 422) {
+      const errors = error.response?.data?.errors;
+      if (errors) {
+        const errorMessages = Object.values(errors).flat().join('\n');
+        throw new Error(errorMessages);
+      }
+      throw new Error('لطفاً متن پاسخ را به درستی وارد کنید');
+    } else if (error.response?.status === 403) {
+      throw new Error('امکان پاسخ‌دهی به این گزارش وجود ندارد');
+    } else if (error.response?.status === 400) {
+      throw new Error('شما قبلاً به این گزارش پاسخ داده‌اید');
+    }
+
+    return handleError(error);
+  }
+};
+
+/**
+ * دریافت لیست پیام‌های پشتیبانی (تیکت‌ها)
+ * Get support messages/tickets list
+ * @returns {Promise<Object>} لیست پیام‌ها
+ */
+export const getTicketsList = async () => {
+  try {
+    console.log('📨 دریافت لیست پیام‌های پشتیبانی...');
+    
+    const response = await api.get('/technician/tickets');
+    
+    console.log('✅ لیست پیام‌ها دریافت شد:', {
+      total: response.data?.total || 0,
+      messages: response.data?.data?.length || 0
+    });
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت پیام‌ها:', error.response?.data || error.message);
+    return handleError(error);
+  }
+};
+
+/**
+ * ارسال پیام جدید به پشتیبانی
+ * Send new support message
+ * @param {string} message - متن پیام (حداکثر 5000 کاراکتر)
+ * @returns {Promise<Object>} پیام ارسال شده
+ */
+export const sendTicketMessage = async (message) => {
+  try {
+    console.log('📤 ارسال پیام جدید...');
+    console.log('📝 طول پیام:', message?.length || 0);
+    
+    const response = await api.post('/technician/tickets', { message });
+    
+    console.log('✅ پیام با موفقیت ارسال شد:', response.data);
+
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در ارسال پیام:', error.response?.data || error.message);
+
+    if (error.response?.status === 422) {
+      const errors = error.response?.data?.errors;
+      if (errors) {
+        const errorMessages = Object.values(errors).flat().join('\n');
+        throw new Error(errorMessages);
+      }
+      throw new Error('لطفاً متن پیام را به درستی وارد کنید');
+    }
+
+    return handleError(error);
+  }
+};
+
+/**
+ * دریافت تعداد پیام‌های خوانده نشده
+ * Get unread messages count
+ * @returns {Promise<Object>} تعداد پیام‌های خوانده نشده
+ */
+export const getUnreadTicketsCount = async () => {
+  try {
+    const response = await api.get('/technician/tickets/unread-count');
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت تعداد پیام‌های خوانده نشده:', error.message);
+    return handleError(error);
+  }
+};
+
 export default api;

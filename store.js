@@ -5,6 +5,8 @@ import authSlice from './slices/authSlice';
 import languageSlice from './slices/languageSlice';
 import weightSlice from './slices/weightSlice';
 import newUserSlice from './slices/newUserSlice';
+import extraSlice from './slices/extraSlice';
+import orderExtrasSlice from './slices/orderExtrasSlice';
 
 export default configureStore({
   reducer: {
@@ -14,5 +16,7 @@ export default configureStore({
     contacts: contactSlice,
     weight: weightSlice,
     newUser: newUserSlice,
+    extraServices: extraSlice,
+    orderExtras: orderExtrasSlice,
   }
 })

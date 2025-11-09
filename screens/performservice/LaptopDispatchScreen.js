@@ -171,7 +171,7 @@ export default function LaptopDispatchScreen({ navigation }) {
 
           {/* حداقل هزینه تعمین شده از سوی کاربر */}
           <View style={styles.priceSection}>
-<TextInput style={[NewStyles.textInput, NewStyles.border10, NewStyles.text10, styles.input, { width: '85%' }]} placeholder='حداکثر هزینه موافقت کاربر :' />
+            <TextInput style={[NewStyles.textInput, NewStyles.border10, NewStyles.text10, styles.input, { width: '85%' }]} placeholder='حداکثر هزینه موافقت کاربر :' />
             <Text style={[NewStyles.text10, styles.priceValue]}>ریال</Text>
           </View>
 
@@ -500,7 +500,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     width: "25%",
     alignSelf: "flex-end",
-    gap:10
+    gap: 10
   },
   checkboxText: {
     marginLeft: 10,
