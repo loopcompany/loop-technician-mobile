@@ -9,13 +9,13 @@ import {
   StyleSheet,
   ScrollView,
    KeyboardAvoidingView,
-  Alert,
 } from "react-native";
 import Button from "../../components/Button";
 import NewStyles from "../../styles/NewStyles";
 import { themeColor10, themeColor4 } from "../../theme/Color";
 import { requestPasswordReset } from "../../services/Api";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { showAlert } from "../../helpers/Common";
 
 export default function SignInScreen({ navigation }) {
   const [referralCode, setReferralCode] = useState("");
@@ -26,19 +26,19 @@ export default function SignInScreen({ navigation }) {
 
   const validateInputs = () => {
     if (!referralCode.trim()) {
-      Alert.alert("خطا", "لطفاً کد پرسنلی خود را وارد کنید");
+      showAlert("خطا", "لطفاً کد پرسنلی خود را وارد کنید");
       return false;
     }
     if (!mobile.trim() || mobile.length < 11) {
-      Alert.alert("خطا", "لطفاً شماره موبایل 11 رقمی معتبر وارد کنید");
+      showAlert("خطا", "لطفاً شماره موبایل 11 رقمی معتبر وارد کنید");
       return false;
     }
     if (!nationalId.trim() || nationalId.length !== 10) {
-      Alert.alert("خطا", "لطفاً کد ملی 10 رقمی معتبر وارد کنید");
+      showAlert("خطا", "لطفاً کد ملی 10 رقمی معتبر وارد کنید");
       return false;
     }
     if (!email.trim() || !email.includes('@')) {
-      Alert.alert("خطا", "لطفاً آدرس ایمیل معتبر وارد کنید");
+      showAlert("خطا", "لطفاً آدرس ایمیل معتبر وارد کنید");
       return false;
     }
     return true;
@@ -61,7 +61,7 @@ export default function SignInScreen({ navigation }) {
       console.log('📦 نتیجه درخواست:', result);
 
       if (result.success) {
-        Alert.alert(
+        showAlert(
           "موفق",
           "کد تأیید به شماره موبایل شما ارسال شد",
           [
@@ -77,11 +77,11 @@ export default function SignInScreen({ navigation }) {
           ]
         );
       } else {
-        Alert.alert("خطا", result.message || "مشکلی در ارسال کد پیش آمد");
+        showAlert("خطا", result.message || "مشکلی در ارسال کد پیش آمد");
       }
     } catch (error) {
       console.error('❌ خطا در ارسال درخواست:', error);
-      Alert.alert("خطا", "مشکلی در ارتباط با سرور پیش آمد");
+      showAlert("خطا", "مشکلی در ارتباط با سرور پیش آمد");
     } finally {
       setLoading(false);
     }

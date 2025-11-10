@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ImageBackground,
   KeyboardAvoidingView,
   ScrollView,
@@ -22,7 +21,7 @@ import { themeColor0, themeColor1, themeColor3, themeColor10 } from '../../theme
 import CustomStatusBar from '../../components/CustomStatusBar';
 import Button from '../../components/Button';
 import { verifyPhoneNumber, resendVerificationCode } from '../../services/Api';
-import { formatTime } from '../../helpers/Common';
+import { formatTime, showAlert } from '../../helpers/Common';
 
 export default function PhoneVerificationScreen({ navigation, route }) {
   const { phone, technicianId } = route.params;
@@ -71,7 +70,7 @@ export default function PhoneVerificationScreen({ navigation, route }) {
       const result = await verifyPhoneNumber(phone, verificationCode);
 
       if (result.success) {
-        Alert.alert(
+        showAlert(
           'موفقیت',
           result.message || 'ثبت نام با موفقیت انجام شد',
           [
@@ -124,7 +123,7 @@ export default function PhoneVerificationScreen({ navigation, route }) {
       const result = await resendVerificationCode(phone);
 
       if (result.success) {
-        Alert.alert('موفقیت', result.message || 'کد تأیید مجدداً ارسال شد');
+        showAlert('موفقیت', result.message || 'کد تأیید مجدداً ارسال شد');
         setTimer(120);
         setCanResend(false);
         setVerificationCode('');
@@ -154,7 +153,7 @@ export default function PhoneVerificationScreen({ navigation, route }) {
   };
 
   const handleEditMobile = () => {
-    Alert.alert(
+    showAlert(
       'ویرایش شماره موبایل',
       'آیا می‌خواهید شماره موبایل را ویرایش کنید؟',
       [
@@ -369,3 +368,4 @@ const styles = StyleSheet.create({
     color: themeColor10.bgColor(0.7),
   },
 });
+

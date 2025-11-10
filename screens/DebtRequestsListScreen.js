@@ -9,7 +9,6 @@ import {
   RefreshControl,
   Modal,
   ScrollView,
-  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,7 +16,7 @@ import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor4, themeColor8 } from '../theme/Color';
 import { getDebtRequests, getDebtRequestById } from '../services/Api';
-import { formatDate } from '../helpers/Common';
+import { formatDate, showAlert } from '../helpers/Common';
 
 export default function DebtRequestsListScreen({ navigation }) {
   const [requests, setRequests] = useState([]);
@@ -39,11 +38,11 @@ export default function DebtRequestsListScreen({ navigation }) {
       if (response.success) {
         setRequests(response.data);
       } else {
-        Alert.alert('خطا', 'خطا در دریافت لیست درخواست‌ها');
+        showAlert('خطا', 'خطا در دریافت لیست درخواست‌ها');
       }
     } catch (error) {
       console.error('خطا در دریافت لیست:', error);
-      Alert.alert('خطا', 'مشکلی در دریافت لیست پیش آمد');
+      showAlert('خطا', 'مشکلی در دریافت لیست پیش آمد');
     } finally {
       setLoading(false);
     }
@@ -82,12 +81,12 @@ export default function DebtRequestsListScreen({ navigation }) {
       if (response.success) {
         setSelectedRequest(response.data);
       } else {
-        Alert.alert('خطا', 'خطا در دریافت جزئیات درخواست');
+        showAlert('خطا', 'خطا در دریافت جزئیات درخواست');
         setModalVisible(false);
       }
     } catch (error) {
       console.error('خطا در دریافت جزئیات:', error);
-      Alert.alert('خطا', error.message || 'مشکلی در دریافت جزئیات پیش آمد');
+      showAlert('خطا', error.message || 'مشکلی در دریافت جزئیات پیش آمد');
       setModalVisible(false);
     } finally {
       setLoadingDetail(false);

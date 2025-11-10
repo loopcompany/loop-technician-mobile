@@ -7,17 +7,17 @@ import {
   ScrollView,
   TextInput,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import Footer from '../Footer';
+
 import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor3, themeColor10, themeColor8, themeColor2, themeColor4, themeColor6, themeColor7 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import { checkPollStatus, submitPoll } from '../../services/Api';
+import { showAlert } from '../../helpers/Common';
 
 export default function FeedbackSuggestionScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
@@ -83,7 +83,7 @@ export default function FeedbackSuggestionScreen({ navigation }) {
       const hasAnyFeedback = Object.values(feedbacks).some(text => text.trim().length > 0);
       
       if (!hasAnyFeedback) {
-        Alert.alert('خطا', 'لطفاً حداقل یکی از فیلدها را پر کنید');
+        showAlert('خطا', 'لطفاً حداقل یکی از فیلدها را پر کنید');
         return;
       }
 
@@ -100,7 +100,7 @@ export default function FeedbackSuggestionScreen({ navigation }) {
       const response = await submitPoll(dataToSend);
 
       if (response.success) {
-        Alert.alert(
+        showAlert(
           'موفقیت',
           response.message || 'نظرات شما با موفقیت ثبت شد',
           [
@@ -118,7 +118,7 @@ export default function FeedbackSuggestionScreen({ navigation }) {
       }
     } catch (error) {
       console.error('❌ خطا در ثبت نظرات:', error);
-      Alert.alert('خطا', error.message || 'مشکلی در ثبت نظرات پیش آمد');
+      showAlert('خطا', error.message || 'مشکلی در ثبت نظرات پیش آمد');
     } finally {
       setSubmitting(false);
     }
@@ -306,3 +306,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+

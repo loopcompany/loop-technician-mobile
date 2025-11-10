@@ -6,18 +6,17 @@ import {
   StyleSheet,
   FlatList,
   ActivityIndicator,
-  Alert,
   RefreshControl,
-} from 'react-native';
+} from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import Footer from './Footer';
+
 import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor2, themeColor8, themeColor4, themeColor10, themeColor7, themeColor6, themeColor11 } from '../theme/Color';
 import { getIncentivePlans } from '../services/Api';
-import { formatDateTime } from '../helpers/Common';
+import { formatDateTime , showAlert} from '../helpers/Common';
 
 export default function IncentivePlansScreen({ navigation }) {
   const [plans, setPlans] = useState([]);
@@ -39,7 +38,7 @@ export default function IncentivePlansScreen({ navigation }) {
       }
     } catch (error) {
       console.error('❌ خطا در دریافت طرح‌ها:', error);
-      Alert.alert('خطا', error.message || 'مشکلی در دریافت طرح‌های تشویقی پیش آمد');
+      showAlert('خطا', error.message || 'مشکلی در دریافت طرح‌های تشویقی پیش آمد');
     } finally {
       setLoading(false);
       setRefreshing(false);

@@ -13,7 +13,7 @@ import {
   SafeAreaView,
   FlatList,
 } from "react-native";
-import Footer from "../Footer";
+
 import CheckBox from '../../components/CheckBox';
 import NewStyles from "../../styles/NewStyles";
 import { themeColor4 } from "../../theme/Color";

@@ -6,7 +6,6 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
-  Alert,
   Image,
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -15,7 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Footer from '../Footer';
+
 import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor3, themeColor4, themeColor7, themeColor8 } from '../../theme/Color';
@@ -23,6 +22,7 @@ import CustomStatusBar from '../../components/CustomStatusBar';
 import DatePickerModal from '../../components/DatePickerModal';
 import { getFormatedDate } from 'react-native-modern-datepicker';
 import { updatePersonalInfo } from '../../services/Api';
+import { showAlert } from '../../helpers/Common';
 import { useSelector, useDispatch } from 'react-redux';
 import { setUserData } from '../../slices/userSlice';
 import { uri as BASE_URL } from '../../services/URL';
@@ -142,7 +142,7 @@ export default function PersonalInfoScreen({ navigation }) {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('خطا', 'دسترسی به گالری مورد نیاز است');
+        showAlert('خطا', 'دسترسی به گالری مورد نیاز است');
         return;
       }
 
@@ -164,11 +164,11 @@ export default function PersonalInfoScreen({ navigation }) {
         // Set the selected photo URL for preview (won't be overwritten by useEffect)
         setSelectedPhotoUrl(asset.uri);
 
-        Alert.alert('موفق', 'عکس انتخاب شد');
+        showAlert('موفق', 'عکس انتخاب شد');
       }
     } catch (error) {
       console.error('خطا در انتخاب عکس:', error);
-      Alert.alert('خطا', 'مشکلی در انتخاب عکس پیش آمد');
+      showAlert('خطا', 'مشکلی در انتخاب عکس پیش آمد');
     }
   };
 
@@ -193,12 +193,12 @@ export default function PersonalInfoScreen({ navigation }) {
   const handleSave = async () => {
     // Validation
     if (personalData.email && !personalData.email.includes('@')) {
-      Alert.alert('خطا', 'لطفاً ایمیل معتبر وارد کنید');
+      showAlert('خطا', 'لطفاً ایمیل معتبر وارد کنید');
       return;
     }
 
     if (personalData.home_postal_code && personalData.home_postal_code.length !== 10) {
-      Alert.alert('خطا', 'کد پستی باید 10 رقم باشد');
+      showAlert('خطا', 'کد پستی باید 10 رقم باشد');
       return;
     }
 
@@ -209,7 +209,7 @@ export default function PersonalInfoScreen({ navigation }) {
       if (result.success) {
         console.log('✅ نتیجه دریافتی از API:', JSON.stringify(result, null, 2));
 
-        Alert.alert('موفق', 'اطلاعات شخصی با موفقیت به‌روزرسانی شد');
+        showAlert('موفق', 'اطلاعات شخصی با موفقیت به‌روزرسانی شد');
 
         // Update Redux with new user data
         if (result.data) {
@@ -250,7 +250,7 @@ export default function PersonalInfoScreen({ navigation }) {
             console.log('⚠️ عکس محلی نگه داشته می‌شود');
             // Keep the selected photo URL - don't clear it
             // Don't update Redux to keep showing local photo
-            Alert.alert(
+            showAlert(
               'هشدار',
               'اطلاعات ذخیره شد ولی عکس آپلود نشد.\n\nلطفاً با تیم Backend تماس بگیرید:\n- Backend باید profile_photo_path یا profile_photo_url را با مقدار واقعی در response برگرداند',
               [{ text: 'متوجه شدم' }]
@@ -275,11 +275,11 @@ export default function PersonalInfoScreen({ navigation }) {
         // Clear profile photo file object
         setProfilePhoto(null);
       } else {
-        Alert.alert('خطا', result.message || 'مشکلی در به‌روزرسانی پیش آمد');
+        showAlert('خطا', result.message || 'مشکلی در به‌روزرسانی پیش آمد');
       }
     } catch (error) {
       console.error('خطا در ذخیره:', error);
-      Alert.alert('خطا', 'مشکلی در ارتباط با سرور پیش آمد');
+      showAlert('خطا', 'مشکلی در ارتباط با سرور پیش آمد');
     } finally {
       setSaving(false);
     }
@@ -610,3 +610,5 @@ const styles = StyleSheet.create({
     color: themeColor3.bgColor(1),
   },
 });
+
+

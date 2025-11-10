@@ -6,18 +6,17 @@ import {
   StyleSheet,
   ScrollView,
   TextInput,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import Footer from '../Footer';
+
 import ScreenHeaders from '../../components/ScreenHeaders';
 import ScreenTitle from '../../components/ScreenTitle';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor10, themeColor2, themeColor6, themeColor8 } from '../../theme/Color';
 import { cancelOrderByTechnician } from '../../services/Api';
-import { showToastOrAlert } from '../../helpers/Common';
+import { showToastOrAlert , showAlert} from '../../helpers/Common';
 
 export default function AttendanceScreen({ navigation, route }) {
   const { orderId } = route?.params || {};
@@ -58,7 +57,7 @@ export default function AttendanceScreen({ navigation, route }) {
       return;
     }
 
-    Alert.alert(
+    showAlert(
       'تأیید لغو سفارش',
       `آیا از لغو این سفارش با دلیل "${selectedOption}" اطمینان دارید؟`,
       [

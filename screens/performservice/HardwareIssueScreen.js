@@ -11,7 +11,7 @@ import {
   SafeAreaView,
   FlatList,
 } from "react-native";
-import Footer from "../Footer";
+
 import NewStyles from "../../styles/NewStyles";
 import { themeColor4 } from "../../theme/Color";
 import CustomStatusBar from "../../components/CustomStatusBar";

@@ -5,17 +5,17 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Alert,
   TextInput,
   ActivityIndicator
-} from 'react-native';
+} from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Footer from './Footer';
+
 import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor2, themeColor3, themeColor8 } from '../theme/Color';
 import { changePassword } from '../services/Api';
+import { showAlert } from '../helpers/Common';
 
 export default function ChangePasswordScreen({ navigation }) {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -49,36 +49,36 @@ export default function ChangePasswordScreen({ navigation }) {
   const handleConfirm = async () => {
     // Validation
     if (!currentPassword.trim()) {
-      Alert.alert('خطا', 'لطفاً رمز عبور فعلی را وارد کنید');
+      showAlert('خطا', 'لطفاً رمز عبور فعلی را وارد کنید');
       return;
     }
 
     if (!newPassword.trim()) {
-      Alert.alert('خطا', 'لطفاً رمز عبور جدید را وارد کنید');
+      showAlert('خطا', 'لطفاً رمز عبور جدید را وارد کنید');
       return;
     }
 
     if (!confirmPassword.trim()) {
-      Alert.alert('خطا', 'لطفاً تکرار رمز عبور جدید را وارد کنید');
+      showAlert('خطا', 'لطفاً تکرار رمز عبور جدید را وارد کنید');
       return;
     }
 
     // Check if new password matches confirmation
     if (newPassword !== confirmPassword) {
-      Alert.alert('خطا', 'رمز عبور جدید و تکرار آن مطابقت ندارند');
+      showAlert('خطا', 'رمز عبور جدید و تکرار آن مطابقت ندارند');
       return;
     }
 
     // Check if new password is same as current
     if (currentPassword === newPassword) {
-      Alert.alert('خطا', 'رمز عبور جدید نباید با رمز عبور فعلی یکسان باشد');
+      showAlert('خطا', 'رمز عبور جدید نباید با رمز عبور فعلی یکسان باشد');
       return;
     }
 
     // Validate password strength
     const strengthErrors = validatePasswordStrength(newPassword);
     if (strengthErrors.length > 0) {
-      Alert.alert(
+      showAlert(
         'رمز عبور ضعیف است',
         'رمز عبور باید شامل موارد زیر باشد:\n\n' + strengthErrors.map(e => `• ${e}`).join('\n'),
         [{ text: 'متوجه شدم' }]
@@ -99,7 +99,7 @@ export default function ChangePasswordScreen({ navigation }) {
       console.log('📥 پاسخ API:', result);
 
       if (result.success) {
-        Alert.alert(
+        showAlert(
           'موفقیت',
           'رمز عبور با موفقیت تغییر یافت.\n\nلطفاً با رمز جدید وارد شوید.',
           [
@@ -139,22 +139,22 @@ export default function ChangePasswordScreen({ navigation }) {
       } else {
         // Handle specific error codes from API
         if (result.error_code === 'INCORRECT_PASSWORD') {
-          Alert.alert('خطا', 'رمز عبور فعلی نادرست است');
+          showAlert('خطا', 'رمز عبور فعلی نادرست است');
         } else if (result.error_code === 'SAME_PASSWORD') {
-          Alert.alert('خطا', 'رمز عبور جدید نباید با رمز عبور فعلی یکسان باشد');
+          showAlert('خطا', 'رمز عبور جدید نباید با رمز عبور فعلی یکسان باشد');
         } else if (result.errors) {
           // Show validation errors from backend
           const errorMessages = Object.values(result.errors)
             .flat()
             .join('\n\n');
-          Alert.alert('خطای اعتبارسنجی', errorMessages);
+          showAlert('خطای اعتبارسنجی', errorMessages);
         } else {
-          Alert.alert('خطا', result.message || 'مشکلی در تغییر رمز عبور پیش آمد');
+          showAlert('خطا', result.message || 'مشکلی در تغییر رمز عبور پیش آمد');
         }
       }
     } catch (error) {
       console.error('❌ خطا در تغییر رمز:', error);
-      Alert.alert('خطا', 'مشکلی در ارتباط با سرور پیش آمد. لطفاً دوباره تلاش کنید.');
+      showAlert('خطا', 'مشکلی در ارتباط با سرور پیش آمد. لطفاً دوباره تلاش کنید.');
     } finally {
       setLoading(false);
     }

@@ -49,7 +49,7 @@ export default function DatePickerModal({
 
     return (
         <Modal animationType='fade' transparent={true} visible={datePickerModal} onRequestClose={() => { setDatePickerModal(!datePickerModal) }}>
-            <TouchableWithoutFeedback onPress={() => { setDatePickerModal(false) }}>
+            {/* <TouchableWithoutFeedback onPress={() => { setDatePickerModal(false) }}> */}
                 <View style={[styles.wrapper, NewStyles.center]}>
                     <TouchableWithoutFeedback onPress={() => { }}>
                         <View style={styles.modalView}>
@@ -84,7 +84,7 @@ export default function DatePickerModal({
                         </View>
                     </TouchableWithoutFeedback>
                 </View>
-            </TouchableWithoutFeedback>
+            {/* </TouchableWithoutFeedback> */}
         </Modal>
     )
 }

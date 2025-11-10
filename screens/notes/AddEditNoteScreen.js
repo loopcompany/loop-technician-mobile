@@ -7,13 +7,12 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Alert,
 } from "react-native";
 import ScreenHeaders from "../../components/ScreenHeaders";
 import NewStyles from "../../styles/NewStyles";
 import { themeColor1, themeColor4, themeColor0, themeColor3 } from "../../theme/Color";
 import { notesAPI } from "../../services/Api";
-import { showToastOrAlert } from "../../helpers/Common";
+import { showToastOrAlert , showAlert} from "../../helpers/Common";
 import Button from "../../components/Button";
 
 export default function AddEditNoteScreen({ route, navigation }) {
@@ -33,12 +32,12 @@ export default function AddEditNoteScreen({ route, navigation }) {
   const handleSave = async () => {
     // Validation
     if (!noteText.trim()) {
-      Alert.alert('خطا', 'لطفاً متن یادداشت را وارد کنید');
+      showAlert('خطا', 'لطفاً متن یادداشت را وارد کنید');
       return;
     }
 
     if (noteText.length > MAX_CHARS) {
-      Alert.alert('خطا', `یادداشت نباید بیشتر از ${MAX_CHARS} کاراکتر باشد`);
+      showAlert('خطا', `یادداشت نباید بیشتر از ${MAX_CHARS} کاراکتر باشد`);
       return;
     }
 
@@ -66,9 +65,9 @@ export default function AddEditNoteScreen({ route, navigation }) {
       if (error.response?.data?.errors) {
         const errors = error.response.data.errors;
         const errorMessages = Object.values(errors).flat().join('\n');
-        Alert.alert('خطا در ثبت', errorMessages);
+        showAlert('خطا در ثبت', errorMessages);
       } else if (error.response?.data?.message) {
-        Alert.alert('خطا', error.response.data.message);
+        showAlert('خطا', error.response.data.message);
       } else {
         showToastOrAlert('خطا در ثبت یادداشت');
       }
@@ -254,3 +253,4 @@ const styles = StyleSheet.create({
     borderTopColor: themeColor3.bgColor(0.2),
   },
 });
+

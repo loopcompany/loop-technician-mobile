@@ -7,7 +7,6 @@ import {
   ImageBackground,
   StyleSheet,
   ScrollView,
-  Alert,
   TextInput,
   KeyboardAvoidingView,
 } from "react-native";
@@ -27,6 +26,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { verifyResetCode, resetPassword } from "../../services/Api";
 import { loginTechnician } from "../../services/Api";
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { showAlert } from "../../helpers/Common";
 export default function ResetPasswordScreen({ navigation, route }) {
   const params = route?.params;
   const dispatch = useDispatch();
@@ -50,7 +50,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
   // Step 1: Verify the code
   const handleVerifyCode = async () => {
     if (value.length !== 6) {
-      Alert.alert("خطا", "لطفاً کد 6 رقمی را وارد کنید");
+      showAlert("خطا", "لطفاً کد 6 رقمی را وارد کنید");
       return;
     }
 
@@ -71,12 +71,12 @@ export default function ResetPasswordScreen({ navigation, route }) {
         setStep(2); // Move to password setting step
       } else {
         setError("کد وارد شده صحیح نیست");
-        Alert.alert("خطا", result.message || "کد وارد شده صحیح نمی‌باشد");
+        showAlert("خطا", result.message || "کد وارد شده صحیح نمی‌باشد");
       }
     } catch (error) {
       console.error('❌ خطا در تأیید کد:', error);
       setError("خطا در ارتباط با سرور");
-      Alert.alert("خطا", "مشکلی در ارتباط با سرور پیش آمد");
+      showAlert("خطا", "مشکلی در ارتباط با سرور پیش آمد");
     } finally {
       setLoading(false);
     }
@@ -85,12 +85,12 @@ export default function ResetPasswordScreen({ navigation, route }) {
   // Step 2: Set new password
   const handleResetPassword = async () => {
     if (!newPassword || newPassword.length < 6) {
-      Alert.alert("خطا", "رمز عبور باید حداقل 6 کاراکتر باشد");
+      showAlert("خطا", "رمز عبور باید حداقل 6 کاراکتر باشد");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      Alert.alert("خطا", "رمز عبور و تکرار آن یکسان نیستند");
+      showAlert("خطا", "رمز عبور و تکرار آن یکسان نیستند");
       return;
     }
 
@@ -122,7 +122,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
             dispatch(setToken(loginResult.data.token));
             dispatch(setUserData(loginResult.data));
 
-            Alert.alert(
+            showAlert(
               "موفق",
               "رمز عبور شما با موفقیت تغییر یافت و وارد شدید.",
               [
@@ -139,7 +139,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
             );
           } else {
             // Login failed, navigate to login screen
-            Alert.alert(
+            showAlert(
               "موفق",
               "رمز عبور شما با موفقیت تغییر یافت. لطفاً دوباره وارد شوید.",
               [
@@ -158,7 +158,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
         } catch (loginError) {
           console.error('❌ خطا در ورود خودکار:', loginError);
           // Login failed, navigate to login screen
-          Alert.alert(
+          showAlert(
             "موفق",
             "رمز عبور شما با موفقیت تغییر یافت. لطفاً دوباره وارد شوید.",
             [
@@ -175,11 +175,11 @@ export default function ResetPasswordScreen({ navigation, route }) {
           );
         }
       } else {
-        Alert.alert("خطا", result.message || "مشکلی در تغییر رمز عبور پیش آمد");
+        showAlert("خطا", result.message || "مشکلی در تغییر رمز عبور پیش آمد");
       }
     } catch (error) {
       console.error('❌ خطا در تنظیم رمز:', error);
-      Alert.alert("خطا", "مشکلی در ارتباط با سرور پیش آمد");
+      showAlert("خطا", "مشکلی در ارتباط با سرور پیش آمد");
     } finally {
       setLoading(false);
     }
@@ -347,3 +347,5 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
 });
+
+

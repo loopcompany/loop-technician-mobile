@@ -8,18 +8,17 @@ import {
   TextInput,
   ActivityIndicator,
   RefreshControl,
-  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import Footer from '../Footer';
+
 import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor3, themeColor4, themeColor7, themeColor10, themeColor8, themeColor2 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import { getTicketsList, sendTicketMessage } from '../../services/Api';
-import { formatDate, formatDateTime } from '../../helpers/Common';
+import { formatDate, formatDateTime , showAlert} from '../../helpers/Common';
 
 export default function MessageScreen({ navigation }) {
   const [messageText, setMessageText] = useState('');
@@ -47,7 +46,7 @@ export default function MessageScreen({ navigation }) {
       }
     } catch (error) {
       console.error('خطا در دریافت پیام‌ها:', error);
-      Alert.alert('خطا', 'خطا در دریافت پیام‌ها');
+      showAlert('خطا', 'خطا در دریافت پیام‌ها');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -68,12 +67,12 @@ export default function MessageScreen({ navigation }) {
   // ارسال پیام جدید
   const handleSendMessage = async () => {
     if (!messageText.trim()) {
-      Alert.alert('هشدار', 'لطفاً متن پیام را وارد کنید');
+      showAlert('هشدار', 'لطفاً متن پیام را وارد کنید');
       return;
     }
 
     if (messageText.length > 5000) {
-      Alert.alert('هشدار', 'متن پیام نباید بیشتر از 5000 کاراکتر باشد');
+      showAlert('هشدار', 'متن پیام نباید بیشتر از 5000 کاراکتر باشد');
       return;
     }
 
@@ -82,13 +81,13 @@ export default function MessageScreen({ navigation }) {
       const response = await sendTicketMessage(messageText);
 
       if (response.success) {
-        Alert.alert('موفق', 'پیام شما با موفقیت ارسال شد');
+        showAlert('موفق', 'پیام شما با موفقیت ارسال شد');
         setMessageText('');
         // به‌روزرسانی لیست پیام‌ها
         await fetchMessages();
       }
     } catch (error) {
-      Alert.alert('خطا', error.message || 'خطا در ارسال پیام');
+      showAlert('خطا', error.message || 'خطا در ارسال پیام');
     } finally {
       setSending(false);
     }

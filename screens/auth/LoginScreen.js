@@ -9,7 +9,6 @@ import {
   ImageBackground,
   StyleSheet,
   ScrollView,
-  Alert,
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -21,6 +20,7 @@ import { themeColor0, themeColor1, themeColor10 } from "../../theme/Color";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../contexts/AuthContext";
 import { validateLoginForm } from "../../utils/validation";
+import { showAlert } from "../../helpers/Common";
 
 export default function LoginScreen({ navigation, route }) {
   const [phone, setPhone] = useState(route?.params?.phone || "");
@@ -43,7 +43,7 @@ export default function LoginScreen({ navigation, route }) {
     const validation = validateLoginForm(phone, password);
     if (!validation.isValid) {
       const firstError = Object.values(validation.errors)[0];
-      Alert.alert('خطا', firstError);
+      showAlert('خطا', firstError);
       return;
     }
 
@@ -52,7 +52,7 @@ export default function LoginScreen({ navigation, route }) {
       const result = await login(phone, password);
 
       if (result.success) {
-        Alert.alert(
+        showAlert(
           'موفقیت',
           'ورود با موفقیت انجام شد',
           [
@@ -63,11 +63,11 @@ export default function LoginScreen({ navigation, route }) {
           ]
         );
       } else {
-        Alert.alert('خطا', result.message);
+        showAlert('خطا', result.message);
       }
     } catch (error) {
       console.error('Login error:', error);
-      Alert.alert('خطا', 'خطا در ورود به سیستم');
+      showAlert('خطا', 'خطا در ورود به سیستم');
     } finally {
       setLoading(false);
     }
@@ -75,7 +75,7 @@ export default function LoginScreen({ navigation, route }) {
 
   const handleForgotPassword = () => {
     if (!phone) {
-      Alert.alert('توجه', 'لطفاً ابتدا شماره تلفن خود را وارد کنید');
+      showAlert('توجه', 'لطفاً ابتدا شماره تلفن خود را وارد کنید');
       return;
     }
     
@@ -261,3 +261,5 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 });
+
+

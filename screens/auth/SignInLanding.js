@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, Text, View, Image, ImageBackground, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, View, Image, ImageBackground, TouchableOpacity, Platform } from "react-native";
 import Button from "../../components/Button";
 import NewStyles from "../../styles/NewStyles";
 
@@ -7,7 +7,7 @@ import NewStyles from "../../styles/NewStyles";
 export default function SignInLanding({ navigation }) {
   return (
     <ImageBackground
-      source={require("../../assets/background2.jpg")}
+      source={Platform.OS === 'web' ? require("../../assets/webbackground.jpg") : require("../../assets/background2.jpg")}
       style={styles.background}
       resizeMode="cover"
     >
@@ -31,25 +31,7 @@ export default function SignInLanding({ navigation }) {
           navigation.navigate("SignIn");
         }}
       />
-      {/* <TouchableOpacity
-        style={styles.button}
-        onPress={() => {
-          navigation.navigate("SignInScreen");
-        }}
-      >
-        <Text style={styles.buttonText}>ثبت نام</Text>
-      </TouchableOpacity> */}
-
-      <TouchableOpacity style={styles.languageSwitcher}>
-        <Image
-          source={{
-            uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Flag_of_Iran.svg/320px-Flag_of_Iran.svg.png",
-          }}
-          style={styles.flag}
-        />
-        <Text style={styles.languageText}>فارسی</Text>
-      </TouchableOpacity>
-      {/* </View> */}
+      
     </ImageBackground>
   );
 }

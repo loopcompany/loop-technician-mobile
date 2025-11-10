@@ -7,7 +7,6 @@ import {
     StyleSheet,
     ActivityIndicator,
     RefreshControl,
-    Alert,
     Modal,
     ScrollView,
 } from 'react-native';
@@ -17,7 +16,7 @@ import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor10, themeColor11, themeColor2, themeColor3, themeColor4, themeColor6, themeColor7, themeColor8 } from '../theme/Color';
 import { getLeaveRequests, getLeaveRequestById } from '../services/Api';
-import { formatDate, formatDateTime } from '../helpers/Common';
+import { formatDate, formatDateTime , showAlert} from '../helpers/Common';
 
 export default function LeaveRequestsListScreen({ navigation }) {
     const [requests, setRequests] = useState([]);
@@ -44,7 +43,7 @@ export default function LeaveRequestsListScreen({ navigation }) {
             }
         } catch (error) {
             console.error('❌ خطا در بارگذاری درخواست‌ها:', error);
-            Alert.alert('خطا', error.message || 'مشکلی در بارگذاری لیست درخواست‌ها پیش آمد');
+            showAlert('خطا', error.message || 'مشکلی در بارگذاری لیست درخواست‌ها پیش آمد');
         } finally {
             setLoading(false);
         }
@@ -94,7 +93,7 @@ export default function LeaveRequestsListScreen({ navigation }) {
         } catch (error) {
             console.error('❌ خطا در نمایش جزئیات:', error);
             setModalVisible(false);
-            Alert.alert('خطا', error.message || 'مشکلی در نمایش جزئیات پیش آمد');
+            showAlert('خطا', error.message || 'مشکلی در نمایش جزئیات پیش آمد');
         } finally {
             setLoadingDetail(false);
         }
@@ -585,3 +584,4 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
 });
+

@@ -8,7 +8,7 @@ import {
   TextInput,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Footer from '../Footer';
+
 import ScreenHeaders from '../../components/ScreenHeaders';
 import ScreenTitle from '../../components/ScreenTitle';
 import NewStyles from '../../styles/NewStyles';

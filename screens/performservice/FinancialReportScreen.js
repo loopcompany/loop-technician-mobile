@@ -5,20 +5,19 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Alert,
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import Footer from '../Footer';
+
 import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor3, themeColor4, themeColor7, themeColor10, themeColor8, themeColor2 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import { useSelector } from 'react-redux';
-import { formatPrice } from '../../helpers/Common';
+import { formatPrice , showAlert} from '../../helpers/Common';
 import { validateToken } from '../../services/Api';
 
 export default function FinancialReportScreen({ navigation }) {
@@ -44,7 +43,7 @@ export default function FinancialReportScreen({ navigation }) {
       }
     } catch (error) {
       console.error('❌ خطا در دریافت اطلاعات مالی:', error);
-      Alert.alert('خطا', 'مشکلی در دریافت اطلاعات پیش آمد');
+      showAlert('خطا', 'مشکلی در دریافت اطلاعات پیش آمد');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -75,7 +74,7 @@ export default function FinancialReportScreen({ navigation }) {
   };
 
   const handleReportError = () => {
-    Alert.alert(
+    showAlert(
       'گزارش خطا',
       'چگونه می‌خواهید با پشتیبانی تماس بگیرید؟',
       [

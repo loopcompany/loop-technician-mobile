@@ -1,11 +1,8 @@
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native'
-import React from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import NewStyles from '../styles/NewStyles'
-import { themeColor0, themeColor4, themeColor10 } from '../theme/Color'
-import ScreenHeaders from './ScreenHeaders'
-import Footer from '../screens/Footer'
+import { themeColor4 } from '../theme/Color'
 
 const BlankScreen = ({
     title = "صفحه خالی",

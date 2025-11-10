@@ -11,7 +11,6 @@ import {
   TouchableOpacity,
   Keyboard,
   KeyboardAvoidingView,
-  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -22,7 +21,7 @@ import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor3, themeColor4, themeColor5, themeColor6, themeColor7 } from '../../theme/Color';
 import { getTechnicianOrderById, submitTechnicianDescription, setOffToOrder, arriveToOrder, createOrderReport, updateOrderReport, getOrderReport, getOrderReportByOrderId, sendOrderToLoop, updateLoopInfo, startRepair, createDeliveryReport, updateDeliveryReport, getDeliveryReportByOrderId, verifyDeliveryReportWithCode, endOrder, getTechnicianChatMessages, cancelOrderByTechnician, submitEmergencyHelp, submitTechnicianOpinion } from '../../services/Api';
-import { showToastOrAlert, formatDate, formatDateTime, formatPrice } from '../../helpers/Common';
+import { showToastOrAlert, formatDate, formatDateTime, formatPrice , showAlert} from '../../helpers/Common';
 import AccordionHeader from '../../components/AccordionHeader';
 import DetailConponent from './DetailConponent';
 import DatePickerModal from '../../components/DatePickerModal';
@@ -348,7 +347,7 @@ export default function OrderDetailScreen({ route, navigation }) {
       return;
     }
 
-    Alert.alert(
+    showAlert(
       'تأیید لغو سفارش',
       `آیا از لغو این سفارش با دلیل "${selectedCancelReason}" اطمینان دارید؟`,
       [
@@ -2315,3 +2314,4 @@ const styles = StyleSheet.create({
     gap: 10,
   },
 });
+

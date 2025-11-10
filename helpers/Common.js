@@ -1,4 +1,4 @@
-import { Dimensions, Platform, ToastAndroid } from "react-native";
+import { Alert, Dimensions, Platform, ToastAndroid } from "react-native";
 import Constants from "expo-constants";
 import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
@@ -264,6 +264,66 @@ export const showToastOrAlert = (message) => {
     ? ToastAndroid.show(message, ToastAndroid.SHORT)
     : alert(message);
 };
+
+
+export const showAlert = (title, message, buttons = []) => {
+  if (Platform.OS === 'web') {
+    if (typeof window === 'undefined') {
+      console.warn('showAlert called on web but window is undefined');
+      return;
+    }
+
+    if (buttons && buttons.length > 0) {
+      // For confirmation dialogs with buttons
+      const confirmMessage = title ? `${title}\n\n${message}` : message;
+      const confirmed = window.confirm(confirmMessage);
+      
+      if (confirmed) {
+        // Find and execute the positive/destructive button
+        const positiveButton = buttons.find(btn => 
+          btn.style === 'destructive' || 
+          btn.style === 'default' ||
+          btn.text?.includes('بله') || 
+          btn.text?.includes('تایید') || 
+          btn.text?.includes('خروج') ||
+          btn.text?.includes('حذف') ||
+          btn.text?.includes('ارسال') ||
+          btn.text?.includes('ذخیره') ||
+          btn.text?.includes('OK')
+        ) || buttons[buttons.length - 1]; // Default to last button
+        
+        if (positiveButton && positiveButton.onPress) {
+          positiveButton.onPress();
+        }
+      } else {
+        // Find and execute the cancel button
+        const cancelButton = buttons.find(btn => 
+          btn.style === 'cancel' || 
+          btn.text?.includes('انصراف') || 
+          btn.text?.includes('خیر') ||
+          btn.text?.includes('Cancel')
+        );
+        
+        if (cancelButton && cancelButton.onPress) {
+          cancelButton.onPress();
+        }
+      }
+    } else {
+      // Simple alert without buttons
+      const alertMessage = title ? `${title}\n\n${message}` : message;
+      window.alert(alertMessage);
+    }
+  } else {
+    // Native platform (iOS/Android)
+    if (!buttons || buttons.length === 0) {
+      // Add default "OK" button for simple alerts
+      Alert.alert(title, message, [{ text: 'باشه', style: 'default' }]);
+    } else {
+      Alert.alert(title, message, buttons);
+    }
+  }
+};
+
 
 // Validation functions for forgot password
 export const validateMelicode = (melicode) => {

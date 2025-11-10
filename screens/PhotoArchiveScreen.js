@@ -7,23 +7,23 @@ import {
   FlatList,
   Image,
   ActivityIndicator,
-  Alert,
   RefreshControl,
   Dimensions,
   Modal,
   Platform,
-} from 'react-native';
+} from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
 import { useFocusEffect } from '@react-navigation/native';
-import Footer from './Footer';
+
 import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor10, themeColor2, themeColor6, themeColor7, themeColor8, themeColor4 } from '../theme/Color';
 import { uploadArchiveImages, getArchiveImages, deleteArchiveImage } from '../services/Api';
+import { showAlert } from '../helpers/Common';
 
 const { width } = Dimensions.get('window');
 const imageSize = (width - 60) / 3; // 3 تصویر در هر ردیف با فاصله
@@ -51,7 +51,7 @@ export default function PhotoArchiveScreen({ navigation }) {
       }
     } catch (error) {
       console.error('❌ خطا در دریافت تصاویر:', error);
-      Alert.alert('خطا', error.message || 'مشکلی در دریافت تصاویر پیش آمد');
+      showAlert('خطا', error.message || 'مشکلی در دریافت تصاویر پیش آمد');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -76,7 +76,7 @@ export default function PhotoArchiveScreen({ navigation }) {
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (permissionResult.granted === false) {
-        Alert.alert('خطا', 'دسترسی به گالری لازم است');
+        showAlert('خطا', 'دسترسی به گالری لازم است');
         return;
       }
 
@@ -93,7 +93,7 @@ export default function PhotoArchiveScreen({ navigation }) {
       }
     } catch (error) {
       console.error('❌ خطا در انتخاب تصاویر:', error);
-      Alert.alert('خطا', 'مشکلی در انتخاب تصاویر پیش آمد');
+      showAlert('خطا', 'مشکلی در انتخاب تصاویر پیش آمد');
     }
   };
 
@@ -124,12 +124,12 @@ export default function PhotoArchiveScreen({ navigation }) {
       const response = await uploadArchiveImages(imagesToUpload);
 
       if (response.success) {
-        Alert.alert('موفقیت', response.message || 'تصاویر با موفقیت آپلود شدند');
+        showAlert('موفقیت', response.message || 'تصاویر با موفقیت آپلود شدند');
         fetchImages(); // بروزرسانی لیست
       }
     } catch (error) {
       console.error('❌ خطا در آپلود تصاویر:', error);
-      Alert.alert('خطا', error.message || 'مشکلی در آپلود تصاویر پیش آمد');
+      showAlert('خطا', error.message || 'مشکلی در آپلود تصاویر پیش آمد');
     } finally {
       setUploading(false);
     }
@@ -138,7 +138,7 @@ export default function PhotoArchiveScreen({ navigation }) {
   // حذف تصویر
   const handleDeleteImage = (imageId) => {
     setShowImageModal(false); // بستن مودال
-    Alert.alert(
+    showAlert(
       'حذف تصویر',
       'آیا مطمئن هستید که می‌خواهید این تصویر را حذف کنید؟',
       [
@@ -151,13 +151,13 @@ export default function PhotoArchiveScreen({ navigation }) {
               const response = await deleteArchiveImage(imageId);
 
               if (response.success) {
-                Alert.alert('موفقیت', 'تصویر با موفقیت حذف شد');
+                showAlert('موفقیت', 'تصویر با موفقیت حذف شد');
                 fetchImages(); // بروزرسانی لیست
                 setSelectedImage(null);
               }
             } catch (error) {
               console.error('❌ خطا در حذف تصویر:', error);
-              Alert.alert('خطا', error.message || 'مشکلی در حذف تصویر پیش آمد');
+              showAlert('خطا', error.message || 'مشکلی در حذف تصویر پیش آمد');
             }
           },
         },
@@ -182,7 +182,7 @@ export default function PhotoArchiveScreen({ navigation }) {
       const { status } = await MediaLibrary.requestPermissionsAsync();
 
       if (status !== 'granted') {
-        Alert.alert('خطا', 'دسترسی به گالری لازم است');
+        showAlert('خطا', 'دسترسی به گالری لازم است');
         return;
       }
 
@@ -202,13 +202,13 @@ export default function PhotoArchiveScreen({ navigation }) {
         const asset = await MediaLibrary.createAssetAsync(downloadResult.uri);
         await MediaLibrary.createAlbumAsync('Loop', asset, false);
 
-        Alert.alert('موفقیت', 'تصویر در گالری ذخیره شد');
+        showAlert('موفقیت', 'تصویر در گالری ذخیره شد');
       } else {
         throw new Error('خطا در دانلود تصویر');
       }
     } catch (error) {
       console.error('❌ خطا در ذخیره تصویر:', error);
-      Alert.alert('خطا', 'مشکلی در ذخیره تصویر پیش آمد');
+      showAlert('خطا', 'مشکلی در ذخیره تصویر پیش آمد');
     } finally {
       setDownloading(false);
     }
@@ -587,3 +587,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
