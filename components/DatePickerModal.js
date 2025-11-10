@@ -20,21 +20,22 @@ const DATE_PICKER_OPTIONS = {
     mainColor: MAIN_COLOR
 };
 
-export default function DatePickerModal({ 
-    datePickerModal, 
-    setDatePickerModal, 
-    birthDate, 
+export default function DatePickerModal({
+    datePickerModal,
+    setDatePickerModal,
+    birthDate,
     setBirthDate,
+    isCurrentDate,
     minimumDate = null, // تاریخ حداقل (اختیاری)
     maximumDate = null  // تاریخ حداکثر (اختیاری)
 }) {
 
     const date = useMemo(() => new Date(), []);
-    
+
     // محاسبه تاریخ جاری به صورت شمسی
-    const currentDate = useMemo(() => 
-        getFormatedDate(new Date(date.getTime()), 'jYYYY/jMM/jDD'), 
-    [date]);
+    const currentDate = useMemo(() =>
+        getFormatedDate(new Date(date.getTime()), 'jYYYY/jMM/jDD'),
+        [date]);
 
     // اگر maximumDate پاس نشده، از تاریخ امروز استفاده کن
     const maxDate = useMemo(() => {
@@ -50,22 +51,23 @@ export default function DatePickerModal({
         <Modal animationType='fade' transparent={true} visible={datePickerModal} onRequestClose={() => { setDatePickerModal(!datePickerModal) }}>
             <TouchableWithoutFeedback onPress={() => { setDatePickerModal(false) }}>
                 <View style={[styles.wrapper, NewStyles.center]}>
-                    <TouchableWithoutFeedback onPress={() => {}}>
+                    <TouchableWithoutFeedback onPress={() => { }}>
                         <View style={styles.modalView}>
                             <View style={styles.calendarContainer}>
                                 <DatePicker
                                     mode='calendar'
+                                    
                                     isGregorian={false}
                                     options={DATE_PICKER_OPTIONS}
                                     style={styles.calendar}
                                     selected={birthDate}
-                                    onDateChange={()=>{
-                                        
+                                    onDateChange={() => {
+
                                     }}
-                                    onMonthYearChange={()=>{
-                                        
+                                    onMonthYearChange={() => {
+
                                     }}
-                                    current={currentDate}
+                                    current={isCurrentDate ? isCurrentDate : currentDate}
                                     minimumDate={minDate}
                                     maximumDate={maxDate}
                                     onSelectedChange={(p) => {
@@ -73,9 +75,9 @@ export default function DatePickerModal({
                                     }}
                                 />
                             </View>
-                            
+
                             {/* دکمه بستن */}
-                            
+
                             <Button title="تأیید" onPress={() => {
                                 setDatePickerModal(false);
                             }} />
@@ -98,6 +100,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         padding: 15,
         alignItems: 'center',
+        maxWidth:400
     },
     calendarContainer: {
         width: '100%',

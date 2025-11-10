@@ -14,6 +14,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDispatch } from 'react-redux';
 import { setToken } from '../slices/authSlice';
 import { validateToken } from '../services/Api';
+import { fetchContacts } from "../slices/contactSlice";
 
 export default function Welcome({ navigation }) {
   const [isChecking, setIsChecking] = useState(true);
@@ -21,6 +22,7 @@ export default function Welcome({ navigation }) {
 
   useEffect(() => {
     checkAutoLogin();
+    dispatch(fetchContacts());
   }, []);
 
   async function checkAutoLogin() {

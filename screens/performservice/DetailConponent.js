@@ -1,6 +1,6 @@
 import { SectionList, StyleSheet, Text, View, Linking, TouchableOpacity, Platform } from 'react-native'
 import React from 'react'
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps'
+import MapView, { Marker } from 'react-native-maps'
 import NewStyles from '../../styles/NewStyles'
 import { Ionicons } from '@expo/vector-icons'
 import { themeColor0, themeColor3, themeColor4, themeColor5, themeColor6, themeColor7 } from '../../theme/Color'
@@ -140,12 +140,15 @@ const DetailConponent = ({ data, renderRow, }) => {
                         <View style={{ padding:15 }}>
                             <MapView
                                 style={styles.map}
-                                provider={PROVIDER_GOOGLE}
                                 initialRegion={{
                                     latitude: parseFloat(data?.user_address.latitude),
                                     longitude: parseFloat(data?.user_address.longitude),
                                     latitudeDelta: 0.005,
                                     longitudeDelta: 0.005,
+                                }}
+                                region={{
+                                    latitude: parseFloat(data?.user_address.latitude),
+                                    longitude: parseFloat(data?.user_address.longitude),
                                 }}
                             >
                                 <Marker

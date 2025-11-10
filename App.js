@@ -1,7 +1,8 @@
-import { StyleSheet, Text, View, ActivityIndicator, I18nManager } from "react-native";
+import { StyleSheet, Text, View, ActivityIndicator, I18nManager, Platform } from "react-native";
 import React, { useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider, useDispatch } from "react-redux";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
@@ -56,7 +57,6 @@ import FinancialReportScreen from "./screens/performservice/FinancialReportScree
 import MessageScreen from "./screens/performservice/MessageScreen";
 import ChatListScreen from "./screens/chat/ChatListScreen";
 import ChatRoom from "./screens/chat/ChatRoom";
-import IncentiveSchemeScreen from "./screens/performservice/IncentiveSchemeScreen";
 import FeedbackSuggestionScreen from "./screens/performservice/FeedbackSuggestionScreen";
 import IndexScreen from "./screens/performservice/IndexScreen";
 import PersonalInfoScreen from "./screens/performservice/PersonalInfoScreen";
@@ -72,11 +72,67 @@ import LearnMoreScreen from "./screens/resources/LearnMoreScreen";
 import AboutScreen from "./screens/resources/AboutScreen";
 import WarrantyScreen from "./screens/resources/WarrantyScreen";
 import PrivacyScreen from './screens/performservice/PrivacyScreen';
+import TrainingRegistrationScreen from './screens/TrainingRegistrationScreen';
 
 
 I18nManager.forceRTL(false);
 
 const Stack = createNativeStackNavigator();
+
+// Linking configuration برای پشتیبانی از Deep Linking و Browser History
+const linking = {
+  prefixes: ['http://localhost:8081', 'https://loop.app', 'exp://'],
+  config: {
+    screens: {
+      Welcome: '',
+      SignInLanding: 'signin-landing',
+      FolderScreen: 'folder',
+      Login: 'login',
+      SignIn: 'signup',
+      SignInScreen: 'register',
+      PhoneVerificationScreen: 'verify-phone',
+      ResetPasswordScreen: 'reset-password',
+      GuideScreen: 'guide',
+      OrderListScreen: 'orders',
+      OrderDetailScreen: 'order/:orderId',
+      NewServiceScreen: 'new-service',
+      RequestsScreen: 'requests',
+      RequestsListScreen: 'requests/list',
+      LeaveRequestsListScreen: 'requests/leave',
+      DebtRequestsListScreen: 'requests/debt',
+      ManpowerRequestsListScreen: 'requests/manpower',
+      TransferRequestsListScreen: 'requests/transfer',
+      TerminationRequestsListScreen: 'requests/termination',
+      PerformanceScreen: 'performance',
+      ChangePasswordScreen: 'change-password',
+      PhotoArchiveScreen: 'photos',
+      NotesScreen: 'notes',
+      AddEditNoteScreen: 'notes/:noteId',
+      RateListScreen: 'rates',
+      IncentivePlansScreen: 'incentive-plans',
+      IncentiveSchemeScreen: 'incentive-scheme',
+      LoopReportScreen: 'loop-report',
+      FinancialReportScreen: 'financial-report',
+      MessageScreen: 'messages',
+      ChatListScreen: 'chats',
+      ChatRoom: 'chat/:chatId',
+      IndexScreen: 'index',
+      PersonalInfoScreen: 'profile/personal',
+      VehicleInfoScreen: 'profile/vehicle',
+      FinancialInfoScreen: 'profile/financial',
+      GameMenuScreen: 'game',
+      GamePlayScreen: 'game/play',
+      GameResultScreen: 'game/result',
+      LearnMoreScreen: 'learn-more',
+      AboutScreen: 'about',
+      WarrantyScreen: 'warranty',
+      PrivacyScreen: 'privacy',
+      TrainingRegistrationScreen: 'training-registration',
+    },
+  },
+};
+
+const PERSISTENCE_KEY = 'NAVIGATION_STATE_V1';
 
 SplashScreen.preventAutoHideAsync();
 SplashScreen.setOptions({
@@ -589,6 +645,13 @@ const AppNavigator = () => {
                 headerShown: false,
               }}
             />
+            <Stack.Screen
+              component={TrainingRegistrationScreen}
+              name="TrainingRegistrationScreen"
+              options={{
+                headerShown: false,
+              }}
+            />
           </Stack.Navigator>
 
           {/* Footer globally available through context */}
@@ -600,31 +663,90 @@ const AppNavigator = () => {
 };
 
 const App = () => {
+  console.log('🚀 App component rendering...');
+  console.log('🌐 Platform:', Platform.OS);
+  
   const [loaded, error] = useFonts({
     'VazirBold': require("./assets/fonts/Vazir-Bold-FD.ttf"),
     'VazirLight': require("./assets/fonts/Vazir-Light-FD.ttf"),
   });
 
+  const [isReady, setIsReady] = useState(false);
+  const [initialState, setInitialState] = useState();
+
+  useEffect(() => {
+    console.log('📱 Fonts loaded:', loaded, 'error:', error);
+  }, [loaded, error]);
+
+  useEffect(() => {
+    const restoreState = async () => {
+      try {
+        console.log('💾 Starting state restoration...');
+  // Persist/restore navigation state only for web builds.
+  // Native (Android/iOS) should not persist navigation across reloads
+  // so that hot reload (R) starts from the initial route.
+  if (Platform.OS === 'web') {
+          const savedStateString = await AsyncStorage.getItem(PERSISTENCE_KEY);
+          const state = savedStateString ? JSON.parse(savedStateString) : undefined;
+
+          if (state !== undefined) {
+            setInitialState(state);
+          }
+        }
+      } finally {
+        console.log('✅ State restoration complete, setting isReady to true');
+        setIsReady(true);
+      }
+    };
+
+    if (!isReady) {
+      restoreState();
+    }
+  }, [isReady]);
+
   useEffect(() => {
     if (loaded || error) {
+      console.log('🎨 Hiding splash screen...');
       SplashScreen.hideAsync();
     }
   }, [loaded, error]);
 
+  console.log('🔍 Check states - loaded:', loaded, 'error:', error, 'isReady:', isReady);
+
   if (!loaded && !error) {
+    console.log('⏳ Waiting for fonts to load...');
     return null;
   }
 
+  if (!isReady) {
+    console.log('⏳ Waiting for state restoration...');
+    return null;
+  }
+
+  console.log('🎉 All checks passed, rendering NavigationContainer...');
+
   return (
-    <NavigationContainer>
-      <Provider store={store}>
-        <AuthProvider>
-          <FooterProvider>
-            <AppNavigator />
-          </FooterProvider>
-        </AuthProvider>
-      </Provider>
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <NavigationContainer
+        linking={linking}
+        initialState={initialState}
+        onStateChange={(state) => {
+          // Only persist navigation state when running in web environment.
+          // Native apps receive hot reload and should start from initial route.
+          if (state && Platform.OS === 'web') {
+            AsyncStorage.setItem(PERSISTENCE_KEY, JSON.stringify(state));
+          }
+        }}
+      >
+        <Provider store={store}>
+          <AuthProvider>
+            <FooterProvider>
+              <AppNavigator />
+            </FooterProvider>
+          </AuthProvider>
+        </Provider>
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 };
 

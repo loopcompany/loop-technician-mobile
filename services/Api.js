@@ -114,7 +114,37 @@ export const getOrderExtras = async (orderId) => {
     return handleError(error);
   }
 };
+export const educationRegistrationAPI = {
+  // Create new education registration
+  create: async (data) => {
+    try {
+      const response = await api.post('/technician/education-registerations', data);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
 
+  // Get all education registrations for the user
+  getAll: async () => {
+    try {
+      const response = await api.get('/technician/education-registerations');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Get details of a specific education registration
+  getById: async (id) => {
+    try {
+      const response = await api.get(`/technician/education-registerations/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+};
 /**
  * اعلام شروع تعمیر
  * POST /technician/orders/{orderId}/start

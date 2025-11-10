@@ -22,23 +22,23 @@ export default function ChatRoom({ route }) {
 
     const [data, setData] = useState([]);
     const [isChatOpen, setIsChatOpen] = useState(true);
-    
+
     const fetchData = async () => {
         try {
             console.log(`📨 بارگذاری پیام‌های چت با کاربر ${userId}`);
-            
+
             // دریافت پیام‌ها
             const response = await getTechnicianChatMessages(userId);
-            
+
             // بررسی ساختار response
             if (response?.success) {
                 setData(response?.data?.messages || []);
-                setIsChatOpen(response?.data?.is_chat_open !== false);
+                setIsChatOpen(response?.data?.is_chat_open);
             } else {
                 setData([]);
                 showToastOrAlert(response?.data?.message || 'خطا در دریافت پیام‌ها');
             }
-            
+
             // علامت‌گذاری به عنوان خوانده شده
             await markTechnicianMessagesAsRead(userId);
         } catch (error) {
@@ -48,11 +48,11 @@ export default function ChatRoom({ route }) {
             setRefreshing(false);
         }
     };
-    
+
     useEffect(() => {
         if (userId) {
             fetchData();
-            
+
             // رفرش خودکار هر 5 ثانیه
             const interval = setInterval(fetchData, 5000);
             return () => clearInterval(interval);
@@ -61,13 +61,13 @@ export default function ChatRoom({ route }) {
 
     const send = async () => {
         if (!message?.trim()) return;
-        
+
         setLoading(true);
         const messageText = message.trim();
-        
+
         try {
             const response = await sendTechnicianMessage(userId, messageText);
-            
+
             if (response?.success) {
                 console.log('✅ پیام ارسال شد');
                 fetchData();
@@ -95,7 +95,6 @@ export default function ChatRoom({ route }) {
 
     // بررسی وضعیت بسته بودن چت
     const isClosed = !isChatOpen || data?.[0]?.is_closed == 1;
-
     // const insets = useSafeAreaInsets();
 
     return (
@@ -105,37 +104,37 @@ export default function ChatRoom({ route }) {
         }]}>
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'padding'} keyboardVerticalOffset={Platform.OS == 'ios' ? 90 : undefined} style={{ flex: 1 }} >
                 {/* <ImageBackground source={require('../../assets/images/card/1.avif')} resizeMode='cover' blurRadius={20} style={{ justifyContent: 'space-between', flex: 1, overflow: 'visible' }}> */}
-                    <MessagesList messeges={data} refreshing={refreshing} onRefresh={() => { fetchData() }} />
-                    {!isClosed ?
-                        <View style={NewStyles.shadow}>
-                            <View style={[NewStyles.rowWrapper, { backgroundColor: themeColor3.bgColor(0.1), paddingRight: 10 }]}>
-                                <View style={[NewStyles.rowWrapper, { paddingVertical: 5 }]}>
-                                    <Pressable style={[{ padding: 10, aspectRatio: 1, backgroundColor: themeColor0.bgColor(1), marginHorizontal: 2 }, NewStyles.center, NewStyles.border100]}
-                                        disabled={loading}
-                                        onPress={() => {
-                                            if (message?.trim()) {
-                                                send()
-                                            }
-                                        }}>
-                                        {!loading && <Ionicons name="paper-plane-outline" size={20} color={themeColor5.bgColor(1)} />}
-                                        {loading && <ActivityIndicator color={themeColor5.bgColor(1)} size={20} />}
-                                    </Pressable>
-                                </View>
-                                <TextInput style={[{ flex: 1, marginHorizontal: 10 }, NewStyles.text10]} placeholderTextColor={themeColor10.bgColor(1)} placeholder='پیام خود را بنویسید.' value={message} maxLength={5000} onChangeText={(p) => { setMessage(p) }} multiline={true} />
+                <MessagesList messeges={data} refreshing={refreshing} onRefresh={() => { fetchData() }} />
+                {isChatOpen ?
+                    <View style={NewStyles.shadow}>
+                        <View style={[NewStyles.rowWrapper, { backgroundColor: themeColor3.bgColor(0.1), paddingRight: 10 }]}>
+                            <View style={[NewStyles.rowWrapper, { paddingVertical: 5 }]}>
+                                <Pressable style={[{ padding: 10, aspectRatio: 1, backgroundColor: themeColor0.bgColor(1), marginHorizontal: 2 }, NewStyles.center, NewStyles.border100]}
+                                    disabled={loading}
+                                    onPress={() => {
+                                        if (message?.trim()) {
+                                            send()
+                                        }
+                                    }}>
+                                    {!loading && <Ionicons name="paper-plane-outline" size={20} color={themeColor5.bgColor(1)} />}
+                                    {loading && <ActivityIndicator color={themeColor5.bgColor(1)} size={20} />}
+                                </Pressable>
                             </View>
+                            <TextInput style={[{ flex: 1, marginHorizontal: 10 }, NewStyles.text10]} placeholderTextColor={themeColor10.bgColor(1)} placeholder='پیام خود را بنویسید.' value={message} maxLength={5000} onChangeText={(p) => { setMessage(p) }} multiline={true} />
                         </View>
-                        :
-                        <View style={NewStyles.shadow}>
-                            <View style={[NewStyles.rowWrapper, { backgroundColor: themeColor3.bgColor(0.1), paddingRight: 10 }]}>
-                                <View style={[NewStyles.rowWrapper, { paddingVertical: 5 }]}>
-                                    <View style={[{ padding: 10, aspectRatio: 1, backgroundColor: themeColor6.bgColor(1), marginHorizontal: 2 }, NewStyles.center, NewStyles.border100]}>
-                                        <Ionicons name="close" size={20} color={themeColor4.bgColor(1)} />
-                                    </View>
+                    </View>
+                    :
+                    <View style={NewStyles.shadow}>
+                        <View style={[NewStyles.rowWrapper, { backgroundColor: themeColor3.bgColor(0.1), paddingRight: 10 }]}>
+                            <View style={[NewStyles.rowWrapper, { paddingVertical: 5 }]}>
+                                <View style={[{ padding: 10, aspectRatio: 1, backgroundColor: themeColor6.bgColor(1), marginHorizontal: 2 }, NewStyles.center, NewStyles.border100]}>
+                                    <Ionicons name="close" size={20} color={themeColor4.bgColor(1)} />
                                 </View>
-                                <Text style={[{ flex: 1, marginHorizontal: 10 }, NewStyles.text10]}>امکان ارسال پیام وجود ندارد.</Text>
                             </View>
+                            <Text style={[{ flex: 1, marginHorizontal: 10 }, NewStyles.text10]}>امکان ارسال پیام وجود ندارد.</Text>
                         </View>
-                    }
+                    </View>
+                }
                 {/* </ImageBackground> */}
             </KeyboardAvoidingView>
         </View>

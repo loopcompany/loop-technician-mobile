@@ -26,7 +26,7 @@ export default function FinancialInfoScreen({ navigation }) {
   const userData = useSelector(state => state.user.data);
   const [saving, setSaving] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(false);
-  
+
   const [financialData, setFinancialData] = useState({
     shabaNumber: '',
     bankName: '',
@@ -57,14 +57,14 @@ export default function FinancialInfoScreen({ navigation }) {
 
       // API returns data in format: { technician: {...}, token_info: {...} }
       const technicianData = userData.technician || userData;
-      
+
       setFinancialData(prevData => ({
         shabaNumber: technicianData.bank_shaba_number || prevData.shabaNumber,
         bankName: technicianData.bank_name || prevData.bankName,
         cardNumber: technicianData.bank_card_number || prevData.cardNumber
       }));
     };
-    
+
     loadUserData();
   }, [userData, dispatch]);
 
@@ -121,10 +121,10 @@ export default function FinancialInfoScreen({ navigation }) {
       console.log('📤 ارسال داده به API:', apiData);
 
       const result = await updateBankInfo(apiData);
-      
+
       if (result.success) {
         Alert.alert('موفق', 'اطلاعات بانکی با موفقیت به‌روزرسانی شد');
-        
+
         // Update Redux with new data
         if (result.data && result.data.technician) {
           const updatedUserData = {
@@ -134,10 +134,10 @@ export default function FinancialInfoScreen({ navigation }) {
               ...result.data.technician
             }
           };
-          
+
           // Update Redux
           dispatch(setUserData(updatedUserData));
-          
+
           // ⭐ IMPORTANT: Update AsyncStorage as well!
           await AsyncStorage.setItem('userData', JSON.stringify(updatedUserData));
           console.log('✅ AsyncStorage هم به‌روز شد');
@@ -154,87 +154,87 @@ export default function FinancialInfoScreen({ navigation }) {
   };
 
   return (
-     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
+    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'off' }}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-    <LinearGradient 
-      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.background}
-    >
-      <CustomStatusBar />
-      <ScreenHeaders 
-        title={'حساب کاربری / حریم خصوصی'} 
-        onPressLeft={() => navigation.goBack()} 
-      />
-      
-      <ScrollView contentContainerStyle={styles.container}>
-        
-        {/* دکمه اطلاعات مالی */}
-        <TouchableOpacity style={[styles.mainButton, { backgroundColor: themeColor0.bgColor(0.8) }]}>
-          <Text style={styles.buttonText}>اطلاعات مالی</Text>
-        </TouchableOpacity>
+        <LinearGradient
+          colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.background}
+        >
+          <CustomStatusBar />
+          <ScreenHeaders
+            title={'حساب کاربری / حریم خصوصی'}
+            onPressLeft={() => navigation.goBack()}
+          />
 
-        {/* فرم اطلاعات مالی */}
-        <View style={styles.formContainer}>
-          
-          <View style={styles.inputRow}>
-            <Text style={styles.label}>شماره شبا (IR + 24 رقم) :</Text>
-            <TextInput
-              style={styles.input}
-              value={financialData.shabaNumber}
-              onChangeText={(value) => updateField('shabaNumber', value.toUpperCase())}
-              placeholder="IR123456789012345678901234"
-              maxLength={26}
-              editable={!saving}
-            />
-          </View>
+          <ScrollView contentContainerStyle={styles.container}>
 
-          <View style={styles.inputRow}>
-            <Text style={styles.label}>نام بانک :</Text>
-            <TextInput
-              style={styles.input}
-              value={financialData.bankName}
-              onChangeText={(value) => updateField('bankName', value)}
-              placeholder="بانک ملی ایران"
-              maxLength={100}
-              editable={!saving}
-            />
-          </View>
+            {/* دکمه اطلاعات مالی */}
+            <TouchableOpacity style={[styles.mainButton, { backgroundColor: themeColor0.bgColor(0.8) }]}>
+              <Text style={styles.buttonText}>اطلاعات مالی</Text>
+            </TouchableOpacity>
 
-          <View style={styles.inputRow}>
-            <Text style={styles.label}>شماره کارت (16 رقم) :</Text>
-            <TextInput
-              style={styles.input}
-              value={financialData.cardNumber}
-              onChangeText={(value) => updateField('cardNumber', value.replace(/[^0-9]/g, ''))}
-              placeholder="6037991234567890"
-              keyboardType="numeric"
-              maxLength={16}
-              editable={!saving}
-            />
-          </View>
+            {/* فرم اطلاعات مالی */}
+            <View style={styles.formContainer}>
 
-          {/* دکمه ثبت */}
-          <TouchableOpacity 
-            style={[styles.saveButton, saving && styles.saveButtonDisabled]}
-            onPress={handleSave}
-            disabled={saving}
-          >
-            {saving ? (
-              <ActivityIndicator color={themeColor4.bgColor(1)} />
-            ) : (
-              <Text style={styles.saveButtonText}>ثبت اطلاعات</Text>
-            )}
-          </TouchableOpacity>
+              <View style={styles.inputRow}>
+                <Text style={styles.label}>شماره شبا (IR + 24 رقم) :</Text>
+                <TextInput
+                  style={styles.input}
+                  value={financialData.shabaNumber}
+                  onChangeText={(value) => updateField('shabaNumber', value.toUpperCase())}
+                  placeholder="IR123456789012345678901234"
+                  maxLength={26}
+                  editable={!saving}
+                />
+              </View>
 
-        </View>
+              <View style={styles.inputRow}>
+                <Text style={styles.label}>نام بانک :</Text>
+                <TextInput
+                  style={styles.input}
+                  value={financialData.bankName}
+                  onChangeText={(value) => updateField('bankName', value)}
+                  placeholder="بانک ملی ایران"
+                  maxLength={100}
+                  editable={!saving}
+                />
+              </View>
 
-      </ScrollView>
-    
-    </LinearGradient>
-  </KeyboardAvoidingView>
-      </SafeAreaView>
+              <View style={styles.inputRow}>
+                <Text style={styles.label}>شماره کارت (16 رقم) :</Text>
+                <TextInput
+                  style={styles.input}
+                  value={financialData.cardNumber}
+                  onChangeText={(value) => updateField('cardNumber', value.replace(/[^0-9]/g, ''))}
+                  placeholder="6037991234567890"
+                  keyboardType="numeric"
+                  maxLength={16}
+                  editable={!saving}
+                />
+              </View>
+
+              {/* دکمه ثبت */}
+              <TouchableOpacity
+                style={[styles.saveButton, saving && styles.saveButtonDisabled]}
+                onPress={handleSave}
+                disabled={saving}
+              >
+                {saving ? (
+                  <ActivityIndicator color={themeColor4.bgColor(1)} />
+                ) : (
+                  <Text style={styles.saveButtonText}>ثبت اطلاعات</Text>
+                )}
+              </TouchableOpacity>
+
+            </View>
+
+          </ScrollView>
+
+        </LinearGradient>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 

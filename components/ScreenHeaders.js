@@ -9,7 +9,7 @@ const ScreenHeaders = ({ title, onPressLeft, onPressRight }) => {
   const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight : 0;
   
   return (
-    <SafeAreaView style={[styles.header, NewStyles.rowWrapper, { 
+    <SafeAreaView edges={{top:'additive', bottom:'off'}} style={[styles.header, NewStyles.rowWrapper, { 
       width: width,
     }]}>
       <TouchableOpacity onPress={onPressRight} style={styles.iconContainer}>

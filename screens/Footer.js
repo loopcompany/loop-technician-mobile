@@ -12,15 +12,16 @@ import {
   Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { themeColor0, themeColor10, themeColor13, themeColor4 } from "../theme/Color";
+import { themeColor0, themeColor10, themeColor13, themeColor4, themeColor6 } from "../theme/Color";
 import NewStyles from "../styles/NewStyles";
 import { logoutTechnician } from "../services/Api";
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setToken } from '../slices/authSlice';
 
 export default function Footer() {
   const navigation = useNavigation();
   const dispatch = useDispatch();
+  const userToken = useSelector(state => state.auth.token);
   const [menuItems, setMenuItems] = useState([
     { id: 1, title: " سازمانی / شرکتی", screen: "DeviceOrderSummary" },
     { id: 2, title: " ثبت نام دوره های آموزشی ", screen: "CorporateScreen" },
@@ -129,12 +130,15 @@ export default function Footer() {
                 <Text style={styles.toggleButtonText}>روشن / خاموش</Text>
               </TouchableOpacity>
               
-              <TouchableOpacity 
-                style={styles.exitButton}
-                onPress={handleLogout}
-              >
-                <Text style={styles.exitButtonText}>خروج</Text>
-              </TouchableOpacity>
+              {/* دکمه خروج فقط برای کاربران لاگین شده */}
+              {userToken && (
+                <TouchableOpacity 
+                  style={styles.exitButton}
+                  onPress={handleLogout}
+                >
+                  <Text style={styles.exitButtonText}>خروج</Text>
+                </TouchableOpacity>
+              )}
             </View>
             </View>
             {/* </View> */}
@@ -318,9 +322,7 @@ const styles = StyleSheet.create({
   },
   exitButton: {
     // flex: 1,
-    backgroundColor: "#f44336",
-    paddingVertical: 15,
-    paddingHorizontal: 10,
+    backgroundColor: themeColor6.bgColor(1),
     borderRadius: 8,
     alignItems: "center",
   },

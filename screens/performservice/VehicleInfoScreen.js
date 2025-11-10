@@ -8,7 +8,7 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
-     KeyboardAvoidingView,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -26,7 +26,7 @@ export default function VehicleInfoScreen({ navigation }) {
   const userData = useSelector(state => state.user.data);
   const [saving, setSaving] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(false);
-  
+
   const [vehicleData, setVehicleData] = useState({
     vehicleType: '',
     modelColor: '',
@@ -67,13 +67,13 @@ export default function VehicleInfoScreen({ navigation }) {
 
       // API returns data in format: { technician: {...}, token_info: {...} }
       const technicianData = userData.technician || userData;
-      
+
       // Parse car plate if available (format: "12ب345ایران56")
       let plateLeft = '';
       let plateRight = '';
       let plateLetter = 'ب';
       let plateProvince = '11';
-      
+
       if (technicianData.car_plate) {
         const plate = technicianData.car_plate;
         // Try to parse Iranian plate format: 12ب345ایران56
@@ -85,13 +85,13 @@ export default function VehicleInfoScreen({ navigation }) {
           plateProvince = match[4];
         }
       }
-      
+
       // Combine car_model and car_color with proper spacing
       const modelColorValue = [
         technicianData.car_model || '',
         technicianData.car_color || ''
       ].filter(Boolean).join(' ').trim();
-      
+
       setVehicleData(prevData => ({
         vehicleType: technicianData.vehicle_type || prevData.vehicleType,
         modelColor: modelColorValue || prevData.modelColor,
@@ -108,7 +108,7 @@ export default function VehicleInfoScreen({ navigation }) {
         insuranceExpiryDate: technicianData.car_insurance_expiry_date || prevData.insuranceExpiryDate
       }));
     };
-    
+
     loadUserData();
   }, [userData, dispatch]);
 
@@ -136,17 +136,17 @@ export default function VehicleInfoScreen({ navigation }) {
     try {
       // Build car_plate from components (only if all parts are filled)
       let carPlate = null;
-      if (vehicleData.carPlateLeft && vehicleData.carPlateLetter && 
-          vehicleData.carPlateRight && vehicleData.carPlateProvince) {
+      if (vehicleData.carPlateLeft && vehicleData.carPlateLetter &&
+        vehicleData.carPlateRight && vehicleData.carPlateProvince) {
         carPlate = `${vehicleData.carPlateLeft}${vehicleData.carPlateLetter}${vehicleData.carPlateRight}ایران${vehicleData.carPlateProvince}`;
       }
-      
+
       // Parse model and color from combined field
       // Keep the entire modelColor as car_model for now
       // User can separate model and color manually if needed
       const car_model = vehicleData.modelColor.trim() || null;
       const car_color = null; // Let user input full "model + color" in one field
-      
+
       // Prepare data in format expected by Backend
       const apiData = {
         car_model: car_model,
@@ -162,17 +162,17 @@ export default function VehicleInfoScreen({ navigation }) {
       console.log('📤 ارسال داده به API:', apiData);
 
       const result = await updateVehicleInfo(apiData);
-      
+
       if (result.success) {
         console.log('✅ پاسخ موفق از API دریافت شد');
         console.log('📦 result.data:', JSON.stringify(result.data, null, 2));
-        
+
         Alert.alert('موفق', 'اطلاعات خودرو با موفقیت به‌روزرسانی شد');
-        
+
         // Update Redux with new data
         if (result.data && result.data.technician) {
           console.log('🔄 به‌روزرسانی Redux و AsyncStorage...');
-          
+
           const updatedUserData = {
             ...userData,
             technician: {
@@ -180,12 +180,12 @@ export default function VehicleInfoScreen({ navigation }) {
               ...result.data.technician
             }
           };
-          
+
           console.log('💾 داده‌های جدید technician:', result.data.technician);
-          
+
           // Update Redux
           dispatch(setUserData(updatedUserData));
-          
+
           // ⭐ IMPORTANT: Update AsyncStorage as well!
           await AsyncStorage.setItem('userData', JSON.stringify(updatedUserData));
           console.log('✅ AsyncStorage به‌روز شد با car_model:', result.data.technician.car_model);
@@ -204,309 +204,309 @@ export default function VehicleInfoScreen({ navigation }) {
   };
 
   return (
-     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
+    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'off' }}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-    <LinearGradient 
-      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.background}
-    >
-      <CustomStatusBar />
-      <ScreenHeaders 
-        title={'حساب کاربری / حریم خصوصی'} 
-        onPressLeft={() => navigation.goBack()} 
-      />
-      
-      <ScrollView contentContainerStyle={styles.container}>
-        
-        {/* دکمه مشخصات وسیله نقلیه */}
-        <TouchableOpacity style={[styles.mainButton, { backgroundColor: themeColor0.bgColor(0.8) }]}>
-          <Text style={styles.buttonText}>مشخصات وسیله نقلیه</Text>
-        </TouchableOpacity>
+        <LinearGradient
+          colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.background}
+        >
+          <CustomStatusBar />
+          <ScreenHeaders
+            title={'حساب کاربری / حریم خصوصی'}
+            onPressLeft={() => navigation.goBack()}
+          />
 
-        {/* باکس نوع وسیله نقلیه */}
-        <View style={styles.vehicleTypeBox}>
-          <Text style={styles.vehicleTypeLabel}>
-            نوع وسیله نقلیه: {vehicleData.vehicleType || 'مشخص نشده'}
-          </Text>
-        </View>
+          <ScrollView contentContainerStyle={styles.container}>
 
-        {/* فرم اطلاعات وسیله */}
-        <View style={styles.formContainer}>
+            {/* دکمه مشخصات وسیله نقلیه */}
+            <TouchableOpacity style={[styles.mainButton, { backgroundColor: themeColor0.bgColor(0.8) }]}>
+              <Text style={styles.buttonText}>مشخصات وسیله نقلیه</Text>
+            </TouchableOpacity>
 
-          {/* پیام برای دوچرخه و پیاده */}
-          {(vehicleData.vehicleType === 'دوچرخه' || vehicleData.vehicleType === 'پیاده') && (
-            <View style={styles.infoBox}>
-              <Text style={styles.infoText}>
-                برای {vehicleData.vehicleType}، نیازی به ثبت اطلاعات خاصی نیست.
+            {/* باکس نوع وسیله نقلیه */}
+            <View style={styles.vehicleTypeBox}>
+              <Text style={styles.vehicleTypeLabel}>
+                نوع وسیله نقلیه: {vehicleData.vehicleType || 'مشخص نشده'}
               </Text>
             </View>
-          )}
 
-          {/* پلاک موتور سیکلت - فقط برای موتور */}
-          {vehicleData.vehicleType === 'موتور سیکلت' && (
-            <View style={styles.plateSection}>
-              <Text style={styles.label}>پلاک موتور سیکلت :</Text>
-              <View style={styles.plateRow}>
-                <TextInput
-                  style={[styles.input, styles.plateInput]}
-                  value={vehicleData.motorPlate}
-                  onChangeText={(value) => updateField('motorPlate', String(value).replace(/[^0-9]/g, '').slice(0,3))}
-                  keyboardType="numeric"
-                  placeholder=""
-                  maxLength={3}
-                  editable={!saving}
-                />
-                <TextInput
-                  style={[styles.input, styles.plateInput]}
-                  value={vehicleData.bodyPlate}
-                  onChangeText={(value) => updateField('bodyPlate', String(value).replace(/[^0-9]/g, '').slice(0,5))}
-                  keyboardType="numeric"
-                  placeholder=""
-                  maxLength={5}
-                  editable={!saving}
-                />
-              </View>
-              <View style={styles.platePreviewWrap}>
-                <PlatePreviewMotorcycle left={vehicleData.motorPlate} right={vehicleData.bodyPlate} />
-              </View>
+            {/* فرم اطلاعات وسیله */}
+            <View style={styles.formContainer}>
+
+              {/* پیام برای دوچرخه و پیاده */}
+              {(vehicleData.vehicleType === 'دوچرخه' || vehicleData.vehicleType === 'پیاده') && (
+                <View style={styles.infoBox}>
+                  <Text style={styles.infoText}>
+                    برای {vehicleData.vehicleType}، نیازی به ثبت اطلاعات خاصی نیست.
+                  </Text>
+                </View>
+              )}
+
+              {/* پلاک موتور سیکلت - فقط برای موتور */}
+              {vehicleData.vehicleType === 'موتور' && (
+                <View style={styles.plateSection}>
+                  <Text style={styles.label}>پلاک موتور سیکلت :</Text>
+                  <View style={styles.plateRow}>
+                    <TextInput
+                      style={[styles.input, styles.plateInput]}
+                      value={vehicleData.motorPlate}
+                      onChangeText={(value) => updateField('motorPlate', String(value).replace(/[^0-9]/g, '').slice(0, 3))}
+                      keyboardType="numeric"
+                      placeholder=""
+                      maxLength={3}
+                      editable={!saving}
+                    />
+                    <TextInput
+                      style={[styles.input, styles.plateInput]}
+                      value={vehicleData.bodyPlate}
+                      onChangeText={(value) => updateField('bodyPlate', String(value).replace(/[^0-9]/g, '').slice(0, 5))}
+                      keyboardType="numeric"
+                      placeholder=""
+                      maxLength={5}
+                      editable={!saving}
+                    />
+                  </View>
+                  <View style={styles.platePreviewWrap}>
+                    <PlatePreviewMotorcycle left={vehicleData.motorPlate} right={vehicleData.bodyPlate} />
+                  </View>
+                </View>
+              )}
+
+              {/* پلاک خودرو - فقط برای خودرو */}
+              {vehicleData.vehicleType === 'خودرو' && (
+                <View style={styles.plateSection}>
+                  <Text style={styles.label}>پلاک خودرو :</Text>
+                  <View style={styles.plateRow}>
+                    <TextInput
+                      style={[styles.input, styles.plateInput]}
+                      value={vehicleData.carPlateLeft}
+                      onChangeText={(v) => updateField('carPlateLeft', v)}
+                      placeholder="مثال: 12"
+                      keyboardType="numeric"
+                      maxLength={2}
+                      editable={!saving}
+                    />
+                    <TextInput
+                      style={[styles.input, styles.plateInput]}
+                      value={vehicleData.carPlateRight}
+                      onChangeText={(v) => updateField('carPlateRight', v)}
+                      placeholder="مثال: 345"
+                      keyboardType="numeric"
+                      maxLength={3}
+                      editable={!saving}
+                    />
+                  </View>
+
+                  <View style={styles.plateExtraRow}>
+                    <TextInput
+                      style={[styles.input, styles.plateLetterInput]}
+                      value={vehicleData.carPlateLetter}
+                      onChangeText={(v) => updateField('carPlateLetter', v)}
+                      placeholder="حرف پلاک"
+                      maxLength={1}
+                      editable={!saving}
+                    />
+                    <TextInput
+                      style={[styles.input, styles.plateProvinceInput]}
+                      value={vehicleData.carPlateProvince}
+                      onChangeText={(v) => updateField('carPlateProvince', v)}
+                      placeholder="کد استان"
+                      keyboardType="numeric"
+                      maxLength={2}
+                      editable={!saving}
+                    />
+                  </View>
+
+                  {/* Plate preview */}
+                  <View style={styles.platePreviewWrap}>
+                    <PlatePreview
+                      left={vehicleData.carPlateLeft}
+                      right={vehicleData.carPlateRight}
+                      letter={vehicleData.carPlateLetter}
+                      province={vehicleData.carPlateProvince}
+                    />
+                  </View>
+                </View>
+              )}
+
+              {/* فیلدهای زیر فقط برای موتور و خودرو */}
+              {(vehicleData.vehicleType === 'موتور سیکلت' || vehicleData.vehicleType === 'خودرو') && (
+                <>
+                  <View style={styles.inputRow}>
+                    <Text style={styles.label}>مدل و رنگ :</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={vehicleData.modelColor}
+                      onChangeText={(value) => updateField('modelColor', value)}
+                      placeholder=""
+                      editable={!saving}
+                    />
+                  </View>
+
+                  <View style={styles.inputRow}>
+                    <Text style={styles.label}>سال ساخت :</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={vehicleData.manufacturingYear}
+                      onChangeText={(value) => updateField('manufacturingYear', value)}
+                      placeholder=""
+                      editable={!saving}
+                    />
+                  </View>
+
+                  <View style={styles.inputRow}>
+                    <Text style={styles.label}>نوع سوخت :</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={vehicleData.softwareType}
+                      onChangeText={(value) => updateField('softwareType', value)}
+                      placeholder=""
+                      editable={!saving}
+                    />
+                  </View>
+
+                  <View style={styles.inputRow}>
+                    <Text style={styles.label}>شماره شناسه وسیله (VIN) :</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={vehicleData.vinNumber}
+                      onChangeText={(value) => updateField('vinNumber', value)}
+                      placeholder=""
+                      maxLength={17}
+                      editable={!saving}
+                    />
+                  </View>
+
+                  <View style={styles.inputRow}>
+                    <Text style={styles.label}>کد یکتای بیمه شخص ثالث :</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={vehicleData.insuranceExpiryCode}
+                      onChangeText={(value) => updateField('insuranceExpiryCode', value)}
+                      placeholder=""
+                      editable={!saving}
+                    />
+                  </View>
+
+                  <View style={styles.inputRow}>
+                    <Text style={styles.label}>تاریخ انقضاء بیمه شخص ثالث :</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={vehicleData.insuranceExpiryDate}
+                      onChangeText={(value) => updateField('insuranceExpiryDate', value)}
+                      placeholder=""
+                      editable={!saving}
+                    />
+                  </View>
+                </>
+              )}
+
             </View>
-          )}
 
-          {/* پلاک خودرو - فقط برای خودرو */}
-          {vehicleData.vehicleType === 'خودرو' && (
-            <View style={styles.plateSection}>
-              <Text style={styles.label}>پلاک خودرو :</Text>
-              <View style={styles.plateRow}>
-                <TextInput
-                  style={[styles.input, styles.plateInput]}
-                  value={vehicleData.carPlateLeft}
-                  onChangeText={(v) => updateField('carPlateLeft', v)}
-                  placeholder="مثال: 12"
-                  keyboardType="numeric"
-                  maxLength={2}
-                  editable={!saving}
-                />
-                <TextInput
-                  style={[styles.input, styles.plateInput]}
-                  value={vehicleData.carPlateRight}
-                  onChangeText={(v) => updateField('carPlateRight', v)}
-                  placeholder="مثال: 345"
-                  keyboardType="numeric"
-                  maxLength={3}
-                  editable={!saving}
-                />
-              </View>
-
-              <View style={styles.plateExtraRow}>
-                <TextInput
-                  style={[styles.input, styles.plateLetterInput]}
-                  value={vehicleData.carPlateLetter}
-                  onChangeText={(v) => updateField('carPlateLetter', v)}
-                  placeholder="حرف پلاک"
-                  maxLength={1}
-                  editable={!saving}
-                />
-                <TextInput
-                  style={[styles.input, styles.plateProvinceInput]}
-                  value={vehicleData.carPlateProvince}
-                  onChangeText={(v) => updateField('carPlateProvince', v)}
-                  placeholder="کد استان"
-                  keyboardType="numeric"
-                  maxLength={2}
-                  editable={!saving}
-                />
-              </View>
-
-              {/* Plate preview */}
-              <View style={styles.platePreviewWrap}>
-                <PlatePreview
-                  left={vehicleData.carPlateLeft}
-                  right={vehicleData.carPlateRight}
-                  letter={vehicleData.carPlateLetter}
-                  province={vehicleData.carPlateProvince}
-                />
-              </View>
+            {/* دکمه‌های ثبت و ویرایش */}
+            <View style={styles.actionButtons}>
+              <TouchableOpacity
+                style={[styles.actionButton, styles.saveButton, saving && styles.saveButtonDisabled]}
+                onPress={handleSave}
+                disabled={saving}
+              >
+                {saving ? (
+                  <ActivityIndicator color={themeColor4.bgColor(1)} />
+                ) : (
+                  <Text style={styles.actionButtonText}>ثبت مشخصات</Text>
+                )}
+              </TouchableOpacity>
             </View>
-          )}
 
-          {/* فیلدهای زیر فقط برای موتور و خودرو */}
-          {(vehicleData.vehicleType === 'موتور سیکلت' || vehicleData.vehicleType === 'خودرو') && (
-            <>
-              <View style={styles.inputRow}>
-                <Text style={styles.label}>مدل و رنگ :</Text>
-                <TextInput
-                  style={styles.input}
-                  value={vehicleData.modelColor}
-                  onChangeText={(value) => updateField('modelColor', value)}
-                  placeholder=""
-                  editable={!saving}
-                />
-              </View>
+          </ScrollView>
 
-              <View style={styles.inputRow}>
-                <Text style={styles.label}>سال ساخت :</Text>
-                <TextInput
-                  style={styles.input}
-                  value={vehicleData.manufacturingYear}
-                  onChangeText={(value) => updateField('manufacturingYear', value)}
-                  placeholder=""
-                  editable={!saving}
-                />
-              </View>
-
-              <View style={styles.inputRow}>
-                <Text style={styles.label}>نوع سوخت :</Text>
-                <TextInput
-                  style={styles.input}
-                  value={vehicleData.softwareType}
-                  onChangeText={(value) => updateField('softwareType', value)}
-                  placeholder=""
-                  editable={!saving}
-                />
-              </View>
-
-              <View style={styles.inputRow}>
-                <Text style={styles.label}>شماره شناسه وسیله (VIN) :</Text>
-                <TextInput
-                  style={styles.input}
-                  value={vehicleData.vinNumber}
-                  onChangeText={(value) => updateField('vinNumber', value)}
-                  placeholder=""
-                  maxLength={17}
-                  editable={!saving}
-                />
-              </View>
-
-              <View style={styles.inputRow}>
-                <Text style={styles.label}>کد یکتای بیمه شخص ثالث :</Text>
-                <TextInput
-                  style={styles.input}
-                  value={vehicleData.insuranceExpiryCode}
-                  onChangeText={(value) => updateField('insuranceExpiryCode', value)}
-                  placeholder=""
-                  editable={!saving}
-                />
-              </View>
-
-              <View style={styles.inputRow}>
-                <Text style={styles.label}>تاریخ انقضاء بیمه شخص ثالث :</Text>
-                <TextInput
-                  style={styles.input}
-                  value={vehicleData.insuranceExpiryDate}
-                  onChangeText={(value) => updateField('insuranceExpiryDate', value)}
-                  placeholder=""
-                  editable={!saving}
-                />
-              </View>
-            </>
-          )}
-
-        </View>
-
-        {/* دکمه‌های ثبت و ویرایش */}
-        <View style={styles.actionButtons}>
-          <TouchableOpacity 
-            style={[styles.actionButton, styles.saveButton, saving && styles.saveButtonDisabled]}
-            onPress={handleSave}
-            disabled={saving}
-          >
-            {saving ? (
-              <ActivityIndicator color={themeColor4.bgColor(1)} />
-            ) : (
-              <Text style={styles.actionButtonText}>ثبت مشخصات</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-
-      </ScrollView>
-   
-    </LinearGradient>
-    </KeyboardAvoidingView>
+        </LinearGradient>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
-  // Small preview component that renders a stylized Iranian-like car plate
-  function PlatePreview({ left = '', right = '', letter = 'ب', province = '11' }) {
-    // helper: convert ASCII digits to Persian digits
-    const toPersian = (s) => {
-      const map = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
-      return String(s || '').split('').map(ch => {
-        if (ch >= '0' && ch <= '9') return map[ch.charCodeAt(0) - 48];
-        return ch;
-      }).join('');
-    };
+// Small preview component that renders a stylized Iranian-like car plate
+function PlatePreview({ left = '', right = '', letter = 'ب', province = '11' }) {
+  // helper: convert ASCII digits to Persian digits
+  const toPersian = (s) => {
+    const map = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+    return String(s || '').split('').map(ch => {
+      if (ch >= '0' && ch <= '9') return map[ch.charCodeAt(0) - 48];
+      return ch;
+    }).join('');
+  };
 
-    // left should be 2 digits, right 3 digits
-    const leftText = left ? left.padStart(2, '0') : '__';
-    const rightText = right ? right.padStart(3, '0') : '___';
+  // left should be 2 digits, right 3 digits
+  const leftText = left ? left.padStart(2, '0') : '__';
+  const rightText = right ? right.padStart(3, '0') : '___';
 
-    // use provided letter and province (already defaulted in params)
-    const plateLetter = letter || 'ب';
-    const plateProvince = province || '11';
+  // use provided letter and province (already defaulted in params)
+  const plateLetter = letter || 'ب';
+  const plateProvince = province || '11';
 
-    return (
-      <View style={styles.plateBox}>
-        {/* left vertical flag/blue strip */}
-        <View style={styles.plateFlagStrip}>
-          <View style={styles.flagColors}>
-            <View style={[styles.flagStripe, { backgroundColor: themeColor7.bgColor(1)}]} />
-            <View style={[styles.flagStripe, { backgroundColor: themeColor4.bgColor(1) }]} />
-            <View style={[styles.flagStripe, { backgroundColor: themeColor6.bgColor(1) }]} />
-          </View>
-          <Text style={styles.flagText}>I.R.{"\n"}IRAN</Text>
+  return (
+    <View style={styles.plateBox}>
+      {/* left vertical flag/blue strip */}
+      <View style={styles.plateFlagStrip}>
+        <View style={styles.flagColors}>
+          <View style={[styles.flagStripe, { backgroundColor: themeColor7.bgColor(1) }]} />
+          <View style={[styles.flagStripe, { backgroundColor: themeColor4.bgColor(1) }]} />
+          <View style={[styles.flagStripe, { backgroundColor: themeColor6.bgColor(1) }]} />
         </View>
+        <Text style={styles.flagText}>I.R.{"\n"}IRAN</Text>
+      </View>
 
-        {/* main plate area */}
-        <View style={styles.plateMainArea}>
-          <View style={styles.plateNumberWrap}>
-            <Text style={styles.plateNumberText}>{toPersian(rightText)}</Text>
-            <Text style={styles.plateLetterText}>{plateLetter}</Text>
-            <Text style={styles.plateNumberText}>{toPersian(leftText)}</Text>
-          </View>
-        </View>
-
-        {/* right small box with IRAN / province code */}
-        <View style={styles.plateCityBoxNew}>
-          <Text style={styles.plateCityTop}>ایران</Text>
-          <Text style={styles.plateCityNumber}>{toPersian(plateProvince)}</Text>
+      {/* main plate area */}
+      <View style={styles.plateMainArea}>
+        <View style={styles.plateNumberWrap}>
+          <Text style={styles.plateNumberText}>{toPersian(rightText)}</Text>
+          <Text style={styles.plateLetterText}>{plateLetter}</Text>
+          <Text style={styles.plateNumberText}>{toPersian(leftText)}</Text>
         </View>
       </View>
-    );
-  }
 
-  // Motorcycle plate preview (two-row Persian digits style)
-  function PlatePreviewMotorcycle({ left = '', right = '' }) {
-    const toPersian = (s) => {
-      const map = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
-      return String(s || '').split('').map(ch => {
-        if (ch >= '0' && ch <= '9') return map[ch.charCodeAt(0) - 48];
-        return ch;
-      }).join('');
-    };
-
-    const leftText = left ? left : '__';
-    const rightText = right ? right : '_____';
-
-    return (
-      <View style={styles.motorPlateBox}>
-        <View style={styles.motorFlagStrip}>
-          <View style={styles.flagColors}>
-            <View style={[styles.flagStripe, { backgroundColor:themeColor7.bgColor(1)}]} />
-            <View style={[styles.flagStripe, { backgroundColor:themeColor4.bgColor(1)}]} />
-            <View style={[styles.flagStripe, { backgroundColor:themeColor6.bgColor(1)}]} />
-          </View>
-          <Text style={styles.flagText}>I.R.{"\n"}IRAN</Text>
-        </View>
-        <View style={styles.motorInner}>
-          <Text style={styles.motorTop}>{toPersian(leftText)}</Text>
-          <Text style={styles.motorBottom}>{toPersian(rightText)}</Text>
-        </View>
+      {/* right small box with IRAN / province code */}
+      <View style={styles.plateCityBoxNew}>
+        <Text style={styles.plateCityTop}>ایران</Text>
+        <Text style={styles.plateCityNumber}>{toPersian(plateProvince)}</Text>
       </View>
-    );
-  }
+    </View>
+  );
+}
+
+// Motorcycle plate preview (two-row Persian digits style)
+function PlatePreviewMotorcycle({ left = '', right = '' }) {
+  const toPersian = (s) => {
+    const map = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+    return String(s || '').split('').map(ch => {
+      if (ch >= '0' && ch <= '9') return map[ch.charCodeAt(0) - 48];
+      return ch;
+    }).join('');
+  };
+
+  const leftText = left ? left : '__';
+  const rightText = right ? right : '_____';
+
+  return (
+    <View style={styles.motorPlateBox}>
+      <View style={styles.motorFlagStrip}>
+        <View style={styles.flagColors}>
+          <View style={[styles.flagStripe, { backgroundColor: themeColor7.bgColor(1) }]} />
+          <View style={[styles.flagStripe, { backgroundColor: themeColor4.bgColor(1) }]} />
+          <View style={[styles.flagStripe, { backgroundColor: themeColor6.bgColor(1) }]} />
+        </View>
+        <Text style={styles.flagText}>I.R.{"\n"}IRAN</Text>
+      </View>
+      <View style={styles.motorInner}>
+        <Text style={styles.motorTop}>{toPersian(leftText)}</Text>
+        <Text style={styles.motorBottom}>{toPersian(rightText)}</Text>
+      </View>
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
   background: {

@@ -1,6 +1,7 @@
 import { View, Text } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import NewStyles from '../../styles/NewStyles';
-import { themeColor0, themeColor3 } from '../../theme/Color';
+import { themeColor0, themeColor3, themeColor7 } from '../../theme/Color';
 
 export default function MessegeItem({ messege }) {
 
@@ -22,7 +23,17 @@ export default function MessegeItem({ messege }) {
             <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
                 <View style={{ width: '80%', marginRight: 15, marginBottom: 5, }}>
                     <View style={{ alignSelf: 'flex-end', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: themeColor3.bgColor(0.1) }}>
-                        <Text style={NewStyles.text} selectable={true}>{messege?.msg}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                            <Text style={NewStyles.text} selectable={true}>{messege?.msg}</Text>
+                            {/* نمایش علامت تیک‌ها برای پیام‌های متخصص */}
+                            {messege.is_read == 1 ? (
+                                // دو تیک آبی - خوانده شده
+                                <Ionicons name="checkmark-done" size={16} color={themeColor7.bgColor(1)} />
+                            ) : (
+                                // یک تیک خاکستری - ارسال شده اما خوانده نشده
+                                <Ionicons name="checkmark" size={16} color={themeColor3.bgColor(0.7)} />
+                            )}
+                        </View>
                     </View>
                 </View>
             </View>

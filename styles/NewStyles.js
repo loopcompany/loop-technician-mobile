@@ -68,7 +68,7 @@ const NewStyles = StyleSheet.create({
   wrapper: {
     paddingHorizontal: "5%",
     gap: 10,
-    paddingVertical: 20,
+    paddingTop:10
   },
   formGroup: {
     marginVertical: 5,

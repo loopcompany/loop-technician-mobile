@@ -280,7 +280,7 @@ export default function OrderListScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={NewStyles.container}>
+    <SafeAreaView edges={{ top: 'off', bottom: 'off' }} style={NewStyles.container}>
       <LinearGradient
         colors={['#7FDBFF', '#0074D9', '#001f3f']}
         start={{ x: 0, y: 0 }}
@@ -292,7 +292,6 @@ export default function OrderListScreen({ navigation }) {
           onPressLeft={() => navigation.navigate('FolderScreen')}
           onPressRight={() => navigation.navigate('UserInfoScreen')}
         />
-        <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={{ flex: 1 }}>
           {/* فیلترها */}
           {renderFilters()}
 
@@ -323,7 +322,6 @@ export default function OrderListScreen({ navigation }) {
               }
             />
           )}
-        </SafeAreaView>
       </LinearGradient>
     </SafeAreaView>
   );

@@ -16,7 +16,7 @@ import { themeColor0, themeColor10, themeColor13, themeColor4, themeColor6, them
 import NewStyles from '../styles/NewStyles';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { logoutTechnician } from '../services/Api';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setToken } from '../slices/authSlice';
 import { emptyUser } from '../slices/userSlice';
 
@@ -35,8 +35,8 @@ export const FooterProvider = ({ children }) => {
   const dispatch = useDispatch();
   const [isFooterVisible, setIsFooterVisible] = useState(true);
   const [menuItems, setMenuItems] = useState([
-    { id: 1, title: ' سازمانی / شرکتی', screen: 'DeviceOrderSummary' },
-    { id: 2, title: ' ثبت نام دوره های آموزشی ', screen: 'CorporateScreen' },
+    { id: 1, title: 'صفحه اصلی', screen: 'FolderScreen' },
+    { id: 2, title: ' ثبت نام دوره های آموزشی ', screen: 'TrainingRegistrationScreen' },
     { id: 3, title: 'ضمانت نامه/گارانتی', screen: 'WarrantyScreen' },
     { id: 4, title: 'سوالات متداول', screen: 'LearnMoreScreen' },
     { id: 5, title: ' قوانین/درباره لوپ', screen: 'AboutScreen' },
@@ -46,7 +46,10 @@ export const FooterProvider = ({ children }) => {
   const showFooter = () => setIsFooterVisible(true);
   const hideFooter = () => setIsFooterVisible(false);
   const toggleFooter = () => setIsFooterVisible(!isFooterVisible);
-
+  const contact = useSelector(state => state.contacts)
+  console.log('====================================');
+  console.log('contact:', contact);
+  console.log('====================================');
   const handleLogout = async () => {
     console.log('⚠️ handleLogout فراخوانی شد - FooterContext');
     Alert.alert(
@@ -63,24 +66,24 @@ export const FooterProvider = ({ children }) => {
           onPress: async () => {
             console.log('🚪 کاربر دکمه خروج را زد');
             setMenuVisible(false);
-            
+
             try {
               // First clear Redux token and user data to prevent auto-login
               console.log('🗑️ پاک کردن Redux token و user data...');
               dispatch(setToken(null));
               dispatch(emptyUser());
-              
+
               // Call logout API (this will clear AsyncStorage)
               const result = await logoutTechnician();
               console.log('نتیجه logout:', result);
-              
+
               // Navigate to Welcome screen AFTER clearing everything
               console.log('➡️ انتقال به صفحه Welcome...');
               navigation.reset({
                 index: 0,
                 routes: [{ name: 'Welcome' }],
               });
-              
+
               console.log('✅ خروج موفقیت‌آمیز');
             } catch (error) {
               console.error('❌ خطا در خروج:', error);
@@ -114,7 +117,7 @@ export const FooterProvider = ({ children }) => {
     if (!isFooterVisible) return null;
 
     return (
-      <SafeAreaView edges={{top:'off', bottom:'additive'}}>
+      <SafeAreaView edges={{ top: 'off', bottom: 'additive' }}>
         <Modal
           transparent={true}
           visible={menuVisible}
@@ -144,9 +147,6 @@ export const FooterProvider = ({ children }) => {
 
                 {/* دکمه‌های پایین */}
                 <View style={styles.bottomButtons}>
-                  <TouchableOpacity style={styles.toggleButton}>
-                    <Text style={styles.toggleButtonText}>روشن / خاموش</Text>
-                  </TouchableOpacity>
 
                   <TouchableOpacity
                     style={styles.exitButton}
@@ -168,7 +168,6 @@ export const FooterProvider = ({ children }) => {
           >
             <Text style={NewStyles.text4}>21164552</Text>
           </TouchableOpacity>
-          <Text style={NewStyles.text4}>فا</Text>
           <TouchableOpacity style={styles.supportButton}>
             <Text style={NewStyles.text4}>پشتیبانی</Text>
           </TouchableOpacity>

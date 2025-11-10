@@ -748,6 +748,19 @@ export default function OrderDetailScreen({ route, navigation }) {
     }
   };
 
+  // شرایط فعال‌سازی مراحل - باید قبل از useEffect ها تعریف شوند
+  const isReviewActive = data?.status == 0 || data?.status == 1 || data?.status == 2;
+
+  const isPresenceActive = data?.user_initial_accept && (data?.status == 0 || data?.status == 1 || data?.status == 2);
+
+  const isProductStatusActive = data?.arrived_at && data?.is_technician_verified == 1;
+
+  const isSendLoopActive = reportConfirmed; // فعال می‌شود وقتی کاربر گزارش را تأیید کند
+
+  const isPricesActive = data?.send_to_loop;
+
+  const isDeliveryActive = data?.started_at && (data?.status == 0 || data?.status == 1 || data?.status == 2);
+
   // بارگذاری گزارش محصول در صورت وجود
   React.useEffect(() => {
     if (data && isProductStatusActive && orderId) {
@@ -761,20 +774,6 @@ export default function OrderDetailScreen({ route, navigation }) {
       loadDeliveryReport();
     }
   }, [data, isDeliveryActive, orderId]);
-
-  // شرایط فعال‌سازی مراحل
-  const isReviewActive = data?.status == 0 || data?.status == 1 || data?.status == 2;
-
-  const isPresenceActive = data?.user_initial_accept && (data?.status == 0 || data?.status == 1 || data?.status == 2);
-
-  const isProductStatusActive = data?.arrived_at && data?.is_technician_verified == 1;
-
-  const isSendLoopActive = reportConfirmed; // فعال می‌شود وقتی کاربر گزارش را تأیید کند
-
-  const isPricesActive = data?.send_to_loop;
-
-  const isDeliveryActive = data?.started_at && (data?.status == 0 || data?.status == 1 || data?.status == 2);
-
 
 
   if (loading && !data) {
@@ -825,7 +824,7 @@ export default function OrderDetailScreen({ route, navigation }) {
 
 
   return (
-    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
+    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'off' }}>
       <LinearGradient
         colors={['#7FDBFF', '#0074D9', '#001f3f']}
         start={{ x: 0, y: 0 }}
@@ -2187,11 +2186,13 @@ const styles = StyleSheet.create({
   },
   contentSection: {
     backgroundColor: themeColor4.bgColor(1),
-    marginHorizontal: 15,
+    // marginHorizontal: 15,
     marginBottom: 15,
     borderRadius: 10,
     padding: 15,
     gap: 15,
+    width:'90%',
+    alignSelf:'center'
   },
   infoCard: {
     backgroundColor: themeColor5.bgColor(1),
