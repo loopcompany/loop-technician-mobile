@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { Platform } from 'react-native';
 import { uri as BASE_URL, Technician_Orders, Technician_DeliveryReports } from './URL';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_ENDPOINTS } from './ApiEndpoints';
@@ -1967,30 +1968,40 @@ export const uploadArchiveImages = async (images) => {
     console.log('📤 آپلود تصاویر آرشیو...', images.length, 'تصویر');
 
     const formData = new FormData();
+    const isWeb = Platform.OS === 'web';
 
     images.forEach((image, index) => {
-      // استخراج نام فایل و پسوند
-      const uriParts = image.uri.split('/');
-      const fileName = uriParts[uriParts.length - 1];
+      // برای وب از فایل اصلی استفاده می‌کنیم
+      if (isWeb && image.file) {
+        console.log(`📸 آماده‌سازی تصویر ${index + 1} (Web):`, { 
+          fileName: image.fileName || image.file.name, 
+          type: image.file.type 
+        });
+        
+        formData.append('images[]', image.file, image.fileName || image.file.name);
+      } else {
+        // برای موبایل از روش قبلی استفاده می‌کنیم
+        const uriParts = image.uri.split('/');
+        const fileName = image.fileName || uriParts[uriParts.length - 1];
 
-      // تشخیص mime type
-      let mimeType = 'image/jpeg';
-      if (fileName.toLowerCase().endsWith('.png')) {
-        mimeType = 'image/png';
-      } else if (fileName.toLowerCase().endsWith('.jpg') || fileName.toLowerCase().endsWith('.jpeg')) {
-        mimeType = 'image/jpeg';
-      } else if (fileName.toLowerCase().endsWith('.webp')) {
-        mimeType = 'image/webp';
+        // تشخیص mime type
+        let mimeType = 'image/jpeg';
+        if (fileName.toLowerCase().endsWith('.png')) {
+          mimeType = 'image/png';
+        } else if (fileName.toLowerCase().endsWith('.jpg') || fileName.toLowerCase().endsWith('.jpeg')) {
+          mimeType = 'image/jpeg';
+        } else if (fileName.toLowerCase().endsWith('.webp')) {
+          mimeType = 'image/webp';
+        }
+
+        console.log(`📸 آماده‌سازی تصویر ${index + 1} (Mobile):`, { fileName, mimeType, uri: image.uri });
+
+        formData.append('images[]', {
+          uri: image.uri,
+          type: mimeType,
+          name: fileName || `photo_${Date.now()}_${index}.jpg`,
+        });
       }
-
-      console.log(`📸 آماده‌سازی تصویر ${index + 1}:`, { fileName, mimeType, uri: image.uri });
-
-      // اضافه کردن به FormData
-      formData.append('images[]', {
-        uri: image.uri,
-        type: mimeType,
-        name: fileName || `photo_${Date.now()}_${index}.jpg`,
-      });
     });
 
     console.log('📦 FormData آماده شد، در حال ارسال...');

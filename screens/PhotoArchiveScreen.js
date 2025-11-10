@@ -72,7 +72,46 @@ export default function PhotoArchiveScreen({ navigation }) {
   // انتخاب و آپلود تصاویر
   const handlePickImages = async () => {
     try {
-      // درخواست دسترسی به گالری
+      // برای وب از input file استفاده می‌کنیم
+      if (Platform.OS === 'web') {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.multiple = true;
+        
+        input.onchange = async (e) => {
+          const files = Array.from(e.target.files);
+          if (files.length > 0) {
+            // محدود کردن به 10 تصویر
+            const limitedFiles = files.slice(0, 10);
+            
+            // تبدیل فایل‌های وب به فرمت مورد نیاز
+            const assets = await Promise.all(
+              limitedFiles.map(async (file) => {
+                return new Promise((resolve) => {
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    resolve({
+                      uri: event.target.result,
+                      fileName: file.name,
+                      type: file.type,
+                      file: file, // نگه داشتن فایل اصلی برای آپلود
+                    });
+                  };
+                  reader.readAsDataURL(file);
+                });
+              })
+            );
+            
+            await handleUploadImages(assets);
+          }
+        };
+        
+        input.click();
+        return;
+      }
+
+      // برای موبایل از ImagePicker استفاده می‌کنیم
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (permissionResult.granted === false) {
@@ -106,14 +145,31 @@ export default function PhotoArchiveScreen({ navigation }) {
 
       const imagesToUpload = selectedImages.map((asset, index) => {
         // استخراج نام فایل
-        const uriParts = asset.uri.split('/');
-        const fileName = asset.fileName || uriParts[uriParts.length - 1] || `photo_${Date.now()}_${index}.jpg`;
+        let fileName;
+        if (asset.fileName) {
+          fileName = asset.fileName;
+        } else if (asset.uri) {
+          const uriParts = asset.uri.split('/');
+          fileName = uriParts[uriParts.length - 1] || `photo_${Date.now()}_${index}.jpg`;
+        } else {
+          fileName = `photo_${Date.now()}_${index}.jpg`;
+        }
 
         console.log(`📷 تصویر ${index + 1}:`, {
           uri: asset.uri,
           fileName: fileName,
           type: asset.type,
+          hasFile: !!asset.file,
         });
+
+        // برای وب، فایل اصلی رو برمی‌گردونیم
+        if (Platform.OS === 'web' && asset.file) {
+          return {
+            uri: asset.uri,
+            fileName: fileName,
+            file: asset.file, // فایل اصلی برای آپلود در وب
+          };
+        }
 
         return {
           uri: asset.uri,
@@ -178,7 +234,22 @@ export default function PhotoArchiveScreen({ navigation }) {
     try {
       setDownloading(true);
 
-      // درخواست دسترسی به گالری
+      // برای وب از دانلود مستقیم استفاده می‌کنیم
+      if (Platform.OS === 'web') {
+        // ایجاد لینک دانلود
+        const link = document.createElement('a');
+        link.href = selectedImage.image_url;
+        link.download = selectedImage.image_path.split('/').pop() || 'image.jpg';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showAlert('موفقیت', 'تصویر دانلود شد');
+        setDownloading(false);
+        return;
+      }
+
+      // برای موبایل از MediaLibrary استفاده می‌کنیم
       const { status } = await MediaLibrary.requestPermissionsAsync();
 
       if (status !== 'granted') {
