@@ -2,6 +2,7 @@ import { Image, StyleSheet, Text, TouchableOpacity, View, Dimensions, StatusBar,
 import React from "react";
 import NewStyles from "../styles/NewStyles";
 import { themeColor4 } from "../theme/Color";
+import { useNavigation } from "@react-navigation/native";
 
 const ScreenHeaders = ({ 
   title, 
@@ -9,19 +10,14 @@ const ScreenHeaders = ({
   onPressLeft,    
   onPressRight,
   // New API (recommended - more clear naming)
-  onBackPress,
-  onNextPress
+  onBackPress
 }) => {
   const { width } = Dimensions.get('window');
   const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight : 0;
+  const navigation = useNavigation();
   
-  // Priority: new API > old API > empty function
-  // For RTL apps: back button should be on the right side
-  const handleBack = onBackPress || onPressRight || (() => {});
-  const handleNext = onNextPress || onPressLeft || (() => {});
-  
-  // Check if next button should be shown
-  const hasNextAction = onNextPress || onPressLeft;
+  // Priority: new API > old API > default navigation.goBack()
+  const handleBack = onBackPress || onPressLeft || (() => {navigation.goBack()});
   
   return (
     <View style={[styles.header, NewStyles.rowWrapper, { 
@@ -29,18 +25,8 @@ const ScreenHeaders = ({
       paddingTop: statusBarHeight,
       height: 50 + statusBarHeight
     }]}>
-      {/* Right side: Next button (RTL) */}
-      {hasNextAction ? (
-        <TouchableOpacity 
-          onPress={handleNext} 
-          style={[styles.iconContainer, { flexDirection: 'row', alignItems: 'center' }]}
-        >
-          <Text style={styles.titleText}>بعدی</Text>
-          <Image source={require("../assets/next.png")} style={styles.arrow} />
-        </TouchableOpacity>
-      ) : (
-        <View style={styles.iconContainer} />
-      )}
+      {/* Right side: Empty space for symmetry */}
+      <View style={styles.iconContainer} />
       
       {/* Center: Title */}
       <View style={styles.titleContainer}>
