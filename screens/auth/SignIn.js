@@ -1014,41 +1014,120 @@ export default function SignIn({ navigation }) {
     </ScrollView>
   );
 
+  // 🌐 Web-specific file picker function
+  const pickFileWeb = () => {
+    return new Promise((resolve, reject) => {
+      try {
+        // Create hidden input element
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.pdf,.doc,.docx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        input.style.display = 'none';
+        
+        input.onchange = (e) => {
+          const file = e.target.files[0];
+          
+          if (!file) {
+            resolve({ canceled: true });
+            return;
+          }
+          
+          // Read file as base64 for upload
+          const reader = new FileReader();
+          
+          reader.onload = (event) => {
+            resolve({
+              canceled: false,
+              uri: event.target.result, // base64 data URL
+              name: file.name,
+              type: file.type || 'application/octet-stream',
+              size: file.size,
+            });
+          };
+          
+          reader.onerror = (error) => {
+            reject(new Error('خطا در خواندن فایل'));
+          };
+          
+          reader.readAsDataURL(file);
+          
+          // Cleanup
+          document.body.removeChild(input);
+        };
+        
+        input.oncancel = () => {
+          resolve({ canceled: true });
+          document.body.removeChild(input);
+        };
+        
+        // Trigger file picker
+        document.body.appendChild(input);
+        input.click();
+        
+      } catch (error) {
+        reject(error);
+      }
+    });
+  };
+
   // Open document picker to select resume
   const pickDocument = async () => {
     try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: '*/*',
-        copyToCacheDirectory: true
-      });
+      let result;
+      
+      // 🌐 Platform-specific file picker
+      if (Platform.OS === 'web') {
+        console.log('🌐 استفاده از انتخابگر فایل Web');
+        result = await pickFileWeb();
+      } else {
+        console.log('📱 استفاده از DocumentPicker Native');
+        result = await DocumentPicker.getDocumentAsync({
+          type: '*/*',
+          copyToCacheDirectory: true
+        });
+      }
 
       console.log('📄 نتیجه انتخاب فایل:', JSON.stringify(result, null, 2));
 
-      // Expo DocumentPicker returns different structure based on version
-      // Check for both old (type: 'success') and new (!canceled) formats
-      if (result.type === 'success' || (result.assets && result.assets.length > 0) || !result.canceled) {
+      if (result.canceled) {
+        console.log('❌ انتخاب فایل لغو شد');
+        return;
+      }
+
+      // Extract file info based on platform
+      let fileInfo;
+      if (Platform.OS === 'web') {
+        fileInfo = {
+          uri: result.uri,
+          name: result.name,
+          type: result.type || 'application/octet-stream',
+          size: result.size,
+        };
+      } else {
+        // Expo DocumentPicker returns different structure based on version
         const file = result.assets ? result.assets[0] : result;
-
-        console.log('✅ فایل انتخاب شد:', {
-          name: file.name,
-          uri: file.uri,
-          size: file.size,
-          mimeType: file.mimeType
-        });
-
-        // Ensure we have all required fields
-        const resumeData = {
+        fileInfo = {
           uri: file.uri,
           name: file.name || file.uri.split('/').pop(),
           type: file.mimeType || file.type || 'application/octet-stream',
           size: file.size
         };
-
-        setResumeFile(resumeData);
-        showAlert('موفق', `فایل "${resumeData.name}" انتخاب شد`);
-      } else {
-        console.log('❌ انتخاب فایل لغو شد');
       }
+
+      console.log('✅ فایل انتخاب شد:', fileInfo);
+
+      // Validate file size (max 5MB)
+      if (fileInfo.size > 5 * 1024 * 1024) {
+        showAlert(
+          'فایل بزرگ است',
+          'حجم فایل نباید بیشتر از 5 مگابایت باشد.'
+        );
+        return;
+      }
+
+      setResumeFile(fileInfo);
+      showAlert('موفق', `فایل "${fileInfo.name}" انتخاب شد`);
+
     } catch (err) {
       console.error('❌ خطا در انتخاب فایل:', err);
 
