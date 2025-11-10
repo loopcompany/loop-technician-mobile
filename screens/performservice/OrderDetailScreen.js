@@ -2191,7 +2191,8 @@ const styles = StyleSheet.create({
     padding: 15,
     gap: 15,
     width:'90%',
-    alignSelf:'center'
+    alignSelf:'center',
+    maxWidth:800,
   },
   infoCard: {
     backgroundColor: themeColor5.bgColor(1),

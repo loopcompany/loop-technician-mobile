@@ -13,9 +13,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
-import { themeColor0, themeColor1, themeColor2, themeColor3, themeColor8 } from '../theme/Color';
+import { themeColor0, themeColor1, themeColor2, themeColor3, themeColor4, themeColor8 } from '../theme/Color';
 import { changePassword } from '../services/Api';
 import { showAlert } from '../helpers/Common';
+import Button from '../components/Button';
 
 export default function ChangePasswordScreen({ navigation }) {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -182,7 +183,7 @@ export default function ChangePasswordScreen({ navigation }) {
               value={currentPassword}
               onChangeText={setCurrentPassword}
               placeholder="رمز عبور فعلی"
-              placeholderTextColor={themeColor3.bgColor(1)}
+              placeholderTextColor={themeColor4.bgColor(0.5)}
               secureTextEntry
               editable={!loading}
             />
@@ -195,7 +196,7 @@ export default function ChangePasswordScreen({ navigation }) {
               value={newPassword}
               onChangeText={setNewPassword}
               placeholder="رمز عبور جدید"
-              placeholderTextColor={themeColor3.bgColor(1)}
+              placeholderTextColor={themeColor4.bgColor(0.5)}
               secureTextEntry
               editable={!loading}
             />
@@ -211,25 +212,14 @@ export default function ChangePasswordScreen({ navigation }) {
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               placeholder="تکرار رمز عبور جدید"
-              placeholderTextColor={themeColor3.bgColor(1)}
+              placeholderTextColor={themeColor4.bgColor(0.5)}
               secureTextEntry
               editable={!loading}
             />
           </View>
           
-          <TouchableOpacity 
-            style={[styles.confirmButton, loading && styles.confirmButtonDisabled]}
-            onPress={handleConfirm}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={[NewStyles.text4, styles.confirmButtonText]}>
-                تایید رمز
-              </Text>
-            )}
-          </TouchableOpacity>
+         
+          <Button title={'تایید رمز'} loading={loading} onPress={handleConfirm}/>
         </View>
       </ScrollView>
       
@@ -295,26 +285,25 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   passwordHint: {
-    color: '#FFD700',
+    ...NewStyles.text1,
     fontSize: 11,
     marginTop: 4,
     textAlign: 'right',
-    fontStyle: 'italic',
   },
   inputRow: {
     marginVertical: 8,
     alignItems: 'flex-end',
   },
   inputLabel: {
-    color: '#fff',
+    ...NewStyles.text4,
     fontSize: 14,
-    fontWeight: '600',
     marginBottom: 6,
     textAlign: 'right',
   },
   passwordInput: {
+    ...NewStyles.text10,
     width: '100%',
-    backgroundColor: 'rgba(255,255,255,0.95)',
+    backgroundColor: themeColor4.bgColor(0.2),
     borderRadius: 8,
     padding: 12,
     fontSize: 14,

@@ -23,7 +23,10 @@ const AccordionHeader = ({
                     backgroundColor: isActive ? themeColor0.bgColor(1) : themeColor4.bgColor(0.5),
                     marginHorizontal: '5%',
                     marginBottom: 10,
-                    gap: 10
+                    gap: 10,
+                    width:'100%',
+                    maxWidth: 800,
+                    alignSelf: 'center',    
                 },
                 NewStyles.border10
             ]}
