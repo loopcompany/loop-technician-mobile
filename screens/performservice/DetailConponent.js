@@ -298,7 +298,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 15,
     width:'90%',
-    alignSelf:'center'
+    alignSelf:'center',
+    maxWidth:800,
   },
   cardHeader: {
     padding: 15,
