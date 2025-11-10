@@ -146,10 +146,7 @@ const DetailConponent = ({ data, renderRow, }) => {
                                     latitudeDelta: 0.005,
                                     longitudeDelta: 0.005,
                                 }}
-                                region={{
-                                    latitude: parseFloat(data?.user_address.latitude),
-                                    longitude: parseFloat(data?.user_address.longitude),
-                                }}
+                                
                             >
                                 <Marker
                                     coordinate={{
