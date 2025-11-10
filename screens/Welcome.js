@@ -24,6 +24,7 @@ export default function Welcome({ navigation }) {
   useEffect(() => {
     checkAutoLogin();
     dispatch(fetchContacts());
+    
   }, []);
 
   async function checkAutoLogin() {

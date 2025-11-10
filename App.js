@@ -73,6 +73,8 @@ import AboutScreen from "./screens/resources/AboutScreen";
 import WarrantyScreen from "./screens/resources/WarrantyScreen";
 import PrivacyScreen from './screens/performservice/PrivacyScreen';
 import TrainingRegistrationScreen from './screens/TrainingRegistrationScreen';
+import OrganizationsListScreen from './screens/OrganizationsListScreen';
+import OrganizationOrdersScreen from './screens/OrganizationOrdersScreen';
 
 
 I18nManager.forceRTL(false);
@@ -128,6 +130,8 @@ const linking = {
       WarrantyScreen: 'warranty',
       PrivacyScreen: 'privacy',
       TrainingRegistrationScreen: 'training-registration',
+      OrganizationsListScreen: 'organizations',
+      OrganizationOrdersScreen: 'organizations/:organizationId/orders',
     },
   },
 };
@@ -648,6 +652,20 @@ const AppNavigator = () => {
             <Stack.Screen
               component={TrainingRegistrationScreen}
               name="TrainingRegistrationScreen"
+              options={{
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              component={OrganizationsListScreen}
+              name="OrganizationsListScreen"
+              options={{
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              component={OrganizationOrdersScreen}
+              name="OrganizationOrdersScreen"
               options={{
                 headerShown: false,
               }}

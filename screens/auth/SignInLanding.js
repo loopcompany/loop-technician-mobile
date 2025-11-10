@@ -9,6 +9,7 @@ export default function SignInLanding({ navigation }) {
     <ImageBackground
       source={Platform.OS === 'web' ? require("../../assets/webbackground.jpg") : require("../../assets/background2.jpg")}
       style={styles.background}
+      
       resizeMode="cover"
     >
       {/* <View style={styles.container}> */}

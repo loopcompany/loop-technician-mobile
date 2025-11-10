@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  ImageBackground,
   KeyboardAvoidingView,
   ScrollView,
   Platform,
@@ -22,6 +21,7 @@ import CustomStatusBar from '../../components/CustomStatusBar';
 import Button from '../../components/Button';
 import { verifyPhoneNumber, resendVerificationCode } from '../../services/Api';
 import { formatTime, showAlert } from '../../helpers/Common';
+import { ImageBackground } from 'expo-image';
 
 export default function PhoneVerificationScreen({ navigation, route }) {
   const { phone, technicianId } = route.params;
@@ -58,6 +58,10 @@ export default function PhoneVerificationScreen({ navigation, route }) {
   }, [verificationCode]);
 
   const handleVerifyCode = async () => {
+    if(canResend){
+      showAlert('خطا', 'کد منقضی شده است. لطفاً کد جدید را درخواست کنید.');
+      return;
+    }
     if (verificationCode.length !== 6) {
       setError('لطفاً کد 6 رقمی را کامل وارد کنید');
       return;
@@ -92,12 +96,12 @@ export default function PhoneVerificationScreen({ navigation, route }) {
       }
     } catch (error) {
       console.error('Verification error:', error);
-      
+
       let errorMessage = 'خطا در تأیید شماره تلفن';
-      
+
       if (error.response?.data) {
         const errorData = error.response.data;
-        
+
         if (errorData.errors) {
           const validationErrors = Object.values(errorData.errors).flat();
           errorMessage = validationErrors[0] || errorMessage;
@@ -105,7 +109,7 @@ export default function PhoneVerificationScreen({ navigation, route }) {
           errorMessage = errorData.message;
         }
       }
-      
+
       setError(errorMessage);
       setVerificationCode('');
     } finally {
@@ -118,7 +122,7 @@ export default function PhoneVerificationScreen({ navigation, route }) {
 
     setLoading(true);
     setError('');
-    
+
     try {
       const result = await resendVerificationCode(phone);
 
@@ -132,12 +136,12 @@ export default function PhoneVerificationScreen({ navigation, route }) {
       }
     } catch (error) {
       console.error('Resend error:', error);
-      
+
       let errorMessage = 'خطا در ارسال مجدد کد';
-      
+
       if (error.response?.data) {
         const errorData = error.response.data;
-        
+
         if (errorData.errors) {
           const validationErrors = Object.values(errorData.errors).flat();
           errorMessage = validationErrors[0] || errorMessage;
@@ -145,7 +149,7 @@ export default function PhoneVerificationScreen({ navigation, route }) {
           errorMessage = errorData.message;
         }
       }
-      
+
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -166,12 +170,14 @@ export default function PhoneVerificationScreen({ navigation, route }) {
   return (
     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
       <ImageBackground
-        source={require('../../assets/background2.jpg')}
+        source={Platform.OS === 'web' ? require('../../assets/webbackground.jpg') : require('../../assets/background2.jpg')}
+        contentFit='cover'
+        contentPosition={'center'}
         style={styles.background}
       >
         <CustomStatusBar />
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
           style={{ flex: 1 }}
         >
           <ScrollView
@@ -252,13 +258,13 @@ export default function PhoneVerificationScreen({ navigation, route }) {
               </View>
 
               {/* Verify Button */}
-              <Button
+              {!canResend && <Button
                 title="تأیید"
                 loading={loading}
                 onPress={handleVerifyCode}
                 style={styles.verifyButton}
               />
-
+              }
               {/* Back Button */}
               <TouchableOpacity
                 style={styles.backButton}
@@ -295,6 +301,7 @@ const styles = StyleSheet.create({
     gap: 20,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
+    maxWidth: 400
   },
   instructionContainer: {
     alignItems: 'center',

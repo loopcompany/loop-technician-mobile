@@ -4,11 +4,11 @@ import {
   Text,
   TextInput,
   Image,
-  ImageBackground,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-   KeyboardAvoidingView,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import Button from "../../components/Button";
 import NewStyles from "../../styles/NewStyles";
@@ -16,6 +16,7 @@ import { themeColor10, themeColor4 } from "../../theme/Color";
 import { requestPasswordReset } from "../../services/Api";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { showAlert } from "../../helpers/Common";
+import { ImageBackground } from "expo-image";
 
 export default function SignInScreen({ navigation }) {
   const [referralCode, setReferralCode] = useState("");
@@ -71,6 +72,8 @@ export default function SignInScreen({ navigation }) {
                 navigation.navigate("ResetPasswordScreen", {
                   phone: mobile.trim(),
                   referralCode: referralCode.trim(),
+                  melicode: nationalId.trim(),
+                  email: email.trim(),
                 });
               },
             },
@@ -88,77 +91,79 @@ export default function SignInScreen({ navigation }) {
   };
 
   return (
-     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
+    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-           
-    <ImageBackground
-      source={require("../../assets/background2.jpg")}
-      style={styles.background}
-    >
-      <ScrollView
-        contentContainerStyle={styles.container}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View style={[{flex:1}, NewStyles.center]}>
-          <Image
-            source={require("../../assets/logo.png")}
-            style={NewStyles.logo}
-            resizeMode="contain"
-          />
-        </View>
 
-        <View style={[{flex:1, width:'100%', gap:10}, NewStyles.center]}>
-          <TextInput
-            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-            placeholder="کد پرسنلی خود را وارد کنید"
-            placeholderTextColor={themeColor10.bgColor(0.9)}
-            value={referralCode}
-            onChangeText={setReferralCode}
-          />
+        <ImageBackground
+              source={Platform.OS === 'web' ? require("../../assets/webbackground.jpg") : require("../../assets/background2.jpg")}
+              style={styles.background}
+              contentFit="cover"
+              cachePolicy={'memory-disk'}
+            >
+          <ScrollView
+            contentContainerStyle={styles.container}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={[{ flex: 1 }, NewStyles.center]}>
+              <Image
+                source={require("../../assets/logo.png")}
+                style={NewStyles.logo}
+                resizeMode="contain"
+              />
+            </View>
 
-          <TextInput
-            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-            placeholder="شماره موبایل خود را وارد کنید"
-            placeholderTextColor={themeColor10.bgColor(0.9)}
-            value={mobile}
-            onChangeText={setMobile}
-            keyboardType="phone-pad"
-            maxLength={11}
-          />
+            <View style={[{ flex: 1, width: '100%', gap: 10 , maxWidth:800}, NewStyles.center]}>
+              <TextInput
+                style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+                placeholder="کد پرسنلی خود را وارد کنید"
+                placeholderTextColor={themeColor10.bgColor(0.9)}
+                value={referralCode}
+                onChangeText={setReferralCode}
+              />
 
-          <TextInput
-            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-            placeholder="کد ملی خود را وارد کنید"
-            placeholderTextColor={themeColor10.bgColor(0.9)}
-            value={nationalId}
-            onChangeText={setNationalId}
-            keyboardType="number-pad"
-            maxLength={10}
-          />
+              <TextInput
+                style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+                placeholder="شماره موبایل خود را وارد کنید"
+                placeholderTextColor={themeColor10.bgColor(0.9)}
+                value={mobile}
+                onChangeText={setMobile}
+                keyboardType="phone-pad"
+                maxLength={11}
+              />
 
-          <TextInput
-            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-            placeholder="آدرس ایمیل خود را وارد کنید"
-            placeholderTextColor={themeColor10.bgColor(0.9)}
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-        </View>
+              <TextInput
+                style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+                placeholder="کد ملی خود را وارد کنید"
+                placeholderTextColor={themeColor10.bgColor(0.9)}
+                value={nationalId}
+                onChangeText={setNationalId}
+                keyboardType="number-pad"
+                maxLength={10}
+              />
 
-        <View style={[{flex:1, width:'100%'}, NewStyles.center]}>
-          <Button
-            title={"ارسال رمز اعتباری"}
-            onPress={handleSendCode}
-            loading={loading}
-          />
-        </View>
-      </ScrollView>
-    </ImageBackground>
+              <TextInput
+                style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+                placeholder="آدرس ایمیل خود را وارد کنید"
+                placeholderTextColor={themeColor10.bgColor(0.9)}
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
 
-  </KeyboardAvoidingView>
-  </SafeAreaView>
+            <View style={[{ flex: 1, width: '100%' }, NewStyles.center]}>
+              <Button
+                title={"ارسال رمز اعتباری"}
+                onPress={handleSendCode}
+                loading={loading}
+              />
+            </View>
+          </ScrollView>
+        </ImageBackground>
+
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 

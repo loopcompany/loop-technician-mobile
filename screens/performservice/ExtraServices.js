@@ -41,7 +41,7 @@ export default function ExtraServices({ route, navigation }) {
         }
         setLoading(true);
         try {
-            const response = await axios.post(`${uri}/technician/extra-services`, { 
+            const response = await axios.post(`${uri}/technician/submit-extra-services`, { 
                 order_id: orderId, 
                 extras: extraServices?.items 
             }, { 

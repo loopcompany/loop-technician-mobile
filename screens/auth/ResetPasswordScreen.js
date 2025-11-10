@@ -4,7 +4,6 @@ import {
   Text,
   Image,
   Platform,
-  ImageBackground,
   StyleSheet,
   ScrollView,
   TextInput,
@@ -23,29 +22,84 @@ import { setUserData } from "../../slices/userSlice";
 import Button from "../../components/Button";
 import { useDispatch } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { verifyResetCode, resetPassword } from "../../services/Api";
+import { verifyResetCode, resetPassword, requestPasswordReset } from "../../services/Api";
 import { loginTechnician } from "../../services/Api";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { showAlert } from "../../helpers/Common";
+import { ImageBackground } from "expo-image";
 export default function ResetPasswordScreen({ navigation, route }) {
   const params = route?.params;
   const dispatch = useDispatch();
-  
+
   // Step 1: Verify Code
   const [step, setStep] = useState(1); // 1: verify code, 2: set new password
   const [loading, setLoading] = useState(false);
   const [value, setValue] = useState("");
   const [error, setError] = useState("");
-  
+
   // Step 2: New Password
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  
+
+  // Resend code timer
+  const [resendTimer, setResendTimer] = useState(60);
+  const [canResend, setCanResend] = useState(false);
+
   const ref = useBlurOnFulfill({ value, cellCount: 6 });
   const [props, getCellOnLayoutHandler] = useClearByFocusCell({
     value,
     setValue,
   });
+
+  // Timer for resend button
+  useEffect(() => {
+    let interval;
+    if (resendTimer > 0 && !canResend) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => {
+          if (prev <= 1) {
+            setCanResend(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendTimer, canResend]);
+
+  // Resend code
+  const handleResendCode = async () => {
+    setLoading(true);
+    console.log('🔄 ارسال مجدد کد بازیابی رمز...');
+    console.log('پارامترهای دریافت شده:', params);
+
+    try {
+      const result = await requestPasswordReset({
+        referral_code: params?.referralCode || '',
+        phone: params?.phone || '',
+        melicode: params?.melicode || '',
+        email: params?.email || '',
+      });
+
+      console.log('📦 نتیجه ارسال مجدد:', result);
+
+      if (result.success) {
+        showAlert("موفق", "کد بازیابی مجدداً ارسال شد");
+        setValue(""); // Clear the code field
+        setError("");
+        setResendTimer(60); // Reset timer
+        setCanResend(false);
+      } else {
+        showAlert("خطا", result.message || "مشکلی در ارسال مجدد کد پیش آمد");
+      }
+    } catch (error) {
+      console.error('❌ خطا در ارسال مجدد کد:', error);
+      showAlert("خطا", "مشکلی در ارتباط با سرور پیش آمد");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Step 1: Verify the code
   const handleVerifyCode = async () => {
@@ -187,105 +241,123 @@ export default function ResetPasswordScreen({ navigation, route }) {
   return (
     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-    <ImageBackground
-      source={require("../../assets/background2.jpg")}
-      style={styles.background}
-    >
-      <ScrollView
-        contentContainerStyle={styles.container}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* لوگو */}
-        <Image
-          source={require("../../assets/logo.png")}
-          style={NewStyles.logo}
-          resizeMode="contain"
-        />
+        <ImageBackground
+          source={Platform.OS === 'web' ? require("../../assets/webbackground.jpg") : require("../../assets/background2.jpg")}
+          style={styles.background}
+          cachePolicy={'memory-disk'}
+          contentFit="cover"
+        >
+          <ScrollView
+            contentContainerStyle={styles.container}
+            keyboardShouldPersistTaps="handled"
+          >
+            {/* لوگو */}
+            <Image
+              source={require("../../assets/logo.png")}
+              style={NewStyles.logo}
+              resizeMode="contain"
+            />
 
-        {step === 1 ? (
-          // Step 1: Enter verification code
-          <View style={[NewStyles.center, { backgroundColor:themeColor10.bgColor(0.5),height:"40%",width:"100%",borderRadius:15 }]}>
-            <Text style={[NewStyles.title1, { marginBottom: 20, fontSize: 17,textAlign:"center",paddingHorizontal:20 }]}>
-              کد 6 رقمی ارسال شده به شماره {params?.phone} را وارد کنید
-            </Text>
-            
-            <CodeField
-              ref={ref}
-              {...props}
-              value={value}
-              onChangeText={(text) => {
-                setValue(text);
-                setError("");
-              }}
-              cellCount={6}
-              keyboardType="number-pad"
-              textContentType="oneTimeCode"
-              autoComplete={Platform.select({
-                android: "sms-otp",
-                default: "one-time-code",
-              })}
-              renderCell={({ index, symbol, isFocused }) => (
-                <Text
-                  key={index}
-                  style={[styles.cell, NewStyles.border10]}
-                  onLayout={getCellOnLayoutHandler(index)}
-                >
-                  {symbol || (isFocused ? <Cursor /> : null)}
+            {step === 1 ? (
+              // Step 1: Enter verification code
+              <View style={[NewStyles.center, { backgroundColor: themeColor10.bgColor(0.5), height: "40%", width: "100%", borderRadius: 15, maxWidth: 800 }]}>
+                <Text style={[NewStyles.title1, { marginBottom: 20, fontSize: 17, textAlign: "center", paddingHorizontal: 20 }]}>
+                  کد 6 رقمی ارسال شده به شماره {params?.phone} را وارد کنید
                 </Text>
-              )}
-            />
 
-            {error && <Text style={[NewStyles.text6, { marginTop: 10 }]}>{error}</Text>}
-            <View style={{ paddingVertical: 15, paddingHorizontal: 20,width:"100%" }}>
-              <Button
-                title={"تأیید کد"}
-                loading={loading}
-                onPress={handleVerifyCode}
-              />
-            </View>
-          </View>
-        ) : (
-          // Step 2: Enter new password
-          <View style={[NewStyles.center, {  gap: 15, backgroundColor:themeColor10.bgColor(0.5),height:"60%",width:"100%",borderRadius:15  }]}>
-            <Text style={[NewStyles.title1, { marginBottom: 10, fontSize: 16 }]}>
-              رمز عبور جدید خود را وارد کنید
-            </Text>
-<View style={{ paddingHorizontal: 1,width:"90%",paddingVertical:15 }}>
-            <TextInput
-              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-              placeholder="رمز عبور جدید (حداقل 6 کاراکتر)"
-              placeholderTextColor={themeColor10.bgColor(0.9)}
-              secureTextEntry
-              value={newPassword}
-              onChangeText={setNewPassword}
-              autoCapitalize="none"
-            />
-</View>
-<View style={{ paddingVertical: 15, paddingHorizontal: 1,width:"90%" }}>
-            <TextInput
-              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-              placeholder="تکرار رمز عبور جدید"
-              placeholderTextColor={themeColor10.bgColor(0.9)}
-              secureTextEntry
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              autoCapitalize="none"
-            />
-</View>
-<View style={{ paddingVertical: 15, paddingHorizontal: 1,width:"90%" }}>
-            <Button
-              title={"تغییر رمز عبور"}
-              loading={loading}
-              onPress={handleResetPassword}
-            />
+                <CodeField
+                  ref={ref}
+                  {...props}
+                  value={value}
+                  onChangeText={(text) => {
+                    setValue(text);
+                    setError("");
+                  }}
+                  cellCount={6}
+                  keyboardType="number-pad"
+                  textContentType="oneTimeCode"
+                  autoComplete={Platform.select({
+                    android: "sms-otp",
+                    default: "one-time-code",
+                  })}
+                  renderCell={({ index, symbol, isFocused }) => (
+                    <Text
+                      key={index}
+                      style={[styles.cell, NewStyles.border10]}
+                      onLayout={getCellOnLayoutHandler(index)}
+                    >
+                      {symbol || (isFocused ? <Cursor /> : null)}
+                    </Text>
+                  )}
+                />
 
-            </View>
-          </View>
-        )}
-      </ScrollView>
-    </ImageBackground>
-    </KeyboardAvoidingView>
-        </SafeAreaView>
+                {error && <Text style={[NewStyles.text6, { marginTop: 10 }]}>{error}</Text>}
+                {!canResend && <View style={{ paddingVertical: 15, paddingHorizontal: 20, width: "100%" }}>
+                  <Button
+                    title={"تأیید کد"}
+                    loading={loading}
+                    onPress={handleVerifyCode}
+                  />
+                </View>
+                }
+                {/* Resend Code Button */}
+                <View style={{ paddingHorizontal: 20, width: "100%", marginTop: 10 }}>
+                  {canResend ? (
+                    <Button
+                      title={"ارسال مجدد کد"}
+                      loading={loading}
+                      onPress={handleResendCode}
+
+                    />
+                  ) : (
+                    <Text style={[NewStyles.text4, { textAlign: "center" }]}>
+                      ارسال مجدد کد در {resendTimer} ثانیه
+                    </Text>
+                  )}
+                </View>
+              </View>
+            ) : (
+              // Step 2: Enter new password
+              <View style={[NewStyles.center, { gap: 15, backgroundColor: themeColor10.bgColor(0.5), height: "60%", width: "100%", borderRadius: 15, maxWidth: 800 }]}>
+                <Text style={[NewStyles.title1, { marginBottom: 10, fontSize: 16 }]}>
+                  رمز عبور جدید خود را وارد کنید
+                </Text>
+                <View style={{ paddingHorizontal: 1, width: "90%", paddingVertical: 15 }}>
+                  <TextInput
+                    style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+                    placeholder="رمز عبور جدید (حداقل 6 کاراکتر)"
+                    placeholderTextColor={themeColor10.bgColor(0.9)}
+                    secureTextEntry
+                    value={newPassword}
+                    onChangeText={setNewPassword}
+                    autoCapitalize="none"
+                  />
+                </View>
+                <View style={{ paddingVertical: 15, paddingHorizontal: 1, width: "90%" }}>
+                  <TextInput
+                    style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+                    placeholder="تکرار رمز عبور جدید"
+                    placeholderTextColor={themeColor10.bgColor(0.9)}
+                    secureTextEntry
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    autoCapitalize="none"
+                  />
+                </View>
+                <View style={{ paddingVertical: 15, paddingHorizontal: 1, width: "90%" }}>
+                  <Button
+                    title={"تغییر رمز عبور"}
+                    loading={loading}
+                    onPress={handleResetPassword}
+                  />
+
+                </View>
+              </View>
+            )}
+          </ScrollView>
+        </ImageBackground>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 

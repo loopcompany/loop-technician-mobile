@@ -69,7 +69,7 @@ export default function GameResultScreen({ route, navigation }) {
   };
 
   const handleBackToMenu = () => {
-    navigation.navigate('MainApp', { screen: 'FolderScreen' });
+    navigation.navigate('FolderScreen');
   };
 
   return (
@@ -313,6 +313,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingVertical: 14,
     alignItems: 'center',
+    width: '100%',
+    maxWidth:400,
+    alignSelf:'center',
   },
   secondaryButtonText: {
     fontSize: 16,

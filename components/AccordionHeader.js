@@ -24,7 +24,7 @@ const AccordionHeader = ({
                     marginHorizontal: '5%',
                     marginBottom: 10,
                     gap: 10,
-                    width:'100%',
+                    width:'90%',
                     maxWidth: 800,
                     alignSelf: 'center',    
                 },
