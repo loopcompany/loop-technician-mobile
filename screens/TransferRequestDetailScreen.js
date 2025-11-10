@@ -5,7 +5,6 @@ import {
   ScrollView,
   StyleSheet,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,6 +12,7 @@ import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor4, themeColor8 } from '../theme/Color';
 import { getTransferRequestById } from '../services/Api';
+import { showAlert } from '../helpers/Common';
 
 export default function TransferRequestDetailScreen({ route, navigation }) {
   const { requestId } = route.params;
@@ -36,7 +36,7 @@ export default function TransferRequestDetailScreen({ route, navigation }) {
       }
     } catch (error) {
       console.error('❌ خطا در دریافت جزئیات:', error);
-      Alert.alert(
+      showAlert(
         'خطا',
         error.message || 'مشکلی در دریافت جزئیات پیش آمد',
         [
@@ -445,3 +445,5 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
 });
+
+

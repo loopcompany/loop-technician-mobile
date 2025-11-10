@@ -6,14 +6,13 @@ import {
   StyleSheet,
   FlatList,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import ScreenHeaders from "../components/ScreenHeaders";
 import NewStyles from "../styles/NewStyles";
 import { themeColor1, themeColor4, themeColor0, themeColor3 } from "../theme/Color";
 import { notesAPI } from "../services/Api";
-import { showToastOrAlert } from "../helpers/Common";
+import { showToastOrAlert , showAlert} from "../helpers/Common";
 import Button from "../components/Button";
 import moment from "moment-jalaali";
 
@@ -59,7 +58,7 @@ export default function NotesScreen({ route, navigation }) {
   };
 
   const handleDelete = (id) => {
-    Alert.alert(
+    showAlert(
       'حذف یادداشت',
       'آیا مطمئن هستید که می‌خواهید این یادداشت را حذف کنید؟',
       [
@@ -248,3 +247,4 @@ const styles = StyleSheet.create({
     borderTopColor: themeColor3.bgColor(0.2),
   },
 });
+

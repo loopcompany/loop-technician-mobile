@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import NewStyles from '../../styles/NewStyles';
 import ScreenHeaders from '../../components/ScreenHeaders';
-import Footer from '../Footer';
+
 import { themeColor0, themeColor1, themeColor4, themeColor10 } from '../../theme/Color';
 import { infoAPI } from '../../services/Api';
 import { showToastOrAlert } from '../../helpers/Common';

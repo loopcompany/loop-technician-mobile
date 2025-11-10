@@ -5,8 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
-  Alert,
-} from 'react-native';
+} from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,7 +13,7 @@ import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor2, themeColor3, themeColor6, themeColor7, themeColor8 } from '../theme/Color';
 import { getEducationRequestById } from '../services/Api';
-import { formatDateTime } from '../helpers/Common';
+import { formatDateTime , showAlert} from '../helpers/Common';
 
 export default function EducationRequestDetailScreen({ navigation, route }) {
   const { requestId } = route.params;
@@ -33,12 +32,12 @@ export default function EducationRequestDetailScreen({ navigation, route }) {
       if (result.success) {
         setRequest(result.data);
       } else {
-        Alert.alert('خطا', result.message || 'خطا در بارگذاری جزئیات درخواست');
+        showAlert('خطا', result.message || 'خطا در بارگذاری جزئیات درخواست');
         navigation.goBack();
       }
     } catch (error) {
       console.error('خطا در بارگذاری جزئیات:', error);
-      Alert.alert('خطا', 'خطا در بارگذاری جزئیات درخواست');
+      showAlert('خطا', 'خطا در بارگذاری جزئیات درخواست');
       navigation.goBack();
     } finally {
       setLoading(false);
@@ -261,3 +260,5 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 });
+
+

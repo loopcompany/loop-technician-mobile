@@ -6,19 +6,19 @@ import {
   StyleSheet,
   ScrollView,
   TextInput,
-  Alert,
   ActivityIndicator,
   KeyboardAvoidingView
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Footer from '../Footer';
+
 import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor3, themeColor10, themeColor2, themeColor8, themeColor4, themeColor7 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateBankInfo } from '../../services/Api';
+import { showAlert } from '../../helpers/Common';
 import { setUserData } from '../../slices/userSlice';
 import { SafeAreaView } from 'react-native-safe-area-context';
 export default function FinancialInfoScreen({ navigation }) {
@@ -95,17 +95,17 @@ export default function FinancialInfoScreen({ navigation }) {
   const handleSave = async () => {
     // Validation
     if (financialData.shabaNumber && !validateShaba(financialData.shabaNumber)) {
-      Alert.alert('خطا', 'فرمت شماره شبا نامعتبر است.\nفرمت صحیح: IR به همراه 24 رقم\nمثال: IR123456789012345678901234');
+      showAlert('خطا', 'فرمت شماره شبا نامعتبر است.\nفرمت صحیح: IR به همراه 24 رقم\nمثال: IR123456789012345678901234');
       return;
     }
 
     if (financialData.cardNumber && !validateCardNumber(financialData.cardNumber)) {
-      Alert.alert('خطا', 'شماره کارت باید دقیقاً 16 رقم باشد.\nمثال: 6037991234567890');
+      showAlert('خطا', 'شماره کارت باید دقیقاً 16 رقم باشد.\nمثال: 6037991234567890');
       return;
     }
 
     if (financialData.bankName && financialData.bankName.length > 100) {
-      Alert.alert('خطا', 'نام بانک نباید بیشتر از 100 کاراکتر باشد');
+      showAlert('خطا', 'نام بانک نباید بیشتر از 100 کاراکتر باشد');
       return;
     }
 
@@ -123,7 +123,7 @@ export default function FinancialInfoScreen({ navigation }) {
       const result = await updateBankInfo(apiData);
 
       if (result.success) {
-        Alert.alert('موفق', 'اطلاعات بانکی با موفقیت به‌روزرسانی شد');
+        showAlert('موفق', 'اطلاعات بانکی با موفقیت به‌روزرسانی شد');
 
         // Update Redux with new data
         if (result.data && result.data.technician) {
@@ -143,11 +143,11 @@ export default function FinancialInfoScreen({ navigation }) {
           console.log('✅ AsyncStorage هم به‌روز شد');
         }
       } else {
-        Alert.alert('خطا', result.message || 'مشکلی در به‌روزرسانی پیش آمد');
+        showAlert('خطا', result.message || 'مشکلی در به‌روزرسانی پیش آمد');
       }
     } catch (error) {
       console.error('خطا در ذخیره:', error);
-      Alert.alert('خطا', 'مشکلی در ارتباط با سرور پیش آمد');
+      showAlert('خطا', 'مشکلی در ارتباط با سرور پیش آمد');
     } finally {
       setSaving(false);
     }
@@ -303,3 +303,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+

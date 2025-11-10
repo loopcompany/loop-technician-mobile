@@ -8,18 +8,17 @@ import {
   Dimensions,
   ActivityIndicator,
   RefreshControl,
-  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from '@react-navigation/native';
 import { BarChart } from 'react-native-gifted-charts';
 import { Ionicons } from '@expo/vector-icons';
-import Footer from '../Footer';
+
 import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor3, themeColor4, themeColor7, themeColor10, themeColor8, themeColor2 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
-import { formatPrice } from '../../helpers/Common';
+import { formatPrice , showAlert} from '../../helpers/Common';
 import { getYearlyIncomeChart } from '../../services/Api';
 
 const { width } = Dimensions.get('window');
@@ -84,7 +83,7 @@ export default function IndexScreen({ navigation }) {
     } catch (error) {
       useMockData();
       
-      Alert.alert(
+      showAlert(
         'اطلاعیه',
         'در حال حاضر اطلاعات واقعی در دسترس نیست. داده‌های نمونه نمایش داده می‌شود.',
         [{ text: 'باشه' }]
@@ -178,7 +177,7 @@ export default function IndexScreen({ navigation }) {
   const handleBarPress = (item) => {
     if (!item) return;
     
-    Alert.alert(
+    showAlert(
       `📊 ${item.monthName || 'ماه'}`,
       `کل درآمد: ${formatPrice(item.totalIncome || 0)} تومان\n` +
       `تسویه‌ها: ${formatPrice(item.totalSettlements || 0)} تومان\n` +

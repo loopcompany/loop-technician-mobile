@@ -7,6 +7,7 @@ import {
   StyleSheet,
   TouchableWithoutFeedback,
   ActivityIndicator,
+  Platform,
 } from "react-native";
 import NewStyles from "../styles/NewStyles";
 import { themeColor0, themeColor10 } from "../theme/Color";
@@ -81,7 +82,7 @@ export default function Welcome({ navigation }) {
   if (isChecking) {
     return (
       <ImageBackground
-        source={require("../assets/background2.jpg")}
+        source={Platform.OS==='web' ? require("../assets/webbackground.jpg") : require("../assets/background2.jpg")}
         style={NewStyles.container}
       >
         <View style={{ flex: 1, backgroundColor: themeColor0.bgColor(0.25), justifyContent: 'center', alignItems: 'center' }}>
@@ -99,7 +100,7 @@ export default function Welcome({ navigation }) {
 
   return (
     <ImageBackground
-      source={require("../assets/background2.jpg")}
+      source={Platform.OS==='web' ? require("../assets/webbackground.jpg") : require("../assets/background2.jpg")}
       style={NewStyles.container}
     >
       <TouchableWithoutFeedback

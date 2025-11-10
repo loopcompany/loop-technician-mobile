@@ -9,7 +9,7 @@ import {
   Modal,
   Linking,
   TouchableWithoutFeedback,
-  Alert,
+  Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { themeColor0, themeColor10, themeColor13, themeColor4, themeColor6, themeColor7 } from '../theme/Color';
@@ -19,6 +19,8 @@ import { logoutTechnician } from '../services/Api';
 import { useDispatch, useSelector } from 'react-redux';
 import { setToken } from '../slices/authSlice';
 import { emptyUser } from '../slices/userSlice';
+import { Ionicons } from '@expo/vector-icons';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const FooterContext = createContext();
 
@@ -34,71 +36,68 @@ export const FooterProvider = ({ children }) => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const [isFooterVisible, setIsFooterVisible] = useState(true);
-  const [menuItems, setMenuItems] = useState([
-    { id: 1, title: 'صفحه اصلی', screen: 'FolderScreen' },
-    { id: 2, title: ' ثبت نام دوره های آموزشی ', screen: 'TrainingRegistrationScreen' },
-    { id: 3, title: 'ضمانت نامه/گارانتی', screen: 'WarrantyScreen' },
-    { id: 4, title: 'سوالات متداول', screen: 'LearnMoreScreen' },
-    { id: 5, title: ' قوانین/درباره لوپ', screen: 'AboutScreen' },
-  ]);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const showFooter = () => setIsFooterVisible(true);
   const hideFooter = () => setIsFooterVisible(false);
   const toggleFooter = () => setIsFooterVisible(!isFooterVisible);
-  const contact = useSelector(state => state.contacts)
-  console.log('====================================');
-  console.log('contact:', contact);
-  console.log('====================================');
+  const contact = useSelector(state => state.contacts);
+  const userToken = useSelector(state => state.auth.token);
+
+  // منوهای داینامیک بر اساس وضعیت لاگین
+  const menuItems = userToken
+    ? [
+      // منوهای کاربر لاگین شده
+      { id: 1, title: 'صفحه اصلی', screen: 'FolderScreen' },
+      { id: 2, title: 'ضمانت نامه/گارانتی', screen: 'WarrantyScreen' },
+      { id: 3, title: 'سوالات متداول', screen: 'LearnMoreScreen' },
+      { id: 4, title: 'قوانین/درباره لوپ', screen: 'AboutScreen' },
+    ]
+    : [
+      // منوهای کاربر لاگین نشده
+      { id: 1, title: 'ورود', screen: 'Login' },
+      { id: 2, title: 'ثبت نام', screen: 'SignInScreen' },
+      { id: 3, title: 'ضمانت نامه/گارانتی', screen: 'WarrantyScreen' },
+      { id: 4, title: 'سوالات متداول', screen: 'LearnMoreScreen' },
+      { id: 5, title: 'قوانین/درباره لوپ', screen: 'AboutScreen' },
+    ];
+
+  const handleLogoutClick = () => {
+    setMenuVisible(false);
+    setShowLogoutConfirm(true);
+  };
+
   const handleLogout = async () => {
     console.log('⚠️ handleLogout فراخوانی شد - FooterContext');
-    Alert.alert(
-      'خروج از حساب کاربری',
-      'آیا مطمئن هستید که می‌خواهید خارج شوید؟',
-      [
-        {
-          text: 'انصراف',
-          style: 'cancel',
-        },
-        {
-          text: 'خروج',
-          style: 'destructive',
-          onPress: async () => {
-            console.log('🚪 کاربر دکمه خروج را زد');
-            setMenuVisible(false);
 
-            try {
-              // First clear Redux token and user data to prevent auto-login
-              console.log('🗑️ پاک کردن Redux token و user data...');
-              dispatch(setToken(null));
-              dispatch(emptyUser());
+    try {
+      // First clear Redux token and user data to prevent auto-login
+      console.log('🗑️ پاک کردن Redux token و user data...');
+      dispatch(setToken(null));
+      dispatch(emptyUser());
 
-              // Call logout API (this will clear AsyncStorage)
-              const result = await logoutTechnician();
-              console.log('نتیجه logout:', result);
+      // Call logout API (this will clear AsyncStorage)
+      const result = await logoutTechnician();
+      console.log('نتیجه logout:', result);
 
-              // Navigate to Welcome screen AFTER clearing everything
-              console.log('➡️ انتقال به صفحه Welcome...');
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'Welcome' }],
-              });
+      // Navigate to Welcome screen AFTER clearing everything
+      console.log('➡️ انتقال به صفحه Welcome...');
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Welcome' }],
+      });
 
-              console.log('✅ خروج موفقیت‌آمیز');
-            } catch (error) {
-              console.error('❌ خطا در خروج:', error);
-              // Even on error, logout locally
-              dispatch(setToken(null));
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'Welcome' }],
-              });
-            }
-          },
-        },
-      ],
-      { cancelable: true }
-    );
+      console.log('✅ خروج موفقیت‌آمیز');
+    } catch (error) {
+      console.error('❌ خطا در خروج:', error);
+      // Even on error, logout locally
+      dispatch(setToken(null));
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Welcome' }],
+      });
+    }
   };
 
   const renderItem = ({ item }) => (
@@ -127,9 +126,8 @@ export const FooterProvider = ({ children }) => {
           animationType="fade"
         >
           <TouchableWithoutFeedback
-            onPress={() => {
-              setMenuVisible(false);
-            }}
+            onPress={() => setMenuVisible(false)}
+            
           >
             <View style={styles.coverlist}>
               <View style={styles.coverlist2}>
@@ -147,18 +145,30 @@ export const FooterProvider = ({ children }) => {
 
                 {/* دکمه‌های پایین */}
                 <View style={styles.bottomButtons}>
-
-                  <TouchableOpacity
-                    style={styles.exitButton}
-                    onPress={handleLogout}
-                  >
-                    <Text style={styles.exitButtonText}>خروج</Text>
-                  </TouchableOpacity>
+                  {/* دکمه خروج فقط برای کاربران لاگین شده */}
+                  {userToken && (
+                    <TouchableOpacity
+                      style={styles.exitButton}
+                      onPress={handleLogoutClick}
+                    >
+                      <Ionicons name={'power-outline'} color={themeColor4.bgColor(1)} size={16} />
+                      <Text style={NewStyles.text4}>خروج</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               </View>
             </View>
           </TouchableWithoutFeedback>
         </Modal>
+
+        {/* Confirmation Modal for Logout */}
+        <ConfirmationModal
+          title="خروج از حساب کاربری"
+          message="آیا مطمئن هستید که می‌خواهید خارج شوید؟"
+          action={handleLogout}
+          confirmationModal={showLogoutConfirm}
+          setConfirmationModal={setShowLogoutConfirm}
+        />
 
         <View style={[styles.footer, NewStyles.rowWrapper]}>
           <TouchableOpacity
@@ -171,7 +181,9 @@ export const FooterProvider = ({ children }) => {
           <TouchableOpacity style={styles.supportButton}>
             <Text style={NewStyles.text4}>پشتیبانی</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setMenuVisible(!menuVisible)}>
+          <TouchableOpacity onPress={() => {
+            setMenuVisible(!menuVisible)
+          }}>
             <Image
               source={require('../assets/logo.png')}
               style={styles.footerLogo}
@@ -188,7 +200,6 @@ export const FooterProvider = ({ children }) => {
     hideFooter,
     toggleFooter,
     menuItems,
-    setMenuItems,
     FooterComponent,
   };
 
@@ -222,9 +233,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignSelf: 'flex-start',
     marginBottom: 60,
+    width: '100%'
   },
   coverlist2: {
     height: '50%',
+    maxWidth: 250,
     backgroundColor: themeColor0.bgColor(0.9),
   },
   folderItem: {
@@ -244,9 +257,9 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   folderText: {
+    ...NewStyles.title4,
     marginTop: 6,
     fontSize: 15,
-    fontWeight: 'bold',
     color: themeColor4.bgColor(1),
     textAlign: 'center',
   },
@@ -290,8 +303,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   menuItem: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
+    ...NewStyles.row,
     marginBottom: 10,
   },
   menuText: {
@@ -333,15 +345,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   exitButton: {
+    ...NewStyles.row,
     backgroundColor: themeColor6.bgColor(1),
-    paddingVertical: 15,
+    paddingVertical: 5,
     paddingHorizontal: 10,
-    borderRadius: 8,
     alignItems: 'center',
+    gap: 5,
+    ...NewStyles.border5
   },
   exitButtonText: {
     color: themeColor4.bgColor(1),
     fontSize: 14,
-    fontWeight: '600',
   },
 });

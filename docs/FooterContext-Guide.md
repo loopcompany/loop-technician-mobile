@@ -121,7 +121,7 @@ export default function AdminScreen() {
 
 ### قبل از تغییر:
 ```javascript
-import Footer from './Footer';
+
 
 export default function SomeScreen() {
   return (

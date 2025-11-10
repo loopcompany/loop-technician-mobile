@@ -9,12 +9,12 @@ import {
   Modal,
   Linking,
   TouchableWithoutFeedback,
-  Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { themeColor0, themeColor10, themeColor13, themeColor4, themeColor6 } from "../theme/Color";
 import NewStyles from "../styles/NewStyles";
 import { logoutTechnician } from "../services/Api";
+import { showAlert } from '../helpers/Common';
 import { useDispatch, useSelector } from 'react-redux';
 import { setToken } from '../slices/authSlice';
 
@@ -33,7 +33,7 @@ export default function Footer() {
 
   const handleLogout = async () => {
     console.log('⚠️ handleLogout فراخوانی شد - نسخه جدید');
-    Alert.alert(
+    showAlert(
       'خروج از حساب کاربری',
       'آیا مطمئن هستید که می‌خواهید خارج شوید؟',
       [
@@ -332,3 +332,5 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 });
+
+

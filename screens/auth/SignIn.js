@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ImageBackground, KeyboardAvoidingView, } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ImageBackground, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor4, themeColor10, themeColor3, themeColor2, themeColor6 } from '../../theme/Color';
@@ -7,7 +7,6 @@ import CustomStatusBar from '../../components/CustomStatusBar';
 import Button from '../../components/Button';
 import DatePickerModal from '../../components/DatePickerModal';
 import * as DocumentPicker from 'expo-document-picker';
-import { Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getFormatedDate } from 'react-native-modern-datepicker';
 import {
@@ -18,6 +17,7 @@ import {
   testExpertisesEndpoint
 } from '../../services/Api';
 import { validateTechnicianRegistration } from '../../utils/validation';
+import { showAlert } from '../../helpers/Common';
 
 // Pre-calculate colors outside component to prevent re-renders
 const HEADER_BG_COLOR = themeColor0.bgColor(0.8);
@@ -118,7 +118,7 @@ export default function SignIn({ navigation }) {
             errorMessage += result.message;
           }
 
-          Alert.alert('خطا', errorMessage);
+          showAlert('خطا', errorMessage);
 
           // Set some default expertises for testing
           setExpertises([
@@ -147,7 +147,7 @@ export default function SignIn({ navigation }) {
           errorMessage += `پیام خطا: ${error.message}`;
         }
 
-        Alert.alert('خطا', errorMessage);
+        showAlert('خطا', errorMessage);
 
         // Set some default expertises for testing
         setExpertises([
@@ -169,14 +169,14 @@ export default function SignIn({ navigation }) {
   // Validate referral code
   const handleValidateReferralCode = async () => {
     if (!formData.other_referral_code) {
-      Alert.alert('خطا', 'لطفاً ابتدا کد معرف را وارد کنید');
+      showAlert('خطا', 'لطفاً ابتدا کد معرف را وارد کنید');
       return;
     }
 
     try {
       const result = await validateReferralCode(formData.other_referral_code);
       if (result.success) {
-        Alert.alert('موفقیت', result.data?.message || result.message || 'کد معرف معتبر است');
+        showAlert('موفقیت', result.data?.message || result.message || 'کد معرف معتبر است');
       } else {
         let errorMessage = result.message || 'کد معرف نامعتبر است';
 
@@ -185,7 +185,7 @@ export default function SignIn({ navigation }) {
           errorMessage += '\n\n' + errorList.join('\n');
         }
 
-        Alert.alert('خطا', errorMessage);
+        showAlert('خطا', errorMessage);
       }
     } catch (error) {
       console.error('Error validating referral code:', error);
@@ -203,7 +203,7 @@ export default function SignIn({ navigation }) {
         errorMessage += `پیام خطا: ${error.message}`;
       }
 
-      Alert.alert('خطا', errorMessage);
+      showAlert('خطا', errorMessage);
     }
   };
 
@@ -257,7 +257,7 @@ export default function SignIn({ navigation }) {
         return `❌ ${persianFieldName}:\n   ${message}`;
       });
       
-      Alert.alert(
+      showAlert(
         'خطا در اعتبارسنجی فرم',
         errorMessages.join('\n\n'),
         [{ text: 'متوجه شدم', style: 'cancel' }]
@@ -274,7 +274,7 @@ export default function SignIn({ navigation }) {
       console.error('💥 Error message:', error.message);
       console.error('💥 Error stack:', error.stack);
       
-      Alert.alert(
+      showAlert(
         'خطای سیستمی',
         `خطای غیرمنتظره در اعتبارسنجی:\n${error.message}`,
         [{ text: 'متوجه شدم', style: 'cancel' }]
@@ -356,7 +356,7 @@ export default function SignIn({ navigation }) {
 
       if (result.success) {
         console.log('✅ Registration successful!');
-        Alert.alert(
+        showAlert(
           'موفقیت',
           result.message || 'ثبت نام با موفقیت انجام شد',
           [
@@ -392,7 +392,7 @@ export default function SignIn({ navigation }) {
           errorMessage = 'خطای نامشخص در ثبت نام';
         }
 
-        Alert.alert(
+        showAlert(
           'خطا در ثبت نام',
           errorMessage,
           [{ text: 'متوجه شدم', style: 'cancel' }],
@@ -437,7 +437,7 @@ export default function SignIn({ navigation }) {
         errorMessage += `پیام خطا: ${error.message}`;
       }
 
-      Alert.alert(
+      showAlert(
         'خطا',
         errorMessage,
         [{ text: 'متوجه شدم', style: 'cancel' }],
@@ -827,7 +827,7 @@ export default function SignIn({ navigation }) {
             if (!personalFields.birth_date) emptyFields.push('تاریخ تولد');
             
             if (emptyFields.length > 0) {
-              Alert.alert(
+              showAlert(
                 'فیلدهای ضروری',
                 `لطفاً فیلدهای زیر را تکمیل کنید:\n\n${emptyFields.map(f => `• ${f}`).join('\n')}`,
                 [{ text: 'متوجه شدم' }]
@@ -1045,7 +1045,7 @@ export default function SignIn({ navigation }) {
         };
 
         setResumeFile(resumeData);
-        Alert.alert('موفق', `فایل "${resumeData.name}" انتخاب شد`);
+        showAlert('موفق', `فایل "${resumeData.name}" انتخاب شد`);
       } else {
         console.log('❌ انتخاب فایل لغو شد');
       }
@@ -1057,69 +1057,16 @@ export default function SignIn({ navigation }) {
         errorMessage += `پیام خطا: ${err.message}`;
       }
 
-      Alert.alert('خطا', errorMessage);
+      showAlert('خطا', errorMessage);
     }
   };
 
-  // Upload resume to backend
-  const uploadResume = async () => {
-    if (!resumeFile) return;
-    setUploading(true);
-    try {
-      const form = new FormData();
-      // In Expo a picked document has uri and mimeType/name
-      const fileName = resumeFile.name || resumeFile.uri.split('/').pop();
-      const fileType = resumeFile.mimeType || 'application/octet-stream';
-      form.append('resume', {
-        uri: resumeFile.uri,
-        name: fileName,
-        type: fileType,
-      });
 
-      const res = await fetch(`${BASE_URI}/uploadResume`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        body: form,
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP Error ${res.status}`);
-      }
-
-      const data = await res.json();
-      Alert.alert('موفقیت', data.message || 'رزومه با موفقیت بارگذاری شد');
-      setResumeFile(null);
-    } catch (err) {
-      console.error('❌ uploadResume error:', err);
-
-      let errorMessage = 'بارگذاری رزومه ناموفق بود\n\n';
-
-      if (err.response) {
-        errorMessage += `وضعیت: ${err.response.status}\n`;
-        if (err.response.data?.message) {
-          errorMessage += `پیام: ${err.response.data.message}`;
-        }
-      } else if (err.message) {
-        errorMessage += `پیام خطا: ${err.message}`;
-      } else {
-        errorMessage += 'خطای نامشخص';
-      }
-
-      Alert.alert('خطا', errorMessage);
-    } finally {
-      setUploading(false);
-    }
-
-
-  };
 
   return (
-    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
+    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'off' }}>
       <ImageBackground
-        source={require('../../assets/background2.jpg')}
+        source={Platform.OS === 'web' ? require('../../assets/webbackground.jpg') : require('../../assets/background2.jpg')}
         style={styles.background}
       >
         <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
@@ -1159,6 +1106,9 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     alignItems: 'center',
     gap: 15,
+    width:'90%',
+    maxWidth: 800,
+    alignSelf: 'center',
   },
   headerButton: {
     width: '100%',
@@ -1429,3 +1379,4 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
 });
+

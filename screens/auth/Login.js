@@ -7,10 +7,10 @@ import {
   StyleSheet,
   ImageBackground,
   Image,
-  Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
   ScrollView,
+  Platform,
 } from 'react-native';
 import Svg, { Text as SvgText, Line, Rect } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -25,7 +25,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { loginTechnician, validateToken } from '../../services/Api';
 import { setToken } from '../../slices/authSlice';
 import { setUserData } from '../../slices/userSlice';
-import { showToastOrAlert } from '../../helpers/Common';
+import { showToastOrAlert, showAlert } from '../../helpers/Common';
 import { SafeAreaView } from 'react-native-safe-area-context';
 export default function Login() {
   const navigation = useNavigation();
@@ -121,22 +121,22 @@ export default function Login() {
 
     if (!referralCode.trim()) {
       console.log('❌ کد پرسنلی خالی است');
-      Alert.alert('خطا', 'لطفاً کد پرسنلی را وارد کنید');
+      showAlert('خطا', 'لطفاً کد پرسنلی را وارد کنید');
       return false;
     }
     if (referralCode.trim().length < 6) {
       console.log('❌ کد پرسنلی کمتر از 6 کاراکتر است');
-      Alert.alert('خطا', 'کد پرسنلی باید حداقل 6 کاراکتر باشد');
+      showAlert('خطا', 'کد پرسنلی باید حداقل 6 کاراکتر باشد');
       return false;
     }
     if (!password.trim()) {
       console.log('❌ رمز عبور خالی است');
-      Alert.alert('خطا', 'لطفاً رمز عبور را وارد کنید');
+      showAlert('خطا', 'لطفاً رمز عبور را وارد کنید');
       return false;
     }
     if (!captchaInput.trim()) {
       console.log('❌ کپچا خالی است');
-      Alert.alert('خطا', 'لطفاً کد امنیتی را وارد کنید');
+      showAlert('خطا', 'لطفاً کد امنیتی را وارد کنید');
       return false;
     }
     const normalizedInput = normalizeDigits(captchaInput);
@@ -146,7 +146,7 @@ export default function Login() {
 
     if (normalizedInput !== normalizedCaptcha) {
       console.log('❌ کپچا اشتباه است');
-      Alert.alert(
+      showAlert(
         'کد امنیتی اشتباه',
         `کد وارد شده: ${captchaInput}\n\nلطفاً کد امنیتی جدید را وارد کنید.`,
         [{ text: 'متوجه شدم', style: 'cancel' }]
@@ -244,7 +244,7 @@ export default function Login() {
           errorMessage = 'خطا در ورود به سیستم';
         }
 
-        Alert.alert(
+        showAlert(
           'خطا در ورود',
           errorMessage,
           [{ text: 'متوجه شدم', style: 'cancel' }],
@@ -290,7 +290,7 @@ export default function Login() {
         errorMessage += `پیام خطا: ${error.message}`;
       }
 
-      Alert.alert(
+      showAlert(
         'خطا',
         errorMessage,
         [{ text: 'متوجه شدم', style: 'cancel' }],
@@ -305,10 +305,10 @@ export default function Login() {
 
 
   return (
-    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
+    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'off' }}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
 
-        <ImageBackground source={require('../../assets/background2.jpg')} style={styles.background} >
+        <ImageBackground source={Platform.OS === 'web' ? require('../../assets/webbackground.jpg') : require('../../assets/background2.jpg')} style={styles.background} >
           <ScrollView>
             <CustomStatusBar />
             <View style={styles.spaceContainer}>
@@ -483,6 +483,7 @@ const styles = StyleSheet.create({
     padding: 25,
     alignItems: 'center',
     marginVertical: 20,
+    maxWidth:600
   },
   inputContainer: {
     width: '100%',
@@ -533,12 +534,11 @@ const styles = StyleSheet.create({
     color: themeColor4.bgColor(1),
   },
   buttonContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    ...NewStyles.row,
     width: '100%',
     marginTop: 10,
     gap: 10,
+    justifyContent:'center'
   },
   backButton: {
     width: 50,

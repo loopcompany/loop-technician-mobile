@@ -7,18 +7,18 @@ import {
   ScrollView,
   TextInput,
   ActivityIndicator,
-  Alert,
-} from 'react-native';
+} from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { getFormatedDate } from 'react-native-modern-datepicker';
-import Footer from './Footer';
+
 import ScreenHeaders from '../components/ScreenHeaders';
 import DatePickerModal from '../components/DatePickerModal';
 import TimePickerModal from '../components/TimePickerModal';
 import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor4, themeColor7, themeColor8 } from '../theme/Color';
 import { createEducationRequest, createLeaveRequest, createDebtRequest, createManpowerRequest, createTransferRequest, createTerminationRequest } from '../services/Api';
+import { showAlert } from '../helpers/Common';
 
 export default function RequestsScreen({ navigation }) {
   const [section, setSection] = useState('');
@@ -121,17 +121,17 @@ export default function RequestsScreen({ navigation }) {
   const handleSubmitRequest = async () => {
     // Validation
     if (!section.trim()) {
-      Alert.alert('خطا', 'لطفاً بخش را انتخاب کنید');
+      showAlert('خطا', 'لطفاً بخش را انتخاب کنید');
       return;
     }
 
     if (!description.trim()) {
-      Alert.alert('خطا', 'لطفاً توضیحات را وارد کنید');
+      showAlert('خطا', 'لطفاً توضیحات را وارد کنید');
       return;
     }
 
     if (description.length > 5000) {
-      Alert.alert('خطا', 'توضیحات نباید بیشتر از 5000 کاراکتر باشد');
+      showAlert('خطا', 'توضیحات نباید بیشتر از 5000 کاراکتر باشد');
       return;
     }
 
@@ -148,7 +148,7 @@ export default function RequestsScreen({ navigation }) {
       const response = await createEducationRequest(requestData);
 
       if (response.success) {
-        Alert.alert(
+        showAlert(
           'موفقیت',
           'درخواست شما با موفقیت ثبت شد',
           [
@@ -167,7 +167,7 @@ export default function RequestsScreen({ navigation }) {
       }
     } catch (error) {
       console.error('❌ خطا در ارسال درخواست:', error);
-      Alert.alert('خطا', error.message || 'مشکلی در ارسال درخواست پیش آمد');
+      showAlert('خطا', error.message || 'مشکلی در ارسال درخواست پیش آمد');
     } finally {
       setLoading(false);
     }
@@ -176,32 +176,32 @@ export default function RequestsScreen({ navigation }) {
   const handleSubmitLeaveRequest = async () => {
     // Validation
     if (!leaveType) {
-      Alert.alert('خطا', 'لطفاً نوع مرخصی را انتخاب کنید');
+      showAlert('خطا', 'لطفاً نوع مرخصی را انتخاب کنید');
       return;
     }
 
     if (!leaveDate) {
-      Alert.alert('خطا', 'لطفاً تاریخ را انتخاب کنید');
+      showAlert('خطا', 'لطفاً تاریخ را انتخاب کنید');
       return;
     }
 
     if (leaveType === 'daily' && !leaveToDate) {
-      Alert.alert('خطا', 'لطفاً تاریخ پایان را انتخاب کنید');
+      showAlert('خطا', 'لطفاً تاریخ پایان را انتخاب کنید');
       return;
     }
 
     if (leaveType === 'hourly' && !leaveHour) {
-      Alert.alert('خطا', 'لطفاً ساعت را انتخاب کنید');
+      showAlert('خطا', 'لطفاً ساعت را انتخاب کنید');
       return;
     }
 
     if (!leaveDescription.trim()) {
-      Alert.alert('خطا', 'لطفاً توضیحات را وارد کنید');
+      showAlert('خطا', 'لطفاً توضیحات را وارد کنید');
       return;
     }
 
     if (leaveDescription.length > 1000) {
-      Alert.alert('خطا', 'توضیحات نباید بیشتر از 1000 کاراکتر باشد');
+      showAlert('خطا', 'توضیحات نباید بیشتر از 1000 کاراکتر باشد');
       return;
     }
 
@@ -225,7 +225,7 @@ export default function RequestsScreen({ navigation }) {
       const response = await createLeaveRequest(requestData);
 
       if (response.success) {
-        Alert.alert(
+        showAlert(
           'موفقیت',
           'درخواست مرخصی شما با موفقیت ثبت شد',
           [
@@ -247,7 +247,7 @@ export default function RequestsScreen({ navigation }) {
       }
     } catch (error) {
       console.error('❌ خطا در ارسال درخواست مرخصی:', error);
-      Alert.alert('خطا', error.message || 'مشکلی در ارسال درخواست مرخصی پیش آمد');
+      showAlert('خطا', error.message || 'مشکلی در ارسال درخواست مرخصی پیش آمد');
     } finally {
       setLoading(false);
     }
@@ -256,40 +256,40 @@ export default function RequestsScreen({ navigation }) {
   const handleSubmitLoanRequest = async () => {
     // Validation
     if (!loanType) {
-      Alert.alert('خطا', 'لطفاً نوع درخواست را انتخاب کنید');
+      showAlert('خطا', 'لطفاً نوع درخواست را انتخاب کنید');
       return;
     }
 
     if (!loanDescription.trim()) {
-      Alert.alert('خطا', 'لطفاً توضیحات را وارد کنید');
+      showAlert('خطا', 'لطفاً توضیحات را وارد کنید');
       return;
     }
 
     if (loanDescription.length > 5000) {
-      Alert.alert('خطا', 'توضیحات نباید بیشتر از 5000 کاراکتر باشد');
+      showAlert('خطا', 'توضیحات نباید بیشتر از 5000 کاراکتر باشد');
       return;
     }
 
     // اعتبارسنجی برای وام بدون بهره
     if (loanType === 'free') {
       if (!loanAmount.trim()) {
-        Alert.alert('خطا', 'لطفاً مبلغ وام را وارد کنید');
+        showAlert('خطا', 'لطفاً مبلغ وام را وارد کنید');
         return;
       }
 
       if (!loanSponsor.trim()) {
-        Alert.alert('خطا', 'لطفاً وضعیت ضامن را مشخص کنید');
+        showAlert('خطا', 'لطفاً وضعیت ضامن را مشخص کنید');
         return;
       }
 
       if (!loanMonth.trim()) {
-        Alert.alert('خطا', 'لطفاً مدت زمان پرداخت را وارد کنید');
+        showAlert('خطا', 'لطفاً مدت زمان پرداخت را وارد کنید');
         return;
       }
 
       const monthNum = parseInt(loanMonth);
       if (isNaN(monthNum) || monthNum < 1 || monthNum > 60) {
-        Alert.alert('خطا', 'مدت زمان پرداخت باید بین 1 تا 60 ماه باشد');
+        showAlert('خطا', 'مدت زمان پرداخت باید بین 1 تا 60 ماه باشد');
         return;
       }
     }
@@ -317,7 +317,7 @@ export default function RequestsScreen({ navigation }) {
       const response = await createDebtRequest(requestData);
 
       if (response.success) {
-        Alert.alert(
+        showAlert(
           'موفقیت',
           'درخواست وام شما با موفقیت ثبت شد',
           [
@@ -340,7 +340,7 @@ export default function RequestsScreen({ navigation }) {
       }
     } catch (error) {
       console.error('❌ خطا در ارسال درخواست وام:', error);
-      Alert.alert('خطا', error.message || 'مشکلی در ارسال درخواست وام پیش آمد');
+      showAlert('خطا', error.message || 'مشکلی در ارسال درخواست وام پیش آمد');
     } finally {
       setLoading(false);
     }
@@ -349,17 +349,17 @@ export default function RequestsScreen({ navigation }) {
   const handleSubmitManpowerRequest = async () => {
     // Validation
     if (!manpowerType) {
-      Alert.alert('خطا', 'لطفاً نوع درخواست را انتخاب کنید');
+      showAlert('خطا', 'لطفاً نوع درخواست را انتخاب کنید');
       return;
     }
 
     if (!manpowerDescription.trim()) {
-      Alert.alert('خطا', 'لطفاً توضیحات را وارد کنید');
+      showAlert('خطا', 'لطفاً توضیحات را وارد کنید');
       return;
     }
 
     if (manpowerDescription.length > 5000) {
-      Alert.alert('خطا', 'توضیحات نباید بیشتر از 5000 کاراکتر باشد');
+      showAlert('خطا', 'توضیحات نباید بیشتر از 5000 کاراکتر باشد');
       return;
     }
 
@@ -376,7 +376,7 @@ export default function RequestsScreen({ navigation }) {
       const response = await createManpowerRequest(requestData);
 
       if (response.success) {
-        Alert.alert(
+        showAlert(
           'موفقیت',
           'درخواست نیروی انسانی شما با موفقیت ثبت شد',
           [
@@ -395,7 +395,7 @@ export default function RequestsScreen({ navigation }) {
       }
     } catch (error) {
       console.error('❌ خطا در ارسال درخواست نیروی انسانی:', error);
-      Alert.alert('خطا', error.message || 'مشکلی در ارسال درخواست نیروی انسانی پیش آمد');
+      showAlert('خطا', error.message || 'مشکلی در ارسال درخواست نیروی انسانی پیش آمد');
     } finally {
       setLoading(false);
     }
@@ -404,17 +404,17 @@ export default function RequestsScreen({ navigation }) {
   const handleSubmitTransferRequest = async () => {
     // Validation
     if (!transferType) {
-      Alert.alert('خطا', 'لطفاً نوع درخواست را انتخاب کنید');
+      showAlert('خطا', 'لطفاً نوع درخواست را انتخاب کنید');
       return;
     }
 
     if (!transferDescription.trim()) {
-      Alert.alert('خطا', 'لطفاً توضیحات را وارد کنید');
+      showAlert('خطا', 'لطفاً توضیحات را وارد کنید');
       return;
     }
 
     if (transferDescription.length > 5000) {
-      Alert.alert('خطا', 'توضیحات نباید بیشتر از 5000 کاراکتر باشد');
+      showAlert('خطا', 'توضیحات نباید بیشتر از 5000 کاراکتر باشد');
       return;
     }
 
@@ -431,7 +431,7 @@ export default function RequestsScreen({ navigation }) {
       const response = await createTransferRequest(requestData);
 
       if (response.success) {
-        Alert.alert(
+        showAlert(
           'موفقیت',
           'درخواست انتقال/سمت شما با موفقیت ثبت شد',
           [
@@ -450,7 +450,7 @@ export default function RequestsScreen({ navigation }) {
       }
     } catch (error) {
       console.error('❌ خطا در ارسال درخواست انتقال/سمت:', error);
-      Alert.alert('خطا', error.message || 'مشکلی در ارسال درخواست انتقال/سمت پیش آمد');
+      showAlert('خطا', error.message || 'مشکلی در ارسال درخواست انتقال/سمت پیش آمد');
     } finally {
       setLoading(false);
     }
@@ -459,27 +459,27 @@ export default function RequestsScreen({ navigation }) {
   const handleSubmitTerminationRequest = async () => {
     // Validation
     if (!terminationType) {
-      Alert.alert('خطا', 'لطفاً نوع درخواست را انتخاب کنید');
+      showAlert('خطا', 'لطفاً نوع درخواست را انتخاب کنید');
       return;
     }
 
     if (!terminationStartDate) {
-      Alert.alert('خطا', 'لطفاً تاریخ شروع را انتخاب کنید');
+      showAlert('خطا', 'لطفاً تاریخ شروع را انتخاب کنید');
       return;
     }
 
     if (terminationType === 'temporary' && !terminationEndDate) {
-      Alert.alert('خطا', 'لطفاً تاریخ پایان را انتخاب کنید');
+      showAlert('خطا', 'لطفاً تاریخ پایان را انتخاب کنید');
       return;
     }
 
     if (!terminationDescription.trim()) {
-      Alert.alert('خطا', 'لطفاً توضیحات را وارد کنید');
+      showAlert('خطا', 'لطفاً توضیحات را وارد کنید');
       return;
     }
 
     if (terminationDescription.length > 5000) {
-      Alert.alert('خطا', 'توضیحات نباید بیشتر از 5000 کاراکتر باشد');
+      showAlert('خطا', 'توضیحات نباید بیشتر از 5000 کاراکتر باشد');
       return;
     }
 
@@ -501,7 +501,7 @@ export default function RequestsScreen({ navigation }) {
       const response = await createTerminationRequest(requestData);
 
       if (response.success) {
-        Alert.alert(
+        showAlert(
           'موفقیت',
           'درخواست قطع همکاری شما با موفقیت ثبت شد',
           [
@@ -522,7 +522,7 @@ export default function RequestsScreen({ navigation }) {
       }
     } catch (error) {
       console.error('❌ خطا در ارسال درخواست قطع همکاری:', error);
-      Alert.alert('خطا', error.message || 'مشکلی در ارسال درخواست قطع همکاری پیش آمد');
+      showAlert('خطا', error.message || 'مشکلی در ارسال درخواست قطع همکاری پیش آمد');
     } finally {
       setLoading(false);
     }
@@ -1640,3 +1640,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+

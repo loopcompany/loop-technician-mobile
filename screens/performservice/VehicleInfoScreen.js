@@ -6,13 +6,12 @@ import {
   StyleSheet,
   ScrollView,
   TextInput,
-  Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Footer from '../Footer';
+
 import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor3, themeColor10, themeColor8, themeColor2, themeColor4, themeColor7, themeColor6, themeColor11 } from '../../theme/Color';
@@ -123,12 +122,12 @@ export default function VehicleInfoScreen({ navigation }) {
   const handleSave = async () => {
     // Validation
     if (vehicleData.vinNumber && vehicleData.vinNumber.length > 17) {
-      Alert.alert('خطا', 'شماره VIN نباید بیشتر از 17 کاراکتر باشد');
+      showAlert('خطا', 'شماره VIN نباید بیشتر از 17 کاراکتر باشد');
       return;
     }
 
     if (vehicleData.manufacturingYear && vehicleData.manufacturingYear.length > 4) {
-      Alert.alert('خطا', 'سال ساخت نباید بیشتر از 4 رقم باشد');
+      showAlert('خطا', 'سال ساخت نباید بیشتر از 4 رقم باشد');
       return;
     }
 
@@ -167,7 +166,7 @@ export default function VehicleInfoScreen({ navigation }) {
         console.log('✅ پاسخ موفق از API دریافت شد');
         console.log('📦 result.data:', JSON.stringify(result.data, null, 2));
 
-        Alert.alert('موفق', 'اطلاعات خودرو با موفقیت به‌روزرسانی شد');
+        showAlert('موفق', 'اطلاعات خودرو با موفقیت به‌روزرسانی شد');
 
         // Update Redux with new data
         if (result.data && result.data.technician) {
@@ -193,11 +192,11 @@ export default function VehicleInfoScreen({ navigation }) {
           console.log('⚠️ result.data یا result.data.technician خالی است');
         }
       } else {
-        Alert.alert('خطا', result.message || 'مشکلی در به‌روزرسانی پیش آمد');
+        showAlert('خطا', result.message || 'مشکلی در به‌روزرسانی پیش آمد');
       }
     } catch (error) {
       console.error('خطا در ذخیره:', error);
-      Alert.alert('خطا', 'مشکلی در ارتباط با سرور پیش آمد');
+      showAlert('خطا', 'مشکلی در ارتباط با سرور پیش آمد');
     } finally {
       setSaving(false);
     }

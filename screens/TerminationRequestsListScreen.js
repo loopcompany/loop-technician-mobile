@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
-  Alert,
   Modal,
   ScrollView,
 } from 'react-native';
@@ -18,7 +17,7 @@ import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor4, themeColor6, themeColor7, themeColor8, themeColor11 } from '../theme/Color';
 import { getTerminationRequests, getTerminationRequestById } from '../services/Api';
 import { useFocusEffect } from '@react-navigation/native';
-import { formatDateTime } from '../helpers/Common';
+import { formatDateTime , showAlert} from '../helpers/Common';
 
 export default function TerminationRequestsListScreen({ navigation }) {
   const [requests, setRequests] = useState([]);
@@ -41,7 +40,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
       }
     } catch (error) {
       console.error('❌ خطا در دریافت لیست:', error);
-      Alert.alert('خطا', error.message || 'مشکلی در دریافت لیست پیش آمد');
+      showAlert('خطا', error.message || 'مشکلی در دریافت لیست پیش آمد');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -94,7 +93,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
     } catch (error) {
       console.error('❌ خطا در نمایش جزئیات:', error);
       setModalVisible(false);
-      Alert.alert('خطا', error.message || 'مشکلی در نمایش جزئیات پیش آمد');
+      showAlert('خطا', error.message || 'مشکلی در نمایش جزئیات پیش آمد');
     } finally {
       setLoadingDetail(false);
     }
@@ -577,3 +576,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+
