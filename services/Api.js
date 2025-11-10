@@ -445,14 +445,25 @@ export const registerTechnician = async (formData, resumeFile = null) => {
         type: resumeFile.mimeType || resumeFile.type
       });
 
-      // React Native FormData format for file upload
-      multipartData.append('resume', {
-        uri: resumeFile.uri,
-        name: resumeFile.name || 'resume.pdf',
-        type: resumeFile.mimeType || resumeFile.type || 'application/pdf',
-      });
-
-      console.log('✅ فایل رزومه به FormData اضافه شد');
+      // Platform-specific file handling
+      if (typeof resumeFile.uri === 'string' && resumeFile.uri.startsWith('data:')) {
+        // 🌐 Web: Convert base64 data URL to Blob
+        console.log('🌐 تبدیل base64 به Blob برای Web');
+        const base64Data = resumeFile.uri.split(',')[1];
+        const mimeType = resumeFile.type || 'application/octet-stream';
+        const blob = base64ToBlob(base64Data, mimeType);
+        multipartData.append('resume', blob, resumeFile.name || 'resume.pdf');
+        console.log('✅ فایل رزومه به صورت Blob اضافه شد');
+      } else {
+        // 📱 Native: Use file URI
+        console.log('📱 اضافه کردن فایل به صورت Native');
+        multipartData.append('resume', {
+          uri: resumeFile.uri,
+          name: resumeFile.name || 'resume.pdf',
+          type: resumeFile.mimeType || resumeFile.type || 'application/pdf',
+        });
+        console.log('✅ فایل رزومه به FormData اضافه شد');
+      }
     } else {
       console.log('⚠️ هیچ فایل رزومه‌ای انتخاب نشده');
     }
@@ -478,6 +489,19 @@ export const registerTechnician = async (formData, resumeFile = null) => {
     console.error('❌ Registration failed:', error);
     return handleError(error);
   }
+};
+
+// 🌐 Helper function to convert base64 to Blob (for Web)
+const base64ToBlob = (base64, mimeType) => {
+  const byteCharacters = atob(base64);
+  const byteNumbers = new Array(byteCharacters.length);
+  
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+  
+  const byteArray = new Uint8Array(byteNumbers);
+  return new Blob([byteArray], { type: mimeType });
 };
 
 /**

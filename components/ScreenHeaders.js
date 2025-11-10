@@ -2,26 +2,46 @@ import { Image, StyleSheet, Text, TouchableOpacity, View, Dimensions, StatusBar,
 import React from "react";
 import NewStyles from "../styles/NewStyles";
 import { themeColor4 } from "../theme/Color";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
 
-const ScreenHeaders = ({ title, onPressLeft, onPressRight }) => {
+const ScreenHeaders = ({ 
+  title, 
+  // Old API (deprecated but still supported for backward compatibility)
+  onPressLeft,    
+  onPressRight,
+  // New API (recommended - more clear naming)
+  onBackPress
+}) => {
   const { width } = Dimensions.get('window');
   const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight : 0;
+  const navigation = useNavigation();
+  
+  // Priority: new API > old API > default navigation.goBack()
+  const handleBack = onBackPress || onPressLeft || (() => {navigation.goBack()});
   
   return (
-    <SafeAreaView edges={{top:'additive', bottom:'off'}} style={[styles.header, NewStyles.rowWrapper, { 
+    <View style={[styles.header, NewStyles.rowWrapper, { 
       width: width,
+      paddingTop: statusBarHeight,
+      height: 50 + statusBarHeight
     }]}>
-      <TouchableOpacity onPress={onPressRight} style={styles.iconContainer}>
-        <Image source={require("../assets/next.png")} style={styles.arrow} />
-      </TouchableOpacity>
+      {/* Right side: Empty space for symmetry */}
+      <View style={styles.iconContainer} />
+      
+      {/* Center: Title */}
       <View style={styles.titleContainer}>
-        <Text style={[NewStyles.title, styles.titleText]} numberOfLines={1} adjustsFontSizeToFit>{title}</Text>
+        <Text style={[NewStyles.title, NewStyles.title]} numberOfLines={1} adjustsFontSizeToFit>{title}</Text>
       </View>
-      <TouchableOpacity onPress={onPressLeft} style={styles.iconContainer}>
+      
+      {/* Left side: Back button (RTL) */}
+      <TouchableOpacity 
+        onPress={handleBack} 
+        style={[styles.iconContainer, { flexDirection: 'row', alignItems: 'center' }]}
+      >
         <Image source={require("../assets/back.png")} style={styles.arrow} />
+        <Text style={styles.titleText}>قبلی</Text>
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -30,23 +50,23 @@ export default ScreenHeaders;
 const styles = StyleSheet.create({
   header: {
     backgroundColor: themeColor4.bgColor(1),
-    minHeight: 30,
+    height: 50,
     width: "100%",
     justifyContent: "space-between",
     alignItems: "center",
     flexDirection: "row",
     paddingHorizontal: 10,
-    // paddingVertical: 0,
   },
   iconContainer: {
-    width: 50,
+    minWidth: 60,
     height: 50,
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: 5,
   },
   arrow: {
-    width: 30,
-    height: 30,
+    width: 24,
+    height: 24,
     resizeMode: "contain",
   },
   titleContainer: {
@@ -57,7 +77,7 @@ const styles = StyleSheet.create({
   },
   titleText: {
     textAlign: "center",
-    fontSize: 16,
-    fontWeight: "bold",
+    fontSize: 12,
+    fontFamily: 'VazirBold',
   },
 });
