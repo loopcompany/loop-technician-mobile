@@ -20,7 +20,8 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.clpiran.looptech"
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -33,6 +34,11 @@
     },
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "8e18e97b-45ff-44cd-bb95-af33726e16ed"
+      }
+    }
   }
 }

@@ -154,9 +154,9 @@ const DetailConponent = ({ data, renderRow, }) => {
                                 )}
                             </>
                         )}
-
+                        
                         {/* اطلاعات سرویس کوتاه‌مدت */}
-                        {data?.service_schedule_type === 'short_term' && (
+                        {data?.service_schedule_type == 'short_term' && (
                             <>
                                 {data?.service_schedule_short_date && renderRow('تاریخ سرویس', formatDate(data?.service_schedule_short_date))}
                                 {data?.service_schedule_short_time && renderRow('ساعت سرویس', data?.service_schedule_short_time?.split(':')?.slice(0, 2)?.join(':'))}
