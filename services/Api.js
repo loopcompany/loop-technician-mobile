@@ -256,6 +256,37 @@ export const verifyDeliveryReportWithCode = async (orderId, code) => {
 };
 
 /**
+ * ارسال مجدد کد تایید گزارش تحویل (متخصص)
+ * فقط برای گزارش‌هایی که هنوز تایید نشده‌اند کار می‌کند
+ */
+export const resendDeliveryReportCode = async (orderId) => {
+  try {
+    console.log(`📧 ارسال مجدد کد تایید برای سفارش ${orderId}`);
+    const response = await api.post(
+      `${Technician_DeliveryReports}/order/${orderId}/resend-code`
+    );
+    console.log('✅ کد تایید مجدداً ارسال شد:', response.data);
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در ارسال مجدد کد تایید:', error.response?.data || error.message);
+    if (error.response) {
+      console.error('❌ Status:', error.response.status);
+      console.error('❌ Data:', error.response.data);
+      
+      // مدیریت خطاهای خاص
+      if (error.response.data?.error_code === 'REPORT_ALREADY_VERIFIED') {
+        return {
+          success: false,
+          message: 'این گزارش قبلاً تایید شده است.',
+          error_code: 'REPORT_ALREADY_VERIFIED'
+        };
+      }
+    }
+    return handleError(error);
+  }
+};
+
+/**
  * ثبت پایان کار
  */
 export const endOrder = async (orderId) => {
@@ -848,17 +879,33 @@ export const updatePersonalInfo = async (data, profilePhoto = null) => {
     if (profilePhoto) {
       const formData = new FormData();
 
-      // Add profile photo
-      const photoData = {
+      // 🌐 Platform-specific photo handling
+      const isWeb = Platform.OS === 'web';
+      
+      console.log('📸 اطلاعات عکس برای ارسال:', {
         uri: profilePhoto.uri,
-        name: profilePhoto.name || 'profile.jpg',
-        type: profilePhoto.type || 'image/jpeg',
-      };
+        name: profilePhoto.name,
+        type: profilePhoto.type,
+        hasFile: !!profilePhoto.file,
+        platform: Platform.OS
+      });
 
-      console.log('📸 اطلاعات عکس برای ارسال:', photoData);
-
-      // Try different field names that backend might expect
-      formData.append('profile_photo', photoData);
+      // Add profile photo based on platform
+      if (isWeb && profilePhoto.file) {
+        // Web: Use File object directly
+        console.log('🌐 استفاده از File object برای Web');
+        formData.append('profile_photo', profilePhoto.file, profilePhoto.name || 'profile.jpg');
+      } else {
+        // Mobile: Use URI-based object
+        console.log('� استفاده از URI object برای Mobile');
+        const photoData = {
+          uri: profilePhoto.uri,
+          name: profilePhoto.name || 'profile.jpg',
+          type: profilePhoto.type || 'image/jpeg',
+        };
+        formData.append('profile_photo', photoData);
+      }
+      
       // Also try with _method for Laravel
       formData.append('_method', 'PUT');
 
@@ -2366,6 +2413,41 @@ export const getUnreadTicketsCount = async () => {
     return handleResponse(response);
   } catch (error) {
     console.error('❌ خطا در دریافت تعداد پیام‌های خوانده نشده:', error.message);
+    return handleError(error);
+  }
+};
+
+/**
+ * دریافت لیست سازمان‌ها با تعداد سفارشات
+ * Get list of organizations with order counts
+ * @returns {Promise<Object>} لیست سازمان‌ها و آمار
+ */
+export const getOrganizationsList = async () => {
+  try {
+    console.log('📋 دریافت لیست سازمان‌ها...');
+    const response = await api.get('/technician/organization-orders/organizations');
+    console.log('✅ لیست سازمان‌ها دریافت شد:', response.data);
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت لیست سازمان‌ها:', error.response?.data || error.message);
+    return handleError(error);
+  }
+};
+
+/**
+ * دریافت سفارشات یک سازمان خاص
+ * Get orders for a specific organization
+ * @param {number} organizationId - شناسه سازمان
+ * @returns {Promise<Object>} لیست سفارشات سازمان
+ */
+export const getOrganizationOrders = async (organizationId) => {
+  try {
+    console.log('📦 دریافت سفارشات سازمان:', organizationId);
+    const response = await api.get(`/technician/organization-orders/organizations/${organizationId}/orders`);
+    console.log('✅ سفارشات سازمان دریافت شد:', response.data);
+    return handleResponse(response);
+  } catch (error) {
+    console.error('❌ خطا در دریافت سفارشات سازمان:', error.response?.data || error.message);
     return handleError(error);
   }
 };

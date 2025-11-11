@@ -9,6 +9,7 @@ import {
   Image,
   ActivityIndicator,
   KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -42,13 +43,17 @@ export default function PersonalInfoScreen({ navigation }) {
   // State for DatePicker
   const [showBirthDatePicker, setShowBirthDatePicker] = useState(false);
   const [selectedBirthDate, setSelectedBirthDate] = useState('');
+  const [showLicenceDatePicker, setShowLicenceDatePicker] = useState(false);
+  const [selectedLicenceDate, setSelectedLicenceDate] = useState('');
+  const [showCertificateIssueDatePicker, setShowCertificateIssueDatePicker] = useState(false);
+  const [selectedCertificateIssueDate, setSelectedCertificateIssueDate] = useState('');
 
   const [personalData, setPersonalData] = useState({
     birth_date: '',
     telephone: '',
     email: '',
     certificate_number: '',
-    certificate_expiry_date: '',
+    licence_date: '',
     certificate_issue_date: '',
     home_address: '',
     home_postal_code: '',
@@ -91,7 +96,7 @@ export default function PersonalInfoScreen({ navigation }) {
         telephone: technicianData.telephone || technicianData.phone || '',
         email: technicianData.email || '',
         certificate_number: technicianData.certificate_number || '',
-        certificate_expiry_date: technicianData.certificate_expiry_date || '',
+        licence_date: technicianData.licence_date || '',
         certificate_issue_date: technicianData.certificate_issue_date || '',
         home_address: technicianData.home_address || '',
         home_postal_code: technicianData.home_postal_code || '',
@@ -130,6 +135,20 @@ export default function PersonalInfoScreen({ navigation }) {
     }
   }, [showBirthDatePicker, selectedBirthDate]);
 
+  // وقتی modal گواهینامه بسته می‌شود و تاریخ جدید انتخاب شده
+  useEffect(() => {
+    if (!showLicenceDatePicker && selectedLicenceDate && selectedLicenceDate != personalData.licence_date) {
+      updateField('licence_date', selectedLicenceDate);
+    }
+  }, [showLicenceDatePicker, selectedLicenceDate]);
+
+  // وقتی modal تاریخ صدور گواهینامه بسته می‌شود
+  useEffect(() => {
+    if (!showCertificateIssueDatePicker && selectedCertificateIssueDate && selectedCertificateIssueDate !== personalData.certificate_issue_date) {
+      updateField('certificate_issue_date', selectedCertificateIssueDate);
+    }
+  }, [showCertificateIssueDatePicker, selectedCertificateIssueDate]);
+
   const updateField = (field, value) => {
     setPersonalData(prev => ({
       ...prev,
@@ -137,37 +156,137 @@ export default function PersonalInfoScreen({ navigation }) {
     }));
   };
 
-  // Pick profile photo
+  // 🌐 Web-specific image picker function
+  const pickImageWeb = () => {
+    return new Promise((resolve, reject) => {
+      try {
+        // Create hidden input element
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.style.display = 'none';
+        
+        input.onchange = (e) => {
+          const file = e.target.files[0];
+          
+          if (!file) {
+            resolve({ canceled: true });
+            return;
+          }
+          
+          // Validate file type
+          if (!file.type.startsWith('image/')) {
+            showAlert('خطا', 'لطفاً فقط فایل تصویری انتخاب کنید');
+            resolve({ canceled: true });
+            return;
+          }
+          
+          // Validate file size (max 5MB)
+          if (file.size > 5 * 1024 * 1024) {
+            showAlert('خطا', 'حجم تصویر نباید بیشتر از 5 مگابایت باشد');
+            resolve({ canceled: true });
+            return;
+          }
+          
+          // Read file as base64 for preview and upload
+          const reader = new FileReader();
+          
+          reader.onload = (event) => {
+            resolve({
+              canceled: false,
+              uri: event.target.result, // base64 data URL
+              name: file.name,
+              type: file.type,
+              size: file.size,
+              file: file, // Keep original file object for upload
+            });
+          };
+          
+          reader.onerror = (error) => {
+            reject(new Error('خطا در خواندن فایل تصویر'));
+          };
+          
+          reader.readAsDataURL(file);
+          
+          // Cleanup
+          document.body.removeChild(input);
+        };
+        
+        input.oncancel = () => {
+          resolve({ canceled: true });
+          document.body.removeChild(input);
+        };
+        
+        // Trigger file picker
+        document.body.appendChild(input);
+        input.click();
+        
+      } catch (error) {
+        reject(error);
+      }
+    });
+  };
+
+  // Pick profile photo (cross-platform)
   const pickImage = async () => {
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        showAlert('خطا', 'دسترسی به گالری مورد نیاز است');
+      let result;
+      
+      // 🌐 Platform-specific image picker
+      if (Platform.OS === 'web') {
+        console.log('🌐 استفاده از انتخابگر تصویر Web');
+        result = await pickImageWeb();
+      } else {
+        console.log('📱 استفاده از ImagePicker Native');
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+          showAlert('خطا', 'دسترسی به گالری مورد نیاز است');
+          return;
+        }
+
+        result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ['images'],
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 0.8,
+        });
+      }
+
+      console.log('📸 نتیجه انتخاب تصویر:', JSON.stringify(result, null, 2));
+
+      if (result.canceled) {
+        console.log('❌ انتخاب تصویر لغو شد');
         return;
       }
 
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.8,
-      });
-
-      if (!result.canceled && result.assets && result.assets.length > 0) {
+      // Extract image info based on platform
+      let imageInfo;
+      if (Platform.OS === 'web') {
+        imageInfo = {
+          uri: result.uri,
+          name: result.name || 'profile.jpg',
+          type: result.type || 'image/jpeg',
+          size: result.size,
+          file: result.file, // Keep original file for web upload
+        };
+      } else {
         const asset = result.assets[0];
-
-        setProfilePhoto({
+        imageInfo = {
           uri: asset.uri,
           name: 'profile.jpg',
           type: 'image/jpeg',
-        });
-        // Set the selected photo URL for preview (won't be overwritten by useEffect)
-        setSelectedPhotoUrl(asset.uri);
-
-        showAlert('موفق', 'عکس انتخاب شد');
+        };
       }
+
+      console.log('✅ تصویر انتخاب شد:', imageInfo);
+
+      setProfilePhoto(imageInfo);
+      // Set the selected photo URL for preview (won't be overwritten by useEffect)
+      setSelectedPhotoUrl(imageInfo.uri);
+
+      showAlert('موفق', 'عکس پروفایل انتخاب شد');
     } catch (error) {
-      console.error('خطا در انتخاب عکس:', error);
+      console.error('❌ خطا در انتخاب عکس:', error);
       showAlert('خطا', 'مشکلی در انتخاب عکس پیش آمد');
     }
   };
@@ -179,6 +298,18 @@ export default function PersonalInfoScreen({ navigation }) {
     const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
     // تبدیل به فرمت شمسی
     return getFormatedDate(maxDate, 'jYYYY/jMM/jDD');
+  };
+
+  // محاسبه تاریخ امروز به صورت شمسی
+  const getTodayDate = () => {
+    return getFormatedDate(new Date(), 'jYYYY/jMM/jDD');
+  };
+
+  // محاسبه تاریخ 10 سال آینده برای گواهینامه
+  const getTenYearsLater = () => {
+    const futureDate = new Date();
+    futureDate.setFullYear(futureDate.getFullYear() + 10);
+    return getFormatedDate(futureDate, 'jYYYY/jMM/jDD');
   };
 
   // Handler for birth date selection
@@ -380,33 +511,41 @@ export default function PersonalInfoScreen({ navigation }) {
                   style={styles.boxedInput}
                   value={personalData.certificate_number}
                   onChangeText={(value) => updateField('certificate_number', value)}
-                  placeholder="شماره گواهینامه :"
+                  placeholder="شماره گواهینامه"
                   placeholderTextColor={themeColor3.bgColor(1)}
                   editable={!saving}
                 />
               </View>
 
-              <View style={styles.boxedRow}>
-                <TextInput
-                  style={styles.boxedInput}
-                  value={personalData.certificate_expiry_date}
-                  onChangeText={(value) => updateField('certificate_expiry_date', value)}
-                  placeholder="مدت اعتبار گواهینامه : 1405/05/15"
-                  placeholderTextColor={themeColor3.bgColor(1)}
-                  editable={!saving}
-                />
-              </View>
+              <TouchableOpacity
+                style={styles.boxedRow}
+                onPress={() => !saving && setShowLicenceDatePicker(true)}
+                disabled={saving}
+              >
+                <View style={styles.boxedInput}>
+                  <Text style={[
+                    styles.dateText,
+                    !personalData.licence_date && styles.placeholderText
+                  ]}>
+                    {personalData.licence_date || 'مدت اعتبار گواهینامه : 1405/05/15'}
+                  </Text>
+                </View>
+              </TouchableOpacity>
 
-              <View style={styles.boxedRow}>
-                <TextInput
-                  style={styles.boxedInput}
-                  value={personalData.certificate_issue_date}
-                  onChangeText={(value) => updateField('certificate_issue_date', value)}
-                  placeholder="تاریخ صدور گواهینامه : 1400/05/15"
-                  placeholderTextColor={themeColor3.bgColor(1)}
-                  editable={!saving}
-                />
-              </View>
+              <TouchableOpacity
+                style={styles.boxedRow}
+                onPress={() => !saving && setShowCertificateIssueDatePicker(true)}
+                disabled={saving}
+              >
+                <View style={styles.boxedInput}>
+                  <Text style={[
+                    styles.dateText,
+                    !personalData.certificate_issue_date && styles.placeholderText
+                  ]}>
+                    {personalData.certificate_issue_date || 'تاریخ صدور گواهینامه : 1400/05/15'}
+                  </Text>
+                </View>
+              </TouchableOpacity>
 
               <View style={styles.boxedRow}>
                 <TextInput
@@ -438,7 +577,7 @@ export default function PersonalInfoScreen({ navigation }) {
                   style={styles.boxedInput}
                   value={personalData.technician_type}
                   onChangeText={(value) => updateField('technician_type', value)}
-                  placeholder="نوع پرسنلی :"
+                  placeholder="نوع پرسنلی"
                   placeholderTextColor={themeColor3.bgColor(1)}
                   editable={!saving}
                 />
@@ -473,7 +612,28 @@ export default function PersonalInfoScreen({ navigation }) {
         birthDate={selectedBirthDate || personalData.birth_date}
         setBirthDate={setSelectedBirthDate}
         maximumDate={getMaxBirthDate()}
-        isCurrentDate={getMaxBirthDate()}
+        isCurrentDate={selectedBirthDate || personalData.birth_date}
+      />
+
+      {/* DatePicker Modal for Licence Date */}
+      <DatePickerModal
+        datePickerModal={showLicenceDatePicker}
+        setDatePickerModal={setShowLicenceDatePicker}
+        birthDate={selectedLicenceDate || personalData.licence_date}
+        setBirthDate={setSelectedLicenceDate}
+        minimumDate={getTodayDate()}
+        maximumDate={getTenYearsLater()}
+        isCurrentDate={selectedLicenceDate || personalData.licence_date || getTodayDate()}
+      />
+
+      {/* DatePicker Modal for Certificate Issue Date */}
+      <DatePickerModal
+        datePickerModal={showCertificateIssueDatePicker}
+        setDatePickerModal={setShowCertificateIssueDatePicker}
+        birthDate={selectedCertificateIssueDate || personalData.certificate_issue_date}
+        setBirthDate={setSelectedCertificateIssueDate}
+        maximumDate={getTodayDate()}
+        isCurrentDate={selectedCertificateIssueDate || personalData.certificate_issue_date || getTodayDate()}
       />
     </SafeAreaView>
   );

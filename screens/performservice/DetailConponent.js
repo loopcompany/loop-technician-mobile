@@ -5,6 +5,7 @@ import NewStyles from '../../styles/NewStyles'
 import { Ionicons } from '@expo/vector-icons'
 import { themeColor0, themeColor3, themeColor4, themeColor5, themeColor6, themeColor7 } from '../../theme/Color'
 import { formatDate, formatDateTime, formatPrice } from '../../helpers/Common'
+import { mainUri } from '../../services/URL'
 
 const DetailConponent = ({ data, renderRow, }) => {
     const calculateTotalPrice = () => {
@@ -64,7 +65,8 @@ const DetailConponent = ({ data, renderRow, }) => {
                 <View style={styles.separator} />
 
                 <View style={styles.cardContent}>
-                    {renderRow('زمان مراجعه تکنسین', data?.is_urgent > 0 ? 'درخواست فوری' : `${formatDate(data?.date)} ساعت ${data?.time?.split(':')?.slice(0, 2)?.join(':')}`, NewStyles.text, data?.is_urgent > 0 && NewStyles.title6)}
+                    {/* نمایش تاریخ و زمان معمولی فقط اگر سفارش سازمانی نباشد */}
+                    {!data?.service_schedule_type && renderRow('زمان مراجعه تکنسین', data?.is_urgent > 0 ? 'درخواست فوری' : `${formatDate(data?.date)} ساعت ${data?.time?.split(':')?.slice(0, 2)?.join(':')}`, NewStyles.text, data?.is_urgent > 0 && NewStyles.title6)}
                     {renderRow('زمان ثبت سفارش', formatDateTime(data?.created_at))}
 
                     {Number(data?.category?.has_gender) > 0 && renderRow(
@@ -111,6 +113,71 @@ const DetailConponent = ({ data, renderRow, }) => {
                     </View>
                 </View>
             </View>
+
+            {/* اطلاعات سرویس سازمانی */}
+            {data?.service_schedule_type && (
+                <View style={styles.card}>
+                    <View style={styles.cardHeader}>
+                        <View style={[NewStyles.row, { gap: 5 }]}>
+                            <Ionicons name="business-outline" size={24} color={themeColor0.bgColor(1)} />
+                            <Text style={NewStyles.title}>اطلاعات سرویس سازمانی</Text>
+                        </View>
+                    </View>
+
+                    <View style={styles.separator} />
+
+                    <View style={styles.cardContent}>
+                        {renderRow('نوع زمان‌بندی', 
+                            data?.service_schedule_type === 'long_term' ? 'بلندمدت' : 
+                            data?.service_schedule_type === 'short_term' ? 'کوتاه‌مدت' : 'نامشخص',
+                            NewStyles.text,
+                            data?.service_schedule_type === 'long_term' ? NewStyles.title7 : NewStyles.title6
+                        )}
+
+                        {/* اطلاعات سرویس بلندمدت */}
+                        {data?.service_schedule_type === 'long_term' && (
+                            <>
+                                {data?.service_schedule_long_duration && renderRow('مدت قرارداد', `${data?.service_schedule_long_duration} ماه`)}
+                                {data?.service_schedule_long_date && renderRow('تاریخ شروع', formatDate(data?.service_schedule_long_date))}
+                                {data?.service_schedule_long_time && renderRow('ساعت سرویس', data?.service_schedule_long_time?.split(':')?.slice(0, 2)?.join(':'))}
+                                {data?.service_schedule_long_file && (
+                                    <TouchableOpacity 
+                                        style={styles.contractButton}
+                                        onPress={() => {
+                                            const fileUrl = `${mainUri}/storage/${data?.service_schedule_long_file}`;
+                                            Linking.openURL(fileUrl).catch(err => console.error('خطا در باز کردن فایل:', err));
+                                        }}
+                                    >
+                                        <Ionicons name="document-text" size={20} color={themeColor0.bgColor(1)} />
+                                        <Text style={styles.contractButtonText}>مشاهده قرارداد</Text>
+                                    </TouchableOpacity>
+                                )}
+                            </>
+                        )}
+
+                        {/* اطلاعات سرویس کوتاه‌مدت */}
+                        {data?.service_schedule_type === 'short_term' && (
+                            <>
+                                {data?.service_schedule_short_date && renderRow('تاریخ سرویس', formatDate(data?.service_schedule_short_date))}
+                                {data?.service_schedule_short_time && renderRow('ساعت سرویس', data?.service_schedule_short_time?.split(':')?.slice(0, 2)?.join(':'))}
+                                {data?.service_schedule_short_file && (
+                                    <TouchableOpacity 
+                                        style={styles.contractButton}
+                                        onPress={() => {
+                                            const fileUrl = `${mainUri}/storage/${data?.service_schedule_short_file}`;
+                                            Linking.openURL(fileUrl).catch(err => console.error('خطا در باز کردن فایل:', err));
+                                        }}
+                                    >
+                                        <Ionicons name="document-text" size={20} color={themeColor0.bgColor(1)} />
+                                        <Text style={styles.contractButtonText}>مشاهده قرارداد</Text>
+                                    </TouchableOpacity>
+                                )}
+                            </>
+                        )}
+                    </View>
+                </View>
+            )}
+
             {data?.user_address && (
                 <View style={styles.card}>
                     <View style={styles.sectionHeader}>
@@ -379,6 +446,22 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   openMapButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  contractButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: themeColor0.bgColor(1),
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    marginTop: 5,
+    gap: 8,
+  },
+  contractButtonText: {
     color: '#fff',
     fontSize: 14,
     fontWeight: 'bold',

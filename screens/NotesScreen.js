@@ -124,7 +124,7 @@ export default function NotesScreen({ route, navigation }) {
         </View>
 
         <View style={styles.cardContent}>
-          <Text style={[NewStyles.text10, { lineHeight: 24 }]}>
+          <Text style={[NewStyles.text10, { lineHeight: 24 }]} numberOfLines={4}>
             {item.note}
           </Text>
         </View>

@@ -20,8 +20,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor3, themeColor4, themeColor5, themeColor6, themeColor7 } from '../../theme/Color';
-import { getTechnicianOrderById, submitTechnicianDescription, setOffToOrder, arriveToOrder, createOrderReport, updateOrderReport, getOrderReport, getOrderReportByOrderId, sendOrderToLoop, updateLoopInfo, startRepair, createDeliveryReport, updateDeliveryReport, getDeliveryReportByOrderId, verifyDeliveryReportWithCode, endOrder, getTechnicianChatMessages, cancelOrderByTechnician, submitEmergencyHelp, submitTechnicianOpinion } from '../../services/Api';
-import { showToastOrAlert, formatDate, formatDateTime, formatPrice , showAlert} from '../../helpers/Common';
+import { getTechnicianOrderById, submitTechnicianDescription, setOffToOrder, arriveToOrder, createOrderReport, updateOrderReport, getOrderReport, getOrderReportByOrderId, sendOrderToLoop, updateLoopInfo, startRepair, createDeliveryReport, updateDeliveryReport, getDeliveryReportByOrderId, verifyDeliveryReportWithCode, resendDeliveryReportCode, endOrder, getTechnicianChatMessages, cancelOrderByTechnician, submitEmergencyHelp, submitTechnicianOpinion } from '../../services/Api';
+import { showToastOrAlert, formatDate, formatDateTime, formatPrice, showAlert } from '../../helpers/Common';
 import AccordionHeader from '../../components/AccordionHeader';
 import DetailConponent from './DetailConponent';
 import DatePickerModal from '../../components/DatePickerModal';
@@ -124,6 +124,9 @@ export default function OrderDetailScreen({ route, navigation }) {
   const [endingOrder, setEndingOrder] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [verifyingCode, setVerifyingCode] = useState(false);
+  const [resendingCode, setResendingCode] = useState(false);
+  const [resendTimer, setResendTimer] = useState(0);
+  const [canResend, setCanResend] = useState(true);
 
   // State برای نظر متخصص
   const [technicianOpinion, setTechnicianOpinion] = useState('');
@@ -185,7 +188,7 @@ export default function OrderDetailScreen({ route, navigation }) {
   // تابع بارگذاری تعداد پیام‌های خوانده نشده
   const loadUnreadMessages = async () => {
     if (!data?.user_id) return;
-    
+
     try {
       const result = await getTechnicianChatMessages(data.user_id);
       if (result.success && result?.data?.messages) {
@@ -362,9 +365,9 @@ export default function OrderDetailScreen({ route, navigation }) {
             try {
               setCancelingOrder(true);
               await cancelOrderByTechnician(orderId, selectedCancelReason);
-              
+
               showToastOrAlert('سفارش با موفقیت لغو شد', 'success');
-              
+
               // بازگشت به صفحه قبل
               setTimeout(() => {
                 navigation.goBack();
@@ -390,12 +393,12 @@ export default function OrderDetailScreen({ route, navigation }) {
     try {
       setSubmittingEmergencyHelp(true);
       await submitEmergencyHelp(orderId, emergencyHelpText);
-      
+
       showToastOrAlert('درخواست کمک اضطراری با موفقیت ثبت شد', 'success');
-      
+
       // به‌روزرسانی اطلاعات سفارش
       await fetchOrderDetails();
-      
+
     } catch (error) {
       showToastOrAlert(error.message || 'خطا در ثبت درخواست');
     } finally {
@@ -704,6 +707,29 @@ export default function OrderDetailScreen({ route, navigation }) {
     }
   };
 
+  // تابع ارسال مجدد کد تایید
+  const handleResendCode = async () => {
+    try {
+      setResendingCode(true);
+      const result = await resendDeliveryReportCode(orderId);
+
+      if (result.success) {
+        showToastOrAlert('کد تایید مجدداً ارسال شد', 'success');
+        setVerificationCode('');
+        // شروع تایمر 60 ثانیه
+        setResendTimer(60);
+        setCanResend(false);
+      } else {
+        showToastOrAlert(result.message || 'خطا در ارسال مجدد کد');
+      }
+    } catch (error) {
+      console.error('Error resending code:', error);
+      showToastOrAlert('خطا در ارسال مجدد کد');
+    } finally {
+      setResendingCode(false);
+    }
+  };
+
   // تابع اتمام سرویس جاری
   const handleEndOrder = async () => {
     try {
@@ -734,12 +760,12 @@ export default function OrderDetailScreen({ route, navigation }) {
     try {
       setSubmittingOpinion(true);
       await submitTechnicianOpinion(orderId, technicianOpinion);
-      
+
       showToastOrAlert('نظر شما با موفقیت ثبت شد', 'success');
-      
+
       // به‌روزرسانی اطلاعات سفارش
       await fetchOrderDetails();
-      
+
     } catch (error) {
       showToastOrAlert(error.message || 'خطا در ثبت نظر');
     } finally {
@@ -773,6 +799,23 @@ export default function OrderDetailScreen({ route, navigation }) {
       loadDeliveryReport();
     }
   }, [data, isDeliveryActive, orderId]);
+
+  // تایمر برای ارسال مجدد کد
+  React.useEffect(() => {
+    let interval;
+    if (resendTimer > 0 && !canResend) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => {
+          if (prev <= 1) {
+            setCanResend(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendTimer, canResend]);
 
 
   if (loading && !data) {
@@ -1009,7 +1052,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                       <TextInput
                         style={styles.textInput}
                         value={technicianPrice?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                        onChangeText={(p)=>{setTechnicianPrice(p?.replace(/,/g, ""))}}
+                        onChangeText={(p) => { setTechnicianPrice(p?.replace(/,/g, "")) }}
                         placeholder="مثال: 500000"
                         placeholderTextColor={themeColor3.bgColor(0.5)}
                         keyboardType="number-pad"
@@ -1018,7 +1061,7 @@ export default function OrderDetailScreen({ route, navigation }) {
 
                     {/* توضیحات */}
                     <View style={styles.inputGroup}>
-                      <Text style={NewStyles.text}>توضیحات (اختیاری):</Text>
+                      <Text style={NewStyles.text}>توضیحات <Text style={NewStyles.text6}>*</Text>:</Text>
                       <TextInput
                         style={[styles.textInput, styles.multilineInput]}
                         value={reviewDescription}
@@ -1126,7 +1169,7 @@ export default function OrderDetailScreen({ route, navigation }) {
 
                 {/* بخش لغو سفارش - فقط بعد از رسیدن */}
                 {data?.arrived_at && !data?.started_at && (
-                  <View style={[styles.cancelSection, { marginTop: 20, padding: 15, backgroundColor: themeColor5.bgColor(1), borderRadius: 10, borderWidth:1, borderColor:themeColor6.bgColor(1) }]}>
+                  <View style={[styles.cancelSection, { marginTop: 20, padding: 15, backgroundColor: themeColor5.bgColor(1), borderRadius: 10, borderWidth: 1, borderColor: themeColor6.bgColor(1) }]}>
                     <View style={[NewStyles.row, { gap: 10, alignItems: 'center', marginBottom: 15 }]}>
                       <Ionicons name="warning-outline" size={24} color={themeColor6.bgColor(1)} />
                       <Text style={[NewStyles.title4, { color: themeColor6.bgColor(1) }]}>
@@ -1578,8 +1621,8 @@ export default function OrderDetailScreen({ route, navigation }) {
                       <Text style={NewStyles.text}>هزینه تقریبی (تومان)</Text>
                       <TextInput
                         style={styles.textInput}
-                        value={loopInfo.loop_cost_estimate}
-                        onChangeText={(text) => setLoopInfo({ ...loopInfo, loop_cost_estimate: text })}
+                        value={loopInfo.loop_cost_estimate?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                        onChangeText={(text) => setLoopInfo({ ...loopInfo, loop_cost_estimate: text?.replace(/,/g, "") })}
                         placeholder="مثال: 2500000"
                         placeholderTextColor={themeColor3.bgColor(0.5)}
                         keyboardType="number-pad"
@@ -1667,7 +1710,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                   </View>
                 )}
 
-                <View style={{ paddingHorizontal: 15 }}>
+                {data?.payment_status == 0 && <View style={{ paddingHorizontal: 15 }}>
                   <TouchableOpacity
                     style={[
                       NewStyles.row,
@@ -1695,7 +1738,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                       مدیریت هزینه ها و قطعات
                     </Text>
                   </TouchableOpacity>
-                </View>
+                </View>}
 
                 {((orderExtras && orderExtras.length > 0) || (data?.extras && data.extras.length > 0)) ? (
                   <View style={{ gap: 10, paddingHorizontal: 15 }}>
@@ -1973,6 +2016,47 @@ export default function OrderDetailScreen({ route, navigation }) {
                       loading={verifyingCode}
                       disabled={verifyingCode || verificationCode.length !== 6}
                     />
+
+                    {/* دکمه ارسال مجدد کد */}
+                    <View style={{ marginTop: 15, alignItems: 'center' }}>
+                      {canResend ? (
+                        <TouchableOpacity
+                          style={[
+                            NewStyles.row,
+                            {
+                              alignItems: 'center',
+                              gap: 8,
+                              paddingVertical: 10,
+                              paddingHorizontal: 15,
+                              backgroundColor: themeColor5.bgColor(1),
+                              borderRadius: 8,
+                              borderWidth: 1,
+                              borderColor: themeColor0.bgColor(1),
+                            }
+                          ]}
+                          onPress={handleResendCode}
+                          disabled={resendingCode}
+                        >
+                          {resendingCode ? (
+                            <ActivityIndicator size="small" color={themeColor0.bgColor(1)} />
+                          ) : (
+                            <>
+                              <Ionicons name="refresh-outline" size={20} color={themeColor0.bgColor(1)} />
+                              <Text style={[NewStyles.text, { color: themeColor0.bgColor(1) }]}>
+                                ارسال مجدد کد
+                              </Text>
+                            </>
+                          )}
+                        </TouchableOpacity>
+                      ) : (
+                        <View style={[NewStyles.row, { alignItems: 'center', gap: 8 }]}>
+                          <Ionicons name="time-outline" size={20} color={themeColor3.bgColor(1)} />
+                          <Text style={[NewStyles.text10, { color: themeColor3.bgColor(1) }]}>
+                            ارسال مجدد کد بعد از {resendTimer} ثانیه
+                          </Text>
+                        </View>
+                      )}
+                    </View>
                   </View>
                 )}
 
@@ -2190,9 +2274,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 15,
     gap: 15,
-    width:'90%',
-    alignSelf:'center',
-    maxWidth:800,
+    width: '90%',
+    alignSelf: 'center',
+    maxWidth: 800,
   },
   infoCard: {
     backgroundColor: themeColor5.bgColor(1),

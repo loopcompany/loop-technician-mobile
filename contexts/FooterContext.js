@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -21,6 +21,7 @@ import { setToken } from '../slices/authSlice';
 import { emptyUser } from '../slices/userSlice';
 import { Ionicons } from '@expo/vector-icons';
 import ConfirmationModal from '../components/ConfirmationModal';
+import { fetchContacts } from '../slices/contactSlice';
 
 const FooterContext = createContext();
 
@@ -42,6 +43,9 @@ export const FooterProvider = ({ children }) => {
   const showFooter = () => setIsFooterVisible(true);
   const hideFooter = () => setIsFooterVisible(false);
   const toggleFooter = () => setIsFooterVisible(!isFooterVisible);
+  useEffect(()=>{
+       dispatch(fetchContacts());
+  },[])
   const contact = useSelector(state => state.contacts);
   const userToken = useSelector(state => state.auth.token);
 
@@ -49,10 +53,11 @@ export const FooterProvider = ({ children }) => {
   const menuItems = userToken
     ? [
       // منوهای کاربر لاگین شده
-      { id: 1, title: 'صفحه اصلی', screen: 'FolderScreen' },
-      { id: 2, title: 'ضمانت نامه/گارانتی', screen: 'WarrantyScreen' },
-      { id: 3, title: 'سوالات متداول', screen: 'LearnMoreScreen' },
-      { id: 4, title: 'قوانین/درباره لوپ', screen: 'AboutScreen' },
+      { id: 1, title: 'سازمانی / شرکتی', screen: 'OrganizationsListScreen' },
+      { id: 2, title: 'صفحه اصلی', screen: 'FolderScreen' },
+      { id: 3, title: 'ضمانت نامه/گارانتی', screen: 'WarrantyScreen' },
+      { id: 4, title: 'سوالات متداول', screen: 'LearnMoreScreen' },
+      { id: 5, title: 'قوانین/درباره لوپ', screen: 'AboutScreen' },
     ]
     : [
       // منوهای کاربر لاگین نشده
@@ -173,12 +178,12 @@ export const FooterProvider = ({ children }) => {
         <View style={[styles.footer, NewStyles.rowWrapper]}>
           <TouchableOpacity
             onPress={() => {
-              Linking.openURL(`tel:02121164552`);
+              contact?.data?.data?.link && Linking.openURL(`${contact?.data?.data?.link}`)
             }}
           >
-            <Text style={NewStyles.text4}>21164552</Text>
+            <Text style={NewStyles.text4}>{contact?.data?.data?.name}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.supportButton}>
+          <TouchableOpacity style={styles.supportButton} onPress={()=>{navigation.navigate('MessageScreen')}}>
             <Text style={NewStyles.text4}>پشتیبانی</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => {

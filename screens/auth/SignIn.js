@@ -92,6 +92,13 @@ export default function SignIn({ navigation }) {
     return getFormatedDate(new Date(), 'jYYYY/jMM/jDD');
   }, []);
 
+  // محاسبه حداکثر تاریخ تولد (18 سال پیش) برای حداقل سن 18 سال
+  const maxBirthDate = useMemo(() => {
+    const date18YearsAgo = new Date();
+    date18YearsAgo.setFullYear(date18YearsAgo.getFullYear() - 18);
+    return getFormatedDate(date18YearsAgo, 'jYYYY/jMM/jDD');
+  }, []);
+
   // محاسبه تاریخ 10 سال آینده برای گواهینامه (یک بار)
   const tenYearsLater = useMemo(() => {
     const futureDate = new Date();
@@ -725,13 +732,20 @@ export default function SignIn({ navigation }) {
 
           {/* نوع وسیله نقلیه */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>نوع وسیله نقلیه : موتور سیکلت / خودرو / دوچرخه / پیاده</Text>
-            <TextInput
-              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-              value={formData.vehicle_type}
-              onChangeText={(value) => updateField('vehicle_type', value)}
-              placeholder=""
-            />
+            <Text style={[NewStyles.text10]}>نوع وسیله نقلیه :</Text>
+            <View style={[NewStyles.textInput, NewStyles.border10, styles.pickerContainer]}>
+              <Picker
+                selectedValue={formData.vehicle_type}
+                onValueChange={(value) => updateField('vehicle_type', value)}
+                style={styles.picker}
+              >
+                <Picker.Item label="انتخاب کنید..." value="" />
+                <Picker.Item label="موتور سیکلت" value="موتور سیکلت" />
+                <Picker.Item label="خودرو" value="خودرو" />
+                <Picker.Item label="دوچرخه" value="دوچرخه" />
+                <Picker.Item label="پیاده" value="پیاده" />
+              </Picker>
+            </View>
           </View>
 
           {/* کد پستی منزل */}
@@ -1154,13 +1168,14 @@ export default function SignIn({ navigation }) {
       </ImageBackground>
  
       {/* Date Picker Modals */}
-      {/* تاریخ تولد: حداکثر امروز */}
+      {/* تاریخ تولد: حداکثر 18 سال پیش (حداقل سن 18 سال) */}
       <DatePickerModal
         datePickerModal={birthDateModal}
         setDatePickerModal={setBirthDateModal}
         birthDate={formData.birth_date}
         setBirthDate={(date) => updateField('birth_date', date)}
-        maximumDate={todayDate}
+        maximumDate={maxBirthDate}
+        isCurrentDate={maxBirthDate}
       />
 
       {/* تاریخ اعتبار گواهینامه: حداقل امروز، حداکثر 10 سال بعد */}
@@ -1171,6 +1186,7 @@ export default function SignIn({ navigation }) {
         setBirthDate={(date) => updateField('licence_date', date)}
         minimumDate={todayDate}
         maximumDate={tenYearsLater}
+        isCurrentDate={todayDate}
       />
     </SafeAreaView>
   );

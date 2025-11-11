@@ -21,6 +21,7 @@ import { updateBankInfo } from '../../services/Api';
 import { showAlert } from '../../helpers/Common';
 import { setUserData } from '../../slices/userSlice';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Button from '../../components/Button';
 export default function FinancialInfoScreen({ navigation }) {
   const dispatch = useDispatch();
   const userData = useSelector(state => state.user.data);
@@ -216,17 +217,9 @@ export default function FinancialInfoScreen({ navigation }) {
               </View>
 
               {/* دکمه ثبت */}
-              <TouchableOpacity
-                style={[styles.saveButton, saving && styles.saveButtonDisabled]}
-                onPress={handleSave}
-                disabled={saving}
-              >
-                {saving ? (
-                  <ActivityIndicator color={themeColor4.bgColor(1)} />
-                ) : (
-                  <Text style={styles.saveButtonText}>ثبت اطلاعات</Text>
-                )}
-              </TouchableOpacity>
+             
+
+              <Button title={'ثبت اطلاعات'} onPress={handleSave} loading={saving} />
 
             </View>
 
@@ -256,9 +249,9 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
   buttonText: {
+    ...NewStyles.title4,
     color: themeColor4.bgColor(1),
     fontSize: 16,
-    fontWeight: 'bold',
   },
   formContainer: {
     width: '100%',
@@ -271,9 +264,9 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
   label: {
+    ...NewStyles.text10,
     fontSize: 14,
     color: themeColor10.bgColor(1),
-    fontWeight: '600',
     marginBottom: 8,
     textAlign: 'right',
   },
@@ -285,6 +278,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     backgroundColor: themeColor4.bgColor(1),
     textAlign: 'right',
+    ...NewStyles.text10,
     minHeight: 45,
   },
   saveButton: {
@@ -300,7 +294,6 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: themeColor4.bgColor(1),
     fontSize: 16,
-    fontWeight: 'bold',
   },
 });
 
