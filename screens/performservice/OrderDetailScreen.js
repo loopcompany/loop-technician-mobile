@@ -993,13 +993,29 @@ export default function OrderDetailScreen({ route, navigation }) {
 
             {showReview && isReviewActive && (
               <View style={styles.contentSection}>
-                {/* نمایش تاریخ و ساعت فعلی */}
-                <View style={styles.infoCard}>
-                  <Text style={NewStyles.text2}>تاریخ و ساعت مراجعه فعلی:</Text>
-                  <Text style={[NewStyles.title, { marginTop: 5 }]}>
-                    {formatDate(data?.date)} - ساعت {data?.time?.split(':')?.slice(0, 2)?.join(':')}
-                  </Text>
-                </View>
+                {/* نمایش تاریخ و ساعت فعلی - فقط برای سفارشات معمولی */}
+                {!data?.service_schedule_type && (
+                  <View style={styles.infoCard}>
+                    <Text style={NewStyles.text2}>تاریخ و ساعت مراجعه فعلی:</Text>
+                    <Text style={[NewStyles.title, { marginTop: 5 }]}>
+                      {formatDate(data?.date)} - ساعت {data?.time?.split(':')?.slice(0, 2)?.join(':')}
+                    </Text>
+                  </View>
+                )}
+
+                {/* نمایش اطلاعات سفارش سازمانی */}
+                {data?.service_schedule_type && (
+                  <View style={[styles.infoCard, { backgroundColor: themeColor0.bgColor(0.1) }]}>
+                    <View style={[NewStyles.row, { gap: 10, alignItems: 'center', marginBottom: 10 }]}>
+                      <Ionicons name="business-outline" size={24} color={themeColor0.bgColor(1)} />
+                      <Text style={NewStyles.title}>سفارش سازمانی</Text>
+                    </View>
+                    <Text style={[NewStyles.text10, { textAlign: 'center', lineHeight: 22 }]}>
+                      این سفارش از نوع سازمانی است و تاریخ و ساعت آن قابل تغییر نیست.{'\n'}
+                      فقط می‌توانید توضیحات اضافه کنید.
+                    </Text>
+                  </View>
+                )}
 
                 {data?.user_initial_accept ? (
                   // نمایش پیام تایید کاربر
@@ -1020,33 +1036,39 @@ export default function OrderDetailScreen({ route, navigation }) {
                   </View>
                 ) : (
                   <>
-                    {/* انتخاب تاریخ جدید */}
-                    <View style={styles.inputGroup}>
-                      <Text style={NewStyles.text}>تاریخ مراجعه:</Text>
-                      <TouchableOpacity
-                        style={styles.dateInput}
-                        onPress={() => setDatePickerModal(true)}
-                      >
-                        <Text style={NewStyles.text10}>
-                          {selectedDate ? formatDate(selectedDate) : 'انتخاب تاریخ'}
-                        </Text>
-                        <Ionicons name="calendar-outline" size={20} color={themeColor0.bgColor(1)} />
-                      </TouchableOpacity>
-                    </View>
+                    {/* فیلدهای تاریخ، ساعت و مبلغ - فقط برای سفارشات معمولی */}
+                    {!data?.service_schedule_type && (
+                      <>
+                        {/* انتخاب تاریخ جدید */}
+                        <View style={styles.inputGroup}>
+                          <Text style={NewStyles.text}>تاریخ مراجعه:</Text>
+                          <TouchableOpacity
+                            style={styles.dateInput}
+                            onPress={() => setDatePickerModal(true)}
+                          >
+                            <Text style={NewStyles.text10}>
+                              {selectedDate ? formatDate(selectedDate) : 'انتخاب تاریخ'}
+                            </Text>
+                            <Ionicons name="calendar-outline" size={20} color={themeColor0.bgColor(1)} />
+                          </TouchableOpacity>
+                        </View>
 
-                    {/* ورود بازه ساعت */}
-                    <View style={styles.inputGroup}>
-                      <Text style={NewStyles.text}>بازه ساعت مراجعه:</Text>
-                      <TextInput
-                        style={styles.textInput}
-                        value={timeRange}
-                        onChangeText={setTimeRange}
-                        placeholder="مثال: 09:00-12:00"
-                        placeholderTextColor={themeColor3.bgColor(0.5)}
-                      />
-                    </View>
+                        {/* ورود بازه ساعت */}
+                        <View style={styles.inputGroup}>
+                          <Text style={NewStyles.text}>بازه ساعت مراجعه:</Text>
+                          <TextInput
+                            style={styles.textInput}
+                            value={timeRange}
+                            onChangeText={setTimeRange}
+                            placeholder="مثال: 09:00-12:00"
+                            placeholderTextColor={themeColor3.bgColor(0.5)}
+                          />
+                        </View>
 
-                    {/* ورود مبلغ پایه متخصص */}
+                      </>
+                    )}
+
+                    {/* ورود مبلغ پایه متخصص - برای هر دو نوع سفارش */}
                     <View style={styles.inputGroup}>
                       <Text style={NewStyles.text}>مبلغ پایه متخصص (تومان):</Text>
                       <TextInput
@@ -1059,14 +1081,14 @@ export default function OrderDetailScreen({ route, navigation }) {
                       />
                     </View>
 
-                    {/* توضیحات */}
+                    {/* توضیحات - برای هر دو نوع سفارش */}
                     <View style={styles.inputGroup}>
-                      <Text style={NewStyles.text}>توضیحات <Text style={NewStyles.text6}>*</Text>:</Text>
+                      <Text style={NewStyles.text}>توضیحات {!data?.service_schedule_type && <Text style={NewStyles.text6}>*</Text>}:</Text>
                       <TextInput
                         style={[styles.textInput, styles.multilineInput]}
                         value={reviewDescription}
                         onChangeText={setReviewDescription}
-                        placeholder="توضیحات خود را وارد کنید..."
+                        placeholder={data?.service_schedule_type ? "توضیحات خود را وارد کنید (اختیاری)..." : "توضیحات خود را وارد کنید..."}
                         placeholderTextColor={themeColor3.bgColor(0.5)}
                         multiline
                         numberOfLines={4}
