@@ -62,7 +62,7 @@ export const FooterProvider = ({ children }) => {
     : [
       // منوهای کاربر لاگین نشده
       { id: 1, title: 'ورود', screen: 'Login' },
-      { id: 2, title: 'ثبت نام', screen: 'SignInScreen' },
+      { id: 2, title: 'ثبت نام', screen: 'SignIn' },
       { id: 3, title: 'ضمانت نامه/گارانتی', screen: 'WarrantyScreen' },
       { id: 4, title: 'سوالات متداول', screen: 'LearnMoreScreen' },
       { id: 5, title: 'قوانین/درباره لوپ', screen: 'AboutScreen' },
