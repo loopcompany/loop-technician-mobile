@@ -70,8 +70,8 @@ export default function ChatRoom({ route }) {
 
             if (response?.success) {
                 console.log('✅ پیام ارسال شد');
+                setMessage('');
                 fetchData();
-                setMessage(null);
             } else if (response?.error_code === 'CHAT_CLOSED') {
                 showToastOrAlert(response.message || 'چت بسته شده است. سفارش فعالی وجود ندارد.');
                 setIsChatOpen(false);

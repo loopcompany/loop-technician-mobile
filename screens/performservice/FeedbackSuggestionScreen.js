@@ -7,6 +7,8 @@ import {
   ScrollView,
   TextInput,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -79,14 +81,6 @@ export default function FeedbackSuggestionScreen({ navigation }) {
   // ثبت نظرات
   const handleSubmit = async () => {
     try {
-      // بررسی اینکه حداقل یک فیلد پر شده باشد
-      const hasAnyFeedback = Object.values(feedbacks).some(text => text.trim().length > 0);
-      
-      if (!hasAnyFeedback) {
-        showAlert('خطا', 'لطفاً حداقل یکی از فیلدها را پر کنید');
-        return;
-      }
-
       setSubmitting(true);
 
       // فقط فیلدهایی که پر شده‌اند را ارسال کن
@@ -183,50 +177,60 @@ export default function FeedbackSuggestionScreen({ navigation }) {
         onPressLeft={() => navigation.goBack()} 
       />
       
-      <ScrollView contentContainerStyle={styles.container}>
-        
-        {/* دکمه‌های دسته‌بندی */}
-        {categories.map((category) => (
-          <View key={category.id} style={styles.categoryContainer}>
-            <TouchableOpacity 
-              style={[styles.categoryButton, { backgroundColor: themeColor0.bgColor(0.8) }]}
-              disabled={submitting}
-            >
-              <Text style={styles.categoryButtonText}>{category.title}</Text>
-            </TouchableOpacity>
-            
-            {/* باکس بازخورد برای هر دسته */}
-            <View style={styles.feedbackBox}>
-              <TextInput
-                style={styles.feedbackInput}
-                multiline={true}
-                numberOfLines={3}
-                placeholder="بازخورد :"
-                placeholderTextColor={themeColor3.bgColor(1)}
-                value={feedbacks[category.id]}
-                onChangeText={(text) => handleTextChange(category.id, text)}
-                textAlignVertical="top"
-                maxLength={category.maxLength}
-                editable={!submitting}
-              />
-            </View>
-          </View>
-        ))}
-
-        {/* دکمه ثبت */}
-        <TouchableOpacity 
-          style={[styles.submitButton, submitting && styles.submitButtonDisabled]}
-          onPress={handleSubmit}
-          disabled={submitting}
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+      >
+        <ScrollView 
+          contentContainerStyle={styles.container}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
-          {submitting ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Text style={[NewStyles.text4, styles.submitButtonText]}>ثبت نظرات</Text>
-          )}
-        </TouchableOpacity>
+          
+          {/* دکمه‌های دسته‌بندی */}
+          {categories.map((category) => (
+            <View key={category.id} style={styles.categoryContainer}>
+              <TouchableOpacity 
+                style={[styles.categoryButton, { backgroundColor: themeColor0.bgColor(0.8) }]}
+                disabled={submitting}
+              >
+                <Text style={styles.categoryButtonText}>{category.title}</Text>
+              </TouchableOpacity>
+              
+              {/* باکس بازخورد برای هر دسته */}
+              <View style={styles.feedbackBox}>
+                <TextInput
+                  style={styles.feedbackInput}
+                  multiline={true}
+                  numberOfLines={3}
+                  placeholder="بازخورد :"
+                  placeholderTextColor={themeColor3.bgColor(1)}
+                  value={feedbacks[category.id]}
+                  onChangeText={(text) => handleTextChange(category.id, text)}
+                  textAlignVertical="top"
+                  maxLength={category.maxLength}
+                  editable={!submitting}
+                />
+              </View>
+            </View>
+          ))}
 
-      </ScrollView>
+          {/* دکمه ثبت */}
+          <TouchableOpacity 
+            style={[styles.submitButton, submitting && styles.submitButtonDisabled]}
+            onPress={handleSubmit}
+            disabled={submitting}
+          >
+            {submitting ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={[NewStyles.text4, styles.submitButtonText]}>ثبت نظرات</Text>
+            )}
+          </TouchableOpacity>
+
+        </ScrollView>
+      </KeyboardAvoidingView>
     </LinearGradient>
   );
 }
@@ -262,6 +266,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     alignItems: 'center',
     gap: 15,
+    paddingBottom: 50,
   },
   categoryContainer: {
     width: '100%',

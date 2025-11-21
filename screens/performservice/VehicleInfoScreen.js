@@ -214,7 +214,7 @@ export default function VehicleInfoScreen({ navigation }) {
         console.log('✅ پاسخ موفق از API دریافت شد');
         console.log('📦 result.data:', JSON.stringify(result.data, null, 2));
 
-        showAlert('موفق', 'اطلاعات خودرو با موفقیت به‌روزرسانی شد');
+        showAlert('موفق', 'اطلاعات  با موفقیت به‌روزرسانی شد');
 
         // Update Redux with new data
         if (result.data && result.data.technician) {

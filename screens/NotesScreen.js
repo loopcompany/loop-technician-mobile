@@ -12,9 +12,8 @@ import ScreenHeaders from "../components/ScreenHeaders";
 import NewStyles from "../styles/NewStyles";
 import { themeColor1, themeColor4, themeColor0, themeColor3 } from "../theme/Color";
 import { notesAPI } from "../services/Api";
-import { showToastOrAlert , showAlert} from "../helpers/Common";
+import { showToastOrAlert , showAlert, formatDateTime} from "../helpers/Common";
 import Button from "../components/Button";
-import moment from "moment-jalaali";
 
 export default function NotesScreen({ route, navigation }) {
   const [notes, setNotes] = useState([]);
@@ -91,12 +90,6 @@ export default function NotesScreen({ route, navigation }) {
     navigation.navigate('AddEditNote');
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    const date = moment(dateString);
-    return date.format('jYYYY/jMM/jDD - HH:mm');
-  };
-
   const renderNoteCard = ({ item }) => {
     return (
       <View style={[styles.noteCard, NewStyles.border10]}>
@@ -104,7 +97,7 @@ export default function NotesScreen({ route, navigation }) {
           <View style={styles.dateContainer}>
             <Ionicons name="time-outline" size={14} color={themeColor3.bgColor(1)} />
             <Text style={[NewStyles.text10, { fontSize: 12, marginRight: 5 }]}>
-              {formatDate(item.created_at)}
+              {formatDateTime(item.created_at)}
             </Text>
           </View>
           <View style={styles.actionButtons}>
@@ -132,7 +125,7 @@ export default function NotesScreen({ route, navigation }) {
         {item.updated_at !== item.created_at && (
           <View style={styles.editedBadge}>
             <Text style={styles.editedText}>
-              ویرایش شده: {formatDate(item.updated_at)}
+              ویرایش شده: {formatDateTime(item.updated_at)}
             </Text>
           </View>
         )}

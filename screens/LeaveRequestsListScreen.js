@@ -56,12 +56,15 @@ export default function LeaveRequestsListScreen({ navigation }) {
     }, []);
 
     const getStatusBadge = (status) => {
-        switch (status) {
-            case 0:
+        // تبدیل به string برای مقایسه
+        const statusStr = String(status);
+        
+        switch (statusStr) {
+            case '0':
                 return { text: 'در انتظار بررسی', color: themeColor11.bgColor(1), icon: 'time' };
-            case 1:
+            case '1':
                 return { text: 'تایید شده', color: themeColor7.bgColor(1), icon: 'checkmark-circle' };
-            case 2:
+            case '2':
                 return { text: 'رد شده', color: themeColor6.bgColor(1), icon: 'close-circle' };
             default:
                 return { text: 'نامشخص', color: themeColor3.bgColor(1), icon: 'help-circle' };
@@ -181,13 +184,13 @@ export default function LeaveRequestsListScreen({ navigation }) {
         <View style={styles.emptyContainer}>
             <Ionicons name="document-text-outline" size={64} color={themeColor10.bgColor(0.3)} />
             <Text style={[NewStyles.text4, styles.emptyText]}>هیچ درخواست مرخصی ثبت نشده است</Text>
-            <TouchableOpacity
+            {/* <TouchableOpacity
                 style={styles.addButton}
                 onPress={() => navigation.goBack()}
             >
                 <Ionicons name="add-circle" size={20} color="#fff" style={{ marginLeft: 8 }} />
                 <Text style={[NewStyles.text4, styles.addButtonText]}>ثبت درخواست جدید</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
         </View>
     );
 

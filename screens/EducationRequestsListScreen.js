@@ -53,19 +53,21 @@ export default function EducationRequestsListScreen({ navigation }) {
   };
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case 0: return themeColor8.bgColor(1); // در انتظار - نارنجی
-      case 1: return themeColor7.bgColor(1); // تأیید - سبز
-      case 2: return themeColor6.bgColor(1); // رد - قرمز
+    const statusStr = String(status);
+    switch (statusStr) {
+      case '0': return themeColor8.bgColor(1); // در انتظار - نارنجی
+      case '1': return themeColor7.bgColor(1); // تأیید - سبز
+      case '2': return themeColor6.bgColor(1); // رد - قرمز
       default: return themeColor3.bgColor(1);
     }
   };
 
   const getStatusIcon = (status) => {
-    switch (status) {
-      case 0: return 'time-outline';
-      case 1: return 'checkmark-circle';
-      case 2: return 'close-circle';
+    const statusStr = String(status);
+    switch (statusStr) {
+      case '0': return 'time-outline';
+      case '1': return 'checkmark-circle';
+      case '2': return 'close-circle';
       default: return 'help-circle-outline';
     }
   };

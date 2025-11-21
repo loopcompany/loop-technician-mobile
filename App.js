@@ -252,6 +252,8 @@ const AppNavigator = () => {
               name="FolderScreen"
               options={{
                 headerShown: false,
+                presentation: 'card',
+                gestureEnabled: true,
               }}
             />
 
@@ -260,6 +262,8 @@ const AppNavigator = () => {
               name="Login"
               options={{
                 headerShown: false,
+                presentation: 'card',
+                gestureEnabled: true,
               }}
             />
             <Stack.Screen
@@ -267,6 +271,8 @@ const AppNavigator = () => {
               name="SignInScreen"
               options={{
                 headerShown: false,
+                presentation: 'card',
+                gestureEnabled: true,
               }}
             />
 
@@ -275,6 +281,8 @@ const AppNavigator = () => {
               name="SignIn"
               options={{
                 headerShown: false,
+                presentation: 'card',
+                gestureEnabled: true,
               }}
             />
             <Stack.Screen
@@ -282,6 +290,8 @@ const AppNavigator = () => {
               name="ResetPasswordScreen"
               options={{
                 headerShown: false,
+                presentation: 'card',
+                gestureEnabled: true,
               }}
             />
             <Stack.Screen
