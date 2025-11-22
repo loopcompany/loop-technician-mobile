@@ -83,7 +83,7 @@ const Stack = createNativeStackNavigator();
 
 // Linking configuration برای پشتیبانی از Deep Linking و Browser History
 const linking = {
-  prefixes: ['http://localhost:8081', 'https://loop.app', 'exp://'],
+  prefixes: ['https://tech-panel.khayyamtech.com', 'http://localhost:8082', 'http://localhost:8081'],
   config: {
     screens: {
       Welcome: '',
