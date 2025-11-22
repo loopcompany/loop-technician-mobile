@@ -239,7 +239,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
     }
   };
   return (
-    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
+    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'off' }}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <ImageBackground
           source={Platform.OS === 'web' ? require("../../assets/webbackground.jpg") : require("../../assets/background2.jpg")}

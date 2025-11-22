@@ -434,13 +434,13 @@ export default function Login() {
 
               <View style={styles.bottomSection}>
                 <TouchableOpacity
-                  onPress={() => navigation.navigate("SignInScreen")}
+                  onPress={() => { navigation.navigate("SignInScreen") }}
                   disabled={isLoading}
                 >
                   <Text style={styles.bottomSubtitle}>رمز عبور خود را فراموش کرده اید؟</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  onPress={() => navigation.navigate("SignIn")}
+                  onPress={() => { navigation.navigate("SignIn") }}
                   disabled={isLoading}
                 >
                   <Text style={styles.bottomFooter}>ثبت نام پرسنل جدید</Text>
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
     padding: 25,
     alignItems: 'center',
     marginVertical: 20,
-    maxWidth:600
+    maxWidth: 600
   },
   inputContainer: {
     width: '100%',
@@ -538,7 +538,7 @@ const styles = StyleSheet.create({
     width: '100%',
     marginTop: 10,
     gap: 10,
-    justifyContent:'center'
+    justifyContent: 'center'
   },
   backButton: {
     width: 50,

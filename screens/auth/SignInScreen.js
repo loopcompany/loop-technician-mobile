@@ -4,6 +4,7 @@ import {
   Text,
   TextInput,
   Image,
+  ImageBackground,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
@@ -16,7 +17,6 @@ import { themeColor10, themeColor4 } from "../../theme/Color";
 import { requestPasswordReset } from "../../services/Api";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { showAlert } from "../../helpers/Common";
-import { ImageBackground } from "expo-image";
 
 export default function SignInScreen({ navigation }) {
   const [referralCode, setReferralCode] = useState("");
@@ -91,14 +91,12 @@ export default function SignInScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
+    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'off' }}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
 
         <ImageBackground
               source={Platform.OS === 'web' ? require("../../assets/webbackground.jpg") : require("../../assets/background2.jpg")}
               style={styles.background}
-              contentFit="cover"
-              cachePolicy={'memory-disk'}
             >
           <ScrollView
             contentContainerStyle={styles.container}
@@ -127,7 +125,7 @@ export default function SignInScreen({ navigation }) {
                 placeholderTextColor={themeColor10.bgColor(0.9)}
                 value={mobile}
                 onChangeText={setMobile}
-                keyboardType="phone-pad"
+                keyboardType="number-pad"
                 maxLength={11}
               />
 
@@ -148,7 +146,6 @@ export default function SignInScreen({ navigation }) {
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
-                autoCapitalize="none"
               />
             </View>
 
@@ -170,7 +167,7 @@ export default function SignInScreen({ navigation }) {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
-    resizeMode: "cover",
+    paddingBottom:50
   },
   container: {
     flexGrow: 1,

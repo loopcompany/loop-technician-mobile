@@ -252,8 +252,6 @@ const AppNavigator = () => {
               name="FolderScreen"
               options={{
                 headerShown: false,
-                presentation: 'card',
-                gestureEnabled: true,
               }}
             />
 
@@ -262,19 +260,9 @@ const AppNavigator = () => {
               name="Login"
               options={{
                 headerShown: false,
-                presentation: 'card',
-                gestureEnabled: true,
               }}
             />
-            <Stack.Screen
-              component={SignInScreen}
-              name="SignInScreen"
-              options={{
-                headerShown: false,
-                presentation: 'card',
-                gestureEnabled: true,
-              }}
-            />
+            <Stack.Screen component={SignInScreen} name="SignInScreen" options={{ headerShown: false, }}/>
 
             <Stack.Screen
               component={SignIn}
@@ -290,8 +278,6 @@ const AppNavigator = () => {
               name="ResetPasswordScreen"
               options={{
                 headerShown: false,
-                presentation: 'card',
-                gestureEnabled: true,
               }}
             />
             <Stack.Screen
