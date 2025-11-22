@@ -43,6 +43,16 @@ export const FooterProvider = ({ children }) => {
   const showFooter = () => setIsFooterVisible(true);
   const hideFooter = () => setIsFooterVisible(false);
   const toggleFooter = () => setIsFooterVisible(!isFooterVisible);
+  
+  // بررسی navigation object
+  useEffect(() => {
+    if (!navigation) {
+      console.error('❌ Navigation object is undefined in FooterContext');
+    } else {
+      console.log('✅ Navigation object initialized in FooterContext');
+    }
+  }, [navigation]);
+  
   useEffect(()=>{
        dispatch(fetchContacts());
   },[])
@@ -62,7 +72,7 @@ export const FooterProvider = ({ children }) => {
     : [
       // منوهای کاربر لاگین نشده
       { id: 1, title: 'ورود', screen: 'Login' },
-      { id: 2, title: 'ثبت نام', screen: 'SignInScreen' },
+      { id: 2, title: 'ثبت نام', screen: 'SignIn' },
       { id: 3, title: 'ضمانت نامه/گارانتی', screen: 'WarrantyScreen' },
       { id: 4, title: 'سوالات متداول', screen: 'LearnMoreScreen' },
       { id: 5, title: 'قوانین/درباره لوپ', screen: 'AboutScreen' },
@@ -105,17 +115,70 @@ export const FooterProvider = ({ children }) => {
     }
   };
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.item}
-      onPress={() => {
-        navigation.navigate(item.screen);
+  const renderItem = ({ item }) => {
+    const handlePress = () => {
+      try {
         setMenuVisible(false);
-      }}
-    >
-      <Text style={NewStyles.text10}>{item.title}</Text>
-    </TouchableOpacity>
-  );
+        
+        // لیست screen های معتبر برای validation
+        const validScreens = [
+          'OrganizationsListScreen',
+          'FolderScreen',
+          'WarrantyScreen',
+          'LearnMoreScreen',
+          'AboutScreen',
+          'Login',
+          'SignIn',
+          'SignInScreen',
+          'ResetPasswordScreen'
+        ];
+        
+        if (!item.screen) {
+          console.warn('⚠️ Screen name is undefined:', item);
+          return;
+        }
+        
+        if (!validScreens.includes(item.screen)) {
+          console.warn('⚠️ Invalid screen name:', item.screen);
+          return;
+        }
+        
+        // setTimeout برای اطمینان از بسته شدن کامل modal
+        setTimeout(() => {
+          try {
+            // استفاده از navigate با error handling
+            navigation.navigate(item.screen);
+            console.log('✅ Navigated to:', item.screen);
+          } catch (navError) {
+            console.error('❌ Navigation error:', navError);
+            
+            // Fallback: استفاده از reset
+            try {
+              navigation.reset({
+                index: 0,
+                routes: [{ name: item.screen }],
+              });
+            } catch (resetError) {
+              console.error('❌ Reset navigation failed:', resetError);
+            }
+          }
+        }, 200);
+        
+      } catch (error) {
+        console.error('❌ خطا در handlePress:', error);
+      }
+    };
+
+    return (
+      <TouchableOpacity
+        style={styles.item}
+        onPress={handlePress}
+        activeOpacity={0.7}
+      >
+        <Text style={NewStyles.text10}>{item.title}</Text>
+      </TouchableOpacity>
+    );
+  };
 
   const FooterComponent = () => {
     if (!isFooterVisible) return null;

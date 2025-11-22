@@ -30,7 +30,7 @@ const ScreenHeaders = ({
       
       {/* Center: Title */}
       <View style={styles.titleContainer}>
-        <Text style={[NewStyles.title, NewStyles.title]} numberOfLines={1} adjustsFontSizeToFit>{title}</Text>
+        <Text style={[NewStyles.title]} numberOfLines={1} adjustsFontSizeToFit>{title}</Text>
       </View>
       
       {/* Left side: Back button (RTL) */}
@@ -39,7 +39,7 @@ const ScreenHeaders = ({
         style={[styles.iconContainer, { flexDirection: 'row', alignItems: 'center' }]}
       >
         <Image source={require("../assets/back.png")} style={styles.arrow} />
-        <Text style={styles.titleText}>قبلی</Text>
+        <Text style={[NewStyles.title10,styles.titleText]}>قبلی</Text>
       </TouchableOpacity>
     </View>
   );
@@ -78,6 +78,6 @@ const styles = StyleSheet.create({
   titleText: {
     textAlign: "center",
     fontSize: 12,
-    fontFamily: 'VazirBold',
+    // fontFamily: 'VazirBold',
   },
 });

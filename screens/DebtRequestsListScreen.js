@@ -55,12 +55,13 @@ export default function DebtRequestsListScreen({ navigation }) {
   };
 
   const getStatusBadge = (status) => {
+    const statusStr = String(status);
     const badges = {
-      0: { text: 'در انتظار بررسی', color: '#FF9800' },
-      1: { text: 'تأیید شده', color: '#4CAF50' },
-      2: { text: 'رد شده', color: '#F44336' },
+      '0': { text: 'در انتظار بررسی', color: '#FF9800' },
+      '1': { text: 'تأیید شده', color: '#4CAF50' },
+      '2': { text: 'رد شده', color: '#F44336' },
     };
-    return badges[status] || badges[0];
+    return badges[statusStr] || badges['0'];
   };
 
   const getTypeBadge = (type) => {
@@ -164,13 +165,13 @@ export default function DebtRequestsListScreen({ navigation }) {
       <Text style={[NewStyles.title, styles.emptyText]}>
         هیچ درخواست وامی ثبت نشده است
       </Text>
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={styles.addButton}
         onPress={() => navigation.goBack()}
       >
         <Ionicons name="add-circle-outline" size={24} color="#fff" />
         <Text style={[NewStyles.title4, { marginRight: 8 }]}>ثبت درخواست جدید</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 

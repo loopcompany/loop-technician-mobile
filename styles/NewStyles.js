@@ -66,7 +66,7 @@ const NewStyles = StyleSheet.create({
     marginTop: 10,
   },
   wrapper: {
-    paddingHorizontal: "5%",
+    // paddingHorizontal: "5%",
     gap: 10,
     paddingTop:10
   },

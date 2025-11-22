@@ -1017,6 +1017,20 @@ export default function OrderDetailScreen({ route, navigation }) {
                   </View>
                 )}
 
+                {/* پیام انتظار برای تایید کاربر */}
+                {!data?.user_initial_accept && (
+                  <View style={[styles.infoCard, { backgroundColor: themeColor3.bgColor(0.15), borderWidth: 1, borderColor: themeColor3.bgColor(0.5) }]}>
+                    <View style={[NewStyles.row, { gap: 10, alignItems: 'center', marginBottom: 8 }]}>
+                      <Ionicons name="hourglass-outline" size={24} color={themeColor3.bgColor(1)} />
+                      <Text style={[NewStyles.title, { color: themeColor3.bgColor(1) }]}>در انتظار تایید کاربر</Text>
+                    </View>
+                    <Text style={[NewStyles.text10, { textAlign: 'center', lineHeight: 22, color: themeColor3.bgColor(1) }]}>
+                      تا زمانی که کاربر این مرحله را تایید نکند، امکان ادامه به مراحل بعدی وجود ندارد.{'\n'}
+                      لطفاً منتظر تایید کاربر باشید.
+                    </Text>
+                  </View>
+                )}
+
                 {data?.user_initial_accept ? (
                   // نمایش پیام تایید کاربر
                   <View style={[styles.infoCard,]}>
@@ -1853,16 +1867,20 @@ export default function OrderDetailScreen({ route, navigation }) {
 
             {showDelivery && isDeliveryActive && (
               <View style={styles.contentSection}>
-                {/* نمایش وضعیت پرداخت کاربر */}
-                <View style={[styles.infoCard, { backgroundColor: data?.is_user_payed ? themeColor7.bgColor(0.2) : themeColor3.bgColor(0.2) }]}>
+                {/* لاگ کردن وضعیت پرداخت */}
+                {console.log('💰 payment_status:', data?.payment_status)}
+                {console.log('💰 نوع داده payment_status:', typeof data?.payment_status)}
+                
+                {/* نمایش وضعیت پرداخت کاربر - payment_status: "1" = پرداخت شده، "0" = پرداخت نشده */}
+                <View style={[styles.infoCard, { backgroundColor: (data?.payment_status == "1" || data?.payment_status === 1) ? themeColor7.bgColor(0.2) : themeColor3.bgColor(0.2) }]}>
                   <View style={[NewStyles.row, { gap: 10, alignItems: 'center' }]}>
                     <Ionicons
-                      name={data?.is_user_payed ? "checkmark-circle" : "information-circle"}
+                      name={(data?.payment_status == "1" || data?.payment_status === 1) ? "checkmark-circle" : "information-circle"}
                       size={24}
-                      color={data?.is_user_payed ? themeColor7.bgColor(1) : themeColor3.bgColor(1)}
+                      color={(data?.payment_status == "1" || data?.payment_status === 1) ? themeColor7.bgColor(1) : themeColor3.bgColor(1)}
                     />
-                    <Text style={[NewStyles.title4, { color: data?.is_user_payed ? themeColor7.bgColor(1) : themeColor3.bgColor(1) }]}>
-                      {data?.is_user_payed ? 'کاربر پرداخت کرده است' : 'کاربر هنوز پرداخت نکرده است'}
+                    <Text style={[NewStyles.title4, { color: (data?.payment_status == "1" || data?.payment_status === 1) ? themeColor7.bgColor(1) : themeColor3.bgColor(1) }]}>
+                      {(data?.payment_status == "1" || data?.payment_status === 1) ? 'کاربر پرداخت کرده است' : 'کاربر هنوز پرداخت نکرده است'}
                     </Text>
                   </View>
                 </View>

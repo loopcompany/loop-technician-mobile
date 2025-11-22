@@ -97,7 +97,13 @@ export default function OrganizationOrdersScreen() {
     };
 
     const renderOrderItem = ({ item }) => {
-        const totalPrice = (item.pakar_price || 0) + (item.technician_price || 0) + (item.extra_price || 0) - (item.discount_price || 0);
+        // تبدیل به number برای محاسبه صحیح
+        const pakarPrice = Number(item.pakar_price) || 0;
+        const technicianPrice = Number(item.technician_price) || 0;
+        const extraPrice = Number(item.extra_price) || 0;
+        const discountPrice = Number(item.discount_price) || 0;
+
+        const totalPrice = pakarPrice + technicianPrice + extraPrice - discountPrice;
 
         return (
             <TouchableOpacity
@@ -185,11 +191,15 @@ export default function OrganizationOrdersScreen() {
 
     return (
         <SafeAreaView style={NewStyles.wrapper} edges={{ top: 'off', bottom: 'additive' }}>
+
             <CustomStatusBar />
 
             {/* Header */}
-            <ScreenHeaders title={organizationName} />
-
+      
+            <ScreenHeaders
+                title={organizationName}
+                onPressLeft={() => navigation.goBack()}
+            />
             <FlatList
                 data={orders}
                 renderItem={renderOrderItem}
@@ -251,6 +261,7 @@ const styles = StyleSheet.create({
     listContainer: {
         paddingHorizontal: 20,
         paddingVertical: 15,
+        paddingBottom: 100,
     },
     orderCard: {
         backgroundColor: themeColor4.bgColor(1),

@@ -60,12 +60,13 @@ export default function TransferRequestsListScreen({ navigation }) {
   };
 
   const getStatusBadge = (status) => {
-    switch (status) {
-      case 0:
+    const statusStr = String(status);
+    switch (statusStr) {
+      case '0':
         return { text: 'در انتظار بررسی', color: '#FFA500', icon: 'time-outline' };
-      case 1:
+      case '1':
         return { text: 'تأیید شده', color: '#4CAF50', icon: 'checkmark-circle-outline' };
-      case 2:
+      case '2':
         return { text: 'رد شده', color: '#F44336', icon: 'close-circle-outline' };
       default:
         return { text: 'نامشخص', color: '#9E9E9E', icon: 'help-circle-outline' };
@@ -149,13 +150,13 @@ export default function TransferRequestsListScreen({ navigation }) {
       <Ionicons name="swap-horizontal-outline" size={80} color={themeColor10.bgColor(0.3)} />
       <Text style={styles.emptyText}>هیچ درخواستی ثبت نشده است</Text>
       <Text style={styles.emptySubText}>درخواست‌های انتقال/سمت شما اینجا نمایش داده می‌شود</Text>
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={styles.addButton}
         onPress={() => navigation.goBack()}
       >
         <Ionicons name="add-circle" size={20} color="#fff" style={{ marginLeft: 8 }} />
         <Text style={styles.addButtonText}>ثبت درخواست جدید</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 

@@ -429,7 +429,17 @@ export const formatDate = (isoDate) => {
 
 export const formatDateTime = (isoDate) => {
   if (!isoDate) return '';
-  const date = new Date(isoDate);
+  
+  // اگر فرمت string ساده باشه (بدون timezone)، باید به درستی parse بشه
+  let date;
+  if (typeof isoDate === 'string' && isoDate.includes(' ') && !isoDate.includes('T') && !isoDate.includes('Z')) {
+    // فرمت: "2025-11-19 12:26:02" -> این UTC time هست، باید Z اضافه کنیم
+    const dateString = isoDate.replace(' ', 'T') + 'Z';
+    date = new Date(dateString);
+  } else {
+    date = new Date(isoDate);
+  }
+  
   if (isNaN(date.getTime())) return '';
   const { jy, jm, jd } = jalaali.toJalaali(date.getFullYear(), date.getMonth() + 1, date.getDate());
   
