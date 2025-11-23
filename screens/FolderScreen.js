@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Image, ScrollView, Platform, } from "react-native";
+import { View, StyleSheet, Image, ImageBackground, ScrollView, Platform, } from "react-native";
 import { useFooter } from "../contexts/FooterContext";
 import Folder from "../components/Folder";
 import NewStyles from "../styles/NewStyles";
@@ -7,7 +7,6 @@ import CustomStatusBar from './../components/CustomStatusBar';
 import { handleError, showToastOrAlert } from './../helpers/Common';
 import { useSelector } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ImageBackground } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function FolderScreen({ navigation }) {

@@ -21,7 +21,12 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.clpiran.looptech"
+      "package": "com.clpiran.looptech",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyAX7JR5HfsSwueJ4Kajk9NVwaIsQgOvd58"
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png",
