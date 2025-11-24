@@ -26,7 +26,7 @@ import { verifyResetCode, resetPassword, requestPasswordReset } from "../../serv
 import { loginTechnician } from "../../services/Api";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { showAlert } from "../../helpers/Common";
-import { ImageBackground } from "expo-image";
+import { ImageBackground } from "react-native";
 export default function ResetPasswordScreen({ navigation, route }) {
   const params = route?.params;
   const dispatch = useDispatch();
@@ -244,8 +244,6 @@ export default function ResetPasswordScreen({ navigation, route }) {
         <ImageBackground
           source={Platform.OS === 'web' ? require("../../assets/webbackground.jpg") : require("../../assets/background2.jpg")}
           style={styles.background}
-          cachePolicy={'memory-disk'}
-          contentFit="cover"
         >
           <ScrollView
             contentContainerStyle={styles.container}

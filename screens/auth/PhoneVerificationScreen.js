@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Platform,
+  ImageBackground,
 } from 'react-native';
 import {
   CodeField,
@@ -21,7 +22,6 @@ import CustomStatusBar from '../../components/CustomStatusBar';
 import Button from '../../components/Button';
 import { verifyPhoneNumber, resendVerificationCode } from '../../services/Api';
 import { formatTime, showAlert } from '../../helpers/Common';
-import { ImageBackground } from 'expo-image';
 
 export default function PhoneVerificationScreen({ navigation, route }) {
   const { phone, technicianId } = route.params;
@@ -171,8 +171,7 @@ export default function PhoneVerificationScreen({ navigation, route }) {
     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
       <ImageBackground
         source={Platform.OS === 'web' ? require('../../assets/webbackground.jpg') : require('../../assets/background2.jpg')}
-        contentFit='cover'
-        contentPosition={'center'}
+        
         style={styles.background}
       >
         <CustomStatusBar />
