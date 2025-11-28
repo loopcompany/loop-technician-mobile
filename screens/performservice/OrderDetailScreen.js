@@ -12,6 +12,7 @@ import {
   Keyboard,
   KeyboardAvoidingView,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -27,7 +28,6 @@ import DetailConponent from './DetailConponent';
 import DatePickerModal from '../../components/DatePickerModal';
 import Button from '../../components/Button';
 import jalaali from 'jalaali-js';
-import { fetchOrderExtras } from '../../slices/orderExtrasSlice';
 
 export default function OrderDetailScreen({ route, navigation }) {
   const { orderId } = route?.params || {};
@@ -35,6 +35,7 @@ export default function OrderDetailScreen({ route, navigation }) {
   const orderExtras = useSelector(state => state.orderExtras.data);
   const loadingExtras = useSelector(state => state.orderExtras.loading);
 
+  
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -240,44 +241,87 @@ export default function OrderDetailScreen({ route, navigation }) {
   // تابع برای تبدیل تاریخ شمسی به میلادی
   const convertShamsiToMiladi = (shamsiDate) => {
     try {
-      // فرمت ورودی: 1403/08/17
-      const parts = shamsiDate.split('/');
-      if (parts.length !== 3) return shamsiDate;
+      // بررسی خالی بودن
+      if (!shamsiDate || shamsiDate === '') {
+        return shamsiDate;
+      }
 
-      const jy = parseInt(parts[0]);
-      const jm = parseInt(parts[1]);
-      const jd = parseInt(parts[2]);
+      // ✅ اگر تاریخ قبلاً میلادی است (YYYY-MM-DD)
+      if (/^\d{4}-\d{2}-\d{2}$/.test(shamsiDate)) {
+        console.log('✅ تاریخ از قبل میلادی است:', shamsiDate);
+        return shamsiDate;
+      }
 
-      const gregorian = jalaali.toGregorian(jy, jm, jd);
+      // ✅ اگر تاریخ شمسی است (YYYY/MM/DD یا YYYY/M/D)
+      if (/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(shamsiDate)) {
+        const parts = shamsiDate.split('/');
+        
+        if (parts.length !== 3) {
+          console.error('❌ فرمت تاریخ نامعتبر:', shamsiDate);
+          return shamsiDate;
+        }
 
-      // فرمت خروجی: Y-m-d (2025-11-10)
-      const year = gregorian.gy;
-      const month = String(gregorian.gm).padStart(2, '0');
-      const day = String(gregorian.gd).padStart(2, '0');
+        const jy = parseInt(parts[0]);
+        const jm = parseInt(parts[1]);
+        const jd = parseInt(parts[2]);
 
-      return `${year}-${month}-${day}`;
+        // بررسی معتبر بودن اجزای تاریخ
+        if (isNaN(jy) || isNaN(jm) || isNaN(jd)) {
+          console.error('❌ اجزای تاریخ نامعتبر:', { jy, jm, jd });
+          return shamsiDate;
+        }
+
+        const gregorian = jalaali.toGregorian(jy, jm, jd);
+
+        // فرمت خروجی: Y-m-d (2025-11-10)
+        const year = gregorian.gy;
+        const month = String(gregorian.gm).padStart(2, '0');
+        const day = String(gregorian.gd).padStart(2, '0');
+
+        const miladiDate = `${year}-${month}-${day}`;
+        console.log('✅ تبدیل موفق:', shamsiDate, '→', miladiDate);
+        return miladiDate;
+      }
+
+      // ❌ فرمت ناشناخته
+      console.error('❌ فرمت تاریخ ناشناخته:', shamsiDate);
+      return shamsiDate;
+
     } catch (error) {
-      console.error('Error converting date:', error);
+      console.error('❌ خطا در تبدیل تاریخ:', error, 'تاریخ ورودی:', shamsiDate);
       return shamsiDate;
     }
   };
 
   // تابع ذخیره تغییرات مرحله بررسی
   const handleSaveReview = async () => {
-    if (!selectedDate || !timeRange) {
+    // برای سفارشات سازمانی، تاریخ و ساعت اجباری نیست
+    if (!data?.service_schedule_type && (!selectedDate || !timeRange)) {
       showToastOrAlert('لطفاً تاریخ و ساعت را وارد کنید');
       return;
     }
 
     try {
       setSavingReview(true);
-      const miladiDate = convertShamsiToMiladi(selectedDate);
 
       const requestData = {
         technician_des: reviewDescription || '',
-        date: miladiDate,
-        time: timeRange
       };
+
+      // برای سفارشات سازمانی: از تاریخ و ساعت اصلی سفارش استفاده کن
+      if (data?.service_schedule_type) {
+        console.log('🏢 سفارش سازمانی: استفاده از تاریخ و ساعت اصلی سفارش');
+        requestData.date = data.date;
+        requestData.time = data.time;
+      } 
+      // برای سفارشات غیر سازمانی: از تاریخ و ساعت انتخابی استفاده کن
+      else if (selectedDate && timeRange) {
+        console.log('📅 OrderDetailScreen - selectedDate قبل از تبدیل:', selectedDate);
+        const miladiDate = convertShamsiToMiladi(selectedDate);
+        console.log('📅 OrderDetailScreen - miladiDate بعد از تبدیل:', miladiDate);
+        requestData.date = miladiDate;
+        requestData.time = timeRange;
+      }
 
       // اضافه کردن مبلغ پایه متخصص اگر وارد شده باشد
       if (technicianPrice) {
@@ -709,6 +753,7 @@ export default function OrderDetailScreen({ route, navigation }) {
 
   // تابع ارسال مجدد کد تایید
   const handleResendCode = async () => {
+    
     try {
       setResendingCode(true);
       const result = await resendDeliveryReportCode(orderId);
@@ -720,6 +765,7 @@ export default function OrderDetailScreen({ route, navigation }) {
         setResendTimer(60);
         setCanResend(false);
       } else {
+        
         showToastOrAlert(result.message || 'خطا در ارسال مجدد کد');
       }
     } catch (error) {
@@ -920,6 +966,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                   {data?.user?.name && renderRow('نام و نام خانوادگی:', data.user.name)}
                   {data?.user?.phone && renderRow('شماره تماس:', data.user.phone)}
                   {data?.user?.email && renderRow('ایمیل:', data.user.email)}
+                  {data?.user_type_info && renderRow('نوع کاربر:', data.user_type_info?.account_type_label || data.user_type_info?.account_type || 'نامشخص')}
                   {data?.address && renderRow('آدرس:', data.address)}
                 </View>
 
@@ -993,8 +1040,24 @@ export default function OrderDetailScreen({ route, navigation }) {
 
             {showReview && isReviewActive && (
               <View style={styles.contentSection}>
+                {/* راهنمای تکنسین */}
+                {!data?.user_initial_accept && (
+                  <View style={[styles.infoCard, { backgroundColor: themeColor0.bgColor(0.1), borderWidth: 1, borderColor: themeColor0.bgColor(0.3) }]}>
+                    <View style={[NewStyles.row, { gap: 10, alignItems: 'center', marginBottom: 10 }]}>
+                      <Ionicons name="information-circle" size={24} color={themeColor0.bgColor(1)} />
+                      <Text style={[NewStyles.title, { color: themeColor0.bgColor(1) }]}>راهنمای تکنسین</Text>
+                    </View>
+                    <Text style={[NewStyles.text10, { textAlign: 'right', lineHeight: 24 }]}>
+                      {data?.service_schedule_type 
+                        ? 'لطفاً مبلغ پایه متخصص و توضیحات لازم را وارد کنید. پس از ثبت، اطلاعات برای کاربر ارسال می‌شود و باید منتظر تایید کاربر بمانید.'
+                        : 'لطفاً تاریخ، بازه ساعت مراجعه، مبلغ پایه متخصص و توضیحات را مشخص کنید. پس از ثبت اطلاعات، درخواست شما برای کاربر ارسال می‌شود و باید منتظر تایید کاربر بمانید.'
+                      }
+                    </Text>
+                  </View>
+                )}
+
                 {/* نمایش تاریخ و ساعت فعلی - فقط برای سفارشات معمولی */}
-                {!data?.service_schedule_type && (
+                {!data?.service_schedule_type && !data?.user_initial_accept && (
                   <View style={styles.infoCard}>
                     <Text style={NewStyles.text2}>تاریخ و ساعت مراجعه فعلی:</Text>
                     <Text style={[NewStyles.title, { marginTop: 5 }]}>
@@ -1004,7 +1067,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                 )}
 
                 {/* نمایش اطلاعات سفارش سازمانی */}
-                {data?.service_schedule_type && (
+                {data?.service_schedule_type && !data?.user_initial_accept && (
                   <View style={[styles.infoCard, { backgroundColor: themeColor0.bgColor(0.1) }]}>
                     <View style={[NewStyles.row, { gap: 10, alignItems: 'center', marginBottom: 10 }]}>
                       <Ionicons name="business-outline" size={24} color={themeColor0.bgColor(1)} />
@@ -1025,7 +1088,8 @@ export default function OrderDetailScreen({ route, navigation }) {
                       <Text style={[NewStyles.title, { color: themeColor3.bgColor(1) }]}>در انتظار تایید کاربر</Text>
                     </View>
                     <Text style={[NewStyles.text10, { textAlign: 'center', lineHeight: 22, color: themeColor3.bgColor(1) }]}>
-                      تا زمانی که کاربر این مرحله را تایید نکند، امکان ادامه به مراحل بعدی وجود ندارد.{'\n'}
+                      پس از ثبت اطلاعات، درخواست شما برای کاربر ارسال می‌شود.{'\n'}
+                      تا زمانی که کاربر تایید نکند، امکان ادامه به مراحل بعدی وجود ندارد.{'\n'}
                       لطفاً منتظر تایید کاربر باشید.
                     </Text>
                   </View>
@@ -1329,7 +1393,7 @@ export default function OrderDetailScreen({ route, navigation }) {
               </View>
             )}
 
-            <AccordionHeader title="وضعیت محصول" isActive={isProductStatusActive} isOpen={showProductStatus} onPress={() => { if (isProductStatusActive) { setShowProductStatus(!showProductStatus); } else { showToastOrAlert('ابتدا باید حضور خود را اعلام کرده و تأیید شوید.'); } }} />
+            <AccordionHeader title="وضعیت محصول" isActive={isProductStatusActive} isOpen={showProductStatus} onPress={() => { if (isProductStatusActive) { setShowProductStatus(!showProductStatus); } else { showToastOrAlert('ابتدا باید حضور شما توسط کاربر تأیید شود.'); } }} />
 
             {showProductStatus && isProductStatusActive && (
               <View style={styles.contentSection}>
@@ -1705,11 +1769,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                   return;
                 }
 
-                const willOpen = !showPrices;
-                setShowPrices(willOpen);
-                if (willOpen && orderId) {
-                  dispatch(fetchOrderExtras(orderId));
-                }
+                setShowPrices(!showPrices);
               }}
             />
 
@@ -1776,14 +1836,17 @@ export default function OrderDetailScreen({ route, navigation }) {
                   </TouchableOpacity>
                 </View>}
 
-                {((orderExtras && orderExtras.length > 0) || (data?.extras && data.extras.length > 0)) ? (
+                {console.log('🔍 DEBUG - data.extra_services:', JSON.stringify(data?.extra_services, null, 2))}
+                {console.log('🔍 DEBUG - data.extra_services.length:', data?.extra_services?.length)}
+                
+                {(data?.extra_services && data.extra_services.length > 0) ? (
                   <View style={{ gap: 10, paddingHorizontal: 15 }}>
                     <View style={[NewStyles.row, { gap: 5 }]}>
                       <Ionicons name="checkmark-circle" size={20} color={themeColor0.bgColor(1)} />
                       <Text style={NewStyles.title}>هزینه های ثبت شده:</Text>
                     </View>
 
-                    {(orderExtras && orderExtras.length > 0 ? orderExtras : data.extras).map((extra, index) => (
+                    {data.extra_services.map((extra, index) => (
                       <View
                         key={index}
                         style={[
@@ -1798,13 +1861,8 @@ export default function OrderDetailScreen({ route, navigation }) {
                       >
                         <View style={{ flex: 1 }}>
                           <Text style={NewStyles.text}>
-                            {extra.title || extra.extra_service?.title}
+                            {extra.title}
                           </Text>
-                          {extra.extra_detail?.title && (
-                            <Text style={[NewStyles.text, { marginTop: 4 }]}>
-                              {extra.extra_detail.title}
-                            </Text>
-                          )}
                         </View>
                         <Text style={[NewStyles.text]}>
                           {formatPrice(extra.price)} تومان
@@ -1825,7 +1883,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                       <Text style={[NewStyles.title]}>جمع کل:</Text>
                       <Text style={[NewStyles.title]}>
                         {formatPrice(
-                          (orderExtras && orderExtras.length > 0 ? orderExtras : data.extras).reduce((sum, extra) => sum + (extra.price || 0), 0)
+                          data.extra_services.reduce((sum, extra) => sum + (parseFloat(extra.price) || 0), 0)
                         )} تومان
                       </Text>
                     </View>

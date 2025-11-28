@@ -1,7 +1,7 @@
 // مثال نحوه استفاده از FooterContext در screen ها
 import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { useFooter } from '../contexts/FooterContext';
+import { useFooter } from '../contexts/FooterProvider';
 import { themeColor0, themeColor1, themeColor10, themeColor4, themeColor6, themeColor7 } from '../theme/Color';
 
 export default function ExampleScreen({ navigation }) {

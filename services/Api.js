@@ -110,8 +110,12 @@ const handleResponse = (response) => {
 export const getOrderExtras = async (orderId) => {
   try {
     const response = await api.get(`/orders/${orderId}/extra-services`);
-    return handleResponse(response);
+    console.log('📥 getOrderExtras - Raw Response:', JSON.stringify(response.data, null, 2));
+    const result = handleResponse(response);
+    console.log('📥 getOrderExtras - After handleResponse:', JSON.stringify(result, null, 2));
+    return result;
   } catch (error) {
+    console.log('❌ getOrderExtras - Error:', error?.response?.data || error.message);
     return handleError(error);
   }
 };
@@ -262,6 +266,8 @@ export const verifyDeliveryReportWithCode = async (orderId, code) => {
 export const resendDeliveryReportCode = async (orderId) => {
   try {
     console.log(`📧 ارسال مجدد کد تایید برای سفارش ${orderId}`);
+    console.log(`${Technician_DeliveryReports}/order/${orderId}/resend-code`);
+    
     const response = await api.post(
       `${Technician_DeliveryReports}/order/${orderId}/resend-code`
     );
@@ -559,6 +565,7 @@ export const resendVerificationCode = async (phone) => {
     const response = await api.post('/technician/resend-code', {
       phone,
     });
+    
     return handleResponse(response);
   } catch (error) {
     return handleError(error);
@@ -1064,6 +1071,8 @@ export const getTechnicianOrderById = async (orderId) => {
     console.log('📋 Type of orderId:', typeof orderId);
 
     const response = await api.get(`/technician/orders/${orderId}/detail`);
+    console.log('📥 Raw Response از detail API:', JSON.stringify(response.data, null, 2));
+    console.log('🔍 extra_services در response:', response.data?.data?.extra_services);
     console.log('✅ جزئیات سفارش دریافت شد:', response.data);
 
     return handleResponse(response);

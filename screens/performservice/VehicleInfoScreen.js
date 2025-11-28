@@ -8,6 +8,8 @@ import {
   TextInput,
   ActivityIndicator,
   KeyboardAvoidingView,
+  Modal,
+  Pressable,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -50,6 +52,19 @@ export default function VehicleInfoScreen({ navigation }) {
     insuranceExpiryCode: '',
     insuranceExpiryDate: ''
   });
+
+  // Modal state for editing vehicle type
+  const [showVehicleTypeModal, setShowVehicleTypeModal] = useState(false);
+
+  const vehicleTypeOptions = [
+    'خودرو',
+    'موتور سیکلت',
+    'دوچرخه',
+    'پیاده',
+    'وانت',
+    'کامیون',
+    'مینی‌ون',
+  ];
 
   // Load user vehicle data from AsyncStorage if not in Redux
   useEffect(() => {
@@ -141,6 +156,71 @@ export default function VehicleInfoScreen({ navigation }) {
       ...prev,
       [field]: value
     }));
+  };
+
+  // Handler: when user selects a new vehicle type from modal
+  const handleSelectVehicleType = async (type) => {
+    setShowVehicleTypeModal(false);
+    if (!type || type === vehicleData.vehicleType) return;
+
+    // Prepare payload for API. Include vehicle_type so backend can persist it.
+    const payload = {
+      vehicle_type: type,
+      // include existing fields so backend keeps them (or null to clear)
+      car_model: vehicleData.carModel?.trim() || null,
+      car_color: vehicleData.carColor?.trim() || null,
+      car_plate: null, // clear plate when changing type; backend may accept null
+      car_year: vehicleData.manufacturingYear || null,
+      car_fuel_type: vehicleData.softwareType || null,
+      car_vin: vehicleData.vinNumber || null,
+      car_insurance_code: vehicleData.insuranceExpiryCode || null,
+      car_insurance_expiry_date: vehicleData.insuranceExpiryDate || null,
+    };
+
+    setSaving(true);
+    try {
+      console.log('📤 updateVehicleInfo - changing vehicle type ->', type, payload);
+      const result = await updateVehicleInfo(payload);
+      console.log('📥 updateVehicleInfo result raw:', result);
+      if (result && result.success) {
+        showAlert('موفق', 'نوع وسیله با موفقیت به‌روزرسانی شد');
+
+        // Update local UI state: clear plate fields that don't apply
+        const newLocal = { ...vehicleData, vehicleType: type };
+        if (type !== 'خودرو') {
+          newLocal.carPlateLeft = '';
+          newLocal.carPlateRight = '';
+          newLocal.carPlateLetter = 'ب';
+          newLocal.carPlateProvince = '11';
+        }
+        if (type !== 'موتور سیکلت') {
+          newLocal.motorPlate = '';
+          newLocal.bodyPlate = '';
+        }
+        setVehicleData(newLocal);
+
+        // Update Redux + AsyncStorage if API returned updated technician
+        if (result.data && result.data.technician) {
+          const updatedUserData = {
+            ...userData,
+            technician: {
+              ...userData.technician,
+              ...result.data.technician
+            }
+          };
+          dispatch(setUserData(updatedUserData));
+          await AsyncStorage.setItem('userData', JSON.stringify(updatedUserData));
+          console.log('✅ Redux/AsyncStorage updated after vehicle type change');
+        }
+      } else {
+        showAlert('خطا', result?.message || 'به‌روزرسانی نوع وسیله موفقیت‌آمیز نبود');
+      }
+    } catch (err) {
+      console.error('خطا در updateVehicleInfo (vehicle type):', err);
+      showAlert('خطا', 'ارتباط با سرور برقرار نشد');
+    } finally {
+      setSaving(false);
+    }
   };
 
   // محاسبه تاریخ امروز به صورت شمسی
@@ -272,12 +352,12 @@ export default function VehicleInfoScreen({ navigation }) {
               <Text style={styles.buttonText}>مشخصات وسیله نقلیه</Text>
             </TouchableOpacity>
 
-            {/* باکس نوع وسیله نقلیه */}
-            <View style={styles.vehicleTypeBox}>
+            {/* باکس نوع وسیله نقلیه (قابل ویرایش) */}
+            <TouchableOpacity style={styles.vehicleTypeBox} onPress={() => setShowVehicleTypeModal(true)} disabled={saving}>
               <Text style={styles.vehicleTypeLabel}>
                 نوع وسیله نقلیه: {vehicleData.vehicleType || 'مشخص نشده'}
               </Text>
-            </View>
+            </TouchableOpacity>
 
             {/* فرم اطلاعات وسیله */}
             <View style={styles.formContainer}>
@@ -476,6 +556,33 @@ export default function VehicleInfoScreen({ navigation }) {
 
         </LinearGradient>
       </KeyboardAvoidingView>
+
+      {/* Modal انتخاب نوع وسیله نقلیه */}
+      <Modal
+        visible={showVehicleTypeModal}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowVehicleTypeModal(false)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setShowVehicleTypeModal(false)}>
+          <View style={styles.modalContent}>
+            <Text style={[NewStyles.title, { textAlign: 'center', marginBottom: 10 }]}>انتخاب نوع وسیله</Text>
+            {vehicleTypeOptions.map((opt) => (
+              <TouchableOpacity
+                key={opt}
+                style={styles.modalOption}
+                onPress={() => handleSelectVehicleType(opt)}
+                disabled={saving}
+              >
+                <Text style={NewStyles.text}>{opt}</Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity style={[styles.modalCancel]} onPress={() => setShowVehicleTypeModal(false)}>
+              <Text style={NewStyles.text4}>انصراف</Text>
+            </TouchableOpacity>
+          </View>
+        </Pressable>
+      </Modal>
 
       {/* DatePicker Modal for Insurance Expiry Date */}
       <DatePickerModal
@@ -854,5 +961,31 @@ const styles = StyleSheet.create({
   },
   placeholderText: {
     color: themeColor3.bgColor(0.6),
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: themeColor4.bgColor(1),
+    padding: 16,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    maxHeight: '60%',
+    gap: 8,
+  },
+  modalOption: {
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: themeColor3.bgColor(0.2),
+  },
+  modalCancel: {
+    marginTop: 10,
+    paddingVertical: 12,
+    alignItems: 'center',
+    backgroundColor: themeColor0.bgColor(0.9),
+    borderRadius: 8,
   },
 });

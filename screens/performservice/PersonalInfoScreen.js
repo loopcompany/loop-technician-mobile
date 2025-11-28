@@ -11,6 +11,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
@@ -52,12 +53,22 @@ export default function PersonalInfoScreen({ navigation }) {
     birth_date: '',
     telephone: '',
     email: '',
+    melicode: '',
+    father_name: '',
+    issued_from: '',
+    serial_number: '',
+    marital_status: '',
+    education_status: '',
+    city: '',
+    region: '',
     certificate_number: '',
     licence_date: '',
     certificate_issue_date: '',
     home_address: '',
     home_postal_code: '',
     technician_type: '',
+    id_card_number: '',
+    referral_code: '',
     other_referral_code: ''
   });
 
@@ -95,19 +106,33 @@ export default function PersonalInfoScreen({ navigation }) {
         birth_date: technicianData.birth_date || '',
         telephone: technicianData.telephone || technicianData.phone || '',
         email: technicianData.email || '',
+        melicode: technicianData.melicode || '',
+        father_name: technicianData.father_name || '',
+        issued_from: technicianData.issued_from || '',
+        serial_number: technicianData.serial_number || '',
+        marital_status: technicianData.marital_status || '',
+        education_status: technicianData.education_status || '',
+        city: technicianData.city || '',
+        region: technicianData.region || '',
         certificate_number: technicianData.certificate_number || '',
         licence_date: technicianData.licence_date || '',
         certificate_issue_date: technicianData.certificate_issue_date || '',
         home_address: technicianData.home_address || '',
         home_postal_code: technicianData.home_postal_code || '',
         technician_type: technicianData.technician_type || '',
+        id_card_number: technicianData.id_card_number || '',
+        referral_code: technicianData.referral_code || '',
         other_referral_code: technicianData.other_referral_code || ''
       });
 
       console.log('✅ فرم با این اطلاعات پر شد:', {
-        email: technicianData.email,
-        telephone: technicianData.telephone || technicianData.phone || '',
-        home_address: technicianData.home_address || ''
+        melicode: technicianData.melicode,
+        father_name: technicianData.father_name,
+        marital_status: technicianData.marital_status,
+        city: technicianData.city,
+        region: technicianData.region,
+        referral_code: technicianData.referral_code,
+        email: technicianData.email
       });
 
       // Set profile photo URL if available (only if no new photo is selected)
@@ -333,6 +358,11 @@ export default function PersonalInfoScreen({ navigation }) {
       return;
     }
 
+    if (personalData.melicode && personalData.melicode.length !== 10) {
+      showAlert('خطا', 'کد ملی باید 10 رقم باشد');
+      return;
+    }
+
     setSaving(true);
     try {
       const result = await updatePersonalInfo(personalData, profilePhoto);
@@ -349,7 +379,13 @@ export default function PersonalInfoScreen({ navigation }) {
 
           // Preserve the original structure (technician and token_info)
           const technicianData = userData.technician || userData;
-          const updatedTechnicianData = { ...technicianData, ...personalData };
+          // Merge backend response with local changes
+          const backendTechnicianData = result.data.technician || {};
+          const updatedTechnicianData = { 
+            ...technicianData, 
+            ...personalData,
+            ...backendTechnicianData 
+          };
 
           // Check if server returned photo (profile_photo_path or profile_photo_url)
           const photoPath = result.data?.technician?.profile_photo_path;
@@ -471,6 +507,7 @@ export default function PersonalInfoScreen({ navigation }) {
                 onPress={() => !saving && setShowBirthDatePicker(true)}
                 disabled={saving}
               >
+                <Text style={styles.fieldKey}>تاریخ تولد</Text>
                 <View style={styles.boxedInput}>
                   <Text style={[
                     styles.dateText,
@@ -482,6 +519,110 @@ export default function PersonalInfoScreen({ navigation }) {
               </TouchableOpacity>
 
               <View style={styles.boxedRow}>
+                <Text style={styles.fieldKey}>کد ملی</Text>
+                <TextInput
+                  style={styles.boxedInput}
+                  value={personalData.melicode}
+                  onChangeText={(value) => updateField('melicode', value)}
+                  placeholder="کد ملی : 10 رقم"
+                  placeholderTextColor={themeColor3.bgColor(1)}
+                  keyboardType="number-pad"
+                  maxLength={10}
+                  editable={!saving}
+                />
+              </View>
+
+              <View style={styles.boxedRow}>
+                <Text style={styles.fieldKey}>نام پدر</Text>
+                <TextInput
+                  style={styles.boxedInput}
+                  value={personalData.father_name}
+                  onChangeText={(value) => updateField('father_name', value)}
+                  placeholder="نام پدر"
+                  placeholderTextColor={themeColor3.bgColor(1)}
+                  editable={!saving}
+                />
+              </View>
+
+              <View style={styles.boxedRow}>
+                <Text style={styles.fieldKey}>صادره</Text>
+                <TextInput
+                  style={styles.boxedInput}
+                  value={personalData.issued_from}
+                  onChangeText={(value) => updateField('issued_from', value)}
+                  placeholder="محل صدور شناسنامه"
+                  placeholderTextColor={themeColor3.bgColor(1)}
+                  editable={!saving}
+                />
+              </View>
+
+              <View style={styles.boxedRow}>
+                <Text style={styles.fieldKey}>شماره شناسنامه</Text>
+                <TextInput
+                  style={styles.boxedInput}
+                  value={personalData.serial_number}
+                  onChangeText={(value) => updateField('serial_number', value)}
+                  placeholder="شماره شناسنامه"
+                  placeholderTextColor={themeColor3.bgColor(1)}
+                  keyboardType="number-pad"
+                  editable={!saving}
+                />
+              </View>
+
+              <View style={styles.boxedRow}>
+                <Text style={styles.fieldKey}>وضعیت تاهل</Text>
+                <View style={[styles.boxedInput, { paddingVertical: 0 }]}>
+                  <Picker
+                    selectedValue={personalData.marital_status || 'متأهل'}
+                    onValueChange={(value) => updateField('marital_status', value)}
+                    style={{ width: '100%' }}
+                    enabled={!saving}
+                  >
+                    <Picker.Item label="متأهل" value="متأهل" />
+                    <Picker.Item label="مجرد" value="مجرد" />
+                  </Picker>
+                </View>
+              </View>
+
+              <View style={styles.boxedRow}>
+                <Text style={styles.fieldKey}>وضعیت تحصیلات</Text>
+                <TextInput
+                  style={styles.boxedInput}
+                  value={personalData.education_status}
+                  onChangeText={(value) => updateField('education_status', value)}
+                  placeholder="دیپلم / لیسانس / فوق لیسانس"
+                  placeholderTextColor={themeColor3.bgColor(1)}
+                  editable={!saving}
+                />
+              </View>
+
+              <View style={styles.boxedRow}>
+                <Text style={styles.fieldKey}>شهر</Text>
+                <TextInput
+                  style={styles.boxedInput}
+                  value={personalData.city}
+                  onChangeText={(value) => updateField('city', value)}
+                  placeholder="شهر محل سکونت"
+                  placeholderTextColor={themeColor3.bgColor(1)}
+                  editable={!saving}
+                />
+              </View>
+
+              <View style={styles.boxedRow}>
+                <Text style={styles.fieldKey}>منطقه</Text>
+                <TextInput
+                  style={styles.boxedInput}
+                  value={personalData.region}
+                  onChangeText={(value) => updateField('region', value)}
+                  placeholder="منطقه شهر"
+                  placeholderTextColor={themeColor3.bgColor(1)}
+                  keyboardType="number-pad"
+                  editable={!saving}
+                />
+              </View>
+
+              <View style={styles.boxedRow}>
+                <Text style={styles.fieldKey}>تلفن</Text>
                 <TextInput
                   style={styles.boxedInput}
                   value={personalData.telephone}
@@ -494,6 +635,7 @@ export default function PersonalInfoScreen({ navigation }) {
               </View>
 
               <View style={styles.boxedRow}>
+                <Text style={styles.fieldKey}>ایمیل</Text>
                 <TextInput
                   style={styles.boxedInput}
                   value={personalData.email}
@@ -507,6 +649,7 @@ export default function PersonalInfoScreen({ navigation }) {
               </View>
 
               <View style={styles.boxedRow}>
+                <Text style={styles.fieldKey}>شماره گواهینامه</Text>
                 <TextInput
                   style={styles.boxedInput}
                   value={personalData.certificate_number}
@@ -522,6 +665,7 @@ export default function PersonalInfoScreen({ navigation }) {
                 onPress={() => !saving && setShowLicenceDatePicker(true)}
                 disabled={saving}
               >
+                <Text style={styles.fieldKey}>تاریخ اعتبار گواهینامه</Text>
                 <View style={styles.boxedInput}>
                   <Text style={[
                     styles.dateText,
@@ -537,6 +681,7 @@ export default function PersonalInfoScreen({ navigation }) {
                 onPress={() => !saving && setShowCertificateIssueDatePicker(true)}
                 disabled={saving}
               >
+                <Text style={styles.fieldKey}>تاریخ صدور گواهینامه</Text>
                 <View style={styles.boxedInput}>
                   <Text style={[
                     styles.dateText,
@@ -548,6 +693,7 @@ export default function PersonalInfoScreen({ navigation }) {
               </TouchableOpacity>
 
               <View style={styles.boxedRow}>
+                <Text style={styles.fieldKey}>آدرس منزل</Text>
                 <TextInput
                   style={[styles.boxedInput, { minHeight: 60 }]}
                   value={personalData.home_address}
@@ -560,6 +706,7 @@ export default function PersonalInfoScreen({ navigation }) {
               </View>
 
               <View style={styles.boxedRow}>
+                <Text style={styles.fieldKey}>کد پستی</Text>
                 <TextInput
                   style={styles.boxedInput}
                   value={personalData.home_postal_code}
@@ -573,6 +720,7 @@ export default function PersonalInfoScreen({ navigation }) {
               </View>
 
               <View style={styles.boxedRow}>
+                <Text style={styles.fieldKey}>نوع پرسنلی</Text>
                 <TextInput
                   style={styles.boxedInput}
                   value={personalData.technician_type}
@@ -584,14 +732,39 @@ export default function PersonalInfoScreen({ navigation }) {
               </View>
 
               <View style={styles.boxedRow}>
+                <Text style={styles.fieldKey}>کد پرسنلی</Text>
                 <TextInput
                   style={[styles.boxedInput, styles.disabledInput]}
-                  value={personalData.other_referral_code}
+                  value={personalData.id_card_number}
+                  placeholder="کد پرسنلی (غیرقابل ویرایش)"
+                  placeholderTextColor={themeColor3.bgColor(1)}
+                  editable={false}
+                />
+              </View>
+
+              <View style={styles.boxedRow}>
+                <Text style={styles.fieldKey}>کد معرف</Text>
+                <TextInput
+                  style={[styles.boxedInput, styles.disabledInput]}
+                  value={personalData.referral_code}
                   placeholder="کد معرف (غیرقابل ویرایش)"
                   placeholderTextColor={themeColor3.bgColor(1)}
                   editable={false}
                 />
               </View>
+
+              {personalData.other_referral_code && (
+                <View style={styles.boxedRow}>
+                  <Text style={styles.fieldKey}>کد معرف دیگران</Text>
+                  <TextInput
+                    style={[styles.boxedInput, styles.disabledInput]}
+                    value={personalData.other_referral_code}
+                    placeholder="کد معرف دیگران (غیرقابل ویرایش)"
+                    placeholderTextColor={themeColor3.bgColor(1)}
+                    editable={false}
+                  />
+                </View>
+              )}
 
               {/* Save Button */}
               
@@ -768,6 +941,15 @@ const styles = StyleSheet.create({
   },
   placeholderText: {
     color: themeColor3.bgColor(1),
+  },
+  fieldKey: {
+    position: 'absolute',
+    left: 12,
+    top: 8,
+    fontSize: 12,
+    color: themeColor3.bgColor(1),
+    opacity: 0.9,
+    zIndex: 5,
   },
 });
 

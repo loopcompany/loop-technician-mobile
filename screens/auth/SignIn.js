@@ -37,6 +37,7 @@ const FORM_BG_08 = themeColor4.bgColor(0.8);
 const FORM_BG_FULL = themeColor4.bgColor(1);
 const FORM_BORDER_03 = themeColor4.bgColor(0.3);
 const UPLOAD_BUTTON_BG = themeColor2.bgColor(1);
+const PLACEHOLDER_COLOR = themeColor10.bgColor(0.7);
 
 export default function SignIn({ navigation }) {
   const [formData, setFormData] = useState({
@@ -495,7 +496,7 @@ export default function SignIn({ navigation }) {
 
           {/* نام و نام خانوادگی */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>نام و نام خانوادگی :</Text>
+            <Text style={[NewStyles.text10]}>نام و نام خانوادگی <Text style={styles.required}>*</Text> :</Text>
             <TextInput
               style={[
                 NewStyles.textInput, 
@@ -506,12 +507,13 @@ export default function SignIn({ navigation }) {
               value={formData.name}
               onChangeText={(value) => updateField('name', value)}
               placeholder="مثال: علی احمدی"
+              placeholderTextColor={PLACEHOLDER_COLOR}
             />
             <FieldError field="name" />
           </View>
           
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>شماره تلفن اصلی:</Text>
+            <Text style={[NewStyles.text10]}>شماره تلفن اصلی <Text style={styles.required}>*</Text> :</Text>
             <View style={styles.phoneContainer}>
               <TextInput
                 style={[
@@ -524,6 +526,7 @@ export default function SignIn({ navigation }) {
                 value={formData.phone}
                 onChangeText={(value) => updateField('phone', value)}
                 placeholder="09123456789"
+                placeholderTextColor={PLACEHOLDER_COLOR}
                 keyboardType="phone-pad"
                 maxLength={11}
               />
@@ -533,7 +536,7 @@ export default function SignIn({ navigation }) {
 
           {/* شماره ملی */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>شماره ملی :</Text>
+            <Text style={[NewStyles.text10]}>شماره ملی <Text style={styles.required}>*</Text> :</Text>
             <TextInput
               style={[
                 NewStyles.textInput, 
@@ -544,6 +547,7 @@ export default function SignIn({ navigation }) {
               value={formData.melicode}
               onChangeText={(value) => updateField('melicode', value)}
               placeholder="0123456789"
+              placeholderTextColor={PLACEHOLDER_COLOR}
               keyboardType="number-pad"
               maxLength={10}
             />
@@ -552,7 +556,7 @@ export default function SignIn({ navigation }) {
 
           {/* متولد */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>متولد (تاریخ شمسی) :</Text>
+            <Text style={[NewStyles.text10]}>متولد (تاریخ شمسی) <Text style={styles.required}>*</Text> :</Text>
             <TouchableOpacity
               style={[
                 NewStyles.textInput, 
@@ -564,7 +568,7 @@ export default function SignIn({ navigation }) {
               onPress={() => setBirthDateModal(true)}
             >
               <Text style={[NewStyles.text10, formData.birth_date ? styles.dateTextFull : styles.dateTextHalf]}>
-                {formData.birth_date || '1379/08/27'}
+                {formData.birth_date || 'انتخاب تاریخ تولد'}
               </Text>
             </TouchableOpacity>
             <FieldError field="birth_date" />
@@ -578,6 +582,7 @@ export default function SignIn({ navigation }) {
               value={formData.father_name}
               onChangeText={(value) => updateField('father_name', value)}
               placeholder=""
+              placeholderTextColor={PLACEHOLDER_COLOR}
             />
           </View>
 
@@ -589,6 +594,7 @@ export default function SignIn({ navigation }) {
               value={formData.issued_from}
               onChangeText={(value) => updateField('issued_from', value)}
               placeholder=""
+              placeholderTextColor={PLACEHOLDER_COLOR}
             />
           </View>
 
@@ -600,6 +606,7 @@ export default function SignIn({ navigation }) {
               value={formData.serial_number}
               onChangeText={(value) => updateField('serial_number', value)}
               placeholder=""
+              placeholderTextColor={PLACEHOLDER_COLOR}
             />
           </View>
 
@@ -642,6 +649,7 @@ export default function SignIn({ navigation }) {
               value={formData.education_status}
               onChangeText={(value) => updateField('education_status', value)}
               placeholder=""
+              placeholderTextColor={PLACEHOLDER_COLOR}
             />
           </View>
 
@@ -654,6 +662,7 @@ export default function SignIn({ navigation }) {
                 value={formData.telephone}
                 onChangeText={(value) => updateField('telephone', value)}
                 placeholder=""
+                placeholderTextColor={PLACEHOLDER_COLOR}
                 keyboardType="phone-pad"
               />
             </View>
@@ -661,7 +670,7 @@ export default function SignIn({ navigation }) {
 
           {/* شماره تلفن همراه */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>شماره تلفن همراه ۱۱ رقمی :</Text>
+            <Text style={[NewStyles.text10]}>شماره تلفن همراه ۱۱ رقمی <Text style={styles.required}>*</Text> :</Text>
             <View style={styles.phoneContainer}>
               <TextInput
                 style={[
@@ -674,6 +683,7 @@ export default function SignIn({ navigation }) {
                 value={formData.mobile}
                 onChangeText={(value) => updateField('mobile', value)}
                 placeholder="09123456789"
+                placeholderTextColor={PLACEHOLDER_COLOR}
                 keyboardType="phone-pad"
                 maxLength={11}
               />
@@ -683,7 +693,7 @@ export default function SignIn({ navigation }) {
 
           {/* آدرس ایمیل */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>آدرس ایمیل :</Text>
+            <Text style={[NewStyles.text10]}>آدرس ایمیل <Text style={styles.required}>*</Text> :</Text>
             <TextInput
               style={[
                 NewStyles.textInput, 
@@ -694,6 +704,7 @@ export default function SignIn({ navigation }) {
               value={formData.email}
               onChangeText={(value) => updateField('email', value)}
               placeholder="example@email.com"
+              placeholderTextColor={PLACEHOLDER_COLOR}
               keyboardType="email-address"
             />
             <FieldError field="email" />
@@ -707,12 +718,13 @@ export default function SignIn({ navigation }) {
               value={formData.id_card_number}
               onChangeText={(value) => updateField('id_card_number', value)}
               placeholder=""
+              placeholderTextColor={PLACEHOLDER_COLOR}
             />
           </View>
 
           {/* تاریخ اعتبار گواهینامه */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>تاریخ اعتبار گواهینامه (تاریخ شمسی) :</Text>
+            <Text style={[NewStyles.text10]}>تاریخ اعتبار گواهینامه (تاریخ شمسی) <Text style={styles.required}>*</Text> :</Text>
             <TouchableOpacity
               style={[
                 NewStyles.textInput, 
@@ -724,7 +736,7 @@ export default function SignIn({ navigation }) {
               onPress={() => setLicenceDateModal(true)}
             >
               <Text style={[NewStyles.text10, formData.licence_date ? styles.dateTextFull : styles.dateTextHalf]}>
-                {formData.licence_date || '1408/06/20'}
+                {formData.licence_date || 'انتخاب تاریخ اعتبار'}
               </Text>
             </TouchableOpacity>
             <FieldError field="licence_date" />
@@ -756,6 +768,7 @@ export default function SignIn({ navigation }) {
               value={formData.home_postal_code}
               onChangeText={(value) => updateField('home_postal_code', value)}
               placeholder=""
+              placeholderTextColor={PLACEHOLDER_COLOR}
               keyboardType="number-pad"
               maxLength={10}
             />
@@ -770,6 +783,7 @@ export default function SignIn({ navigation }) {
                 value={formData.city}
                 onChangeText={(value) => updateField('city', value)}
                 placeholder="تهران"
+                placeholderTextColor={PLACEHOLDER_COLOR}
               />
             </View>
             <View style={styles.regionContainer}>
@@ -780,6 +794,7 @@ export default function SignIn({ navigation }) {
                 keyboardType='number-pad'
                 onChangeText={(value) => updateField('region', value)}
                 placeholder="5"
+                placeholderTextColor={PLACEHOLDER_COLOR}
               />
             </View>
           </View>
@@ -792,6 +807,7 @@ export default function SignIn({ navigation }) {
               value={formData.home_address}
               onChangeText={(value) => updateField('home_address', value)}
               placeholder=""
+              placeholderTextColor={PLACEHOLDER_COLOR}
               multiline
               numberOfLines={3}
             />
@@ -806,6 +822,7 @@ export default function SignIn({ navigation }) {
                 value={formData.other_referral_code}
                 onChangeText={(value) => updateField('other_referral_code', value)}
                 placeholder=""
+                placeholderTextColor={PLACEHOLDER_COLOR}
               />
               <TouchableOpacity
                 style={styles.validateButton}
@@ -822,33 +839,112 @@ export default function SignIn({ navigation }) {
         <TouchableOpacity
           style={styles.nextButton}
           onPress={() => {
-            // بررسی فیلدهای صفحه اول
-            const personalFields = {
-              name: formData.name,
-              melicode: formData.melicode,
-              phone: formData.phone,
-              mobile: formData.mobile,
-              birth_date: formData.birth_date,
-              email: formData.email,
-            };
+            // بررسی فیلدهای صفحه اول با اعتبارسنجی کامل
+            const errors = {};
             
-            // اگر فیلدهای ضروری پر نشده، هشدار بده
-            const emptyFields = [];
-            if (!personalFields.name) emptyFields.push('نام و نام خانوادگی');
-            if (!personalFields.melicode) emptyFields.push('شماره ملی');
-            if (!personalFields.phone) emptyFields.push('شماره تلفن اصلی');
-            if (!personalFields.mobile) emptyFields.push('شماره تلفن همراه');
-            if (!personalFields.birth_date) emptyFields.push('تاریخ تولد');
+            // نام و نام خانوادگی - الزامی
+            if (!formData.name || formData.name.trim().length === 0) {
+              errors.name = 'نام و نام خانوادگی الزامی است';
+            } else if (formData.name.trim().length < 2) {
+              errors.name = 'نام و نام خانوادگی باید حداقل 2 کاراکتر باشد';
+            }
             
-            if (emptyFields.length > 0) {
+            // شماره ملی - الزامی و باید معتبر باشد
+            if (!formData.melicode || formData.melicode.trim().length === 0) {
+              errors.melicode = 'شماره ملی الزامی است';
+            } else if (formData.melicode.length !== 10) {
+              errors.melicode = 'کد ملی باید 10 رقم باشد';
+            } else {
+              // بررسی معتبر بودن کد ملی
+              const allSame = formData.melicode.split('').every(digit => digit === formData.melicode[0]);
+              if (allSame) {
+                errors.melicode = 'کد ملی نامعتبر است';
+              } else {
+                // بررسی رقم کنترل
+                const checkDigit = parseInt(formData.melicode.charAt(9));
+                let sum = 0;
+                for (let i = 0; i < 9; i++) {
+                  sum += parseInt(formData.melicode.charAt(i)) * (10 - i);
+                }
+                const remainder = sum % 11;
+                const expectedCheckDigit = remainder < 2 ? remainder : 11 - remainder;
+                if (checkDigit !== expectedCheckDigit) {
+                  errors.melicode = 'کد ملی نامعتبر است';
+                }
+              }
+            }
+            
+            // شماره تلفن اصلی - الزامی
+            if (!formData.phone || formData.phone.trim().length === 0) {
+              errors.phone = 'شماره تلفن اصلی الزامی است';
+            } else {
+              const phoneRegex = /^09[0-9]{9}$/;
+              if (!phoneRegex.test(formData.phone)) {
+                errors.phone = 'فرمت شماره تلفن صحیح نیست (09xxxxxxxxx)';
+              }
+            }
+            
+            // شماره تلفن همراه - الزامی
+            if (!formData.mobile || formData.mobile.trim().length === 0) {
+              errors.mobile = 'شماره تلفن همراه الزامی است';
+            } else {
+              const mobileRegex = /^09[0-9]{9}$/;
+              if (!mobileRegex.test(formData.mobile)) {
+                errors.mobile = 'فرمت شماره تلفن همراه صحیح نیست (09xxxxxxxxx)';
+              }
+            }
+            
+            // تاریخ تولد - الزامی
+            if (!formData.birth_date || formData.birth_date.trim().length === 0) {
+              errors.birth_date = 'لطفاً تاریخ تولد خود را انتخاب کنید';
+            }
+            
+            // آدرس ایمیل - الزامی
+            if (!formData.email || formData.email.trim().length === 0) {
+              errors.email = 'آدرس ایمیل الزامی است';
+            } else {
+              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+              if (!emailRegex.test(formData.email)) {
+                errors.email = 'فرمت ایمیل صحیح نیست';
+              }
+            }
+            
+            // تاریخ اعتبار گواهینامه - الزامی
+            if (!formData.licence_date || formData.licence_date.trim().length === 0) {
+              errors.licence_date = 'لطفاً تاریخ اعتبار گواهینامه را انتخاب کنید';
+            }
+            
+            // اگر خطا وجود دارد، نمایش بده و از رفتن به مرحله بعدی جلوگیری کن
+            if (Object.keys(errors).length > 0) {
+              // ذخیره خطاها برای نمایش در فیلدها
+              setFieldErrors(errors);
+              
+              // ساخت پیام خطا
+              const errorMessages = Object.entries(errors).map(([field, message]) => {
+                const fieldNames = {
+                  name: 'نام و نام خانوادگی',
+                  melicode: 'شماره ملی',
+                  phone: 'شماره تلفن اصلی',
+                  mobile: 'شماره تلفن همراه',
+                  birth_date: 'تاریخ تولد',
+                  email: 'آدرس ایمیل',
+                  licence_date: 'تاریخ اعتبار گواهینامه'
+                };
+                
+                const persianFieldName = fieldNames[field] || field;
+                return `❌ ${persianFieldName}:\n   ${message}`;
+              });
+              
               showAlert(
-                'فیلدهای ضروری',
-                `لطفاً فیلدهای زیر را تکمیل کنید:\n\n${emptyFields.map(f => `• ${f}`).join('\n')}`,
-                [{ text: 'متوجه شدم' }]
+                'خطا در اطلاعات فرم',
+                'لطفاً خطاهای زیر را برطرف کنید:\n\n' + errorMessages.join('\n\n'),
+                [{ text: 'متوجه شدم', style: 'cancel' }]
               );
               return;
             }
             
+            // پاک کردن خطاها و رفتن به مرحله بعدی
+            setFieldErrors({});
             setCurrentPage('computer');
           }}
         >
@@ -879,6 +975,7 @@ export default function SignIn({ navigation }) {
             value={formData.idea}
             onChangeText={(value) => updateField('idea', value)}
             placeholder=""
+            placeholderTextColor={PLACEHOLDER_COLOR}
             multiline
             numberOfLines={3}
           />
@@ -892,6 +989,7 @@ export default function SignIn({ navigation }) {
             value={formData.software_skill}
             onChangeText={(value) => updateField('software_skill', value)}
             placeholder=""
+            placeholderTextColor={PLACEHOLDER_COLOR}
             multiline
             numberOfLines={3}
           />
@@ -905,6 +1003,7 @@ export default function SignIn({ navigation }) {
             value={formData.hardware_skill}
             onChangeText={(value) => updateField('hardware_skill', value)}
             placeholder=""
+            placeholderTextColor={PLACEHOLDER_COLOR}
             multiline
             numberOfLines={3}
           />
@@ -918,6 +1017,7 @@ export default function SignIn({ navigation }) {
             value={formData.software_weakness}
             onChangeText={(value) => updateField('software_weakness', value)}
             placeholder=""
+            placeholderTextColor={PLACEHOLDER_COLOR}
             multiline
             numberOfLines={3}
           />
@@ -931,6 +1031,7 @@ export default function SignIn({ navigation }) {
             value={formData.hardware_weakness}
             onChangeText={(value) => updateField('hardware_weakness', value)}
             placeholder=""
+            placeholderTextColor={PLACEHOLDER_COLOR}
             multiline
             numberOfLines={3}
           />
@@ -1230,6 +1331,11 @@ const styles = StyleSheet.create({
   },
   inputRow: {
     marginVertical: 3,
+  },
+  required: {
+    color: '#ff0000',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   errorContainer: {
     marginTop: 5,

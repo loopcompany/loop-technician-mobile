@@ -421,6 +421,14 @@ export const formatJalaaliDate = (isoDate) => {
 
 export const formatDate = (isoDate) => {
   if (!isoDate) return '';
+  
+  // ✅ اگر تاریخ قبلاً شمسی است (YYYY/MM/DD یا YYYY/M/D)، همان را برگردان
+  if (/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(isoDate)) {
+    console.log('📅 formatDate - تاریخ از قبل شمسی است:', isoDate);
+    return isoDate;
+  }
+  
+  // تبدیل تاریخ میلادی به شمسی
   const date = new Date(isoDate);
   if (isNaN(date.getTime())) return '';
   const { jy, jm, jd } = jalaali.toJalaali(date.getFullYear(), date.getMonth() + 1, date.getDate());

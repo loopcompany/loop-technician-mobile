@@ -16,7 +16,7 @@ import { themeColor0, themeColor4, themeColor6, themeColor10, themeColor13, them
 import { getOrganizationOrders } from '../services/Api';
 import { formatDate, showAlert } from '../helpers/Common';
 import { Ionicons } from '@expo/vector-icons';
-import { useFooter } from '../contexts/FooterContext';
+import { useFooter } from '../contexts/FooterProvider';
 import ScreenHeaders from '../components/ScreenHeaders';
 
 export default function OrganizationOrdersScreen() {

@@ -35,7 +35,7 @@ export default function Footer() {
     console.log('⚠️ handleLogout فراخوانی شد - نسخه جدید');
     showAlert(
       'خروج از حساب کاربری',
-      'آیا مطمئن هستید که می‌خواهید خارج شوید؟',
+      'آیا مطمئن به خروج هستید؟',
       [
         {
           text: 'انصراف',

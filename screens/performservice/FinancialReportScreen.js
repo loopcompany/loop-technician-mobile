@@ -7,6 +7,8 @@ import {
   ScrollView,
   ActivityIndicator,
   RefreshControl,
+  Linking,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -81,7 +83,27 @@ export default function FinancialReportScreen({ navigation }) {
         { text: 'لغو', style: 'cancel' },
         { 
           text: 'تماس تلفنی', 
-          onPress: () => console.log('تماس تلفنی درخواست شد') 
+          onPress: async () => {
+            const phoneNumber = '02122656819';
+            const url = `tel:${phoneNumber}`;
+            
+            try {
+              await Linking.openURL(url);
+            } catch (err) {
+              console.error('❌ خطا در باز کردن شماره تلفن:', err);
+              
+              // fallback برای وب
+              if (Platform.OS === 'web') {
+                try {
+                  window.open(url, '_self');
+                } catch (webErr) {
+                  showAlert('خطا', 'مشکلی در باز کردن تماس پیش آمد');
+                }
+              } else {
+                showAlert('خطا', 'امکان تماس تلفنی در دستگاه شما وجود ندارد');
+              }
+            }
+          }
         },
       ]
     );

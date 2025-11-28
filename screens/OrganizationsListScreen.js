@@ -17,7 +17,7 @@ import { themeColor0, themeColor4, themeColor6, themeColor10, themeColor13 } fro
 import { getOrganizationsList } from '../services/Api';
 import { showAlert } from '../helpers/Common';
 import { Ionicons } from '@expo/vector-icons';
-import { useFooter } from '../contexts/FooterContext';
+import { useFooter } from '../contexts/FooterProvider';
 import { uri } from '../services/URL';
 import ScreenHeaders from '../components/ScreenHeaders';
 
@@ -42,6 +42,9 @@ export default function OrganizationsListScreen() {
             const result = await getOrganizationsList();
 
             if (result.success && result.data) {
+                console.log('📊 داده دریافتی از Backend:', JSON.stringify(result.data, null, 2));
+                console.log('📋 اولین سازمان:', JSON.stringify(result.data.organizations?.[0], null, 2));
+                
                 setOrganizations(result.data.organizations || []);
                 setStats({
                     total_organization_orders: result.data.total_organization_orders || 0,
@@ -75,6 +78,21 @@ export default function OrganizationsListScreen() {
         const imageUrl = item.profile_image
             ? `${uri}/storage/${item.profile_image}`
             : null;
+
+        // محاسبه تعداد سفارشات فعال (فقط وضعیت 0 و 1)
+        // وضعیت 0: در انتظار
+        // وضعیت 1: در حال پردازش
+        // اگر Backend فیلد active_orders_count رو برگردوند از اون استفاده می‌کنیم
+        // وگرنه موقتاً از total_orders استفاده می‌کنیم
+        const activeOrdersCount = item.active_orders_count !== undefined 
+            ? item.active_orders_count 
+            : (item.total_orders || 0);
+
+        console.log(`🏢 ${item.organization_name}:`, {
+            total_orders: item.total_orders,
+            active_orders_count: item.active_orders_count,
+            activeOrdersCount: activeOrdersCount
+        });
 
         return (
             <TouchableOpacity
@@ -116,13 +134,17 @@ export default function OrganizationsListScreen() {
                         )}
                     </View>
 
-                    {/* Badge Section */}
-                    <View style={styles.badgeContainer}>
-                        <View style={styles.badge}>
-                            <Text style={styles.badgeText}>{item.total_orders}</Text>
+                    {/* Badge Section - فقط نمایش داده شود اگر سفارش فعال وجود داشته باشد */}
+                    {activeOrdersCount > 0 && (
+                        <View style={styles.badgeContainer}>
+                            <View style={styles.badge}>
+                                <Text style={styles.badgeText}>
+                                    {activeOrdersCount > 99 ? '99+' : activeOrdersCount}
+                                </Text>
+                            </View>
+                            <Text style={styles.badgeLabel}>سفارش</Text>
                         </View>
-                        <Text style={styles.badgeLabel}>سفارش</Text>
-                    </View>
+                    )}
                 </View>
 
                 {/* Arrow */}
@@ -297,13 +319,15 @@ const styles = StyleSheet.create({
     badge: {
         backgroundColor: themeColor6.bgColor(1),
         borderRadius: 20,
-        width: 20,
-        height: 20,
+        minWidth: 40,
+        height: 40,
+        paddingHorizontal: 8,
         ...NewStyles.center,
     },
     badgeText: {
         ...NewStyles.text4,
-        fontSize: 11
+        fontSize: 14,
+        fontWeight: 'bold',
     },
     badgeLabel: {
         ...NewStyles.text10,

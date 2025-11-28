@@ -6,8 +6,12 @@ export const fetchOrderExtras = createAsyncThunk(
     async (orderId, { rejectWithValue }) => {
         try {
             const result = await getOrderExtras(orderId);
+            console.log('🎯 fetchOrderExtras result:', result);
             if (result.success) {
-                return Array.isArray(result.data) ? result.data : result.data || [];
+                // API برمی‌گرداند extra_services
+                const extras = result.data?.extra_services || result.data || [];
+                console.log('✅ خدمات اضافی دریافت شد:', extras);
+                return Array.isArray(extras) ? extras : [];
             } else {
                 return rejectWithValue(result.message || 'خطا در دریافت خدمات اضافی');
             }

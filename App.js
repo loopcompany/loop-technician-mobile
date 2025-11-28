@@ -8,8 +8,8 @@ import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import store from "./store";
-import { FooterProvider, useFooter } from "./contexts/FooterContext";
-import { AuthProvider } from "./contexts/AuthContext";
+import { FooterProvider, useFooter } from "./contexts/FooterProvider";
+import { navigationRef } from "./services/NavigationService";
 import { setToken } from "./slices/authSlice";
 import { setUserData } from "./slices/userSlice";
 import { validateToken } from "./services/Api";
@@ -741,25 +741,24 @@ const App = () => {
 
   return (
     <SafeAreaProvider>
-      <NavigationContainer
-        linking={linking}
-        initialState={initialState}
-        onStateChange={(state) => {
-          // Only persist navigation state when running in web environment.
-          // Native apps receive hot reload and should start from initial route.
-          if (state && Platform.OS === 'web') {
-            AsyncStorage.setItem(PERSISTENCE_KEY, JSON.stringify(state));
-          }
-        }}
-      >
-        <Provider store={store}>
-          <AuthProvider>
-            <FooterProvider>
-              <AppNavigator />
-            </FooterProvider>
-          </AuthProvider>
-        </Provider>
-      </NavigationContainer>
+      <Provider store={store}>
+        <FooterProvider>
+          <NavigationContainer
+            ref={navigationRef}
+            linking={linking}
+            initialState={initialState}
+            onStateChange={(state) => {
+              // Only persist navigation state when running in web environment.
+              // Native apps receive hot reload and should start from initial route.
+              if (state && Platform.OS === 'web') {
+                AsyncStorage.setItem(PERSISTENCE_KEY, JSON.stringify(state));
+              }
+            }}
+          >
+            <AppNavigator />
+          </NavigationContainer>
+        </FooterProvider>
+      </Provider>
     </SafeAreaProvider>
   );
 };

@@ -71,6 +71,8 @@ export default function DatePickerModal({
                                     minimumDate={minDate}
                                     maximumDate={maxDate}
                                     onSelectedChange={(p) => {
+                                        console.log('📅 DatePickerModal - تاریخ انتخاب شده:', p);
+                                        console.log('📅 DatePickerModal - بعد از slice:', p.slice(0, 10));
                                         setBirthDate(p.slice(0, 10));
                                     }}
                                 />

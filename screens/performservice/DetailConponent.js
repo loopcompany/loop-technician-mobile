@@ -330,6 +330,23 @@ const DetailConponent = ({ data, renderRow, }) => {
                     </View>
                 </View>
             )}
+
+            {/* Loop Description */}
+            {data?.loop_description && (
+                <View style={styles.card}>
+                    <View style={styles.sectionHeader}>
+                        <View style={[NewStyles.row, { gap: 5 }]}>
+                            <Ionicons name="document-text-outline" size={24} color={themeColor0.bgColor(1)} />
+                            <Text style={NewStyles.title}>توضیحات لوپ</Text>
+                        </View>
+                    </View>
+
+                    <View style={styles.descriptionItem}>
+                        <Ionicons name="ellipse" size={10} color={themeColor0.bgColor(0.5)} />
+                        <Text style={[NewStyles.text10, { flex: 1 }]}>{data?.loop_description}</Text>
+                    </View>
+                </View>
+            )}
         </View>
     )
 }

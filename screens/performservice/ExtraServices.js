@@ -41,6 +41,11 @@ export default function ExtraServices({ route, navigation }) {
         }
         setLoading(true);
         try {
+            console.log('📤 ارسال خدمات اضافی:', {
+                order_id: orderId,
+                extras: extraServices?.items
+            });
+            
             const response = await axios.post(`${uri}/technician/submit-extra-services`, { 
                 order_id: orderId, 
                 extras: extraServices?.items 
@@ -50,17 +55,24 @@ export default function ExtraServices({ route, navigation }) {
                     'Authorization': `Bearer ${token}` 
                 } 
             });
+            
+            console.log('✅ پاسخ ثبت خدمات:', response.data);
+            
             if (response.status == 200 || response.status == 201) {
                 showToastOrAlert(response?.data?.message || 'خدمات با موفقیت ثبت شد');
                 dispatch(emptyExtraServices());
+                
+                // رفرش داده‌های orderExtras
+                await dispatch(fetchOrderExtras(orderId));
+                
                 navigation.goBack();
             }
         } catch (error) {
+            console.log('❌ خطا در ثبت خدمات:', error?.response?.data || error.message);
             const message = error?.response ? (error?.response?.status ? error?.response?.data?.message : t('An unexpected error occurred!')) : t('Network error!');
             showToastOrAlert(message);
         } finally {
             setLoading(false);
-            dispatch(fetchOrderExtras(orderId));
         }
     }
 
@@ -135,7 +147,7 @@ export default function ExtraServices({ route, navigation }) {
                                             ]}
                                         >
                                             <Ionicons name={'cash-outline'} size={20} color={themeColor0.bgColor(1)} />
-                                            <TextInput style={[styles.textInput, NewStyles.border10, NewStyles.text10]} keyboardType='number-pad' placeholder={'مبلغ توافق شده خود را وارد کنید.'} placeholderTextColor={themeColor3.bgColor(1)} value={extraItem?.price ? extraItem?.price?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : ''} onChangeText={(text) => { dispatch(updateExtraServicePrice({ id: item?.id, title: null, price: Number(text?.replace(/,/g, "")), extra_detail_id: null })) }} />
+                                            <TextInput style={[styles.textInput, NewStyles.border10, NewStyles.text10]} keyboardType='number-pad' placeholder={'مبلغ توافق شده  را وارد کنید.'} placeholderTextColor={themeColor3.bgColor(1)} value={extraItem?.price ? extraItem?.price?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : ''} onChangeText={(text) => { dispatch(updateExtraServicePrice({ id: item?.id, title: null, price: Number(text?.replace(/,/g, "")), extra_detail_id: null })) }} />
                                         </View>
                                         <View
                                             style={[
