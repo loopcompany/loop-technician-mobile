@@ -226,7 +226,7 @@ export default function TransferRequestDetailScreen({ route, navigation }) {
           <View style={styles.technicianSection}>
             <View style={styles.technicianHeader}>
               <Ionicons name="person-circle-outline" size={20} color={themeColor0.bgColor(1)} style={{ marginLeft: 8 }} />
-              <Text style={styles.label}>اطلاعات متخصص:</Text>
+              <Text style={styles.label}>اطلاعات تکنسین:</Text>
             </View>
             <View style={styles.technicianInfo}>
               <View style={styles.technicianRow}>

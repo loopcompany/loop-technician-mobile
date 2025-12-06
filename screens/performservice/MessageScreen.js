@@ -229,7 +229,7 @@ export default function MessageScreen({ navigation }) {
                       </View>
                       <View style={styles.dateContainer}>
                         <Text style={styles.dateText}>{formatDateTime(msg.created_at)}</Text>
-                        {/* نمایش تیک فقط برای پیام‌های خود متخصص */}
+                        {/* نمایش تیک فقط برای پیام‌های خود تکنسین */}
                         {msg.is_mine && (
                           <Ionicons
                             name={msg.is_read ? "checkmark-done" : "checkmark"}

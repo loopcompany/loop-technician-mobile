@@ -260,7 +260,7 @@ export const verifyDeliveryReportWithCode = async (orderId, code) => {
 };
 
 /**
- * ارسال مجدد کد تایید گزارش تحویل (متخصص)
+ * ارسال مجدد کد تایید گزارش تحویل (تکنسین)
  * فقط برای گزارش‌هایی که هنوز تایید نشده‌اند کار می‌کند
  */
 export const resendDeliveryReportCode = async (orderId) => {
@@ -845,7 +845,7 @@ export const resetPassword = async (data) => {
  */
 export const getTechnicianProfile = async () => {
   try {
-    console.log('🔍 درخواست دریافت پروفایل متخصص...');
+    console.log('🔍 درخواست دریافت پروفایل تکنسین...');
     console.log('📍 Endpoint: GET /technician/profile');
     const response = await api.get('/technician/profile');
     console.log('✅ پاسخ دریافت شد:', response.status);
@@ -1039,7 +1039,7 @@ export const changePassword = async (data) => {
  */
 export const getTechnicianOrders = async (status = null, page = 1, perPage = 15) => {
   try {
-    console.log('📋 دریافت لیست سفارشات متخصص...');
+    console.log('📋 دریافت لیست سفارشات تکنسین...');
     // Build query parameters
     const params = new URLSearchParams();
     if (status?.toString()) params.append('status', status?.toString());
@@ -1087,22 +1087,22 @@ export const getTechnicianOrderById = async (orderId) => {
 };
 
 /**
- * ثبت توضیحات متخصص
+ * ثبت توضیحات تکنسین
  * @param {number} orderId - شناسه سفارش
  * @param {Object} data - داده‌های توضیحات شامل technician_des, date, time
  * @returns {Promise<Object>} پاسخ API
  */
 export const submitTechnicianDescription = async (orderId, data) => {
   try {
-    console.log(`📝 ثبت توضیحات متخصص برای سفارش #${orderId}...`);
+    console.log(`📝 ثبت توضیحات تکنسین برای سفارش #${orderId}...`);
     console.log('📝 Data:', data);
 
     const response = await api.post(`/technician/orders/${orderId}/technician-description`, data);
-    console.log('✅ توضیحات متخصص با موفقیت ثبت شد:', response.data);
+    console.log('✅ توضیحات تکنسین با موفقیت ثبت شد:', response.data);
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در ثبت توضیحات متخصص:', error.response?.data || error.message);
+    console.error('❌ خطا در ثبت توضیحات تکنسین:', error.response?.data || error.message);
     if (error.response) {
       console.error('❌ Status:', error.response.status);
       console.error('❌ Data:', error.response.data);
@@ -1158,7 +1158,7 @@ export const arriveToOrder = async (orderId) => {
 };
 
 /**
- * ثبت گزارش محصول توسط متخصص
+ * ثبت گزارش محصول توسط تکنسین
  * @param {Object} data - اطلاعات گزارش محصول
  * @returns {Promise<Object>} پاسخ API
  */
@@ -1345,11 +1345,11 @@ export const clearAuthData = async () => {
 // ==================== Chat APIs ====================
 
 /**
- * دریافت لیست چت‌های متخصص
+ * دریافت لیست چت‌های تکنسین
  */
 export const getTechnicianChats = async () => {
   try {
-    console.log('📋 دریافت لیست چت‌های متخصص');
+    console.log('📋 دریافت لیست چت‌های تکنسین');
     const response = await api.get('/technician/chats');
     console.log('✅ لیست چت‌ها دریافت شد:', response.data);
     return handleResponse(response);
@@ -1420,11 +1420,11 @@ export const markTechnicianMessagesAsRead = async (userId) => {
 };
 
 /**
- * لغو سفارش توسط متخصص
+ * لغو سفارش توسط تکنسین
  */
 export const cancelOrderByTechnician = async (orderId, cancelReason) => {
   try {
-    console.log(`✓ درخواست لغو سفارش ${orderId} توسط متخصص`);
+    console.log(`✓ درخواست لغو سفارش ${orderId} توسط تکنسین`);
     const response = await api.post(`/technician/orders/${orderId}/cancel`, {
       technician_cancel_reason: cancelReason
     });
@@ -1486,23 +1486,23 @@ export const submitEmergencyHelp = async (orderId, emergencyHelp) => {
 };
 
 /**
- * ثبت نظر متخصص در مورد سفارش
+ * ثبت نظر تکنسین در مورد سفارش
  * @param {number} orderId - شناسه سفارش
- * @param {string} technicianOpinion - نظر متخصص (حداکثر 2000 کاراکتر)
+ * @param {string} technicianOpinion - نظر تکنسین (حداکثر 2000 کاراکتر)
  * @returns {Promise<Object>} پاسخ API
  */
 export const submitTechnicianOpinion = async (orderId, technicianOpinion) => {
   try {
-    console.log(`💬 ثبت نظر متخصص برای سفارش #${orderId}...`);
+    console.log(`💬 ثبت نظر تکنسین برای سفارش #${orderId}...`);
 
     const response = await api.post(`${Technician_Orders}/${orderId}/technician-opinion`, {
       technician_opinion: technicianOpinion
     });
 
-    console.log('✅ نظر متخصص با موفقیت ثبت شد:', response.data);
+    console.log('✅ نظر تکنسین با موفقیت ثبت شد:', response.data);
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در ثبت نظر متخصص:', error.response?.data || error.message);
+    console.error('❌ خطا در ثبت نظر تکنسین:', error.response?.data || error.message);
 
     const errorCode = error.response?.data?.error_code;
 
@@ -1510,7 +1510,7 @@ export const submitTechnicianOpinion = async (orderId, technicianOpinion) => {
       throw new Error('سفارش مورد نظر یافت نشد');
     } else if (error.response?.status === 409) {
       if (errorCode === 'ORDER_NOT_FINISHED') {
-        throw new Error('فقط سفارشات تمام شده می‌توانند نظر متخصص داشته باشند');
+        throw new Error('فقط سفارشات تمام شده می‌توانند نظر تکنسین داشته باشند');
       }
       throw new Error('سفارش هنوز به اتمام نرسیده است');
     } else if (error.response?.status === 422) {
@@ -1980,7 +1980,7 @@ export const getTerminationRequestById = async (requestId) => {
 // =============================================================================
 
 /**
- * دریافت لیست تراکنش‌های متخصص
+ * دریافت لیست تراکنش‌های تکنسین
  * @param {Object} filters - فیلترهای تاریخ (اختیاری)
  * @param {string} filters.date - تاریخ خاص (YYYY-MM-DD)
  * @param {string} filters.from_date - از تاریخ (YYYY-MM-DD)

@@ -5,8 +5,8 @@ import { themeColor0, themeColor3, themeColor7 } from '../../theme/Color';
 
 export default function MessegeItem({ messege }) {
 
-    // is_user: 0 = پیام از متخصص، 1 = پیام از کاربر
-    // برای متخصص: پیام خودش (is_user=0) سمت راست، پیام کاربر (is_user=1) سمت چپ
+    // is_user: 0 = پیام از تکنسین، 1 = پیام از کاربر
+    // برای تکنسین: پیام خودش (is_user=0) سمت راست، پیام کاربر (is_user=1) سمت چپ
     if (messege.is_user == 1) {
         // پیام از کاربر - سمت چپ
         return (
@@ -18,14 +18,14 @@ export default function MessegeItem({ messege }) {
                 </View>
             </View>)
     } else {
-        // پیام از متخصص (خودمان) - سمت راست
+        // پیام از تکنسین (خودمان) - سمت راست
         return (
             <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
                 <View style={{ width: '80%', marginRight: 15, marginBottom: 5, }}>
                     <View style={{ alignSelf: 'flex-end', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: themeColor3.bgColor(0.1) }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                             <Text style={NewStyles.text} selectable={true}>{messege?.msg}</Text>
-                            {/* نمایش علامت تیک‌ها برای پیام‌های متخصص */}
+                            {/* نمایش علامت تیک‌ها برای پیام‌های تکنسین */}
                             {messege.is_read == 1 ? (
                                 // دو تیک آبی - خوانده شده
                                 <Ionicons name="checkmark-done" size={16} color={themeColor7.bgColor(1)} />

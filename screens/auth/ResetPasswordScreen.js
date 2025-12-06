@@ -258,7 +258,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
 
             {step === 1 ? (
               // Step 1: Enter verification code
-              <View style={[NewStyles.center, { backgroundColor: themeColor10.bgColor(0.5), height: "40%", width: "100%", borderRadius: 15, maxWidth: 800 }]}>
+              <View style={[NewStyles.center, { backgroundColor: themeColor10.bgColor(0.5), height: 300, width: "100%", borderRadius: 15, maxWidth: 800 }]}>
                 <Text style={[NewStyles.title1, { marginBottom: 20, fontSize: 17, textAlign: "center", paddingHorizontal: 20 }]}>
                   کد 6 رقمی ارسال شده به شماره {params?.phone} را وارد کنید
                 </Text>

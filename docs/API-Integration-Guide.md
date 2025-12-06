@@ -125,12 +125,12 @@ const registrationFormData = {
   other_referral_code: "ABC12345",
   
   // Skills Information
-  idea: "ایده و خلاقیت متخصص",
+  idea: "ایده و خلاقیت تکنسین",
   software_skill: "مهارت‌های نرم‌افزاری",
   hardware_skill: "مهارت‌های سخت‌افزاری", 
   software_weakness: "نقاط ضعف نرم‌افزاری",
   hardware_weakness: "نقاط ضعف سخت‌افزاری",
-  resume: "رزومه متخصص",
+  resume: "رزومه تکنسین",
   expertise_ids: [1, 2, 3] // Array of expertise IDs
 };
 ```

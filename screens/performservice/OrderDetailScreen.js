@@ -129,7 +129,7 @@ export default function OrderDetailScreen({ route, navigation }) {
   const [resendTimer, setResendTimer] = useState(0);
   const [canResend, setCanResend] = useState(true);
 
-  // State برای نظر متخصص
+  // State برای نظر تکنسین
   const [technicianOpinion, setTechnicianOpinion] = useState('');
   const [submittingOpinion, setSubmittingOpinion] = useState(false);
 
@@ -170,7 +170,7 @@ export default function OrderDetailScreen({ route, navigation }) {
         if (result.data?.emergency_help) {
           setEmergencyHelpText(result.data.emergency_help);
         }
-        // تنظیم نظر متخصص
+        // تنظیم نظر تکنسین
         if (result.data?.technician_opinion) {
           setTechnicianOpinion(result.data.technician_opinion);
         }
@@ -301,6 +301,19 @@ export default function OrderDetailScreen({ route, navigation }) {
       return;
     }
 
+    if(!technicianPrice) {
+      showToastOrAlert('لطفاً مبلغ پایه تکنسین را وارد کنید');
+      return;
+    }
+    if(technicianPrice && isNaN(Number(technicianPrice))) {
+      showToastOrAlert('لطفاً مبلغ پایه تکنسین را به درستی وارد کنید');
+      return;
+    }
+
+    if(!reviewDescription){
+      showToastOrAlert('لطفاً توضیحات بررسی را وارد کنید');
+      return;
+    }
     try {
       setSavingReview(true);
 
@@ -323,7 +336,7 @@ export default function OrderDetailScreen({ route, navigation }) {
         requestData.time = timeRange;
       }
 
-      // اضافه کردن مبلغ پایه متخصص اگر وارد شده باشد
+      // اضافه کردن مبلغ پایه تکنسین اگر وارد شده باشد
       if (technicianPrice) {
         requestData.technician_price = technicianPrice;
       }
@@ -387,7 +400,7 @@ export default function OrderDetailScreen({ route, navigation }) {
     }
   };
 
-  // تابع لغو سفارش توسط متخصص
+  // تابع لغو سفارش توسط تکنسین
   const handleCancelOrder = async () => {
     if (!selectedCancelReason) {
       showToastOrAlert('لطفاً دلیل لغو را انتخاب کنید');
@@ -796,7 +809,7 @@ export default function OrderDetailScreen({ route, navigation }) {
     }
   };
 
-  // تابع ثبت نظر متخصص
+  // تابع ثبت نظر تکنسین
   const handleSubmitTechnicianOpinion = async () => {
     if (!technicianOpinion.trim()) {
       showToastOrAlert('لطفاً نظر خود را وارد کنید');
@@ -1049,8 +1062,8 @@ export default function OrderDetailScreen({ route, navigation }) {
                     </View>
                     <Text style={[NewStyles.text10, { textAlign: 'right', lineHeight: 24 }]}>
                       {data?.service_schedule_type 
-                        ? 'لطفاً مبلغ پایه متخصص و توضیحات لازم را وارد کنید. پس از ثبت، اطلاعات برای کاربر ارسال می‌شود و باید منتظر تایید کاربر بمانید.'
-                        : 'لطفاً تاریخ، بازه ساعت مراجعه، مبلغ پایه متخصص و توضیحات را مشخص کنید. پس از ثبت اطلاعات، درخواست شما برای کاربر ارسال می‌شود و باید منتظر تایید کاربر بمانید.'
+                        ? 'لطفاً مبلغ پایه تکنسین و توضیحات لازم را وارد کنید. پس از ثبت، اطلاعات برای کاربر ارسال می‌شود و باید منتظر تایید کاربر بمانید.'
+                        : 'لطفاً تاریخ، بازه ساعت مراجعه، مبلغ پایه تکنسین و توضیحات را مشخص کنید. پس از ثبت اطلاعات، درخواست شما برای کاربر ارسال می‌شود و باید منتظر تایید کاربر بمانید.'
                       }
                     </Text>
                   </View>
@@ -1119,7 +1132,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                       <>
                         {/* انتخاب تاریخ جدید */}
                         <View style={styles.inputGroup}>
-                          <Text style={NewStyles.text}>تاریخ مراجعه:</Text>
+                          <Text style={NewStyles.text}>تاریخ مراجعه: <Text style={NewStyles.text6}>*</Text></Text>
                           <TouchableOpacity
                             style={styles.dateInput}
                             onPress={() => setDatePickerModal(true)}
@@ -1133,7 +1146,7 @@ export default function OrderDetailScreen({ route, navigation }) {
 
                         {/* ورود بازه ساعت */}
                         <View style={styles.inputGroup}>
-                          <Text style={NewStyles.text}>بازه ساعت مراجعه:</Text>
+                          <Text style={NewStyles.text}>بازه ساعت مراجعه: <Text style={NewStyles.text6}>*</Text></Text>
                           <TextInput
                             style={styles.textInput}
                             value={timeRange}
@@ -1146,9 +1159,9 @@ export default function OrderDetailScreen({ route, navigation }) {
                       </>
                     )}
 
-                    {/* ورود مبلغ پایه متخصص - برای هر دو نوع سفارش */}
+                    {/* ورود مبلغ پایه تکنسین - برای هر دو نوع سفارش */}
                     <View style={styles.inputGroup}>
-                      <Text style={NewStyles.text}>مبلغ پایه متخصص (تومان):</Text>
+                      <Text style={NewStyles.text}>مبلغ پایه تکنسین (تومان): <Text style={NewStyles.text6}>*</Text></Text>
                       <TextInput
                         style={styles.textInput}
                         value={technicianPrice?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
@@ -1161,7 +1174,7 @@ export default function OrderDetailScreen({ route, navigation }) {
 
                     {/* توضیحات - برای هر دو نوع سفارش */}
                     <View style={styles.inputGroup}>
-                      <Text style={NewStyles.text}>توضیحات {!data?.service_schedule_type && <Text style={NewStyles.text6}>*</Text>}:</Text>
+                      <Text style={NewStyles.text}>توضیحات :{!data?.service_schedule_type && <Text style={NewStyles.text6}>*</Text>}</Text>
                       <TextInput
                         style={[styles.textInput, styles.multilineInput]}
                         value={reviewDescription}
@@ -1550,7 +1563,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>ایرادات گزارش شده توسط متخصص</Text>
+                  <Text style={NewStyles.text}>ایرادات گزارش شده توسط تکنسین</Text>
                   <TextInput
                     style={[styles.textInput, styles.multilineInput]}
                     value={productReport.technician_reported_issues}
@@ -1565,7 +1578,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>ایرادات مشاهده شده توسط متخصص</Text>
+                  <Text style={NewStyles.text}>ایرادات مشاهده شده توسط تکنسین</Text>
                   <TextInput
                     style={[styles.textInput, styles.multilineInput]}
                     value={productReport.technician_observed_issues}
@@ -2060,7 +2073,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>توضیحات فنی متخصص</Text>
+                  <Text style={NewStyles.text}>توضیحات فنی تکنسین</Text>
                   <TextInput
                     style={[styles.textInput, styles.multilineInput]}
                     value={deliveryReport.technical_description}
@@ -2194,13 +2207,13 @@ export default function OrderDetailScreen({ route, navigation }) {
                   </>
                 )}
 
-                {/* بخش نظر متخصص - فقط برای سفارشات تمام شده (status 2) */}
+                {/* بخش نظر تکنسین - فقط برای سفارشات تمام شده (status 2) */}
                 {data?.finished_at && data?.status === 2 && (
                   <View style={{ marginTop: 20, padding: 15, backgroundColor: themeColor0.bgColor(0.1), borderRadius: 10, borderWidth: 1, borderColor: themeColor0.bgColor(1) }}>
                     <View style={[NewStyles.row, { gap: 10, alignItems: 'center', marginBottom: 10 }]}>
                       <Ionicons name="create-outline" size={24} color={themeColor0.bgColor(1)} />
                       <Text style={[NewStyles.title]}>
-                        نظر متخصص در مورد این سفارش
+                        نظر تکنسین در مورد این سفارش
                       </Text>
                     </View>
 
@@ -2245,7 +2258,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                     {/* دکمه ثبت نظر */}
                     {!data?.technician_opinion && (
                       <Button
-                        title="ثبت نظر متخصص"
+                        title="ثبت نظر تکنسین"
                         onPress={handleSubmitTechnicianOpinion}
                         loading={submittingOpinion}
                         disabled={submittingOpinion || !technicianOpinion.trim()}

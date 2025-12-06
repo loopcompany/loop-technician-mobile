@@ -231,51 +231,21 @@ export default function SignIn({ navigation }) {
       if (!validation.isValid) {
         console.log('❌ Validation errors:', validation.errors);
       
-      // ذخیره خطاها برای نمایش در فیلدها
-      setFieldErrors(validation.errors);
-      
-      // ساخت پیام خطای کامل با نام فیلدها
-      const errorMessages = Object.entries(validation.errors).map(([field, message]) => {
-        // ترجمه نام فیلدها به فارسی
-        const fieldNames = {
-          name: 'نام و نام خانوادگی',
-          melicode: 'شماره ملی',
-          phone: 'شماره تلفن اصلی',
-          mobile: 'شماره تلفن همراه',
-          telephone: 'شماره تلفن ثابت',
-          birth_date: 'تاریخ تولد',
-          father_name: 'نام پدر',
-          issued_from: 'صادره از',
-          serial_number: 'شماره شناسنامه',
-          marital_status: 'وضعیت تأهل',
-          military_status: 'وضعیت نظام وظیفه',
-          education_status: 'وضعیت تحصیلات',
-          email: 'آدرس ایمیل',
-          id_card_number: 'شماره کارت شناسایی',
-          licence_date: 'تاریخ اعتبار گواهینامه',
-          vehicle_type: 'نوع وسیله نقلیه',
-          home_postal_code: 'کد پستی منزل',
-          city: 'شهر',
-          region: 'منطقه',
-          home_address: 'آدرس منزل',
-          expertise_ids: 'تخصص‌ها'
-        };
+        // ذخیره خطاها برای نمایش در فیلدها
+        setFieldErrors(validation.errors);
         
-        const persianFieldName = fieldNames[field] || field;
-        return `❌ ${persianFieldName}:\n   ${message}`;
-      });
-      
-      showAlert(
-        'خطا در اعتبارسنجی فرم',
-        errorMessages.join('\n\n'),
-        [{ text: 'متوجه شدم', style: 'cancel' }]
-      );
-      return false;
-    }
+        // نمایش پیام کلی بدون جزئیات (چون خطاها زیر فیلدها نمایش داده می‌شوند)
+        showAlert(
+          'خطا در اعتبارسنجی فرم',
+          'لطفاً فیلدهای مشخص شده را تکمیل کنید',
+          [{ text: 'متوجه شدم', style: 'cancel' }]
+        );
+        return false;
+      }
 
-    console.log('✅ Form validation passed');
-    setFieldErrors({}); // پاک کردن خطاها
-    return true;
+      console.log('✅ Form validation passed');
+      setFieldErrors({}); // پاک کردن خطاها
+      return true;
     
     } catch (error) {
       console.error('💥 EXCEPTION in validateForm:', error);
@@ -576,44 +546,67 @@ export default function SignIn({ navigation }) {
 
           {/* نام پدر */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>نام پدر :</Text>
+            <Text style={[NewStyles.text10]}>نام پدر <Text style={styles.required}>*</Text> :</Text>
             <TextInput
-              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+              style={[
+                NewStyles.textInput, 
+                NewStyles.text10, 
+                NewStyles.border10,
+                fieldErrors.father_name && styles.inputError
+              ]}
               value={formData.father_name}
               onChangeText={(value) => updateField('father_name', value)}
               placeholder=""
               placeholderTextColor={PLACEHOLDER_COLOR}
             />
+            <FieldError field="father_name" />
           </View>
 
           {/* صادره از */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>صادره از :</Text>
+            <Text style={[NewStyles.text10]}>صادره از <Text style={styles.required}>*</Text> :</Text>
             <TextInput
-              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+              style={[
+                NewStyles.textInput, 
+                NewStyles.text10, 
+                NewStyles.border10,
+                fieldErrors.issued_from && styles.inputError
+              ]}
               value={formData.issued_from}
               onChangeText={(value) => updateField('issued_from', value)}
               placeholder=""
               placeholderTextColor={PLACEHOLDER_COLOR}
             />
+            <FieldError field="issued_from" />
           </View>
 
           {/* شماره شناسنامه */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>شماره شناسنامه :</Text>
+            <Text style={[NewStyles.text10]}>شماره شناسنامه <Text style={styles.required}>*</Text> :</Text>
             <TextInput
-              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+              style={[
+                NewStyles.textInput, 
+                NewStyles.text10, 
+                NewStyles.border10,
+                fieldErrors.serial_number && styles.inputError
+              ]}
               value={formData.serial_number}
               onChangeText={(value) => updateField('serial_number', value)}
               placeholder=""
               placeholderTextColor={PLACEHOLDER_COLOR}
             />
+            <FieldError field="serial_number" />
           </View>
 
           {/* وضعیت تأهل */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>وضعیت تأهل :</Text>
-            <View style={[NewStyles.textInput, NewStyles.border10, styles.pickerContainer]}>
+            <Text style={[NewStyles.text10]}>وضعیت تأهل <Text style={styles.required}>*</Text> :</Text>
+            <View style={[
+              NewStyles.textInput, 
+              NewStyles.border10, 
+              styles.pickerContainer,
+              fieldErrors.marital_status && styles.inputError
+            ]}>
               <Picker
                 selectedValue={formData.marital_status}
                 onValueChange={(value) => updateField('marital_status', value)}
@@ -623,12 +616,18 @@ export default function SignIn({ navigation }) {
                 <Picker.Item label="مجرد" value="مجرد" />
               </Picker>
             </View>
+            <FieldError field="marital_status" />
           </View>
 
           {/* وضعیت سربازی */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>وضعیت سربازی :</Text>
-            <View style={[NewStyles.textInput, NewStyles.border10, styles.pickerContainer]}>
+            <Text style={[NewStyles.text10]}>وضعیت سربازی <Text style={styles.required}>*</Text> :</Text>
+            <View style={[
+              NewStyles.textInput, 
+              NewStyles.border10, 
+              styles.pickerContainer,
+              fieldErrors.military_status && styles.inputError
+            ]}>
               <Picker
                 selectedValue={formData.military_status}
                 onValueChange={(value) => updateField('military_status', value)}
@@ -639,26 +638,39 @@ export default function SignIn({ navigation }) {
                 <Picker.Item label="در حال خدمت" value="در حال خدمت" />
               </Picker>
             </View>
+            <FieldError field="military_status" />
           </View>
 
           {/* وضعیت تحصیلات */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>وضعیت تحصیلات :</Text>
+            <Text style={[NewStyles.text10]}>وضعیت تحصیلات <Text style={styles.required}>*</Text> :</Text>
             <TextInput
-              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+              style={[
+                NewStyles.textInput, 
+                NewStyles.text10, 
+                NewStyles.border10,
+                fieldErrors.education_status && styles.inputError
+              ]}
               value={formData.education_status}
               onChangeText={(value) => updateField('education_status', value)}
               placeholder=""
               placeholderTextColor={PLACEHOLDER_COLOR}
             />
+            <FieldError field="education_status" />
           </View>
 
           {/* شماره تلفن ثابت */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>شماره تلفن ثابت ۰۲۱ ۸ رقمی :</Text>
+            <Text style={[NewStyles.text10]}>شماره تلفن ثابت ۰۲۱ ۸ رقمی <Text style={styles.required}>*</Text> :</Text>
             <View style={styles.phoneContainer}>
               <TextInput
-                style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.phoneInput]}
+                style={[
+                  NewStyles.textInput, 
+                  NewStyles.text10, 
+                  NewStyles.border10, 
+                  styles.phoneInput,
+                  fieldErrors.telephone && styles.inputError
+                ]}
                 value={formData.telephone}
                 onChangeText={(value) => updateField('telephone', value)}
                 placeholder=""
@@ -666,6 +678,7 @@ export default function SignIn({ navigation }) {
                 keyboardType="phone-pad"
               />
             </View>
+            <FieldError field="telephone" />
           </View>
 
           {/* شماره تلفن همراه */}
@@ -712,14 +725,20 @@ export default function SignIn({ navigation }) {
 
           {/* شماره کارت شناسایی */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>شماره کارت شناسایی :</Text>
+            <Text style={[NewStyles.text10]}>شماره کارت شناسایی <Text style={styles.required}>*</Text> :</Text>
             <TextInput
-              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+              style={[
+                NewStyles.textInput, 
+                NewStyles.text10, 
+                NewStyles.border10,
+                fieldErrors.id_card_number && styles.inputError
+              ]}
               value={formData.id_card_number}
               onChangeText={(value) => updateField('id_card_number', value)}
               placeholder=""
               placeholderTextColor={PLACEHOLDER_COLOR}
             />
+            <FieldError field="id_card_number" />
           </View>
 
           {/* تاریخ اعتبار گواهینامه */}
@@ -744,8 +763,8 @@ export default function SignIn({ navigation }) {
 
           {/* نوع وسیله نقلیه */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>نوع وسیله نقلیه :</Text>
-            <View style={[NewStyles.textInput, NewStyles.border10, styles.pickerContainer]}>
+            <Text style={[NewStyles.text10]}>نوع وسیله نقلیه <Text style={styles.required}>*</Text> :</Text>
+            <View style={[NewStyles.textInput, NewStyles.border10, styles.pickerContainer, fieldErrors.vehicle_type && styles.inputError]}>
               <Picker
                 selectedValue={formData.vehicle_type}
                 onValueChange={(value) => updateField('vehicle_type', value)}
@@ -758,13 +777,14 @@ export default function SignIn({ navigation }) {
                 <Picker.Item label="پیاده" value="پیاده" />
               </Picker>
             </View>
+            <FieldError field="vehicle_type" />
           </View>
 
           {/* کد پستی منزل */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>کد پستی منزل :</Text>
+            <Text style={[NewStyles.text10]}>کد پستی منزل <Text style={styles.required}>*</Text> :</Text>
             <TextInput
-              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, fieldErrors.home_postal_code && styles.inputError]}
               value={formData.home_postal_code}
               onChangeText={(value) => updateField('home_postal_code', value)}
               placeholder=""
@@ -772,38 +792,41 @@ export default function SignIn({ navigation }) {
               keyboardType="number-pad"
               maxLength={10}
             />
+            <FieldError field="home_postal_code" />
           </View>
 
           {/* شهر + منطقه */}
           <View style={styles.cityRow}>
             <View style={styles.cityContainer}>
-              <Text style={[NewStyles.text10]}>شهر :</Text>
+              <Text style={[NewStyles.text10]}>شهر <Text style={styles.required}>*</Text> :</Text>
               <TextInput
-                style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+                style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, fieldErrors.city && styles.inputError]}
                 value={formData.city}
                 onChangeText={(value) => updateField('city', value)}
                 placeholder="تهران"
                 placeholderTextColor={PLACEHOLDER_COLOR}
               />
+              <FieldError field="city" />
             </View>
             <View style={styles.regionContainer}>
-              <Text style={[NewStyles.text10]}>منطقه :</Text>
+              <Text style={[NewStyles.text10]}>منطقه <Text style={styles.required}>*</Text> :</Text>
               <TextInput
-                style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+                style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, fieldErrors.region && styles.inputError]}
                 value={formData.region}
                 keyboardType='number-pad'
                 onChangeText={(value) => updateField('region', value)}
                 placeholder="5"
                 placeholderTextColor={PLACEHOLDER_COLOR}
               />
+              <FieldError field="region" />
             </View>
           </View>
 
           {/* آدرس منزل */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>آدرس منزل :</Text>
+            <Text style={[NewStyles.text10]}>آدرس منزل <Text style={styles.required}>*</Text> :</Text>
             <TextInput
-              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.addressInput]}
+              style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.addressInput, fieldErrors.home_address && styles.inputError]}
               value={formData.home_address}
               onChangeText={(value) => updateField('home_address', value)}
               placeholder=""
@@ -811,6 +834,7 @@ export default function SignIn({ navigation }) {
               multiline
               numberOfLines={3}
             />
+            <FieldError field="home_address" />
           </View>
 
           {/* کد پرسنلی مصرف */}
@@ -845,7 +869,7 @@ export default function SignIn({ navigation }) {
             // نام و نام خانوادگی - الزامی
             if (!formData.name || formData.name.trim().length === 0) {
               errors.name = 'نام و نام خانوادگی الزامی است';
-            } else if (formData.name.trim().length < 2) {
+            } else if (formData.name.trim().length < 1) {
               errors.name = 'نام و نام خانوادگی باید حداقل 2 کاراکتر باشد';
             }
             
@@ -919,25 +943,10 @@ export default function SignIn({ navigation }) {
               // ذخیره خطاها برای نمایش در فیلدها
               setFieldErrors(errors);
               
-              // ساخت پیام خطا
-              const errorMessages = Object.entries(errors).map(([field, message]) => {
-                const fieldNames = {
-                  name: 'نام و نام خانوادگی',
-                  melicode: 'شماره ملی',
-                  phone: 'شماره تلفن اصلی',
-                  mobile: 'شماره تلفن همراه',
-                  birth_date: 'تاریخ تولد',
-                  email: 'آدرس ایمیل',
-                  licence_date: 'تاریخ اعتبار گواهینامه'
-                };
-                
-                const persianFieldName = fieldNames[field] || field;
-                return `❌ ${persianFieldName}:\n   ${message}`;
-              });
-              
+              // نمایش پیام کلی (خطاها زیر فیلدها نمایش داده می‌شوند)
               showAlert(
                 'خطا در اطلاعات فرم',
-                'لطفاً خطاهای زیر را برطرف کنید:\n\n' + errorMessages.join('\n\n'),
+                'لطفاً فیلدهای مشخص شده با قرمز را تکمیل کنید',
                 [{ text: 'متوجه شدم', style: 'cancel' }]
               );
               return;
@@ -969,9 +978,14 @@ export default function SignIn({ navigation }) {
 
         {/* لیدز / شفافیت */}
         <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>ایده / خلاقیت :</Text>
+          <Text style={[NewStyles.text10]}>ایده / خلاقیت : <Text style={styles.required}>*</Text></Text>
           <TextInput
-            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+            style={[
+              NewStyles.textInput, 
+              NewStyles.text10, 
+              NewStyles.border10,
+              fieldErrors.idea && styles.inputError
+            ]}
             value={formData.idea}
             onChangeText={(value) => updateField('idea', value)}
             placeholder=""
@@ -979,13 +993,19 @@ export default function SignIn({ navigation }) {
             multiline
             numberOfLines={3}
           />
+          <FieldError field="idea" />
         </View>
 
         {/* تسلط / توانایی ها (نرم افزار) */}
         <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>تسلط / توانایی ها (نرم افزار) :</Text>
+          <Text style={[NewStyles.text10]}>تسلط / توانایی ها (نرم افزار) : <Text style={styles.required}>*</Text></Text>
           <TextInput
-            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+            style={[
+              NewStyles.textInput, 
+              NewStyles.text10, 
+              NewStyles.border10,
+              fieldErrors.software_skill && styles.inputError
+            ]}
             value={formData.software_skill}
             onChangeText={(value) => updateField('software_skill', value)}
             placeholder=""
@@ -993,13 +1013,19 @@ export default function SignIn({ navigation }) {
             multiline
             numberOfLines={3}
           />
+          <FieldError field="software_skill" />
         </View>
 
         {/* تسلط / توانایی ها (سخت افزار) */}
         <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>تسلط / توانایی ها (سخت افزار) :</Text>
+          <Text style={[NewStyles.text10]}>تسلط / توانایی ها (سخت افزار) : <Text style={styles.required}>*</Text></Text>
           <TextInput
-            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+            style={[
+              NewStyles.textInput, 
+              NewStyles.text10, 
+              NewStyles.border10,
+              fieldErrors.hardware_skill && styles.inputError
+            ]}
             value={formData.hardware_skill}
             onChangeText={(value) => updateField('hardware_skill', value)}
             placeholder=""
@@ -1007,13 +1033,19 @@ export default function SignIn({ navigation }) {
             multiline
             numberOfLines={3}
           />
+          <FieldError field="hardware_skill" />
         </View>
 
         {/* تاکاکس / نقطه ضعف (نرم افزار) */}
         <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>ناآگاهی / نقطه ضعف (نرم افزار) :</Text>
+          <Text style={[NewStyles.text10]}>ناآگاهی / نقطه ضعف (نرم افزار) : <Text style={styles.required}>*</Text></Text>
           <TextInput
-            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+            style={[
+              NewStyles.textInput, 
+              NewStyles.text10, 
+              NewStyles.border10,
+              fieldErrors.software_weakness && styles.inputError
+            ]}
             value={formData.software_weakness}
             onChangeText={(value) => updateField('software_weakness', value)}
             placeholder=""
@@ -1021,13 +1053,19 @@ export default function SignIn({ navigation }) {
             multiline
             numberOfLines={3}
           />
+          <FieldError field="software_weakness" />
         </View>
 
         {/* تاکاکس / نقطه ضعف (سخت افزار) */}
         <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>ناآگاهی / نقاط ضعف (سخت افزار) :</Text>
+          <Text style={[NewStyles.text10]}>ناآگاهی / نقاط ضعف (سخت افزار) : <Text style={styles.required}>*</Text></Text>
           <TextInput
-            style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+            style={[
+              NewStyles.textInput, 
+              NewStyles.text10, 
+              NewStyles.border10,
+              fieldErrors.hardware_weakness && styles.inputError
+            ]}
             value={formData.hardware_weakness}
             onChangeText={(value) => updateField('hardware_weakness', value)}
             placeholder=""
@@ -1035,6 +1073,7 @@ export default function SignIn({ navigation }) {
             multiline
             numberOfLines={3}
           />
+          <FieldError field="hardware_weakness" />
         </View>
 
       </View>

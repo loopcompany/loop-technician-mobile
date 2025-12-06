@@ -4,7 +4,6 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
-  SafeAreaView,
   Image,
   StyleSheet,
   Animated,
@@ -21,6 +20,7 @@ import * as NavigationService from '../services/NavigationService';
 import ConfirmationModal from '../components/ConfirmationModal';
 import { themeColor0, themeColor4, themeColor6, themeColor7, themeColor10, themeColor13 } from '../theme/Color';
 import NewStyles from '../styles/NewStyles';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const FooterContext = createContext();
 
@@ -182,7 +182,7 @@ export const FooterProvider = ({ children }) => {
   // Footer Component
   const FooterComponent = () => {
     return (
-      <SafeAreaView edges={['bottom']} style={styles.footer}>
+      <SafeAreaView edges={{top:'off', bottom:'additive'}} style={styles.footer}>
         {/* Animated Overlay */}
         {menuVisible && (
           <Animated.View

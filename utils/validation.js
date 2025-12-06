@@ -259,7 +259,7 @@ export const validatePassword = (password) => {
 export const validateTechnicianRegistration = (formData) => {
   const errors = {};
   
-  // Required fields validation
+  // Required fields validation (همه فیلدها الزامی به جز resume)
   const requiredFields = [
     { key: 'name', name: 'نام و نام خانوادگی' },
     { key: 'melicode', name: 'کد ملی' },
@@ -272,9 +272,19 @@ export const validateTechnicianRegistration = (formData) => {
     { key: 'education_status', name: 'وضعیت تحصیلات' },
     { key: 'telephone', name: 'تلفن ثابت' },
     { key: 'mobile', name: 'تلفن همراه' },
+    { key: 'email', name: 'آدرس ایمیل' },
+    { key: 'id_card_number', name: 'شماره کارت شناسایی' },
+    { key: 'licence_date', name: 'تاریخ اعتبار گواهینامه' },
+    { key: 'vehicle_type', name: 'نوع وسیله نقلیه' },
     { key: 'home_postal_code', name: 'کد پستی' },
     { key: 'city', name: 'شهر' },
+    { key: 'region', name: 'منطقه' },
     { key: 'home_address', name: 'آدرس منزل' },
+    { key: 'idea', name: 'ایده / خلاقیت' },
+    { key: 'software_skill', name: 'تسلط نرم‌افزار' },
+    { key: 'hardware_skill', name: 'تسلط سخت‌افزار' },
+    { key: 'software_weakness', name: 'نقطه ضعف نرم‌افزار' },
+    { key: 'hardware_weakness', name: 'نقطه ضعف سخت‌افزار' },
   ];
   
   // Check required fields
@@ -360,6 +370,11 @@ export const validateTechnicianRegistration = (formData) => {
     }
   }
   
+  // Check expertise_ids (حداقل یک تخصص)
+  if (!formData.expertise_ids || !Array.isArray(formData.expertise_ids) || formData.expertise_ids.length === 0) {
+    errors.expertise_ids = 'لطفاً حداقل یک تخصص انتخاب کنید';
+  }
+  
   // Check enum values (flexible matching)
   const maritalStatusOptions = ['مجرد', 'متأهل', 'متاهل']; // Support both forms
   if (formData.marital_status && !maritalStatusOptions.includes(formData.marital_status)) {
@@ -369,6 +384,11 @@ export const validateTechnicianRegistration = (formData) => {
   const militaryStatusOptions = ['معاف', 'در حال خدمت', 'پایان خدمت'];
   if (formData.military_status && !militaryStatusOptions.includes(formData.military_status)) {
     errors.military_status = 'وضعیت نظام وظیفه نامعتبر است';
+  }
+  
+  const vehicleTypeOptions = ['موتور سیکلت', 'خودرو', 'دوچرخه', 'پیاده'];
+  if (formData.vehicle_type && !vehicleTypeOptions.includes(formData.vehicle_type)) {
+    errors.vehicle_type = 'نوع وسیله نقلیه نامعتبر است';
   }
   
   return {

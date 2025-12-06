@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     gap: 20,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
-    maxWidth: 400
+    // maxWidth: 400
   },
   instructionContainer: {
     alignItems: 'center',
