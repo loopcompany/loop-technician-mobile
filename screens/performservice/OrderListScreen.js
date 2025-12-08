@@ -15,7 +15,7 @@ import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor10, themeColor3, themeColor4, themeColor5 } from '../../theme/Color';
 import { getTechnicianOrders } from '../../services/Api';
-import { showToastOrAlert, formatPrice as formatPriceCommon, formatDate, formatDateTime } from '../../helpers/Common';
+import { showToastOrAlert ,formatDateTime, formatPrice } from '../../helpers/Common';
 import BlankScreen from '../../components/BlankScreen';
 import Button from '../../components/Button';
 
@@ -102,12 +102,6 @@ export default function OrderListScreen({ navigation }) {
     return formatDateTime(sendToLoop);
   };
 
-  const formatPrice = (price) => {
-    if (!price || price === 0) {
-      return '-';
-    }
-    return price.toLocaleString() + ' تومان';
-  };
 
   const getFinalPrice = (order) => {
     if (order.technician_price && order.technician_price > 0) {

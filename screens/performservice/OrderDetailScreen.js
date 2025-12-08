@@ -158,6 +158,7 @@ export default function OrderDetailScreen({ route, navigation }) {
         if (result.data?.technician_price) {
           setTechnicianPrice(String(result.data.technician_price));
         }
+        setReviewDescription(result?.data?.technician_des)
         // تنظیم اطلاعات لوپ
         if (result.data?.duration || result.data?.loop_cost_estimate || result.data?.loop_description) {
           setLoopInfo({
@@ -841,7 +842,7 @@ export default function OrderDetailScreen({ route, navigation }) {
 
   const isSendLoopActive = reportConfirmed; // فعال می‌شود وقتی کاربر گزارش را تأیید کند
 
-  const isPricesActive = data?.send_to_loop;
+  const isPricesActive = data?.send_to_loop && data?.user_accept_date;
 
   const isDeliveryActive = data?.started_at && (data?.status == 0 || data?.status == 1 || data?.status == 2);
 
@@ -1778,7 +1779,7 @@ export default function OrderDetailScreen({ route, navigation }) {
               isOpen={showPrices}
               onPress={async () => {
                 if (!isPricesActive) {
-                  showToastOrAlert('ابتدا باید دستگاه به لوپ ارسال شود.');
+                  showToastOrAlert('ابتدا باید دستگاه به لوپ ارسال شود و کاربر تأیید کند.');
                   return;
                 }
 

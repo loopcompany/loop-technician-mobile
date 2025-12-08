@@ -35,6 +35,9 @@
         "babel": {
           "include": []
         }
+      },
+      "meta": {
+        "viewport": "width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover"
       }
     },
     "plugins": [
@@ -42,7 +45,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "0ba14778-b7d5-4362-b30a-26e22fdc1b21"
+        "projectId": "8e18e97b-45ff-44cd-bb95-af33726e16ed"
       }
     }
   }
