@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View, ActivityIndicator, I18nManager, Platform } from "react-native";
 import React, { useEffect, useState } from "react";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, getStateFromPath } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider, useDispatch } from "react-redux";
@@ -84,6 +84,23 @@ const Stack = createNativeStackNavigator();
 // Linking configuration برای پشتیبانی از Deep Linking و Browser History
 const linking = {
   prefixes: ['https://tech-panel.khayyamtech.com', 'http://localhost:8082', 'http://localhost:8081'],
+  
+  // Safe URL normalization to prevent route concatenation
+  getStateFromPath: (path, options) => {
+    // Handle root path explicitly
+    if (!path || path === '/' || path === '') {
+      return {
+        routes: [{ name: 'Welcome' }]
+      };
+    }
+    
+    // Remove trailing slashes to prevent duplication
+    const normalizedPath = path.replace(/\/+$/, '');
+    
+    // Use default getStateFromPath for all other paths
+    return getStateFromPath(normalizedPath, options);
+  },
+  
   config: {
     screens: {
       Welcome: '',

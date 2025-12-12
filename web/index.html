@@ -5,6 +5,12 @@
     <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover" />
     
+    <!-- Cache Control - Prevents aggressive caching -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="app-version" content="1.0.0" />
+    
     <title>Loop Tech App</title>
     
     <!-- Leaflet CSS for maps -->
@@ -61,5 +67,34 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
+    
+    <!-- Service Worker Auto-Cleanup to prevent caching issues -->
+    <script>
+      // Unregister any existing service workers
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for (let registration of registrations) {
+            registration.unregister().then(function(success) {
+              if (success) {
+                console.log('Service Worker unregistered successfully');
+              }
+            });
+          }
+        }).catch(function(err) {
+          console.log('Service Worker unregistration failed:', err);
+        });
+      }
+      
+      // Clear cache on load (development helper)
+      if (window.location.hostname === 'localhost') {
+        if ('caches' in window) {
+          caches.keys().then(function(names) {
+            for (let name of names) {
+              caches.delete(name);
+            }
+          });
+        }
+      }
+    </script>
   </body>
 </html>

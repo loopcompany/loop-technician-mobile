@@ -61,9 +61,6 @@ export default function VehicleInfoScreen({ navigation }) {
     'موتور سیکلت',
     'دوچرخه',
     'پیاده',
-    'وانت',
-    'کامیون',
-    'مینی‌ون',
   ];
 
   // Load user vehicle data from AsyncStorage if not in Redux
