@@ -36,7 +36,7 @@ export default function AboutScreen() {
         showToastOrAlert('خطا در بارگذاری حریم خصوصی');
       }
     } catch (error) {
-      console.error('Error loading terms:', error);
+      console.log('Error loading terms:', error);
       showToastOrAlert('خطا در بارگذاری حریم خصوصی');
     } finally {
       setIsLoading(false);

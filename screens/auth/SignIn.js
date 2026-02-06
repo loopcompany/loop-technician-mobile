@@ -49,13 +49,12 @@ export default function SignIn({ navigation }) {
     father_name: '',
     issued_from: '',
     serial_number: '',
-    marital_status: 'متاهل',
+    marital_status: 'متأهل',
     military_status: 'پایان خدمت',
     education_status: '',
     telephone: '',
     mobile: '',
     email: '',
-    id_card_number: '',
     licence_date: '',
     vehicle_type: '',
     home_postal_code: '',
@@ -140,7 +139,7 @@ export default function SignIn({ navigation }) {
           ]);
         }
       } catch (error) {
-        console.error('❌ Error loading expertises:', error);
+        console.log('❌ Error loading expertises:', error);
 
         let errorMessage = 'خطا در ارتباط با سرور\n\n';
 
@@ -196,7 +195,7 @@ export default function SignIn({ navigation }) {
         showAlert('خطا', errorMessage);
       }
     } catch (error) {
-      console.error('Error validating referral code:', error);
+      console.log('Error validating referral code:', error);
 
       let errorMessage = 'خطا در بررسی کد معرف\n\n';
 
@@ -248,9 +247,9 @@ export default function SignIn({ navigation }) {
       return true;
     
     } catch (error) {
-      console.error('💥 EXCEPTION in validateForm:', error);
-      console.error('💥 Error message:', error.message);
-      console.error('💥 Error stack:', error.stack);
+      console.log('💥 EXCEPTION in validateForm:', error);
+      console.log('💥 Error message:', error.message);
+      console.log('💥 Error stack:', error.stack);
       
       showAlert(
         'خطای سیستمی',
@@ -378,8 +377,8 @@ export default function SignIn({ navigation }) {
         );
       }
     } catch (error) {
-      console.error('❌ Registration exception caught:', error);
-      console.error('❌ Error details:', {
+      console.log('❌ Registration exception caught:', error);
+      console.log('❌ Error details:', {
         message: error.message,
         response: error.response,
         request: error.request,
@@ -723,23 +722,7 @@ export default function SignIn({ navigation }) {
             <FieldError field="email" />
           </View>
 
-          {/* شماره کارت شناسایی */}
-          <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>شماره کارت شناسایی <Text style={styles.required}>*</Text> :</Text>
-            <TextInput
-              style={[
-                NewStyles.textInput, 
-                NewStyles.text10, 
-                NewStyles.border10,
-                fieldErrors.id_card_number && styles.inputError
-              ]}
-              value={formData.id_card_number}
-              onChangeText={(value) => updateField('id_card_number', value)}
-              placeholder=""
-              placeholderTextColor={PLACEHOLDER_COLOR}
-            />
-            <FieldError field="id_card_number" />
-          </View>
+          
 
           {/* تاریخ اعتبار گواهینامه */}
           <View style={styles.inputRow}>
@@ -1283,7 +1266,7 @@ export default function SignIn({ navigation }) {
       showAlert('موفق', `فایل "${fileInfo.name}" انتخاب شد`);
 
     } catch (err) {
-      console.error('❌ خطا در انتخاب فایل:', err);
+      console.log('❌ خطا در انتخاب فایل:', err);
 
       let errorMessage = 'انتخاب فایل با خطا مواجه شد\n\n';
       if (err.message) {

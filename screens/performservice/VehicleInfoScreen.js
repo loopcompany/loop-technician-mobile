@@ -20,7 +20,7 @@ import { themeColor0, themeColor1, themeColor3, themeColor10, themeColor8, theme
 import CustomStatusBar from '../../components/CustomStatusBar';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateVehicleInfo } from '../../services/Api';
-import { setUserData } from '../../slices/userSlice';
+import { fetchUser, setUserData } from '../../slices/userSlice';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../../components/Button';
 import DatePickerModal from '../../components/DatePickerModal';
@@ -28,14 +28,11 @@ import { getFormatedDate } from 'react-native-modern-datepicker';
 import { showAlert } from '../../helpers/Common';
 export default function VehicleInfoScreen({ navigation }) {
   const dispatch = useDispatch();
-  const userData = useSelector(state => state.user.data);
+  const userData = useSelector(state => state.user.data?.data?.technician);
+  const userToken = useSelector(state => state.auth.token);
   const [saving, setSaving] = useState(false);
-  const [isLoadingData, setIsLoadingData] = useState(false);
-  
-  // State for DatePicker
   const [showInsuranceDatePicker, setShowInsuranceDatePicker] = useState(false);
   const [selectedInsuranceDate, setSelectedInsuranceDate] = useState('');
-
   const [vehicleData, setVehicleData] = useState({
     vehicleType: '',
     carModel: '',
@@ -53,7 +50,7 @@ export default function VehicleInfoScreen({ navigation }) {
     insuranceExpiryDate: ''
   });
 
-  // Modal state for editing vehicle type
+
   const [showVehicleTypeModal, setShowVehicleTypeModal] = useState(false);
 
   const vehicleTypeOptions = [
@@ -63,32 +60,10 @@ export default function VehicleInfoScreen({ navigation }) {
     'پیاده',
   ];
 
-  // Load user vehicle data from AsyncStorage if not in Redux
+
   useEffect(() => {
     const loadUserData = async () => {
-      // If no data in Redux, try to load from AsyncStorage
-      if (!userData) {
-        console.log('⚠️ userData در Redux خالی است، از AsyncStorage می‌خوانیم...');
-        setIsLoadingData(true);
-        try {
-          const storedData = await AsyncStorage.getItem('userData');
-          if (storedData) {
-            const parsedData = JSON.parse(storedData);
-            console.log('✅ داده از AsyncStorage خوانده شد');
-            dispatch(setUserData(parsedData));
-          }
-        } catch (error) {
-          console.error('خطا در خواندن از AsyncStorage:', error);
-        } finally {
-          setIsLoadingData(false);
-        }
-        return;
-      }
 
-      // API returns data in format: { technician: {...}, token_info: {...} }
-      const technicianData = userData.technician || userData;
-
-      // Parse car/motor plate based on vehicle type
       let plateLeft = '';
       let plateRight = '';
       let plateLetter = 'ب';
@@ -96,10 +71,10 @@ export default function VehicleInfoScreen({ navigation }) {
       let motorPlate = '';
       let bodyPlate = '';
 
-      if (technicianData.car_plate) {
-        const plate = technicianData.car_plate;
-        
-        if (technicianData.vehicle_type === 'خودرو') {
+      if (userData.car_plate) {
+        const plate = userData.car_plate;
+
+        if (userData.vehicle_type === 'خودرو') {
           // پلاک خودرو: 12ب345ایران56
           const carMatch = plate.match(/^(\d{2})([آ-ی])(\d{3})(?:ایران)?(\d{2})$/);
           if (carMatch) {
@@ -107,41 +82,39 @@ export default function VehicleInfoScreen({ navigation }) {
             plateLetter = carMatch[2];
             plateRight = carMatch[3];
             plateProvince = carMatch[4];
-            console.log('✅ پلاک خودرو parse شد:', { plateLeft, plateLetter, plateRight, plateProvince });
           }
-        } else if (technicianData.vehicle_type === 'موتور سیکلت') {
+        } else if (userData.vehicle_type === 'موتور سیکلت') {
           // پلاک موتور: 123-12345
           const motorMatch = plate.match(/^(\d{3})-(\d{5})$/);
           if (motorMatch) {
             motorPlate = motorMatch[1];
             bodyPlate = motorMatch[2];
-            console.log('✅ پلاک موتور parse شد:', { motorPlate, bodyPlate });
           }
         }
       }
 
       setVehicleData(prevData => ({
-        vehicleType: technicianData.vehicle_type || prevData.vehicleType,
-        carModel: technicianData.car_model || prevData.carModel,
-        carColor: technicianData.car_color || prevData.carColor,
+        vehicleType: userData.vehicle_type || prevData.vehicleType,
+        carModel: userData.car_model || prevData.carModel,
+        carColor: userData.car_color || prevData.carColor,
         motorPlate: motorPlate || prevData.motorPlate,
         bodyPlate: bodyPlate || prevData.bodyPlate,
         carPlateLeft: plateLeft || prevData.carPlateLeft,
         carPlateRight: plateRight || prevData.carPlateRight,
         carPlateLetter: plateLetter || prevData.carPlateLetter,
         carPlateProvince: plateProvince || prevData.carPlateProvince,
-        manufacturingYear: technicianData.car_year || prevData.manufacturingYear,
-        softwareType: technicianData.car_fuel_type || prevData.softwareType,
-        vinNumber: technicianData.car_vin || prevData.vinNumber,
-        insuranceExpiryCode: technicianData.car_insurance_code || prevData.insuranceExpiryCode,
-        insuranceExpiryDate: technicianData.car_insurance_expiry_date || prevData.insuranceExpiryDate
+        manufacturingYear: userData.car_year || prevData.manufacturingYear,
+        softwareType: userData.car_fuel_type || prevData.softwareType,
+        vinNumber: userData.car_vin || prevData.vinNumber,
+        insuranceExpiryCode: userData.car_insurance_code || prevData.insuranceExpiryCode,
+        insuranceExpiryDate: userData.car_insurance_expiry_date || prevData.insuranceExpiryDate
       }));
     };
 
     loadUserData();
   }, [userData, dispatch]);
 
-  // وقتی modal تاریخ بیمه بسته می‌شود
+
   useEffect(() => {
     if (!showInsuranceDatePicker && selectedInsuranceDate && selectedInsuranceDate !== vehicleData.insuranceExpiryDate) {
       updateField('insuranceExpiryDate', selectedInsuranceDate);
@@ -155,15 +128,13 @@ export default function VehicleInfoScreen({ navigation }) {
     }));
   };
 
-  // Handler: when user selects a new vehicle type from modal
+
   const handleSelectVehicleType = async (type) => {
     setShowVehicleTypeModal(false);
     if (!type || type === vehicleData.vehicleType) return;
 
-    // Prepare payload for API. Include vehicle_type so backend can persist it.
     const payload = {
       vehicle_type: type,
-      // include existing fields so backend keeps them (or null to clear)
       car_model: vehicleData.carModel?.trim() || null,
       car_color: vehicleData.carColor?.trim() || null,
       car_plate: null, // clear plate when changing type; backend may accept null
@@ -176,13 +147,11 @@ export default function VehicleInfoScreen({ navigation }) {
 
     setSaving(true);
     try {
-      console.log('📤 updateVehicleInfo - changing vehicle type ->', type, payload);
       const result = await updateVehicleInfo(payload);
-      console.log('📥 updateVehicleInfo result raw:', result);
+
       if (result && result.success) {
         showAlert('موفق', 'نوع وسیله با موفقیت به‌روزرسانی شد');
 
-        // Update local UI state: clear plate fields that don't apply
         const newLocal = { ...vehicleData, vehicleType: type };
         if (type !== 'خودرو') {
           newLocal.carPlateLeft = '';
@@ -195,26 +164,12 @@ export default function VehicleInfoScreen({ navigation }) {
           newLocal.bodyPlate = '';
         }
         setVehicleData(newLocal);
+        dispatch(fetchUser(userToken))
 
-        // Update Redux + AsyncStorage if API returned updated technician
-        if (result.data && result.data.technician) {
-          const updatedUserData = {
-            ...userData,
-            technician: {
-              ...userData.technician,
-              ...result.data.technician
-            }
-          };
-          dispatch(setUserData(updatedUserData));
-          await AsyncStorage.setItem('userData', JSON.stringify(updatedUserData));
-          console.log('✅ Redux/AsyncStorage updated after vehicle type change');
-        }
       } else {
         showAlert('خطا', result?.message || 'به‌روزرسانی نوع وسیله موفقیت‌آمیز نبود');
       }
     } catch (err) {
-      console.error('خطا در updateVehicleInfo (vehicle type):', err);
-      showAlert('خطا', 'ارتباط با سرور برقرار نشد');
     } finally {
       setSaving(false);
     }
@@ -232,9 +187,7 @@ export default function VehicleInfoScreen({ navigation }) {
     return getFormatedDate(futureDate, 'jYYYY/jMM/jDD');
   };
 
-  // Save vehicle info
   const handleSave = async () => {
-    // Validation
     if (vehicleData.vinNumber && vehicleData.vinNumber.length > 17) {
       showAlert('خطا', 'شماره VIN نباید بیشتر از 17 کاراکتر باشد');
       return;
@@ -247,31 +200,19 @@ export default function VehicleInfoScreen({ navigation }) {
 
     setSaving(true);
     try {
-      // Build car_plate based on vehicle type
       let carPlate = null;
-      
+
       if (vehicleData.vehicleType === 'خودرو') {
-        // پلاک خودرو: 12ب345ایران56
         if (vehicleData.carPlateLeft && vehicleData.carPlateLetter &&
-            vehicleData.carPlateRight && vehicleData.carPlateProvince) {
+          vehicleData.carPlateRight && vehicleData.carPlateProvince) {
           carPlate = `${vehicleData.carPlateLeft}${vehicleData.carPlateLetter}${vehicleData.carPlateRight}ایران${vehicleData.carPlateProvince}`;
-          console.log('✅ پلاک خودرو ساخته شد:', carPlate);
         }
       } else if (vehicleData.vehicleType === 'موتور سیکلت') {
-        // پلاک موتور: 123-12345 (فرمت ساده با dash)
         if (vehicleData.motorPlate && vehicleData.bodyPlate) {
           carPlate = `${vehicleData.motorPlate}-${vehicleData.bodyPlate}`;
-          console.log('✅ پلاک موتور ساخته شد:', carPlate);
         }
       }
 
-      // Prepare data in format expected by Backend
-      console.log('====================================');
-      console.log('نوع وسیله:', vehicleData.vehicleType);
-      console.log('car_plate:', carPlate);
-      console.log('car_model:', vehicleData.carModel);
-      console.log('car_color:', vehicleData.carColor);
-      console.log('====================================');
       const apiData = {
         car_model: vehicleData.carModel.trim() || null,
         car_color: vehicleData.carColor.trim() || null,
@@ -282,45 +223,14 @@ export default function VehicleInfoScreen({ navigation }) {
         car_insurance_code: vehicleData.insuranceExpiryCode || null,
         car_insurance_expiry_date: vehicleData.insuranceExpiryDate || null,
       };
-
-      console.log('📤 ارسال داده به API:', apiData);
-
       const result = await updateVehicleInfo(apiData);
-
       if (result.success) {
-        console.log('✅ پاسخ موفق از API دریافت شد');
-        console.log('📦 result.data:', JSON.stringify(result.data, null, 2));
-
         showAlert('موفق', 'اطلاعات  با موفقیت به‌روزرسانی شد');
-
-        // Update Redux with new data
-        if (result.data && result.data.technician) {
-          console.log('🔄 به‌روزرسانی Redux و AsyncStorage...');
-
-          const updatedUserData = {
-            ...userData,
-            technician: {
-              ...userData.technician,
-              ...result.data.technician
-            }
-          };
-
-          console.log('💾 داده‌های جدید technician:', result.data.technician);
-
-          // Update Redux
-          dispatch(setUserData(updatedUserData));
-
-          // ⭐ IMPORTANT: Update AsyncStorage as well!
-          await AsyncStorage.setItem('userData', JSON.stringify(updatedUserData));
-          console.log('✅ AsyncStorage به‌روز شد با car_model:', result.data.technician.car_model);
-        } else {
-          console.log('⚠️ result.data یا result.data.technician خالی است');
-        }
+        dispatch(fetchUser(userToken))
       } else {
         showAlert('خطا', result.message || 'مشکلی در به‌روزرسانی پیش آمد');
       }
     } catch (error) {
-      console.error('خطا در ذخیره:', error);
       showAlert('خطا', 'مشکلی در ارتباط با سرور پیش آمد');
     } finally {
       setSaving(false);
@@ -339,7 +249,6 @@ export default function VehicleInfoScreen({ navigation }) {
           <CustomStatusBar />
           <ScreenHeaders
             title={'حساب کاربری / حریم خصوصی'}
-            onPressLeft={() => navigation.goBack()}
           />
 
           <ScrollView contentContainerStyle={styles.container}>
@@ -546,8 +455,8 @@ export default function VehicleInfoScreen({ navigation }) {
             </View>
 
             {/* دکمه‌های ثبت و ویرایش */}
-            
-            <Button title={'ثبت مشخصات'} onPress={handleSave} loading={saving}/>
+
+            <Button title={'ثبت مشخصات'} onPress={handleSave} loading={saving} />
 
           </ScrollView>
 
@@ -699,9 +608,8 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
   buttonText: {
-    ...NewStyles.text4,
+    ...NewStyles.title4,
     fontSize: 16,
-    fontWeight: 'bold',
   },
   vehicleTypeBox: {
     width: '100%',
@@ -810,12 +718,12 @@ const styles = StyleSheet.create({
   plateLetterInput: {
     width: 80,
     textAlign: 'center',
-    fontWeight: '900',
+    fontFamily: 'VazirBold'
   },
   plateProvinceInput: {
     width: 100,
     textAlign: 'center',
-    fontWeight: '900',
+    fontFamily: 'VazirBold'
   },
   plateBox: {
     width: 260,
@@ -872,15 +780,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   plateNumberText: {
-    fontSize: 30,
-    fontWeight: '900',
+    ...NewStyles.text10,
+    fontSize: 24,
     letterSpacing: 6,
     marginHorizontal: 6,
   },
   plateLetterText: {
-    ...NewStyles.text10,
+    ...NewStyles.title10,
     fontSize: 28,
-    fontWeight: '900',
     marginHorizontal: 4,
   },
   plateCityBox: {
@@ -907,9 +814,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   plateCityTop: {
-    ...NewStyles.text10,
+    ...NewStyles.title10,
     fontSize: 10,
-    fontWeight: '700',
 
   },
   plateCityNumber: {
@@ -969,8 +875,10 @@ const styles = StyleSheet.create({
     padding: 16,
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
-    maxHeight: '60%',
+    // maxHeight: '60%',
     gap: 8,
+    paddingBottom: 40
+
   },
   modalOption: {
     paddingVertical: 12,

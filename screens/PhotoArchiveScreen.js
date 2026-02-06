@@ -50,7 +50,7 @@ export default function PhotoArchiveScreen({ navigation }) {
         console.log(`✅ ${response.data.length} تصویر دریافت شد`);
       }
     } catch (error) {
-      console.error('❌ خطا در دریافت تصاویر:', error);
+      console.log('❌ خطا در دریافت تصاویر:', error);
       showAlert('خطا', error.message || 'مشکلی در دریافت تصاویر پیش آمد');
     } finally {
       setLoading(false);
@@ -78,13 +78,13 @@ export default function PhotoArchiveScreen({ navigation }) {
         input.type = 'file';
         input.accept = 'image/*';
         input.multiple = true;
-        
+
         input.onchange = async (e) => {
           const files = Array.from(e.target.files);
           if (files.length > 0) {
             // محدود کردن به 10 تصویر
             const limitedFiles = files.slice(0, 10);
-            
+
             // تبدیل فایل‌های وب به فرمت مورد نیاز
             const assets = await Promise.all(
               limitedFiles.map(async (file) => {
@@ -102,11 +102,11 @@ export default function PhotoArchiveScreen({ navigation }) {
                 });
               })
             );
-            
+
             await handleUploadImages(assets);
           }
         };
-        
+
         input.click();
         return;
       }
@@ -131,7 +131,7 @@ export default function PhotoArchiveScreen({ navigation }) {
         await handleUploadImages(result.assets);
       }
     } catch (error) {
-      console.error('❌ خطا در انتخاب تصاویر:', error);
+      console.log('❌ خطا در انتخاب تصاویر:', error);
       showAlert('خطا', 'مشکلی در انتخاب تصاویر پیش آمد');
     }
   };
@@ -184,7 +184,7 @@ export default function PhotoArchiveScreen({ navigation }) {
         fetchImages(); // بروزرسانی لیست
       }
     } catch (error) {
-      console.error('❌ خطا در آپلود تصاویر:', error);
+      console.log('❌ خطا در آپلود تصاویر:', error);
       showAlert('خطا', error.message || 'مشکلی در آپلود تصاویر پیش آمد');
     } finally {
       setUploading(false);
@@ -212,7 +212,7 @@ export default function PhotoArchiveScreen({ navigation }) {
                 setSelectedImage(null);
               }
             } catch (error) {
-              console.error('❌ خطا در حذف تصویر:', error);
+              console.log('❌ خطا در حذف تصویر:', error);
               showAlert('خطا', error.message || 'مشکلی در حذف تصویر پیش آمد');
             }
           },
@@ -243,7 +243,7 @@ export default function PhotoArchiveScreen({ navigation }) {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         showAlert('موفقیت', 'تصویر دانلود شد');
         setDownloading(false);
         return;
@@ -278,7 +278,7 @@ export default function PhotoArchiveScreen({ navigation }) {
         throw new Error('خطا در دانلود تصویر');
       }
     } catch (error) {
-      console.error('❌ خطا در ذخیره تصویر:', error);
+      console.log('❌ خطا در ذخیره تصویر:', error);
       showAlert('خطا', 'مشکلی در ذخیره تصویر پیش آمد');
     } finally {
       setDownloading(false);
@@ -327,7 +327,7 @@ export default function PhotoArchiveScreen({ navigation }) {
       <View style={styles.infoContainer}>
         <Ionicons name="information-circle" size={20} color={themeColor10.bgColor(0.7)} />
         <Text style={[NewStyles.text4, styles.infoText]}>
-          حداکثر 10 تصویر - هر تصویر حداکثر 5 مگابایت
+          هر تصویر حداکثر 5 مگابایت
         </Text>
       </View>
 
@@ -363,7 +363,6 @@ export default function PhotoArchiveScreen({ navigation }) {
       >
         <ScreenHeaders
           title={'آرشیو عکس'}
-          onPressLeft={() => navigation.goBack()}
         />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
@@ -382,7 +381,6 @@ export default function PhotoArchiveScreen({ navigation }) {
     >
       <ScreenHeaders
         title={'آرشیو عکس'}
-        onPressLeft={() => navigation.goBack()}
       />
 
       <FlatList

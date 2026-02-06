@@ -16,7 +16,7 @@ import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor2, themeColor8, themeColor4, themeColor10, themeColor7, themeColor6, themeColor11 } from '../theme/Color';
 import { getIncentivePlans } from '../services/Api';
-import { formatDateTime , showAlert} from '../helpers/Common';
+import { formatDate, formatDateTime, showAlert } from '../helpers/Common';
 
 export default function IncentivePlansScreen({ navigation }) {
   const [plans, setPlans] = useState([]);
@@ -28,16 +28,16 @@ export default function IncentivePlansScreen({ navigation }) {
   const fetchPlans = async (isRefresh = false) => {
     try {
       if (!isRefresh) setLoading(true);
-      
+
       const response = await getIncentivePlans();
-      
+
       if (response.success) {
         setPlans(response.data || []);
         setStatistics(response.statistics || {});
         console.log(`✅ ${response.data?.length || 0} طرح تشویقی دریافت شد`);
       }
     } catch (error) {
-      console.error('❌ خطا در دریافت طرح‌ها:', error);
+      console.log('❌ خطا در دریافت طرح‌ها:', error);
       showAlert('خطا', error.message || 'مشکلی در دریافت طرح‌های تشویقی پیش آمد');
     } finally {
       setLoading(false);
@@ -93,14 +93,14 @@ export default function IncentivePlansScreen({ navigation }) {
         <View style={styles.dateInfo}>
           <Ionicons name="calendar-outline" size={14} color={themeColor10.bgColor(0.7)} />
           <Text style={[NewStyles.text4, styles.dateText]}>
-            ایجاد: {formatDateTime(item.created_at)}
+            ایجاد: {formatDate(item.created_at)}
           </Text>
         </View>
         {item.status !== 0 && (
           <View style={styles.dateInfo}>
             <Ionicons name="time-outline" size={14} color={themeColor10.bgColor(0.7)} />
             <Text style={[NewStyles.text4, styles.dateText]}>
-              بروزرسانی: {formatDateTime(item.updated_at)}
+              بروزرسانی: {formatDate(item.updated_at)}
             </Text>
           </View>
         )}
@@ -132,15 +132,14 @@ export default function IncentivePlansScreen({ navigation }) {
 
   if (loading) {
     return (
-      <LinearGradient 
-        colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
+      <LinearGradient
+        colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.background}
       >
-        <ScreenHeaders 
-          title={'طرح های تشویقی'} 
-          onPressLeft={() => navigation.goBack()} 
+        <ScreenHeaders
+          title={'طرح های تشویقی'}
         />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
@@ -151,17 +150,16 @@ export default function IncentivePlansScreen({ navigation }) {
   }
 
   return (
-    <LinearGradient 
-      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
+    <LinearGradient
+      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.background}
     >
-      <ScreenHeaders 
-        title={'طرح های تشویقی'} 
-        onPressLeft={() => navigation.goBack()} 
+      <ScreenHeaders
+        title={'طرح های تشویقی'}
       />
-      
+
       <FlatList
         data={plans}
         renderItem={renderPlanItem}
@@ -184,8 +182,8 @@ export default function IncentivePlansScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  background: { 
-    flex: 1 
+  background: {
+    flex: 1
   },
   loadingContainer: {
     flex: 1,

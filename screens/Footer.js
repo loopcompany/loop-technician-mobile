@@ -66,7 +66,7 @@ export default function Footer() {
               
               console.log('✅ خروج موفقیت‌آمیز');
             } catch (error) {
-              console.error('❌ خطا در خروج:', error);
+              console.log('❌ خطا در خروج:', error);
               // Even on error, logout locally
               dispatch(setToken(null));
               navigation.reset({

@@ -369,6 +369,18 @@ export const validateMelicode = (melicode) => {
   return { isValid: false, message: 'کد ملی وارد شده معتبر نیست' };
 };
 
+export const faDigitsToEn = (str = '') =>
+  str.replace(/[۰-۹]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+
+export const getCurrentJalaliYear = () => {
+  // با تقویم فارسی (جلالی)
+  const yFa = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
+    year: 'numeric',
+  }).format(new Date());
+
+  return parseInt(faDigitsToEn(yFa), 10);
+};
+
 export const validatePhone = (phone) => {
   if (!phone) {
     return { isValid: false, message: 'شماره موبایل الزامی است' };

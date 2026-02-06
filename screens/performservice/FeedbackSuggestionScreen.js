@@ -20,13 +20,14 @@ import { themeColor0, themeColor1, themeColor3, themeColor10, themeColor8, theme
 import CustomStatusBar from '../../components/CustomStatusBar';
 import { checkPollStatus, submitPoll } from '../../services/Api';
 import { showAlert } from '../../helpers/Common';
+import Button from '../../components/Button';
 
 export default function FeedbackSuggestionScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [submittedAt, setSubmittedAt] = useState(null);
-  
+
   // State برای هر فیلد
   const [feedbacks, setFeedbacks] = useState({
     user_application: '',
@@ -48,9 +49,9 @@ export default function FeedbackSuggestionScreen({ navigation }) {
   const checkStatus = async () => {
     try {
       setLoading(true);
-      
+
       const response = await checkPollStatus();
-      
+
       if (response.success && response.data) {
         setHasSubmitted(response.data.has_submitted);
         if (response.data.submitted_at) {
@@ -58,7 +59,7 @@ export default function FeedbackSuggestionScreen({ navigation }) {
         }
       }
     } catch (error) {
-      console.error('❌ خطا در بررسی وضعیت:', error);
+      console.log('❌ خطا در بررسی وضعیت:', error);
     } finally {
       setLoading(false);
     }
@@ -80,6 +81,22 @@ export default function FeedbackSuggestionScreen({ navigation }) {
 
   // ثبت نظرات
   const handleSubmit = async () => {
+    // بررسی پر بودن همه فیلدها
+    const emptyFields = [];
+    categories.forEach(category => {
+      if (!feedbacks[category.id] || feedbacks[category.id].trim().length === 0) {
+        emptyFields.push(category.title);
+      }
+    });
+
+    if (emptyFields.length > 0) {
+      showAlert(
+        'هشدار',
+        `لطفاً همه فیلدها را تکمیل کنید:\n${emptyFields.join('\n')}`
+      );
+      return;
+    }
+
     try {
       setSubmitting(true);
 
@@ -90,6 +107,12 @@ export default function FeedbackSuggestionScreen({ navigation }) {
           dataToSend[key] = feedbacks[key].trim();
         }
       });
+
+      // اطمینان از اینکه حداقل یک فیلد پر شده باشد
+      if (Object.keys(dataToSend).length === 0) {
+        showAlert('هشدار', 'لطفاً حداقل یکی از فیلدها را پر کنید');
+        return;
+      }
 
       const response = await submitPoll(dataToSend);
 
@@ -111,7 +134,7 @@ export default function FeedbackSuggestionScreen({ navigation }) {
         );
       }
     } catch (error) {
-      console.error('❌ خطا در ثبت نظرات:', error);
+      console.log('❌ خطا در ثبت نظرات:', error);
       showAlert('خطا', error.message || 'مشکلی در ثبت نظرات پیش آمد');
     } finally {
       setSubmitting(false);
@@ -120,16 +143,15 @@ export default function FeedbackSuggestionScreen({ navigation }) {
 
   if (loading) {
     return (
-      <LinearGradient 
-        colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
+      <LinearGradient
+        colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.background}
       >
         <CustomStatusBar />
-        <ScreenHeaders 
-          title={'نظرات / پیشنهادات'} 
-          onPressLeft={() => navigation.goBack()} 
+        <ScreenHeaders
+          title={'نظرات / پیشنهادات'}
         />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
@@ -140,20 +162,19 @@ export default function FeedbackSuggestionScreen({ navigation }) {
 
   if (hasSubmitted) {
     return (
-      <LinearGradient 
-        colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
+      <LinearGradient
+        colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.background}
       >
         <CustomStatusBar />
-        <ScreenHeaders 
-          title={'نظرات / پیشنهادات'} 
-          onPressLeft={() => navigation.goBack()} 
+        <ScreenHeaders
+          title={'نظرات / پیشنهادات'}
         />
         <View style={styles.submittedContainer}>
           <Ionicons name="checkmark-circle" size={100} color={themeColor7.bgColor(1)} />
-          <Text style={[NewStyles.title, styles.submittedTitle]}>
+          <Text style={[NewStyles.title4, styles.submittedTitle]}>
             نظرات شما قبلاً ثبت شده است
           </Text>
           <Text style={[NewStyles.text4, styles.submittedText]}>
@@ -165,39 +186,34 @@ export default function FeedbackSuggestionScreen({ navigation }) {
   }
 
   return (
-    <LinearGradient 
-      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
+    <LinearGradient
+      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.background}
     >
       <CustomStatusBar />
-      <ScreenHeaders 
-        title={'نظرات / پیشنهادات'} 
-        onPressLeft={() => navigation.goBack()} 
+      <ScreenHeaders
+        title={'نظرات / پیشنهادات'}
       />
-      
-      <KeyboardAvoidingView 
-        style={{ flex: 1 }} 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
-      >
-        <ScrollView 
+
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={'padding'}>
+        <ScrollView
           contentContainerStyle={styles.container}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          
+
           {/* دکمه‌های دسته‌بندی */}
           {categories.map((category) => (
             <View key={category.id} style={styles.categoryContainer}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[styles.categoryButton, { backgroundColor: themeColor0.bgColor(0.8) }]}
                 disabled={submitting}
               >
                 <Text style={styles.categoryButtonText}>{category.title}</Text>
               </TouchableOpacity>
-              
+
               {/* باکس بازخورد برای هر دسته */}
               <View style={styles.feedbackBox}>
                 <TextInput
@@ -216,18 +232,11 @@ export default function FeedbackSuggestionScreen({ navigation }) {
             </View>
           ))}
 
-          {/* دکمه ثبت */}
-          <TouchableOpacity 
-            style={[styles.submitButton, submitting && styles.submitButtonDisabled]}
+          <Button
+            title={'ثبت نظرات'}
             onPress={handleSubmit}
-            disabled={submitting}
-          >
-            {submitting ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <Text style={[NewStyles.text4, styles.submitButtonText]}>ثبت نظرات</Text>
-            )}
-          </TouchableOpacity>
+            loading={submitting}
+          />
 
         </ScrollView>
       </KeyboardAvoidingView>
@@ -258,8 +267,7 @@ const styles = StyleSheet.create({
   submittedText: {
     fontSize: 16,
     textAlign: 'center',
-    marginTop: 10,
-    color: themeColor10.bgColor(0.7),
+    marginTop: 10, 
   },
   container: {
     paddingHorizontal: 20,
@@ -271,6 +279,8 @@ const styles = StyleSheet.create({
   categoryContainer: {
     width: '100%',
     marginVertical: 5,
+    maxWidth:800,
+    alignSelf:'center'
   },
   categoryButton: {
     width: '100%',

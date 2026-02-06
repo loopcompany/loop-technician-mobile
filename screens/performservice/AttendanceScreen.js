@@ -7,6 +7,7 @@ import {
   ScrollView,
   TextInput,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -16,11 +17,11 @@ import ScreenTitle from '../../components/ScreenTitle';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor10, themeColor2, themeColor6, themeColor8 } from '../../theme/Color';
 import { cancelOrderByTechnician } from '../../services/Api';
-import { showToastOrAlert , showAlert} from '../../helpers/Common';
+import { showToastOrAlert, showAlert } from '../../helpers/Common';
 
 export default function AttendanceScreen({ navigation, route }) {
   const { orderId } = route?.params || {};
-  
+
   const [selectedOption, setSelectedOption] = useState('');
   const [notes, setNotes] = useState('');
   const [emergencyNotes, setEmergencyNotes] = useState('');
@@ -73,12 +74,16 @@ export default function AttendanceScreen({ navigation, route }) {
               setLoading(true);
               const cancelReason = `${selectedOption}\n\nتوضیحات: ${notes}`;
               await cancelOrderByTechnician(orderId, cancelReason);
-              
+
               showToastOrAlert('موفق', 'سفارش با موفقیت لغو شد');
-              
+
               // بازگشت به صفحه قبل
               setTimeout(() => {
-                navigation.goBack();
+                if (Platform.OS == 'web') {
+                  window.history.back()
+                } else {
+                  navigation.goBack()
+                }
               }, 1500);
             } catch (error) {
               showToastOrAlert('خطا', error.message || 'خطا در لغو سفارش');
@@ -92,24 +97,22 @@ export default function AttendanceScreen({ navigation, route }) {
   };
 
   return (
-    <LinearGradient 
-      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
+    <LinearGradient
+      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.background}
     >
-      <ScreenHeaders 
-        title={' انجام سرویس '} 
-        onPressLeft={() => navigation.goBack()} 
-        onPressRight={() => navigation.navigate('LaptopDispatchScreen')} 
+      <ScreenHeaders
+        title={' انجام سرویس '}
       />
       <ScrollView contentContainerStyle={styles.container}>
         <ScreenTitle title={'مراجعه / حضور'} />
 
         {/* لیست گزینه‌های حضور */}
         {attendanceOptions.map((option, index) => (
-          <TouchableOpacity 
-            key={index} 
+          <TouchableOpacity
+            key={index}
             style={[
               styles.optionRow,
               selectedOption === option && styles.optionRowSelected
@@ -125,7 +128,7 @@ export default function AttendanceScreen({ navigation, route }) {
               </View>
             </View>
             <Text style={[
-              NewStyles.text4, 
+              NewStyles.text4,
               styles.optionText,
               selectedOption === option && styles.optionTextSelected
             ]}>
@@ -151,7 +154,7 @@ export default function AttendanceScreen({ navigation, route }) {
 
         {/* دکمه لغو سفارش - فقط برای گزینه‌های لغو */}
         {shouldShowCancelButton && (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[
               styles.cancelButton,
               (!notes.trim() || loading) && styles.cancelButtonDisabled
@@ -175,7 +178,7 @@ export default function AttendanceScreen({ navigation, route }) {
           <Text style={[NewStyles.text4, styles.specialTitle]}>
             اعزام فوری همراه / جایگزین تکنسین / قطعات
           </Text>
-          
+
           <View style={styles.fullWidthField}>
             <Text style={[NewStyles.text4, styles.fullWidthLabel]}>
               توضیحات تکنسین ( ضروری ) :

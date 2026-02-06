@@ -46,7 +46,7 @@ export default function OrderListScreen({ navigation }) {
         showToastOrAlert(result.message || 'خطا در دریافت سفارشات');
       }
     } catch (error) {
-      console.error('Error fetching orders:', error);
+      console.log('Error fetching orders:', error);
       showToastOrAlert('خطا در دریافت سفارشات');
     } finally {
       setLoading(false);
@@ -73,6 +73,7 @@ export default function OrderListScreen({ navigation }) {
 
   const getStatusLabel = (status) => {
     const labels = {
+      0: 'بررسی',
       1: 'در حال پردازش',
       2: 'انجام شده',
       3: 'لغو شده توسط کاربر',
@@ -202,11 +203,12 @@ export default function OrderListScreen({ navigation }) {
   const renderFilters = () => {
     const filters = [
       { label: 'همه', value: null },
-      { label: 'در حال پردازش', value: 1 },
-      { label: 'انجام شده', value: 2 },
-      { label: 'لغو کاربر', value: 3 },
-      { label: 'لغو تکنسین', value: 4 },
-      { label: 'لغو ادمین', value: 5 },
+      { label: 'بررسی', value: '0' },
+      { label: 'در حال پردازش', value: '1' },
+      { label: 'انجام شده', value: '2' },
+      { label: 'لغو کاربر', value: '3' },
+      { label: 'لغو تکنسین', value: '4' },
+      { label: 'لغو ادمین', value: '5' },
     ];
 
     return (

@@ -17,7 +17,7 @@ import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor4, themeColor6, themeColor7, themeColor8, themeColor11 } from '../theme/Color';
 import { getTransferRequests, getTransferRequestById } from '../services/Api';
 import { useFocusEffect } from '@react-navigation/native';
-import { formatDateTime , showAlert} from '../helpers/Common';
+import { formatDateTime, showAlert } from '../helpers/Common';
 
 export default function TransferRequestsListScreen({ navigation }) {
   const [requests, setRequests] = useState([]);
@@ -30,7 +30,7 @@ export default function TransferRequestsListScreen({ navigation }) {
   const fetchRequests = async (isRefresh = false) => {
     try {
       if (!isRefresh) setLoading(true);
-      
+
       console.log('📋 دریافت لیست درخواست‌های انتقال/سمت...');
       const response = await getTransferRequests();
 
@@ -39,7 +39,7 @@ export default function TransferRequestsListScreen({ navigation }) {
         console.log(`✅ ${response.data.length} درخواست دریافت شد`);
       }
     } catch (error) {
-      console.error('❌ خطا در دریافت لیست:', error);
+      console.log('❌ خطا در دریافت لیست:', error);
       showAlert('خطا', error.message || 'مشکلی در دریافت لیست پیش آمد');
     } finally {
       setLoading(false);
@@ -93,7 +93,7 @@ export default function TransferRequestsListScreen({ navigation }) {
         setSelectedRequest(response.data);
       }
     } catch (error) {
-      console.error('❌ خطا در نمایش جزئیات:', error);
+      console.log('❌ خطا در نمایش جزئیات:', error);
       setModalVisible(false);
       showAlert('خطا', error.message || 'مشکلی در نمایش جزئیات پیش آمد');
     } finally {
@@ -108,7 +108,7 @@ export default function TransferRequestsListScreen({ navigation }) {
 
   const renderItem = ({ item }) => {
     const statusBadge = getStatusBadge(item.status);
-    
+
     return (
       <TouchableOpacity
         style={styles.card}
@@ -122,16 +122,16 @@ export default function TransferRequestsListScreen({ navigation }) {
             <Text style={styles.badgeText}>{statusBadge.text}</Text>
           </View>
         </View>
-        
+
         <View style={styles.typeContainer}>
           <Ionicons name={getTypeIcon(item.type)} size={20} color={themeColor0.bgColor(1)} style={{ marginLeft: 8 }} />
           <Text style={styles.typeLabel}>{getTypeLabel(item.type)}</Text>
         </View>
-        
+
         <Text style={styles.description} numberOfLines={2}>
           {item.description}
         </Text>
-        
+
         <View style={styles.footer}>
           <Text style={styles.date}>
             {formatDateTime(item.created_at)}
@@ -147,22 +147,16 @@ export default function TransferRequestsListScreen({ navigation }) {
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <Ionicons name="swap-horizontal-outline" size={80} color={themeColor10.bgColor(0.3)} />
-      <Text style={styles.emptyText}>هیچ درخواستی ثبت نشده است</Text>
-      <Text style={styles.emptySubText}>درخواست‌های انتقال/سمت شما اینجا نمایش داده می‌شود</Text>
-      {/* <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => navigation.goBack()}
-      >
-        <Ionicons name="add-circle" size={20} color="#fff" style={{ marginLeft: 8 }} />
-        <Text style={styles.addButtonText}>ثبت درخواست جدید</Text>
-      </TouchableOpacity> */}
+      <Ionicons name="swap-horizontal-outline" size={80} color={themeColor4.bgColor(1)} />
+      <Text style={[NewStyles.text4,styles.emptyText]}>هیچ درخواستی ثبت نشده است</Text>
+      <Text style={[NewStyles.text4,styles.emptySubText]}>درخواست‌های انتقال/سمت شما اینجا نمایش داده می‌شود</Text>
+
     </View>
   );
 
   const renderDetailModal = () => {
     if (!selectedRequest) return null;
-    
+
     const statusBadge = getStatusBadge(selectedRequest.status);
 
     return (
@@ -185,7 +179,7 @@ export default function TransferRequestsListScreen({ navigation }) {
                   <Text style={styles.modalTitle}>
                     جزئیات درخواست #{selectedRequest.id}
                   </Text>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     onPress={closeModal}
                     style={styles.closeButton}
                   >
@@ -250,7 +244,7 @@ export default function TransferRequestsListScreen({ navigation }) {
                   </View>
                 </ScrollView>
 
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.modalCloseButton}
                   onPress={closeModal}
                 >
@@ -274,7 +268,6 @@ export default function TransferRequestsListScreen({ navigation }) {
       >
         <ScreenHeaders
           title={'لیست درخواست‌های انتقال/سمت'}
-          onPressLeft={() => navigation.goBack()}
         />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
@@ -293,7 +286,6 @@ export default function TransferRequestsListScreen({ navigation }) {
     >
       <ScreenHeaders
         title={'لیست درخواست‌های انتقال/سمت'}
-        onPressLeft={() => navigation.goBack()}
       />
 
       <FlatList
@@ -314,7 +306,7 @@ export default function TransferRequestsListScreen({ navigation }) {
         }
         ListEmptyComponent={renderEmpty}
       />
-      
+
       {renderDetailModal()}
     </LinearGradient>
   );
@@ -408,13 +400,13 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 18,
-    color: themeColor10.bgColor(0.7),
+    color: themeColor4.bgColor(1),
     marginTop: 16,
     textAlign: 'center',
   },
   emptySubText: {
     fontSize: 14,
-    color: themeColor10.bgColor(0.5),
+    color: themeColor4.bgColor(1),
     marginTop: 8,
     textAlign: 'center',
     lineHeight: 22,

@@ -36,7 +36,7 @@ export default function WarrantyScreen() {
         showToastOrAlert('خطا در بارگذاری حریم خصوصی');
       }
     } catch (error) {
-      console.error('Error loading warranties:', error);
+      console.log('Error loading warranties:', error);
       showToastOrAlert('خطا در بارگذاری حریم خصوصی');
     } finally {
       setIsLoading(false);

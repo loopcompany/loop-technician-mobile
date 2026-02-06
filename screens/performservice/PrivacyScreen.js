@@ -34,23 +34,22 @@ export default function PrivacyScreen({ navigation }) {
   ];
 
   return (
-    <LinearGradient 
-      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
+    <LinearGradient
+      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.background}
     >
       <CustomStatusBar />
-      <ScreenHeaders 
-        title={'حریم خصوصی'} 
-        onPressLeft={() => navigation.goBack()} 
+      <ScreenHeaders
+        title={'حریم خصوصی'}
       />
-      
+
       <ScrollView contentContainerStyle={styles.container}>
-        
+
         {/* لیست گزینه‌های حریم خصوصی */}
         {privacyOptions.map((option) => (
-          <TouchableOpacity 
+          <TouchableOpacity
             key={option.id}
             style={[styles.optionButton, { backgroundColor: themeColor0.bgColor(0.8) }]}
             onPress={() => navigation.navigate(option.screen)}
@@ -60,7 +59,7 @@ export default function PrivacyScreen({ navigation }) {
         ))}
 
       </ScrollView>
-      
+
 
     </LinearGradient>
   );
@@ -84,8 +83,7 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
   optionText: {
-    ...NewStyles.text4,
+    ...NewStyles.title4,
     fontSize: 16,
-    fontWeight: 'bold',
   },
 });

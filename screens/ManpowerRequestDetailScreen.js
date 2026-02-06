@@ -5,6 +5,7 @@ import {
   ScrollView,
   StyleSheet,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -27,7 +28,7 @@ export default function ManpowerRequestDetailScreen({ route, navigation }) {
     try {
       setLoading(true);
       console.log(`📋 دریافت جزئیات درخواست #${requestId}`);
-      
+
       const response = await getManpowerRequestById(requestId);
 
       if (response.success && response.data) {
@@ -35,14 +36,20 @@ export default function ManpowerRequestDetailScreen({ route, navigation }) {
         console.log('✅ جزئیات درخواست دریافت شد');
       }
     } catch (error) {
-      console.error('❌ خطا در دریافت جزئیات:', error);
+      console.log('❌ خطا در دریافت جزئیات:', error);
       showAlert(
         'خطا',
         error.message || 'مشکلی در دریافت جزئیات پیش آمد',
         [
           {
             text: 'باشه',
-            onPress: () => navigation.goBack()
+            onPress: () => {
+              if (Platform.OS == 'web') {
+                window.history.back()
+              } else {
+                navigation.goBack()
+              }
+            }
           }
         ]
       );
@@ -102,7 +109,6 @@ export default function ManpowerRequestDetailScreen({ route, navigation }) {
       >
         <ScreenHeaders
           title={'جزئیات درخواست'}
-          onPressLeft={() => navigation.goBack()}
         />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
@@ -122,7 +128,6 @@ export default function ManpowerRequestDetailScreen({ route, navigation }) {
       >
         <ScreenHeaders
           title={'جزئیات درخواست'}
-          onPressLeft={() => navigation.goBack()}
         />
         <View style={styles.loadingContainer}>
           <Ionicons name="alert-circle-outline" size={80} color={themeColor10.bgColor(0.3)} />
@@ -143,7 +148,6 @@ export default function ManpowerRequestDetailScreen({ route, navigation }) {
     >
       <ScreenHeaders
         title={'جزئیات درخواست'}
-        onPressLeft={() => navigation.goBack()}
       />
 
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
@@ -250,8 +254,8 @@ export default function ManpowerRequestDetailScreen({ route, navigation }) {
             {request.status === 0
               ? 'درخواست شما در انتظار بررسی توسط مدیریت است.'
               : request.status === 1
-              ? 'درخواست شما تأیید شده است.'
-              : 'متأسفانه درخواست شما رد شده است.'}
+                ? 'درخواست شما تأیید شده است.'
+                : 'متأسفانه درخواست شما رد شده است.'}
           </Text>
         </View>
       </ScrollView>

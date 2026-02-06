@@ -18,7 +18,7 @@ import DatePickerModal from '../components/DatePickerModal';
 import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor4, themeColor6, themeColor7, themeColor8, themeColor11 } from '../theme/Color';
 import { getTransactions } from '../services/Api';
-import { formatDate , showAlert} from '../helpers/Common';
+import { formatDate, showAlert } from '../helpers/Common';
 
 export default function PerformanceScreen({ navigation }) {
   const [transactions, setTransactions] = useState([]);
@@ -74,7 +74,7 @@ export default function PerformanceScreen({ navigation }) {
         console.log(`✅ ${response.data.length} تراکنش دریافت شد`);
       }
     } catch (error) {
-      console.error('❌ خطا در دریافت لیست تراکنش‌ها:', error);
+      console.log('❌ خطا در دریافت لیست تراکنش‌ها:', error);
       showAlert('خطا', error.message || 'مشکلی در دریافت لیست تراکنش‌ها پیش آمد');
     } finally {
       setLoading(false);
@@ -131,7 +131,6 @@ export default function PerformanceScreen({ navigation }) {
       >
         <ScreenHeaders
           title={'عملکرد من'}
-          onPressLeft={() => navigation.goBack()}
         />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
@@ -219,7 +218,7 @@ export default function PerformanceScreen({ navigation }) {
         <Text style={[NewStyles.title, styles.priceText, {
           color: parseFloat(item.price) >= 0 ? themeColor7.bgColor(1) : themeColor6.bgColor(1)
         }]}>
-          {parseFloat(item.price) >= 0 ? '+' : '-'} {formatPrice(item.price)} ریال
+          {parseFloat(item.price) >= 0 ? '+' : '-'} {formatPrice(item.price)} تومان
         </Text>
       </View>
 
@@ -276,7 +275,6 @@ export default function PerformanceScreen({ navigation }) {
     >
       <ScreenHeaders
         title={'عملکرد من'}
-        onPressLeft={() => navigation.goBack()}
       />
 
       <FlatList

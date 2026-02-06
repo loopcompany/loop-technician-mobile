@@ -15,7 +15,7 @@ export default function ChatRoom({ route }) {
     const { t } = useTranslation();
     const userId = route?.params?.userId;
     const userName = route?.params?.userName;
-    const [message, setMessage] = useState(null);
+    const [message, setMessage] = useState('');
     const token = useSelector((state) => state?.auth?.token);
     const [refreshing, setRefreshing] = useState(true)
     const [loading, setLoading] = useState(false)

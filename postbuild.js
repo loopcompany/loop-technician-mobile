@@ -100,7 +100,7 @@ if (fs.existsSync(distIndexPath)) {
   html = html.replace(/<style id="expo-reset">[\s\S]*?<\/style>/, responsiveStyles);
   
   // Change lang and dir
-  html = html.replace('<html lang="en">', '<html lang="fa" dir="rtl">');
+  html = html.replace('<html lang="en">', '<html lang="fa">');
   
   // Add service worker cleanup script before closing body tag if not exists
   if (!html.includes('serviceWorker')) {

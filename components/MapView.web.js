@@ -99,7 +99,7 @@ const MapView = ({
         mapInstanceRef.current = map;
         setIsMapReady(true);
       } catch (error) {
-        console.error('Error initializing map:', error);
+        console.log('Error initializing map:', error);
       }
     };
 

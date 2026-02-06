@@ -19,7 +19,7 @@ import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor3, themeColor4, themeColor7, themeColor10, themeColor8, themeColor2 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import { useSelector } from 'react-redux';
-import { formatPrice , showAlert} from '../../helpers/Common';
+import { formatPrice, showAlert } from '../../helpers/Common';
 import { validateToken } from '../../services/Api';
 
 export default function FinancialReportScreen({ navigation }) {
@@ -44,7 +44,7 @@ export default function FinancialReportScreen({ navigation }) {
         });
       }
     } catch (error) {
-      console.error('❌ خطا در دریافت اطلاعات مالی:', error);
+      console.log('❌ خطا در دریافت اطلاعات مالی:', error);
       showAlert('خطا', 'مشکلی در دریافت اطلاعات پیش آمد');
     } finally {
       setLoading(false);
@@ -81,17 +81,17 @@ export default function FinancialReportScreen({ navigation }) {
       'چگونه می‌خواهید با پشتیبانی تماس بگیرید؟',
       [
         { text: 'لغو', style: 'cancel' },
-        { 
-          text: 'تماس تلفنی', 
+        {
+          text: 'تماس تلفنی',
           onPress: async () => {
             const phoneNumber = '02122656819';
             const url = `tel:${phoneNumber}`;
-            
+
             try {
               await Linking.openURL(url);
             } catch (err) {
-              console.error('❌ خطا در باز کردن شماره تلفن:', err);
-              
+              console.log('❌ خطا در باز کردن شماره تلفن:', err);
+
               // fallback برای وب
               if (Platform.OS === 'web') {
                 try {
@@ -111,16 +111,15 @@ export default function FinancialReportScreen({ navigation }) {
 
   if (loading) {
     return (
-      <LinearGradient 
-        colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
+      <LinearGradient
+        colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.background}
       >
         <CustomStatusBar />
-        <ScreenHeaders 
-          title={'گزارش مالی'} 
-          onPressLeft={() => navigation.goBack()} 
+        <ScreenHeaders
+          title={'گزارش مالی'}
         />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
@@ -130,25 +129,24 @@ export default function FinancialReportScreen({ navigation }) {
   }
 
   return (
-    <LinearGradient 
-      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
+    <LinearGradient
+      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.background}
     >
       <CustomStatusBar />
-      <ScreenHeaders 
-        title={'گزارش مالی'} 
-        onPressLeft={() => navigation.goBack()} 
+      <ScreenHeaders
+        title={'گزارش مالی'}
       />
-      
-      <ScrollView 
+
+      <ScrollView
         contentContainerStyle={styles.container}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        
+
         {/* کارت موجودی کیف پول */}
         <View style={[styles.card, styles.walletCard]}>
           <View style={styles.cardHeader}>
@@ -170,7 +168,7 @@ export default function FinancialReportScreen({ navigation }) {
             <Text style={[NewStyles.title, styles.cardTitle]}>مجموع تسویه‌ها</Text>
           </View>
           <Text style={[styles.amountLarge, { color: themeColor0.bgColor(1) }]}>
-            {formatPrice(walletData.total_settlements)}
+            {formatPrice(walletData.total_settlements)} تومان
           </Text>
           <Text style={[NewStyles.text4, styles.cardSubtitle]}>
             کل مبلغ دریافتی از سیستم
@@ -182,11 +180,11 @@ export default function FinancialReportScreen({ navigation }) {
           <Text style={[NewStyles.title, styles.statsTitle]}>
             اطلاعات مالی
           </Text>
-          
+
           <View style={styles.statRow}>
             <View style={styles.statItem}>
               <Ionicons name="trending-up" size={28} color={themeColor7.bgColor(1)} />
-              <Text style={[NewStyles.text4, styles.statLabel]}>کل دریافتی</Text>
+              <Text style={[NewStyles.text4, styles.statLabel]}>کل دریافتی (تومان)</Text>
               <Text style={[NewStyles.title, styles.statValue]}>
                 {formatPrice(getTotalEarnings())}
               </Text>
@@ -212,14 +210,20 @@ export default function FinancialReportScreen({ navigation }) {
 
         {/* دکمه‌های اقدام */}
         <View style={styles.buttonRow}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.actionButton, styles.closeButton]}
-            onPress={() => navigation.goBack()}
+            onPress={() => {
+              if (Platform.OS == 'web') {
+                window.history.back()
+              } else {
+                navigation.goBack()
+              }
+            }}
           >
             <Ionicons name="close-circle" size={20} color="#fff" />
             <Text style={[NewStyles.text4, styles.buttonText]}>بستن</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.actionButton, styles.errorButton]}
             onPress={handleReportError}
           >

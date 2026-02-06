@@ -48,7 +48,7 @@ export default function DeliveryReceiptScreen({ navigation }) {
   const peakFields = [
     'کد لپیل اموال',
     'ساعت دریافت',
-    'تاریخ دریافت', 
+    'تاریخ دریافت',
     'توضیحات'
   ];
 
@@ -82,24 +82,22 @@ export default function DeliveryReceiptScreen({ navigation }) {
   );
 
   return (
-    <LinearGradient 
-      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
+    <LinearGradient
+      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.background}
     >
-      <ScreenHeaders 
-        title={'دریافت / تحویل'} 
-        onPressLeft={() => navigation.goBack()} 
-        onPressRight={() => navigation.navigate} 
+      <ScreenHeaders
+        title={'دریافت / تحویل'}
       />
-      
+
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.deliveryContainer}>
-          
+
           {/* دریافت از لوپ */}
           <View style={styles.sectionContainer}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.sectionButton}
               onPress={() => toggleSection('receiveFromLoop')}
             >
@@ -112,13 +110,13 @@ export default function DeliveryReceiptScreen({ navigation }) {
                 </Text>
               </View>
             </TouchableOpacity>
-            
+
             {expandedSections['receiveFromLoop'] && renderFieldInputs(deliveryFields, 'receive')}
           </View>
 
           {/* تحویل به لوپ */}
           <View style={styles.sectionContainer}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.sectionButton}
               onPress={() => toggleSection('deliverToLoop')}
             >
@@ -131,13 +129,13 @@ export default function DeliveryReceiptScreen({ navigation }) {
                 </Text>
               </View>
             </TouchableOpacity>
-            
+
             {expandedSections['deliverToLoop'] && renderFieldInputs(deliveryFields, 'deliver')}
           </View>
 
           {/* دریافت از پیک */}
           <View style={styles.sectionContainer}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.sectionButton}
               onPress={() => toggleSection('receiveFromPeak')}
             >
@@ -150,13 +148,13 @@ export default function DeliveryReceiptScreen({ navigation }) {
                 </Text>
               </View>
             </TouchableOpacity>
-            
+
             {expandedSections['receiveFromPeak'] && renderFieldInputs(peakFields, 'peakReceive')}
           </View>
 
           {/* تحویل به پیک */}
           <View style={styles.sectionContainer}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.sectionButton}
               onPress={() => toggleSection('deliverToPeak')}
             >
@@ -169,13 +167,13 @@ export default function DeliveryReceiptScreen({ navigation }) {
                 </Text>
               </View>
             </TouchableOpacity>
-            
+
             {expandedSections['deliverToPeak'] && renderFieldInputs(peakFields, 'peakDeliver')}
           </View>
 
           {/* تحویل به کاربر */}
           <View style={styles.sectionContainer}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.sectionButton}
               onPress={() => toggleSection('deliverToUser')}
             >
@@ -188,13 +186,13 @@ export default function DeliveryReceiptScreen({ navigation }) {
                 </Text>
               </View>
             </TouchableOpacity>
-            
+
             {expandedSections['deliverToUser'] && renderFieldInputs(deliveryToUserFields, 'deliveryToUser')}
           </View>
 
           {/* دریافت از کاربر */}
           <View style={styles.sectionContainer}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.sectionButton}
               onPress={() => toggleSection('receiveFromUser')}
             >
@@ -207,21 +205,21 @@ export default function DeliveryReceiptScreen({ navigation }) {
                 </Text>
               </View>
             </TouchableOpacity>
-            
+
             {expandedSections['receiveFromUser'] && renderFieldInputs(deliveryToUserFields, 'receiveFromUser')}
           </View>
 
         </View>
       </ScrollView>
-      
+
 
     </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  background: { 
-    flex: 1 
+  background: {
+    flex: 1
   },
   container: {
     padding: 20,

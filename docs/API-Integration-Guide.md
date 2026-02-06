@@ -221,7 +221,7 @@ const handleApiCall = async () => {
       if (result.errors) {
         // Field validation errors
         Object.keys(result.errors).forEach(field => {
-          console.error(`${field}: ${result.errors[field]}`);
+          console.log(`${field}: ${result.errors[field]}`);
         });
       } else {
         // General error
@@ -230,7 +230,7 @@ const handleApiCall = async () => {
     }
   } catch (error) {
     // Handle network/unexpected errors
-    console.error('Network error:', error);
+    console.log('Network error:', error);
     Alert.alert('خطا', 'خطا در ارتباط با سرور');
   }
 };

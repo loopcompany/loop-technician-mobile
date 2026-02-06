@@ -41,7 +41,7 @@ export default function NotesScreen({ route, navigation }) {
         setNotes(response.data);
       }
     } catch (error) {
-      console.error('Error fetching notes:', error);
+      console.log('Error fetching notes:', error);
       if (notes.length > 0) {
         showToastOrAlert('خطا در دریافت یادداشت‌ها');
       }
@@ -73,7 +73,7 @@ export default function NotesScreen({ route, navigation }) {
                 fetchNotes();
               }
             } catch (error) {
-              console.error('Error deleting note:', error);
+              console.log('Error deleting note:', error);
               showToastOrAlert('خطا در حذف یادداشت');
             }
           },
@@ -155,7 +155,7 @@ export default function NotesScreen({ route, navigation }) {
 
   return (
     <View style={NewStyles.container}>
-      <ScreenHeaders title="یادداشت‌ها" onBackPress={() => navigation.goBack()} />
+      <ScreenHeaders title="یادداشت‌ها" />
 
       <FlatList
         data={notes}

@@ -4,12 +4,12 @@ import { uri } from './URL';
 
 const letterRatesAPI = {
   // دریافت لیست نرخ‌های نامه
-  getLetterRates: async () => {
+  getLetterRates: async (id) => {
     try {
-      const response = await axios.get(`${uri}/info/letter-rates`);
-      return response.data;
+      const response = await axios.get(`${uri}/info/letter-rates/category/${id}`);
+      return response.data?.data;
     } catch (error) {
-      console.error('Error fetching letter rates:', error);
+      console.log('Error fetching letter rates:', error);
       throw error;
     }
   }

@@ -16,18 +16,16 @@ import { themeColor0, themeColor10, themeColor2, themeColor8 } from '../../theme
 
 export default function UserHistoryScreen({ navigation, route }) {
   const { orderId } = route?.params || {};
-  
+
   return (
-    <LinearGradient 
-      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
+    <LinearGradient
+      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.background}
     >
-      <ScreenHeaders 
-        title={' انجام سرویس'} 
-        onPressLeft={() => navigation.goBack()} 
-        onPressRight={() => navigation.navigate('AttendanceScreen', { orderId })} 
+      <ScreenHeaders
+        title={' انجام سرویس'}
       />
       <ScrollView contentContainerStyle={styles.container}>
         <ScreenTitle title={'سابقه کاربر'} />
@@ -142,15 +140,15 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     borderWidth: 2,
     borderColor: '#2196F3',
-   
+
   },
   cardHeader: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
     marginBottom: 10,
-    
 
-    
+
+
   },
   serviceNumber: {
     backgroundColor: '#2196F3',

@@ -16,16 +16,14 @@ import { themeColor0, themeColor10, themeColor2, themeColor8 } from '../../theme
 
 export default function UserInfoScreen({ navigation }) {
   return (
-    <LinearGradient 
-      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
+    <LinearGradient
+      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.background}
     >
-      <ScreenHeaders 
-        title={'اطلاعات کاربر'} 
-        onPressLeft={() => navigation.goBack()} 
-        onPressRight={() => navigation.navigate('DeviceStatusScreen')} 
+      <ScreenHeaders
+        title={'اطلاعات کاربر'}
       />
       <ScrollView contentContainerStyle={styles.container}>
         <ScreenTitle title={'اطلاعات کاربر'} />

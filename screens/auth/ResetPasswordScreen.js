@@ -94,7 +94,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
         showAlert("خطا", result.message || "مشکلی در ارسال مجدد کد پیش آمد");
       }
     } catch (error) {
-      console.error('❌ خطا در ارسال مجدد کد:', error);
+      console.log('❌ خطا در ارسال مجدد کد:', error);
       showAlert("خطا", "مشکلی در ارتباط با سرور پیش آمد");
     } finally {
       setLoading(false);
@@ -128,7 +128,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
         showAlert("خطا", result.message || "کد وارد شده صحیح نمی‌باشد");
       }
     } catch (error) {
-      console.error('❌ خطا در تأیید کد:', error);
+      console.log('❌ خطا در تأیید کد:', error);
       setError("خطا در ارتباط با سرور");
       showAlert("خطا", "مشکلی در ارتباط با سرور پیش آمد");
     } finally {
@@ -210,7 +210,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
             );
           }
         } catch (loginError) {
-          console.error('❌ خطا در ورود خودکار:', loginError);
+          console.log('❌ خطا در ورود خودکار:', loginError);
           // Login failed, navigate to login screen
           showAlert(
             "موفق",
@@ -232,7 +232,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
         showAlert("خطا", result.message || "مشکلی در تغییر رمز عبور پیش آمد");
       }
     } catch (error) {
-      console.error('❌ خطا در تنظیم رمز:', error);
+      console.log('❌ خطا در تنظیم رمز:', error);
       showAlert("خطا", "مشکلی در ارتباط با سرور پیش آمد");
     } finally {
       setLoading(false);

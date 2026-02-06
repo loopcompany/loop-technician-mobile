@@ -36,7 +36,7 @@ export default function PrivacyScreen() {
         showToastOrAlert('خطا در بارگذاری حریم خصوصی');
       }
     } catch (error) {
-      console.error('Error loading privacies:', error);
+      console.log('Error loading privacies:', error);
       showToastOrAlert('خطا در بارگذاری حریم خصوصی');
     } finally {
       setIsLoading(false);
@@ -161,8 +161,7 @@ const styles = StyleSheet.create({
   privacyTitle: {
     flex: 1,
     fontSize: 16,
-    fontFamily: 'VazirBold',
-    color: '#333',
+    ...NewStyles.title4,
     textAlign: 'right',
     marginRight: 10,
   },

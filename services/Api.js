@@ -26,19 +26,12 @@ api.interceptors.request.use(
       console.warn('Error getting token from AsyncStorage:', error);
     }
 
-    // Log all API requests
-    console.log('📤 API Request:', {
-      method: config.method?.toUpperCase(),
-      url: config.url,
-      baseURL: config.baseURL,
-      fullURL: `${config.baseURL}${config.url}`,
-      hasToken: !!config.headers.Authorization
-    });
+
 
     return config;
   },
   (error) => {
-    console.error('❌ Request Setup Error:', error.message);
+    console.log('❌ Request Setup Error:', error.message);
     return Promise.reject(error);
   }
 );
@@ -59,7 +52,7 @@ api.interceptors.response.use(
     // Detailed error logging
     if (error.response) {
       // Server responded with error status
-      console.error('❌ API Error Response:', {
+      console.log('❌ API Error Response:', {
         method: error.config?.method?.toUpperCase(),
         url: error.config?.url,
         fullURL: `${error.config?.baseURL}${error.config?.url}`,
@@ -77,7 +70,7 @@ api.interceptors.response.use(
       }
     } else if (error.request) {
       // Request made but no response received
-      console.error('❌ No Response from Server:', {
+      console.log('❌ No Response from Server:', {
         method: error.config?.method?.toUpperCase(),
         url: error.config?.url,
         fullURL: `${error.config?.baseURL}${error.config?.url}`,
@@ -85,7 +78,7 @@ api.interceptors.response.use(
       });
     } else {
       // Something else happened
-      console.error('❌ Request Error:', error.message);
+      console.log('❌ Request Error:', error.message);
     }
 
     return Promise.reject(error);
@@ -163,10 +156,10 @@ export const startRepair = async (orderId) => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در ثبت شروع تعمیر:', error.response?.data || error.message);
+    console.log('❌ خطا در ثبت شروع تعمیر:', error.response?.data || error.message);
     if (error.response) {
-      console.error('❌ Status:', error.response.status);
-      console.error('❌ Data:', error.response.data);
+      console.log('❌ Status:', error.response.status);
+      console.log('❌ Data:', error.response.data);
     }
     return handleError(error);
   }
@@ -185,10 +178,10 @@ export const createDeliveryReport = async (reportData) => {
     console.log('✅ گزارش تحویل ثبت شد:', response.data);
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در ثبت گزارش تحویل:', error.response?.data || error.message);
+    console.log('❌ خطا در ثبت گزارش تحویل:', error.response?.data || error.message);
     if (error.response) {
-      console.error('❌ Status:', error.response.status);
-      console.error('❌ Data:', error.response.data);
+      console.log('❌ Status:', error.response.status);
+      console.log('❌ Data:', error.response.data);
     }
     return handleError(error);
   }
@@ -207,10 +200,10 @@ export const updateDeliveryReport = async (reportId, reportData) => {
     console.log('✅ گزارش تحویل ویرایش شد:', response.data);
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در ویرایش گزارش تحویل:', error.response?.data || error.message);
+    console.log('❌ خطا در ویرایش گزارش تحویل:', error.response?.data || error.message);
     if (error.response) {
-      console.error('❌ Status:', error.response.status);
-      console.error('❌ Data:', error.response.data);
+      console.log('❌ Status:', error.response.status);
+      console.log('❌ Data:', error.response.data);
     }
     return handleError(error);
   }
@@ -228,10 +221,10 @@ export const getDeliveryReportByOrderId = async (orderId) => {
     console.log('✅ گزارش تحویل دریافت شد:', response.data);
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت گزارش تحویل:', error.response?.data || error.message);
+    console.log('❌ خطا در دریافت گزارش تحویل:', error.response?.data || error.message);
     if (error.response) {
-      console.error('❌ Status:', error.response.status);
-      console.error('❌ Data:', error.response.data);
+      console.log('❌ Status:', error.response.status);
+      console.log('❌ Data:', error.response.data);
     }
     return handleError(error);
   }
@@ -250,10 +243,10 @@ export const verifyDeliveryReportWithCode = async (orderId, code) => {
     console.log('✅ گزارش تحویل تایید شد:', response.data);
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در تایید گزارش تحویل:', error.response?.data || error.message);
+    console.log('❌ خطا در تایید گزارش تحویل:', error.response?.data || error.message);
     if (error.response) {
-      console.error('❌ Status:', error.response.status);
-      console.error('❌ Data:', error.response.data);
+      console.log('❌ Status:', error.response.status);
+      console.log('❌ Data:', error.response.data);
     }
     return handleError(error);
   }
@@ -267,18 +260,18 @@ export const resendDeliveryReportCode = async (orderId) => {
   try {
     console.log(`📧 ارسال مجدد کد تایید برای سفارش ${orderId}`);
     console.log(`${Technician_DeliveryReports}/order/${orderId}/resend-code`);
-    
+
     const response = await api.post(
       `${Technician_DeliveryReports}/order/${orderId}/resend-code`
     );
     console.log('✅ کد تایید مجدداً ارسال شد:', response.data);
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در ارسال مجدد کد تایید:', error.response?.data || error.message);
+    console.log('❌ خطا در ارسال مجدد کد تایید:', error.response?.data || error.message);
     if (error.response) {
-      console.error('❌ Status:', error.response.status);
-      console.error('❌ Data:', error.response.data);
-      
+      console.log('❌ Status:', error.response.status);
+      console.log('❌ Data:', error.response.data);
+
       // مدیریت خطاهای خاص
       if (error.response.data?.error_code === 'REPORT_ALREADY_VERIFIED') {
         return {
@@ -304,10 +297,10 @@ export const endOrder = async (orderId) => {
     console.log('✅ پایان کار ثبت شد:', response.data);
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در ثبت پایان کار:', error.response?.data || error.message);
+    console.log('❌ خطا در ثبت پایان کار:', error.response?.data || error.message);
     if (error.response) {
-      console.error('❌ Status:', error.response.status);
-      console.error('❌ Data:', error.response.data);
+      console.log('❌ Status:', error.response.status);
+      console.log('❌ Data:', error.response.data);
     }
     return handleError(error);
   }
@@ -317,7 +310,7 @@ export const endOrder = async (orderId) => {
  * Handle API errors and format them consistently
  */
 const handleError = (error) => {
-  console.error('API Error:', error);
+  console.log('API Error:', error);
 
   if (error.response) {
     // Server responded with error
@@ -366,7 +359,7 @@ export const testApiConnection = async () => {
       data: response.data
     };
   } catch (error) {
-    console.error('❌ API connection test failed:', error.message);
+    console.log('❌ API connection test failed:', error.message);
 
     if (error.code === 'NETWORK_ERROR' || error.message.includes('Network Error')) {
       return {
@@ -405,7 +398,7 @@ export const testExpertisesEndpoint = async () => {
 
     if (!fetchResponse.ok) {
       const errorText = await fetchResponse.text();
-      console.error('❌ Fetch error response body:', errorText);
+      console.log('❌ Fetch error response body:', errorText);
       return {
         success: false,
         message: `HTTP ${fetchResponse.status}: ${errorText}`
@@ -422,7 +415,7 @@ export const testExpertisesEndpoint = async () => {
     };
 
   } catch (error) {
-    console.error('❌ Test expertises endpoint failed:', error);
+    console.log('❌ Test expertises endpoint failed:', error);
     return {
       success: false,
       message: error.message
@@ -444,10 +437,10 @@ export const getExpertises = async () => {
     console.log('✅ Response received:', response.status, response.data);
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ API Error for expertises:', error.message);
-    console.error('❌ Request URL was:', `${BASE_URL}/expertises`);
+    console.log('❌ API Error for expertises:', error.message);
+    console.log('❌ Request URL was:', `${BASE_URL}/expertises`);
     if (error.response) {
-      console.error('❌ Error response:', error.response.status, error.response.data);
+      console.log('❌ Error response:', error.response.status, error.response.data);
     }
     return handleError(error);
   }
@@ -524,7 +517,7 @@ export const registerTechnician = async (formData, resumeFile = null) => {
     console.log('✅ Registration successful:', response.data);
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ Registration failed:', error);
+    console.log('❌ Registration failed:', error);
     return handleError(error);
   }
 };
@@ -533,11 +526,11 @@ export const registerTechnician = async (formData, resumeFile = null) => {
 const base64ToBlob = (base64, mimeType) => {
   const byteCharacters = atob(base64);
   const byteNumbers = new Array(byteCharacters.length);
-  
+
   for (let i = 0; i < byteCharacters.length; i++) {
     byteNumbers[i] = byteCharacters.charCodeAt(i);
   }
-  
+
   const byteArray = new Uint8Array(byteNumbers);
   return new Blob([byteArray], { type: mimeType });
 };
@@ -565,7 +558,7 @@ export const resendVerificationCode = async (phone) => {
     const response = await api.post('/technician/resend-code', {
       phone,
     });
-    
+
     return handleResponse(response);
   } catch (error) {
     return handleError(error);
@@ -603,38 +596,22 @@ export const loginTechnician = async (referralCodeOrPhone, password) => {
       ...(isPhone ? { phone: referralCodeOrPhone } : { referral_code: referralCodeOrPhone }),
       password,
     };
-    console.log('Body ارسالی:', JSON.stringify(requestBody, null, 2));
-    console.log('URL کامل:', `${BASE_URL}/technician/login`);
+
 
     const response = await api.post('/technician/login', requestBody);
-    console.log('✅ پاسخ سرور دریافت شد:', response.status);
-    console.log('داده پاسخ:', JSON.stringify(response.data, null, 2));
 
     const result = handleResponse(response);
-    console.log('نتیجه پردازش شده:', JSON.stringify(result, null, 2));
 
     // Store token and user data if login successful
     if (result.success && result.data.token) {
-      console.log('ذخیره توکن و اطلاعات کاربر...');
       await AsyncStorage.setItem('userToken', result.data.token);
       // Store the complete data structure (not just technician)
       await AsyncStorage.setItem('userData', JSON.stringify(result.data));
-      console.log('✅ توکن و userData کامل ذخیره شد');
     }
 
     return result;
   } catch (error) {
-    console.error('❌ خطا در loginTechnician API:');
-    console.error('نوع خطا:', error.name);
-    console.error('پیام:', error.message);
-    if (error.response) {
-      console.error('Status:', error.response.status);
-      console.error('Response data:', JSON.stringify(error.response.data, null, 2));
-      console.error('Response headers:', error.response.headers);
-    }
-    if (error.request) {
-      console.error('Request:', error.request);
-    }
+
     return handleError(error);
   }
 };
@@ -658,7 +635,7 @@ export const logoutTechnician = async () => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در logout API:', error);
+    console.log('❌ خطا در logout API:', error);
     // Clear authentication data even if logout API fails
     console.log('🗑️ پاک کردن توکن احراز هویت (در صورت خطا)...');
     await AsyncStorage.removeItem('userToken');
@@ -768,12 +745,10 @@ export const infoAPI = {
  */
 export const validateToken = async () => {
   try {
-    console.log('🔐 اعتبارسنجی توکن...');
     const response = await api.post('/technician/validate-token');
-    console.log('✅ توکن معتبر است');
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ توکن نامعتبر یا منقضی شده');
+    console.log('❌ توکن نامعتبر یا منقضی شده');
     return handleError(error);
   }
 };
@@ -792,7 +767,7 @@ export const requestPasswordReset = async (data) => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در ارسال کد بازیابی:', error.response?.data || error.message);
+    console.log('❌ خطا در ارسال کد بازیابی:', error.response?.data || error.message);
     return handleError(error);
   }
 };
@@ -811,7 +786,7 @@ export const verifyResetCode = async (data) => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در تأیید کد:', error.response?.data || error.message);
+    console.log('❌ خطا در تأیید کد:', error.response?.data || error.message);
     return handleError(error);
   }
 };
@@ -834,8 +809,8 @@ export const resetPassword = async (data) => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در تغییر رمز عبور:', error.response?.data || error.message);
-    console.error('📥 پاسخ کامل خطا:', JSON.stringify(error.response?.data, null, 2));
+    console.log('❌ خطا در تغییر رمز عبور:', error.response?.data || error.message);
+    console.log('📥 پاسخ کامل خطا:', JSON.stringify(error.response?.data, null, 2));
     return handleError(error);
   }
 };
@@ -851,11 +826,11 @@ export const getTechnicianProfile = async () => {
     console.log('✅ پاسخ دریافت شد:', response.status);
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت پروفایل:', error.message);
-    console.error('📍 Endpoint: GET /technician/profile');
+    console.log('❌ خطا در دریافت پروفایل:', error.message);
+    console.log('📍 Endpoint: GET /technician/profile');
     if (error.response) {
-      console.error('📥 Status:', error.response.status);
-      console.error('📥 Data:', error.response.data);
+      console.log('📥 Status:', error.response.status);
+      console.log('📥 Data:', error.response.data);
     }
     return handleError(error);
   }
@@ -888,7 +863,7 @@ export const updatePersonalInfo = async (data, profilePhoto = null) => {
 
       // 🌐 Platform-specific photo handling
       const isWeb = Platform.OS === 'web';
-      
+
       console.log('📸 اطلاعات عکس برای ارسال:', {
         uri: profilePhoto.uri,
         name: profilePhoto.name,
@@ -912,7 +887,7 @@ export const updatePersonalInfo = async (data, profilePhoto = null) => {
         };
         formData.append('profile_photo', photoData);
       }
-      
+
       // Also try with _method for Laravel
       formData.append('_method', 'PUT');
 
@@ -956,7 +931,7 @@ export const updatePersonalInfo = async (data, profilePhoto = null) => {
       return handleResponse(response);
     }
   } catch (error) {
-    console.error('❌ خطا در به‌روزرسانی اطلاعات شخصی:', error.response?.data || error.message);
+    console.log('❌ خطا در به‌روزرسانی اطلاعات شخصی:', error.response?.data || error.message);
     return handleError(error);
   }
 };
@@ -978,7 +953,7 @@ export const updateVehicleInfo = async (data) => {
     console.log('✅ اطلاعات خودرو به‌روز شد:', response.data);
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در به‌روزرسانی اطلاعات خودرو:', error.response?.data || error.message);
+    console.log('❌ خطا در به‌روزرسانی اطلاعات خودرو:', error.response?.data || error.message);
     return handleError(error);
   }
 };
@@ -1000,7 +975,7 @@ export const updateBankInfo = async (data) => {
     console.log('✅ اطلاعات بانکی به‌روز شد:', response.data);
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در به‌روزرسانی اطلاعات بانکی:', error.response?.data || error.message);
+    console.log('❌ خطا در به‌روزرسانی اطلاعات بانکی:', error.response?.data || error.message);
     return handleError(error);
   }
 };
@@ -1022,7 +997,7 @@ export const changePassword = async (data) => {
     console.log('✅ رمز عبور تغییر یافت:', response.data);
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در تغییر رمز عبور:', error.response?.data || error.message);
+    console.log('❌ خطا در تغییر رمز عبور:', error.response?.data || error.message);
     return handleError(error);
   }
 };
@@ -1039,7 +1014,6 @@ export const changePassword = async (data) => {
  */
 export const getTechnicianOrders = async (status = null, page = 1, perPage = 15) => {
   try {
-    console.log('📋 دریافت لیست سفارشات تکنسین...');
     // Build query parameters
     const params = new URLSearchParams();
     if (status?.toString()) params.append('status', status?.toString());
@@ -1052,11 +1026,9 @@ export const getTechnicianOrders = async (status = null, page = 1, perPage = 15)
     console.log('📍 Endpoint:', endpoint);
 
     const response = await api.get(endpoint);
-    console.log('✅ سفارشات دریافت شد:', response.data);
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت سفارشات:', error.response?.data || error.message);
     return handleError(error);
   }
 };
@@ -1067,20 +1039,13 @@ export const getTechnicianOrders = async (status = null, page = 1, perPage = 15)
  */
 export const getTechnicianOrderById = async (orderId) => {
   try {
-    console.log(`📋 دریافت جزئیات سفارش #${orderId}...`);
-    console.log('📋 Type of orderId:', typeof orderId);
-
     const response = await api.get(`/technician/orders/${orderId}/detail`);
-    console.log('📥 Raw Response از detail API:', JSON.stringify(response.data, null, 2));
-    console.log('🔍 extra_services در response:', response.data?.data?.extra_services);
-    console.log('✅ جزئیات سفارش دریافت شد:', response.data);
-
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت جزئیات سفارش:', error.response?.data || error.message);
+    console.log('❌ خطا در دریافت جزئیات سفارش:', error.response?.data || error.message);
     if (error.response) {
-      console.error('❌ Status:', error.response.status);
-      console.error('❌ Data:', error.response.data);
+      console.log('❌ Status:', error.response.status);
+      console.log('❌ Data:', error.response.data);
     }
     return handleError(error);
   }
@@ -1094,19 +1059,9 @@ export const getTechnicianOrderById = async (orderId) => {
  */
 export const submitTechnicianDescription = async (orderId, data) => {
   try {
-    console.log(`📝 ثبت توضیحات تکنسین برای سفارش #${orderId}...`);
-    console.log('📝 Data:', data);
-
     const response = await api.post(`/technician/orders/${orderId}/technician-description`, data);
-    console.log('✅ توضیحات تکنسین با موفقیت ثبت شد:', response.data);
-
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در ثبت توضیحات تکنسین:', error.response?.data || error.message);
-    if (error.response) {
-      console.error('❌ Status:', error.response.status);
-      console.error('❌ Data:', error.response.data);
-    }
     return handleError(error);
   }
 };
@@ -1118,18 +1073,9 @@ export const submitTechnicianDescription = async (orderId, data) => {
  */
 export const setOffToOrder = async (orderId) => {
   try {
-    console.log(`🚗 ثبت زمان حرکت برای سفارش #${orderId}...`);
-
     const response = await api.post(`/technician/orders/${orderId}/set-off`);
-    console.log('✅ زمان حرکت با موفقیت ثبت شد:', response.data);
-
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در ثبت زمان حرکت:', error.response?.data || error.message);
-    if (error.response) {
-      console.error('❌ Status:', error.response.status);
-      console.error('❌ Data:', error.response.data);
-    }
     return handleError(error);
   }
 };
@@ -1141,18 +1087,9 @@ export const setOffToOrder = async (orderId) => {
  */
 export const arriveToOrder = async (orderId) => {
   try {
-    console.log(`📍 ثبت زمان رسیدن برای سفارش #${orderId}...`);
-
     const response = await api.post(`/technician/orders/${orderId}/arrive`);
-    console.log('✅ زمان رسیدن با موفقیت ثبت شد:', response.data);
-
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در ثبت زمان رسیدن:', error.response?.data || error.message);
-    if (error.response) {
-      console.error('❌ Status:', error.response.status);
-      console.error('❌ Data:', error.response.data);
-    }
     return handleError(error);
   }
 };
@@ -1164,19 +1101,9 @@ export const arriveToOrder = async (orderId) => {
  */
 export const createOrderReport = async (data) => {
   try {
-    console.log('📝 ثبت گزارش محصول...');
-    console.log('📝 Data:', data);
-
     const response = await api.post('/technician/order-reports', data);
-    console.log('✅ گزارش محصول با موفقیت ثبت شد:', response.data);
-
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در ثبت گزارش محصول:', error.response?.data || error.message);
-    if (error.response) {
-      console.error('❌ Status:', error.response.status);
-      console.error('❌ Data:', error.response.data);
-    }
     return handleError(error);
   }
 };
@@ -1189,19 +1116,9 @@ export const createOrderReport = async (data) => {
  */
 export const updateOrderReport = async (reportId, data) => {
   try {
-    console.log(`📝 به‌روزرسانی گزارش #${reportId}...`);
-    console.log('📝 Data:', data);
-
     const response = await api.put(`/technician/order-reports/${reportId}`, data);
-    console.log('✅ گزارش محصول با موفقیت به‌روزرسانی شد:', response.data);
-
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در به‌روزرسانی گزارش محصول:', error.response?.data || error.message);
-    if (error.response) {
-      console.error('❌ Status:', error.response.status);
-      console.error('❌ Data:', error.response.data);
-    }
     return handleError(error);
   }
 };
@@ -1213,18 +1130,9 @@ export const updateOrderReport = async (reportId, data) => {
  */
 export const getOrderReport = async (reportId) => {
   try {
-    console.log(`📋 دریافت گزارش #${reportId}...`);
-
     const response = await api.get(`/technician/order-reports/${reportId}`);
-    console.log('✅ گزارش محصول دریافت شد:', response.data);
-
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت گزارش محصول:', error.response?.data || error.message);
-    if (error.response) {
-      console.error('❌ Status:', error.response.status);
-      console.error('❌ Data:', error.response.data);
-    }
     return handleError(error);
   }
 };
@@ -1236,18 +1144,9 @@ export const getOrderReport = async (reportId) => {
  */
 export const getOrderReportByOrderId = async (orderId) => {
   try {
-    console.log(`📋 دریافت گزارش برای سفارش #${orderId}...`);
-
     const response = await api.get(`/order-reports/by-order/${orderId}`);
-    console.log('✅ گزارش سفارش دریافت شد:', response.data);
-
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت گزارش سفارش:', error.response?.data || error.message);
-    if (error.response) {
-      console.error('❌ Status:', error.response.status);
-      console.error('❌ Data:', error.response.data);
-    }
     return handleError(error);
   }
 };
@@ -1259,18 +1158,9 @@ export const getOrderReportByOrderId = async (orderId) => {
  */
 export const sendOrderToLoop = async (orderId) => {
   try {
-    console.log(`🚀 ارسال سفارش #${orderId} به لوپ...`);
-
     const response = await api.post(`/technician/orders/${orderId}/send-to-loop`);
-    console.log('✅ سفارش با موفقیت به لوپ ارسال شد:', response.data);
-
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در ارسال سفارش به لوپ:', error.response?.data || error.message);
-    if (error.response) {
-      console.error('❌ Status:', error.response.status);
-      console.error('❌ Data:', error.response.data);
-    }
     return handleError(error);
   }
 };
@@ -1283,19 +1173,9 @@ export const sendOrderToLoop = async (orderId) => {
  */
 export const updateLoopInfo = async (orderId, data) => {
   try {
-    console.log(`📝 به‌روزرسانی اطلاعات لوپ برای سفارش #${orderId}...`);
-    console.log('📝 Data:', data);
-
     const response = await api.patch(`/technician/orders/${orderId}/loop-info`, data);
-    console.log('✅ اطلاعات لوپ با موفقیت به‌روزرسانی شد:', response.data);
-
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در به‌روزرسانی اطلاعات لوپ:', error.response?.data || error.message);
-    if (error.response) {
-      console.error('❌ Status:', error.response.status);
-      console.error('❌ Data:', error.response.data);
-    }
     return handleError(error);
   }
 };
@@ -1337,7 +1217,7 @@ export const clearAuthData = async () => {
     await AsyncStorage.removeItem('userData');
     return true;
   } catch (error) {
-    console.error('Error clearing auth data:', error);
+    console.log('Error clearing auth data:', error);
     return false;
   }
 };
@@ -1354,7 +1234,7 @@ export const getTechnicianChats = async () => {
     console.log('✅ لیست چت‌ها دریافت شد:', response.data);
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت لیست چت‌ها:', error.response?.data || error.message);
+    console.log('❌ خطا در دریافت لیست چت‌ها:', error.response?.data || error.message);
     return handleError(error);
   }
 };
@@ -1368,10 +1248,9 @@ export const getTechnicianChatMessages = async (userId) => {
     const response = await api.get('/technician/chats/messages', {
       params: { user_id: userId }
     });
-    console.log('✅ پیام‌ها دریافت شد:', response.data);
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت پیام‌ها:', error.response?.data || error.message);
+    console.log('❌ خطا در دریافت پیام‌ها:', error.response?.data || error.message);
     return handleError(error);
   }
 };
@@ -1389,7 +1268,7 @@ export const sendTechnicianMessage = async (userId, message) => {
     console.log('✅ پیام ارسال شد:', response.data);
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در ارسال پیام:', error.response?.data || error.message);
+    console.log('❌ خطا در ارسال پیام:', error.response?.data || error.message);
     if (error.response?.status === 403) {
       return {
         success: false,
@@ -1413,7 +1292,7 @@ export const markTechnicianMessagesAsRead = async (userId) => {
     console.log('✅ پیام‌ها خوانده شدند:', response.data);
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در علامت‌گذاری پیام‌ها:', error.response?.data || error.message);
+    console.log('❌ خطا در علامت‌گذاری پیام‌ها:', error.response?.data || error.message);
     // این خطا را نادیده می‌گیریم چون critical نیست
     return { success: false, silent: true };
   }
@@ -1431,7 +1310,7 @@ export const cancelOrderByTechnician = async (orderId, cancelReason) => {
     console.log('✅ سفارش با موفقیت لغو شد:', response.data);
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در لغو سفارش:', error.response?.data || error.message);
+    console.log('❌ خطا در لغو سفارش:', error.response?.data || error.message);
 
     // مدیریت خطاهای مختلف
     if (error.response?.status === 404) {
@@ -1465,7 +1344,7 @@ export const submitEmergencyHelp = async (orderId, emergencyHelp) => {
     console.log('✅ درخواست کمک اضطراری با موفقیت ثبت شد:', response.data);
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در ثبت درخواست کمک اضطراری:', error.response?.data || error.message);
+    console.log('❌ خطا در ثبت درخواست کمک اضطراری:', error.response?.data || error.message);
 
     // مدیریت خطاهای مختلف
     if (error.response?.status === 404) {
@@ -1502,7 +1381,7 @@ export const submitTechnicianOpinion = async (orderId, technicianOpinion) => {
     console.log('✅ نظر تکنسین با موفقیت ثبت شد:', response.data);
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در ثبت نظر تکنسین:', error.response?.data || error.message);
+    console.log('❌ خطا در ثبت نظر تکنسین:', error.response?.data || error.message);
 
     const errorCode = error.response?.data?.error_code;
 
@@ -1539,7 +1418,7 @@ export const createEducationRequest = async (data) => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در ثبت درخواست:', error.response?.data || error.message);
+    console.log('❌ خطا در ثبت درخواست:', error.response?.data || error.message);
 
     if (error.response?.status === 422) {
       const errors = error.response?.data?.errors;
@@ -1567,7 +1446,7 @@ export const getEducationRequests = async () => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت لیست درخواست‌ها:', error.response?.data || error.message);
+    console.log('❌ خطا در دریافت لیست درخواست‌ها:', error.response?.data || error.message);
     return handleError(error);
   }
 };
@@ -1586,7 +1465,7 @@ export const getEducationRequestById = async (requestId) => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت جزئیات درخواست:', error.response?.data || error.message);
+    console.log('❌ خطا در دریافت جزئیات درخواست:', error.response?.data || error.message);
 
     if (error.response?.status === 404) {
       throw new Error('درخواست مورد نظر یافت نشد');
@@ -1613,7 +1492,7 @@ export const createLeaveRequest = async (data) => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در ثبت درخواست مرخصی:', error.response?.data || error.message);
+    console.log('❌ خطا در ثبت درخواست مرخصی:', error.response?.data || error.message);
 
     if (error.response?.status === 422) {
       const errors = error.response.data.errors;
@@ -1640,7 +1519,7 @@ export const getLeaveRequests = async () => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت لیست درخواست‌های مرخصی:', error.response?.data || error.message);
+    console.log('❌ خطا در دریافت لیست درخواست‌های مرخصی:', error.response?.data || error.message);
     return handleError(error);
   }
 };
@@ -1659,7 +1538,7 @@ export const getLeaveRequestById = async (requestId) => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت جزئیات درخواست مرخصی:', error.response?.data || error.message);
+    console.log('❌ خطا در دریافت جزئیات درخواست مرخصی:', error.response?.data || error.message);
 
     if (error.response?.status === 404) {
       throw new Error('درخواست مورد نظر یافت نشد');
@@ -1689,7 +1568,7 @@ export const createDebtRequest = async (data) => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در ثبت درخواست وام:', error.response?.data || error.message);
+    console.log('❌ خطا در ثبت درخواست وام:', error.response?.data || error.message);
 
     if (error.response?.status === 422) {
       const errors = error.response.data.errors;
@@ -1716,7 +1595,7 @@ export const getDebtRequests = async () => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت لیست درخواست‌های وام:', error.response?.data || error.message);
+    console.log('❌ خطا در دریافت لیست درخواست‌های وام:', error.response?.data || error.message);
     return handleError(error);
   }
 };
@@ -1735,7 +1614,7 @@ export const getDebtRequestById = async (requestId) => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت جزئیات درخواست وام:', error.response?.data || error.message);
+    console.log('❌ خطا در دریافت جزئیات درخواست وام:', error.response?.data || error.message);
 
     if (error.response?.status === 404) {
       throw new Error('درخواست مورد نظر یافت نشد');
@@ -1765,7 +1644,7 @@ export const createTransferRequest = async (data) => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در ثبت درخواست انتقال/سمت:', error.response?.data || error.message);
+    console.log('❌ خطا در ثبت درخواست انتقال/سمت:', error.response?.data || error.message);
 
     if (error.response?.status === 422) {
       const errors = error.response.data.errors;
@@ -1792,7 +1671,7 @@ export const getTransferRequests = async () => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت لیست درخواست‌های انتقال/سمت:', error.response?.data || error.message);
+    console.log('❌ خطا در دریافت لیست درخواست‌های انتقال/سمت:', error.response?.data || error.message);
     return handleError(error);
   }
 };
@@ -1811,7 +1690,7 @@ export const getTransferRequestById = async (requestId) => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت جزئیات درخواست انتقال/سمت:', error.response?.data || error.message);
+    console.log('❌ خطا در دریافت جزئیات درخواست انتقال/سمت:', error.response?.data || error.message);
 
     if (error.response?.status === 404) {
       throw new Error('درخواست مورد نظر یافت نشد');
@@ -1841,7 +1720,7 @@ export const createManpowerRequest = async (data) => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در ثبت درخواست نیروی انسانی:', error.response?.data || error.message);
+    console.log('❌ خطا در ثبت درخواست نیروی انسانی:', error.response?.data || error.message);
 
     if (error.response?.status === 422) {
       const errors = error.response.data.errors;
@@ -1868,7 +1747,7 @@ export const getManpowerRequests = async () => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت لیست درخواست‌های نیروی انسانی:', error.response?.data || error.message);
+    console.log('❌ خطا در دریافت لیست درخواست‌های نیروی انسانی:', error.response?.data || error.message);
     return handleError(error);
   }
 };
@@ -1887,7 +1766,7 @@ export const getManpowerRequestById = async (requestId) => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت جزئیات درخواست نیروی انسانی:', error.response?.data || error.message);
+    console.log('❌ خطا در دریافت جزئیات درخواست نیروی انسانی:', error.response?.data || error.message);
 
     if (error.response?.status === 404) {
       throw new Error('درخواست مورد نظر یافت نشد');
@@ -1917,7 +1796,7 @@ export const createTerminationRequest = async (data) => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در ثبت درخواست قطع همکاری:', error.response?.data || error.message);
+    console.log('❌ خطا در ثبت درخواست قطع همکاری:', error.response?.data || error.message);
 
     if (error.response?.status === 422) {
       const errors = error.response.data.errors;
@@ -1944,7 +1823,7 @@ export const getTerminationRequests = async () => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت لیست درخواست‌های قطع همکاری:', error.response?.data || error.message);
+    console.log('❌ خطا در دریافت لیست درخواست‌های قطع همکاری:', error.response?.data || error.message);
     return handleError(error);
   }
 };
@@ -1963,7 +1842,7 @@ export const getTerminationRequestById = async (requestId) => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت جزئیات درخواست قطع همکاری:', error.response?.data || error.message);
+    console.log('❌ خطا در دریافت جزئیات درخواست قطع همکاری:', error.response?.data || error.message);
 
     if (error.response?.status === 404) {
       throw new Error('درخواست مورد نظر یافت نشد');
@@ -2005,7 +1884,7 @@ export const getTransactions = async (filters = {}) => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت لیست تراکنش‌ها:', error.response?.data || error.message);
+    console.log('❌ خطا در دریافت لیست تراکنش‌ها:', error.response?.data || error.message);
 
     if (error.response?.status === 401 || error.response?.status === 403) {
       throw new Error('دسترسی غیرمجاز');
@@ -2029,11 +1908,11 @@ export const uploadArchiveImages = async (images) => {
     images.forEach((image, index) => {
       // برای وب از فایل اصلی استفاده می‌کنیم
       if (isWeb && image.file) {
-        console.log(`📸 آماده‌سازی تصویر ${index + 1} (Web):`, { 
-          fileName: image.fileName || image.file.name, 
-          type: image.file.type 
+        console.log(`📸 آماده‌سازی تصویر ${index + 1} (Web):`, {
+          fileName: image.fileName || image.file.name,
+          type: image.file.type
         });
-        
+
         formData.append('images[]', image.file, image.fileName || image.file.name);
       } else {
         // برای موبایل از روش قبلی استفاده می‌کنیم
@@ -2072,8 +1951,8 @@ export const uploadArchiveImages = async (images) => {
     console.log('✅ تصاویر آپلود شدند:', response.data);
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در آپلود تصاویر:', error.response?.data || error.message);
-    console.error('❌ جزئیات خطا:', {
+    console.log('❌ خطا در آپلود تصاویر:', error.response?.data || error.message);
+    console.log('❌ جزئیات خطا:', {
       status: error.response?.status,
       statusText: error.response?.statusText,
       data: error.response?.data,
@@ -2104,7 +1983,7 @@ export const getArchiveImages = async () => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت لیست تصاویر:', error.response?.data || error.message);
+    console.log('❌ خطا در دریافت لیست تصاویر:', error.response?.data || error.message);
 
     if (error.response?.status === 401 || error.response?.status === 403) {
       throw new Error('دسترسی غیرمجاز');
@@ -2123,7 +2002,7 @@ export const deleteArchiveImage = async (imageId) => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در حذف تصویر:', error.response?.data || error.message);
+    console.log('❌ خطا در حذف تصویر:', error.response?.data || error.message);
 
     if (error.response?.status === 404) {
       throw new Error('تصویر یافت نشد یا دسترسی به حذف آن را ندارید');
@@ -2144,18 +2023,18 @@ export const deleteArchiveImage = async (imageId) => {
 export const getIncentivePlans = async () => {
   try {
     console.log('🎁 دریافت لیست طرح‌های تشویقی...');
-    
+
     const response = await api.get('/technician/incentive-plans');
     console.log('✅ لیست طرح‌های تشویقی دریافت شد:', response.data);
-    
+
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت لیست طرح‌های تشویقی:', error.response?.data || error.message);
-    
+    console.log('❌ خطا در دریافت لیست طرح‌های تشویقی:', error.response?.data || error.message);
+
     if (error.response?.status === 401 || error.response?.status === 403) {
       throw new Error('دسترسی غیرمجاز');
     }
-    
+
     return handleError(error);
   }
 };
@@ -2167,18 +2046,18 @@ export const getIncentivePlans = async () => {
 export const checkPollStatus = async () => {
   try {
     console.log('🔍 بررسی وضعیت ثبت نظر...');
-    
+
     const response = await api.get('/technician/poll/check');
     console.log('✅ وضعیت نظر دریافت شد:', response.data);
-    
+
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در بررسی وضعیت نظر:', error.response?.data || error.message);
-    
+    console.log('❌ خطا در بررسی وضعیت نظر:', error.response?.data || error.message);
+
     if (error.response?.status === 401 || error.response?.status === 403) {
       throw new Error('دسترسی غیرمجاز');
     }
-    
+
     return handleError(error);
   }
 };
@@ -2186,22 +2065,22 @@ export const checkPollStatus = async () => {
 export const submitPoll = async (pollData) => {
   try {
     console.log('📝 ثبت نظرات و پیشنهادات...');
-    
+
     const response = await api.post('/technician/poll', pollData);
     console.log('✅ نظرات ثبت شد:', response.data);
-    
+
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در ثبت نظرات:', error.response?.data || error.message);
-    
+    console.log('❌ خطا در ثبت نظرات:', error.response?.data || error.message);
+
     if (error.response?.status === 400) {
       throw new Error(error.response?.data?.message || 'شما قبلاً نظر خود را ثبت کرده‌اید');
     }
-    
+
     if (error.response?.status === 401 || error.response?.status === 403) {
       throw new Error('دسترسی غیرمجاز');
     }
-    
+
     if (error.response?.status === 422) {
       const errors = error.response?.data?.errors;
       if (errors) {
@@ -2210,7 +2089,7 @@ export const submitPoll = async (pollData) => {
       }
       throw new Error(error.response?.data?.message || 'خطا در اعتبارسنجی داده‌ها');
     }
-    
+
     return handleError(error);
   }
 };
@@ -2226,10 +2105,10 @@ export const getYearlyIncomeChart = async (year) => {
     console.log('📥 پارامتر ورودی year:', year);
     console.log('📥 نوع year:', typeof year);
     console.log('📥 آیا number است؟', typeof year === 'number');
-    
+
     // ساخت URL با یا بدون query parameter
     let url = '/technician/transactions/yearly-income-chart';
-    
+
     // فقط اگر year یک عدد معتبر باشه، به URL اضافه کن
     if (typeof year === 'number' && !isNaN(year) && year > 0) {
       url = `${url}?year=${year}`;
@@ -2239,29 +2118,29 @@ export const getYearlyIncomeChart = async (year) => {
       console.log('   - year value:', year);
       console.log('   - isNaN:', isNaN(year));
     }
-    
+
     console.log('🔗 URL نهایی:', url);
     console.log('🔗 Full URL:', `${api.defaults.baseURL}${url}`);
     console.log('════════════════════════════════════════');
-    
+
     const response = await api.get(url);
-    
+
     console.log('════════════════════════════════════════');
     console.log('✅ پاسخ موفق دریافت شد');
     console.log('📊 Status:', response.status);
     console.log('📊 Data:', JSON.stringify(response.data, null, 2));
     console.log('════════════════════════════════════════');
-    
+
     return handleResponse(response);
   } catch (error) {
     console.log('════════════════════════════════════════');
-    console.error('❌ خطا در دریافت نمودار');
-    console.error('❌ Message:', error.message);
-    console.error('❌ Status:', error.response?.status);
-    console.error('❌ Response Data:', JSON.stringify(error.response?.data, null, 2));
-    console.error('❌ Request URL:', error.config?.url);
+    console.log('❌ خطا در دریافت نمودار');
+    console.log('❌ Message:', error.message);
+    console.log('❌ Status:', error.response?.status);
+    console.log('❌ Response Data:', JSON.stringify(error.response?.data, null, 2));
+    console.log('❌ Request URL:', error.config?.url);
     console.log('════════════════════════════════════════');
-    
+
     return handleError(error);
   }
 };
@@ -2276,7 +2155,7 @@ export const getAdminReportViolations = async () => {
     console.log('📋 دریافت لیست گزارش‌های تخلف ادمین...');
 
     const response = await api.get(API_ENDPOINTS.ADMIN_VIOLATIONS.LIST);
-    
+
     console.log('✅ لیست گزارش‌های تخلف دریافت شد:', {
       total: response.data.total,
       count: response.data.data?.length
@@ -2284,7 +2163,7 @@ export const getAdminReportViolations = async () => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت لیست گزارش‌های تخلف:', error.response?.data || error.message);
+    console.log('❌ خطا در دریافت لیست گزارش‌های تخلف:', error.response?.data || error.message);
     return handleError(error);
   }
 };
@@ -2301,12 +2180,12 @@ export const getAdminReportViolationById = async (reportId) => {
 
     const endpoint = API_ENDPOINTS.ADMIN_VIOLATIONS.DETAIL.replace('{id}', reportId);
     const response = await api.get(endpoint);
-    
+
     console.log('✅ جزئیات گزارش تخلف دریافت شد:', response.data.data);
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت جزئیات گزارش تخلف:', error.response?.data || error.message);
+    console.log('❌ خطا در دریافت جزئیات گزارش تخلف:', error.response?.data || error.message);
 
     if (error.response?.status === 404) {
       throw new Error('گزارش تخلف یافت نشد');
@@ -2332,12 +2211,12 @@ export const replyToAdminReportViolation = async (reportId, responseText) => {
 
     const endpoint = API_ENDPOINTS.ADMIN_VIOLATIONS.REPLY.replace('{id}', reportId);
     const response = await api.post(endpoint, { response: responseText });
-    
+
     console.log('✅ پاسخ با موفقیت ثبت شد:', response.data);
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در ارسال پاسخ:', error.response?.data || error.message);
+    console.log('❌ خطا در ارسال پاسخ:', error.response?.data || error.message);
 
     if (error.response?.status === 422) {
       const errors = error.response?.data?.errors;
@@ -2364,9 +2243,9 @@ export const replyToAdminReportViolation = async (reportId, responseText) => {
 export const getTicketsList = async () => {
   try {
     console.log('📨 دریافت لیست پیام‌های پشتیبانی...');
-    
+
     const response = await api.get('/technician/tickets');
-    
+
     console.log('✅ لیست پیام‌ها دریافت شد:', {
       total: response.data?.total || 0,
       messages: response.data?.data?.length || 0
@@ -2374,7 +2253,7 @@ export const getTicketsList = async () => {
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت پیام‌ها:', error.response?.data || error.message);
+    console.log('❌ خطا در دریافت پیام‌ها:', error.response?.data || error.message);
     return handleError(error);
   }
 };
@@ -2389,14 +2268,14 @@ export const sendTicketMessage = async (message) => {
   try {
     console.log('📤 ارسال پیام جدید...');
     console.log('📝 طول پیام:', message?.length || 0);
-    
+
     const response = await api.post('/technician/tickets', { message });
-    
+
     console.log('✅ پیام با موفقیت ارسال شد:', response.data);
 
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در ارسال پیام:', error.response?.data || error.message);
+    console.log('❌ خطا در ارسال پیام:', error.response?.data || error.message);
 
     if (error.response?.status === 422) {
       const errors = error.response?.data?.errors;
@@ -2421,7 +2300,7 @@ export const getUnreadTicketsCount = async () => {
     const response = await api.get('/technician/tickets/unread-count');
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت تعداد پیام‌های خوانده نشده:', error.message);
+    console.log('❌ خطا در دریافت تعداد پیام‌های خوانده نشده:', error.message);
     return handleError(error);
   }
 };
@@ -2438,7 +2317,7 @@ export const getOrganizationsList = async () => {
     console.log('✅ لیست سازمان‌ها دریافت شد:', response.data);
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت لیست سازمان‌ها:', error.response?.data || error.message);
+    console.log('❌ خطا در دریافت لیست سازمان‌ها:', error.response?.data || error.message);
     return handleError(error);
   }
 };
@@ -2456,7 +2335,7 @@ export const getOrganizationOrders = async (organizationId) => {
     console.log('✅ سفارشات سازمان دریافت شد:', response.data);
     return handleResponse(response);
   } catch (error) {
-    console.error('❌ خطا در دریافت سفارشات سازمان:', error.response?.data || error.message);
+    console.log('❌ خطا در دریافت سفارشات سازمان:', error.response?.data || error.message);
     return handleError(error);
   }
 };

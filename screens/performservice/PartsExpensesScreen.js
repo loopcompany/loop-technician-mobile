@@ -41,16 +41,14 @@ export default function PartsExpensesScreen({ navigation }) {
   };
 
   return (
-    <LinearGradient 
-      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
+    <LinearGradient
+      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.background}
     >
-      <ScreenHeaders 
-        title={'قطعات / هزینه ها'} 
-        onPressLeft={() => navigation.goBack()} 
-        onPressRight={() => navigation.navigate('DeliveryReceiptScreen')} 
+      <ScreenHeaders
+        title={'قطعات / هزینه ها'}
       />
       <ScrollView contentContainerStyle={styles.container}>
         <ScreenTitle title={'قطعات / هزینه ها'} />
@@ -64,7 +62,7 @@ export default function PartsExpensesScreen({ navigation }) {
           {softwareItems.map((item, index) => (
             <View key={index} style={styles.itemRow}>
               <TextInput style={[NewStyles.text4, styles.itemLabel]}>{item} :</TextInput>
-              
+
             </View>
           ))}
 
@@ -112,7 +110,7 @@ export default function PartsExpensesScreen({ navigation }) {
         </View>
 
       </ScrollView>
- 
+
     </LinearGradient>
   );
 }
@@ -143,7 +141,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row-reverse',
     alignItems: 'center',
     marginVertical: 8,
-    gap:10
+    gap: 10
   },
   itemLabel: {
     flex: 1,

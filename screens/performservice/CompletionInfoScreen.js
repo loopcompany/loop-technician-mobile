@@ -24,8 +24,6 @@ export default function CompletionInfoScreen({ navigation }) {
     >
       <ScreenHeaders 
         title={' انجام سرویس'} 
-        onPressLeft={() => navigation.goBack()} 
-        onPressRight={() => navigation.navigate('UserHistoryScreen')} 
       />
       <ScrollView contentContainerStyle={styles.container}>
         <ScreenTitle title={'اطلاعات تکمیلی'} />

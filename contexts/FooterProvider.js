@@ -36,10 +36,10 @@ export const FooterProvider = ({ children }) => {
   const [isFooterVisible, setIsFooterVisible] = useState(true);
   const [menuVisible, setMenuVisible] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  
+
   const menuAnimation = useRef(new Animated.Value(0)).current;
   const overlayOpacity = useRef(new Animated.Value(0)).current;
-  
+
   const dispatch = useDispatch();
   const userToken = useSelector((state) => state.auth.token);
 
@@ -75,18 +75,18 @@ export const FooterProvider = ({ children }) => {
     try {
       // فقط مودال تأیید را می‌بندیم
       setShowLogoutConfirm(false);
-      
+
       dispatch(setToken(null));
       dispatch(emptyUser());
       await logoutTechnician();
-      
+
       // منو به صورت خودکار با navigation.reset بسته می‌شود
       NavigationService.reset({
         index: 0,
         routes: [{ name: 'Welcome' }],
       });
     } catch (error) {
-      console.error('Error during logout:', error);
+      console.log('Error during logout:', error);
     }
   };
 
@@ -173,7 +173,7 @@ export const FooterProvider = ({ children }) => {
       style={styles.item}
       onPress={() => handleMenuItemPress(item.screen)}
     >
-      <Text style={[NewStyles.text10,styles.title]}>
+      <Text style={[NewStyles.text10, styles.title]}>
         {item.title}
       </Text>
     </TouchableOpacity>
@@ -181,8 +181,11 @@ export const FooterProvider = ({ children }) => {
 
   // Footer Component
   const FooterComponent = () => {
+
+    const contact = useSelector((state) => state.contacts?.data?.data);
+
     return (
-      <SafeAreaView edges={{top:'off', bottom:'additive'}} style={styles.footer}>
+      <SafeAreaView edges={{ top: 'off', bottom:userToken ? 'additive' : 'off' }} style={styles.footer}>
         {/* Animated Overlay */}
         {menuVisible && (
           <Animated.View
@@ -239,7 +242,7 @@ export const FooterProvider = ({ children }) => {
                       size={16}
                       color={themeColor4.bgColor(1)}
                     />
-                    <Text style={[NewStyles.text4,styles.exitButtonText]}>خروج</Text>
+                    <Text style={[NewStyles.text4, styles.exitButtonText]}>خروج</Text>
                   </TouchableOpacity>
                 </View>
               )}
@@ -257,14 +260,14 @@ export const FooterProvider = ({ children }) => {
         />
 
         {/* Footer Bar */}
-        <View style={styles.footerBar}>
-          <TouchableOpacity onPress={menuVisible ? closeMenu : openMenu}>
+        {userToken && <View style={styles.footerBar}>
+          <TouchableOpacity style={[{backgroundColor: themeColor4.bgColor(1), }, NewStyles.border100]} onPress={menuVisible ? closeMenu : openMenu}>
             <Image
               source={require('../assets/logo.png')}
               style={styles.footerLogo}
             />
           </TouchableOpacity>
-          
+
           {userToken && (
             <TouchableOpacity
               style={styles.supportButton}
@@ -275,18 +278,11 @@ export const FooterProvider = ({ children }) => {
           )}
 
           <TouchableOpacity onPress={() => {
-            const phoneNumber = '02122656819';
-            if (Platform.OS === 'android') {
-              Linking.openURL(`tel:${phoneNumber}`);
-            } else if (Platform.OS === 'ios') {
-              Linking.openURL(`telprompt:${phoneNumber}`);
-            } else {
-              Linking.openURL(`tel:${phoneNumber}`);
-            }
+            Linking.openURL(`${contact?.link}`);
           }}>
-            <Text style={[NewStyles.text4,styles.phone]}>۰۲۱۲۲۶۵۶۸۱۹</Text>
+            <Text style={[NewStyles.text4, styles.phone]}>{contact?.name}</Text>
           </TouchableOpacity>
-        </View>
+        </View>}
       </SafeAreaView>
     );
   };
@@ -377,7 +373,7 @@ const styles = StyleSheet.create({
     paddingBottom: 15,
     marginTop: 10,
     gap: 10,
-    justifyContent:"center"
+    justifyContent: "center"
   },
   exitButton: {
     ...NewStyles.row,
@@ -403,11 +399,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 5,
+    paddingVertical: 10,
   },
   footerLogo: {
     width: 60,
-    height: 60,
+    height: 40,
     resizeMode: 'contain',
   },
   supportButton: {

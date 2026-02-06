@@ -21,31 +21,29 @@ export default function ThinkingScreen({ navigation }) {
   ];
 
   return (
-    <LinearGradient 
-      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
+    <LinearGradient
+      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.background}
     >
-      <ScreenHeaders 
-        title={'فکر و بکر'} 
-        onPressLeft={() => navigation.goBack()} 
-        onPressRight={() => navigation.navigate} 
+      <ScreenHeaders
+        title={'فکر و بکر'}
       />
-      
+
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.contentContainer}>
-          
+
           {/* پیام اصلی */}
           <View style={styles.messageContainer}>
             <Text style={[NewStyles.text4, styles.welcomeText]}>
-            دوست لوپ سلام
+              دوست لوپ سلام
             </Text>
             <Text style={[NewStyles.text10, styles.descriptionText]}>
-فکر و بکر برای اشنایی و یادگیری با شاخه های کامپیوتر به صورت سرگرمی و بازی می باشد.
+              فکر و بکر برای اشنایی و یادگیری با شاخه های کامپیوتر به صورت سرگرمی و بازی می باشد.
             </Text>
             <Text style={[NewStyles.text10, styles.descriptionText]}>
-        گروه سنی : 5 سال تا 1 سال
+              گروه سنی : 5 سال تا 1 سال
             </Text>
 
           </View>
@@ -53,7 +51,7 @@ export default function ThinkingScreen({ navigation }) {
           {/* دکمه‌های خدمات */}
           <View style={styles.servicesContainer}>
             {services.map((service) => (
-              <TouchableOpacity 
+              <TouchableOpacity
                 key={service.id}
                 style={[
                   styles.serviceButton,
@@ -70,15 +68,15 @@ export default function ThinkingScreen({ navigation }) {
 
         </View>
       </ScrollView>
-      
+
 
     </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  background: { 
-    flex: 1 
+  background: {
+    flex: 1
   },
   container: {
     padding: 20,

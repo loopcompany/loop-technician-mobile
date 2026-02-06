@@ -83,7 +83,7 @@ export default function SignInScreen({ navigation }) {
         showAlert("خطا", result.message || "مشکلی در ارسال کد پیش آمد");
       }
     } catch (error) {
-      console.error('❌ خطا در ارسال درخواست:', error);
+      console.log('❌ خطا در ارسال درخواست:', error);
       showAlert("خطا", "مشکلی در ارتباط با سرور پیش آمد");
     } finally {
       setLoading(false);

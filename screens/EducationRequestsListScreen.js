@@ -27,14 +27,14 @@ export default function EducationRequestsListScreen({ navigation }) {
     try {
       setLoading(true);
       const result = await getEducationRequests();
-      
+
       if (result.success) {
         setRequests(result.data || []);
       } else {
-        console.error('خطا در دریافت درخواست‌ها:', result.message);
+        console.log('خطا در دریافت درخواست‌ها:', result.message);
       }
     } catch (error) {
-      console.error('خطا در بارگذاری درخواست‌ها:', error);
+      console.log('خطا در بارگذاری درخواست‌ها:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -85,7 +85,7 @@ export default function EducationRequestsListScreen({ navigation }) {
             {item.section}
           </Text>
         </View>
-        
+
         <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
           <Ionicons name={getStatusIcon(item.status)} size={16} color="#fff" />
           <Text style={styles.statusText}>{item.status_label}</Text>
@@ -116,7 +116,6 @@ export default function EducationRequestsListScreen({ navigation }) {
       >
         <ScreenHeaders
           title={'درخواست‌های من'}
-          onPressLeft={() => navigation.goBack()}
         />
         <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={styles.container}>
           <View style={styles.centerContainer}>
@@ -137,9 +136,8 @@ export default function EducationRequestsListScreen({ navigation }) {
     >
       <ScreenHeaders
         title={'درخواست‌های من'}
-        onPressLeft={() => navigation.goBack()}
       />
-      
+
       <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={styles.container}>
         {requests.length === 0 ? (
           <View style={styles.emptyContainer}>

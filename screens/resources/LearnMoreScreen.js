@@ -36,7 +36,7 @@ export default function LearnMoreScreen() {
         showToastOrAlert('خطا در بارگذاری حریم خصوصی');
       }
     } catch (error) {
-      console.error('Error loading faqs:', error);
+      console.log('Error loading faqs:', error);
       showToastOrAlert('خطا در بارگذاری حریم خصوصی');
     } finally {
       setIsLoading(false);

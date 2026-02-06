@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
+  Platform,
 } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,7 +14,7 @@ import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor2, themeColor3, themeColor6, themeColor7, themeColor8 } from '../theme/Color';
 import { getEducationRequestById } from '../services/Api';
-import { formatDateTime , showAlert} from '../helpers/Common';
+import { formatDateTime, showAlert } from '../helpers/Common';
 
 export default function EducationRequestDetailScreen({ navigation, route }) {
   const { requestId } = route.params;
@@ -28,17 +29,25 @@ export default function EducationRequestDetailScreen({ navigation, route }) {
     try {
       setLoading(true);
       const result = await getEducationRequestById(requestId);
-      
+
       if (result.success) {
         setRequest(result.data);
       } else {
         showAlert('خطا', result.message || 'خطا در بارگذاری جزئیات درخواست');
-        navigation.goBack();
+        if (Platform.OS == 'web') {
+          window.history.back()
+        } else {
+          navigation.goBack()
+        }
       }
     } catch (error) {
-      console.error('خطا در بارگذاری جزئیات:', error);
+      console.log('خطا در بارگذاری جزئیات:', error);
       showAlert('خطا', 'خطا در بارگذاری جزئیات درخواست');
-      navigation.goBack();
+      if (Platform.OS == 'web') {
+        window.history.back()
+      } else {
+        navigation.goBack()
+      }
     } finally {
       setLoading(false);
     }
@@ -72,7 +81,6 @@ export default function EducationRequestDetailScreen({ navigation, route }) {
       >
         <ScreenHeaders
           title={'جزئیات درخواست'}
-          onPressLeft={() => navigation.goBack()}
         />
         <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={styles.container}>
           <View style={styles.centerContainer}>
@@ -97,9 +105,8 @@ export default function EducationRequestDetailScreen({ navigation, route }) {
     >
       <ScreenHeaders
         title={'جزئیات درخواست'}
-        onPressLeft={() => navigation.goBack()}
       />
-      
+
       <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={styles.container}>
         <ScrollView
           style={styles.scrollView}

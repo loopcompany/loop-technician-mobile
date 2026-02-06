@@ -69,7 +69,7 @@ export default function GameResultScreen({ route, navigation }) {
   };
 
   const handleBackToMenu = () => {
-    navigation.navigate('FolderScreen');
+    navigation.replace('FolderScreen');
   };
 
   return (

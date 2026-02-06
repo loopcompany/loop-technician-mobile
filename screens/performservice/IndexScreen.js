@@ -18,7 +18,7 @@ import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor3, themeColor4, themeColor7, themeColor10, themeColor8, themeColor2 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
-import { formatPrice , showAlert} from '../../helpers/Common';
+import { faDigitsToEn, formatPrice, getCurrentJalaliYear, showAlert } from '../../helpers/Common';
 import { getYearlyIncomeChart } from '../../services/Api';
 
 const { width } = Dimensions.get('window');
@@ -29,7 +29,7 @@ export default function IndexScreen({ navigation }) {
   const [selectedYear, setSelectedYear] = useState(null); // شروع با null
   const [chartData, setChartData] = useState([]);
   const [yearlyData, setYearlyData] = useState({
-    year: 1403,
+    year: 1404,
     yearly_summary: {
       total_income: 0,
       total_settlements: 0,
@@ -42,9 +42,12 @@ export default function IndexScreen({ navigation }) {
   const fetchChartData = async (year) => {
     try {
       // اطمینان از اینکه year یک عدد معتبر است
-      const validYear = isNaN(year) || !year ? 1403 : parseInt(year);
-      console.log('📅 Fetching chart data for year:', validYear);
-      
+      const currentJalali = getCurrentJalaliYear();
+      const validYear = isNaN(year) || !year ? currentJalali : parseInt(year);
+      console.log('====================================');
+      console.log('currentJalali:', currentJalali);
+      console.log('year:', year);
+      console.log('====================================');
       const response = await getYearlyIncomeChart(validYear);
 
       if (response.success && response.data) {
@@ -76,13 +79,13 @@ export default function IndexScreen({ navigation }) {
         });
         setSelectedYear(Number(responseYear));
       } else {
-        
+
         // استفاده از داده‌های موقت برای تست UI
         useMockData();
       }
     } catch (error) {
       useMockData();
-      
+
       showAlert(
         'اطلاعیه',
         'در حال حاضر اطلاعات واقعی در دسترس نیست. داده‌های نمونه نمایش داده می‌شود.',
@@ -126,7 +129,7 @@ export default function IndexScreen({ navigation }) {
 
     setChartData(formattedData);
     setYearlyData({
-      year: 1403,
+      year: 1404,
       yearly_summary: {
         total_income: 92000000,
         total_settlements: 24000000,
@@ -134,20 +137,16 @@ export default function IndexScreen({ navigation }) {
       },
       current_wallet: 5000000,
     });
-    setSelectedYear(1403);
+    setSelectedYear(1404);
   };
 
   useFocusEffect(
     useCallback(() => {
       // بار اول سال جاری رو بفرست
-      const currentYear = new Date().toLocaleDateString('fa-IR', { year: 'numeric' });
-      // از regex برای استخراج عدد سال استفاده می‌کنیم
-      const yearMatch = currentYear.match(/\d+/);
-      const jalaliYear = yearMatch ? parseInt(yearMatch[0]) : 1403;
-      
-      console.log('🗓️ Current Year:', currentYear);
+      const jalaliYear = getCurrentJalaliYear();
+
       console.log('🗓️ Jalali Year:', jalaliYear);
-      
+
       setSelectedYear(jalaliYear);
       fetchChartData(jalaliYear);
     }, [])
@@ -158,14 +157,14 @@ export default function IndexScreen({ navigation }) {
     // اگر selectedYear داریم ازش استفاده کن، وگرنه سال جاری
     const yearToFetch = selectedYear || yearlyData.year;
     // اطمینان از معتبر بودن سال
-    const validYear = isNaN(yearToFetch) || !yearToFetch ? 1403 : parseInt(yearToFetch);
+    const validYear = isNaN(yearToFetch) || !yearToFetch ? 1404 : parseInt(yearToFetch);
     console.log('🔄 Refreshing with year:', validYear);
     fetchChartData(validYear);
   };
 
   const handleYearChange = (direction) => {
-    const currentYear = selectedYear || yearlyData.year || 1403;
-    const validCurrentYear = isNaN(currentYear) ? 1403 : parseInt(currentYear);
+    const currentYear = selectedYear || yearlyData.year || 1404;
+    const validCurrentYear = isNaN(currentYear) ? 1404 : parseInt(currentYear);
     const newYear = direction === 'next' ? validCurrentYear + 1 : validCurrentYear - 1;
     console.log('📆 Year changed:', validCurrentYear, '->', newYear);
     setSelectedYear(newYear);
@@ -176,7 +175,7 @@ export default function IndexScreen({ navigation }) {
   // نمایش جزئیات هر ماه با کلیک روی ستون
   const handleBarPress = (item) => {
     if (!item) return;
-    
+
     showAlert(
       `📊 ${item.monthName || 'ماه'}`,
       `کل درآمد: ${formatPrice(item.totalIncome || 0)} تومان\n` +
@@ -188,16 +187,15 @@ export default function IndexScreen({ navigation }) {
 
   if (loading) {
     return (
-      <LinearGradient 
-        colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
+      <LinearGradient
+        colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.background}
       >
         <CustomStatusBar />
-        <ScreenHeaders 
-          title={'شاخص'} 
-          onPressLeft={() => navigation.goBack()} 
+        <ScreenHeaders
+          title={'شاخص'}
         />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
@@ -207,25 +205,24 @@ export default function IndexScreen({ navigation }) {
   }
 
   return (
-    <LinearGradient 
-      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
+    <LinearGradient
+      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.background}
     >
       <CustomStatusBar />
-      <ScreenHeaders 
-        title={'شاخص'} 
-        onPressLeft={() => navigation.goBack()} 
+      <ScreenHeaders
+        title={'شاخص'}
       />
-      
-      <ScrollView 
+
+      <ScrollView
         contentContainerStyle={styles.container}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        
+
         {/* هدر گزارش عملکرد */}
         <View style={[styles.headerCard, { backgroundColor: themeColor0.bgColor(0.9) }]}>
           <Ionicons name="bar-chart" size={28} color="#fff" />
@@ -234,13 +231,13 @@ export default function IndexScreen({ navigation }) {
 
         {/* انتخاب سال */}
         <View style={styles.yearSelector}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.yearButton}
             onPress={() => handleYearChange('next')}
           >
             <Ionicons name="chevron-forward" size={20} color={themeColor0.bgColor(1)} />
           </TouchableOpacity>
-          
+
           <View style={styles.yearDisplay}>
             <Ionicons name="calendar" size={20} color={themeColor0.bgColor(1)} />
             <Text style={[NewStyles.title, styles.yearText]}>
@@ -248,7 +245,7 @@ export default function IndexScreen({ navigation }) {
             </Text>
           </View>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.yearButton}
             onPress={() => handleYearChange('prev')}
           >
@@ -297,7 +294,7 @@ export default function IndexScreen({ navigation }) {
               </Text>
             </View>
           </View>
-          
+
           {chartData.length > 0 ? (
             <View style={styles.chartWrapper}>
               <BarChart

@@ -4,10 +4,10 @@ import NewStyles from "../styles/NewStyles";
 import { themeColor4 } from "../theme/Color";
 import { useNavigation } from "@react-navigation/native";
 
-const ScreenHeaders = ({ 
-  title, 
+const ScreenHeaders = ({
+  title,
   // Old API (deprecated but still supported for backward compatibility)
-  onPressLeft,    
+  onPressLeft,
   onPressRight,
   // New API (recommended - more clear naming)
   onBackPress
@@ -15,31 +15,37 @@ const ScreenHeaders = ({
   const { width } = Dimensions.get('window');
   const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight : 0;
   const navigation = useNavigation();
-  
+
   // Priority: new API > old API > default navigation.goBack()
-  const handleBack = onBackPress || onPressLeft || (() => {navigation.goBack()});
-  
+  const handleBack = onBackPress || onPressLeft || (() => {
+    if (Platform.OS == 'web') {
+      window.history.back()
+    } else {
+      navigation.goBack()
+    }
+  });
+
   return (
-    <View style={[styles.header, NewStyles.rowWrapper, { 
+    <View style={[styles.header, NewStyles.rowWrapper, {
       width: width,
       paddingTop: statusBarHeight,
       height: 50 + statusBarHeight
     }]}>
       {/* Right side: Empty space for symmetry */}
       <View style={styles.iconContainer} />
-      
+
       {/* Center: Title */}
       <View style={styles.titleContainer}>
         <Text style={[NewStyles.title]} numberOfLines={1} adjustsFontSizeToFit>{title}</Text>
       </View>
-      
+
       {/* Left side: Back button (RTL) */}
-      <TouchableOpacity 
-        onPress={handleBack} 
+      <TouchableOpacity
+        onPress={handleBack}
         style={[styles.iconContainer, { flexDirection: 'row', alignItems: 'center' }]}
       >
         <Image source={require("../assets/back.png")} style={styles.arrow} />
-        <Text style={[NewStyles.title10,styles.titleText]}>قبلی</Text>
+        <Text style={[NewStyles.title10, styles.titleText]}>قبلی</Text>
       </TouchableOpacity>
     </View>
   );

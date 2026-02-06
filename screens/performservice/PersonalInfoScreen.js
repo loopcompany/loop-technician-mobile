@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  RefreshControl,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -26,16 +27,16 @@ import { getFormatedDate } from 'react-native-modern-datepicker';
 import { updatePersonalInfo } from '../../services/Api';
 import { showAlert } from '../../helpers/Common';
 import { useSelector, useDispatch } from 'react-redux';
-import { setUserData } from '../../slices/userSlice';
+import { fetchUser, setUserData } from '../../slices/userSlice';
 import { uri as BASE_URL } from '../../services/URL';
 import Button from '../../components/Button';
 
 export default function PersonalInfoScreen({ navigation }) {
   const dispatch = useDispatch();
   const userToken = useSelector(state => state.auth.token);
-  const userData = useSelector(state => state.user.data);
-  const [isLoadingData, setIsLoadingData] = useState(false);
-
+  const user = useSelector(state => state.user);
+  const userData = useSelector(state => state.user.data?.data?.technician); 
+  const [isLoadingData, setIsLoadingData] = useState(false); 
   const [saving, setSaving] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [profilePhotoUrl, setProfilePhotoUrl] = useState(null);
@@ -50,6 +51,7 @@ export default function PersonalInfoScreen({ navigation }) {
   const [selectedCertificateIssueDate, setSelectedCertificateIssueDate] = useState('');
 
   const [personalData, setPersonalData] = useState({
+    name: '',
     birth_date: '',
     telephone: '',
     email: '',
@@ -67,7 +69,6 @@ export default function PersonalInfoScreen({ navigation }) {
     home_address: '',
     home_postal_code: '',
     technician_type: '',
-    id_card_number: '',
     referral_code: '',
     other_referral_code: ''
   });
@@ -75,73 +76,42 @@ export default function PersonalInfoScreen({ navigation }) {
   // Load user data from AsyncStorage if not in Redux
   useEffect(() => {
     const loadUserData = async () => {
-      console.log('🔄 PersonalInfoScreen: useEffect اجرا شد');
 
-      // If no data in Redux, try to load from AsyncStorage
-      if (!userData) {
-        console.log('⚠️ PersonalInfoScreen: userData در Redux خالی است، از AsyncStorage می‌خوانیم...');
-        setIsLoadingData(true);
-        try {
-          const storedData = await AsyncStorage.getItem('userData');
-          if (storedData) {
-            const parsedData = JSON.parse(storedData);
-            console.log('✅ PersonalInfoScreen: داده از AsyncStorage خوانده شد:', parsedData.technician?.name);
-            dispatch(setUserData(parsedData));
-          } else {
-            console.log('❌ PersonalInfoScreen: هیچ داده‌ای در AsyncStorage نیست');
-          }
-        } catch (error) {
-          console.error('❌ PersonalInfoScreen: خطا در خواندن از AsyncStorage:', error);
-        } finally {
-          setIsLoadingData(false);
-        }
-        return;
-      }
+      
 
-      // API returns data in format: { technician: {...}, token_info: {...} }
-      const technicianData = userData.technician || userData;
-
-      // Update form with user data (use 'phone' as fallback for 'telephone')
       setPersonalData({
-        birth_date: technicianData.birth_date || '',
-        telephone: technicianData.telephone || technicianData.phone || '',
-        email: technicianData.email || '',
-        melicode: technicianData.melicode || '',
-        father_name: technicianData.father_name || '',
-        issued_from: technicianData.issued_from || '',
-        serial_number: technicianData.serial_number || '',
-        marital_status: technicianData.marital_status || '',
-        education_status: technicianData.education_status || '',
-        city: technicianData.city || '',
-        region: technicianData.region || '',
-        certificate_number: technicianData.certificate_number || '',
-        licence_date: technicianData.licence_date || '',
-        certificate_issue_date: technicianData.certificate_issue_date || '',
-        home_address: technicianData.home_address || '',
-        home_postal_code: technicianData.home_postal_code || '',
-        technician_type: technicianData.technician_type || '',
-        id_card_number: technicianData.id_card_number || '',
-        referral_code: technicianData.referral_code || '',
-        other_referral_code: technicianData.other_referral_code || ''
+        name: userData.name && userData.family
+          ? `${userData.name} ${userData.family}`
+          : userData.name || '',
+        birth_date: userData.birth_date || '',
+        telephone: userData.telephone || userData.phone || '',
+        email: userData.email || '',
+        melicode: userData.melicode || '',
+        father_name: userData.father_name || '',
+        issued_from: userData.issued_from || '',
+        serial_number: userData.serial_number || '',
+        marital_status: userData.marital_status || '',
+        education_status: userData.education_status || '',
+        city: userData.city || '',
+        region: userData.region || '',
+        certificate_number: userData.certificate_number || '',
+        licence_date: userData.licence_date || '',
+        certificate_issue_date: userData.certificate_issue_date || '',
+        home_address: userData.home_address || '',
+        home_postal_code: userData.home_postal_code || '',
+        technician_type: userData.technician_type || '',
+        referral_code: userData.referral_code || '',
+        other_referral_code: userData.other_referral_code || ''
       });
 
-      console.log('✅ فرم با این اطلاعات پر شد:', {
-        melicode: technicianData.melicode,
-        father_name: technicianData.father_name,
-        marital_status: technicianData.marital_status,
-        city: technicianData.city,
-        region: technicianData.region,
-        referral_code: technicianData.referral_code,
-        email: technicianData.email
-      });
 
       // Set profile photo URL if available (only if no new photo is selected)
       if (!selectedPhotoUrl) {
-        if (technicianData.profile_photo_path) {
+        if (userData.profile_photo_path) {
           // User has uploaded photo
-          const photoUrl = technicianData.profile_photo_path.startsWith('http')
-            ? technicianData.profile_photo_path
-            : `${BASE_URL}${technicianData.profile_photo_path}`;
+          const photoUrl = userData.profile_photo_path.startsWith('http')
+            ? userData.profile_photo_path
+            : `${BASE_URL}${userData.profile_photo_path}`;
           setProfilePhotoUrl(photoUrl);
         } else {
           // No photo - will show default icon
@@ -190,32 +160,32 @@ export default function PersonalInfoScreen({ navigation }) {
         input.type = 'file';
         input.accept = 'image/*';
         input.style.display = 'none';
-        
+
         input.onchange = (e) => {
           const file = e.target.files[0];
-          
+
           if (!file) {
             resolve({ canceled: true });
             return;
           }
-          
+
           // Validate file type
           if (!file.type.startsWith('image/')) {
             showAlert('خطا', 'لطفاً فقط فایل تصویری انتخاب کنید');
             resolve({ canceled: true });
             return;
           }
-          
+
           // Validate file size (max 5MB)
           if (file.size > 5 * 1024 * 1024) {
             showAlert('خطا', 'حجم تصویر نباید بیشتر از 5 مگابایت باشد');
             resolve({ canceled: true });
             return;
           }
-          
+
           // Read file as base64 for preview and upload
           const reader = new FileReader();
-          
+
           reader.onload = (event) => {
             resolve({
               canceled: false,
@@ -226,26 +196,26 @@ export default function PersonalInfoScreen({ navigation }) {
               file: file, // Keep original file object for upload
             });
           };
-          
+
           reader.onerror = (error) => {
             reject(new Error('خطا در خواندن فایل تصویر'));
           };
-          
+
           reader.readAsDataURL(file);
-          
+
           // Cleanup
           document.body.removeChild(input);
         };
-        
+
         input.oncancel = () => {
           resolve({ canceled: true });
           document.body.removeChild(input);
         };
-        
+
         // Trigger file picker
         document.body.appendChild(input);
         input.click();
-        
+
       } catch (error) {
         reject(error);
       }
@@ -256,7 +226,7 @@ export default function PersonalInfoScreen({ navigation }) {
   const pickImage = async () => {
     try {
       let result;
-      
+
       // 🌐 Platform-specific image picker
       if (Platform.OS === 'web') {
         console.log('🌐 استفاده از انتخابگر تصویر Web');
@@ -311,7 +281,7 @@ export default function PersonalInfoScreen({ navigation }) {
 
       showAlert('موفق', 'عکس پروفایل انتخاب شد');
     } catch (error) {
-      console.error('❌ خطا در انتخاب عکس:', error);
+      console.log('❌ خطا در انتخاب عکس:', error);
       showAlert('خطا', 'مشکلی در انتخاب عکس پیش آمد');
     }
   };
@@ -378,13 +348,13 @@ export default function PersonalInfoScreen({ navigation }) {
           console.log('🔍 result.data:', JSON.stringify(result.data, null, 2));
 
           // Preserve the original structure (technician and token_info)
-          const technicianData = userData.technician || userData;
+          
           // Merge backend response with local changes
-          const backendTechnicianData = result.data.technician || {};
-          const updatedTechnicianData = { 
-            ...technicianData, 
+          const backenduserData = result.data.technician || {};
+          const updateduserData = {
+            ...userData,
             ...personalData,
-            ...backendTechnicianData 
+            ...backenduserData
           };
 
           // Check if server returned photo (profile_photo_path or profile_photo_url)
@@ -393,7 +363,7 @@ export default function PersonalInfoScreen({ navigation }) {
 
           if (photoPath && photoPath !== null) {
             console.log('✅ سرور profile_photo_path را برگرداند:', photoPath);
-            updatedTechnicianData.profile_photo_path = photoPath;
+            updateduserData.profile_photo_path = photoPath;
 
             // Check if it's a full URL or relative path
             const fullPhotoUrl = photoPath.startsWith('http')
@@ -404,7 +374,7 @@ export default function PersonalInfoScreen({ navigation }) {
             setSelectedPhotoUrl(null);
           } else if (photoUrl && photoUrl !== null) {
             console.log('✅ سرور profile_photo_url را برگرداند:', photoUrl);
-            updatedTechnicianData.profile_photo_path = photoUrl;
+            updateduserData.profile_photo_path = photoUrl;
 
             const fullPhotoUrl = photoUrl.startsWith('http')
               ? photoUrl
@@ -412,23 +382,25 @@ export default function PersonalInfoScreen({ navigation }) {
 
             setProfilePhotoUrl(fullPhotoUrl);
             setSelectedPhotoUrl(null);
-          } else {
+          } else if (profilePhoto) {
+            // Only show alert if user actually selected a photo but it wasn't uploaded
             console.log('❌ Backend هیچ URL عکسی برنگرداند!');
             console.log('⚠️ عکس محلی نگه داشته می‌شود');
-            // Keep the selected photo URL - don't clear it
-            // Don't update Redux to keep showing local photo
             showAlert(
               'هشدار',
-              'اطلاعات ذخیره شد ولی عکس آپلود نشد.\n\nلطفاً با تیم Backend تماس بگیرید:\n- Backend باید profile_photo_path یا profile_photo_url را با مقدار واقعی در response برگرداند',
+              'اطلاعات ذخیره شد ولی عکس آپلود نشد.\n\nلطفاً با تیم Backend تماس بگیرید',
               [{ text: 'متوجه شدم' }]
             );
             return; // Don't update Redux
+          } else {
+            console.log('ℹ️ هیچ عکسی برای آپلود انتخاب نشده بود');
+            // No photo was selected - this is normal, continue with Redux update
           }
 
           // Keep the same structure as received from API
           const updatedUserData = {
             ...userData,
-            technician: updatedTechnicianData
+            technician: updateduserData
           };
 
           // Update Redux
@@ -445,7 +417,7 @@ export default function PersonalInfoScreen({ navigation }) {
         showAlert('خطا', result.message || 'مشکلی در به‌روزرسانی پیش آمد');
       }
     } catch (error) {
-      console.error('خطا در ذخیره:', error);
+      console.log('خطا در ذخیره:', error);
       showAlert('خطا', 'مشکلی در ارتباط با سرور پیش آمد');
     } finally {
       setSaving(false);
@@ -464,10 +436,11 @@ export default function PersonalInfoScreen({ navigation }) {
           <CustomStatusBar />
           <ScreenHeaders
             title={'حساب کاربری / حریم خصوصی'}
-            onPressLeft={() => navigation.goBack()}
           />
 
-          <ScrollView contentContainerStyle={styles.container}>
+          <ScrollView contentContainerStyle={styles.container} refreshControl={<RefreshControl refreshing={user?.loading} onRefresh={()=>{
+            dispatch(fetchUser(userToken))
+          }} />}>
 
             {/* big blue header similar to screenshot */}
             <View style={styles.bigHeader}>
@@ -502,6 +475,17 @@ export default function PersonalInfoScreen({ navigation }) {
 
             {/* form fields as boxed rows */}
             <View style={styles.formContainer}>
+              <View style={styles.boxedRow}>
+                <Text style={styles.fieldKey}>نام و نام خانوادگی</Text>
+                <TextInput
+                  style={[styles.boxedInput, styles.disabledInput]}
+                  value={personalData.name}
+                  placeholder="نام و نام خانوادگی (غیرقابل ویرایش)"
+                  placeholderTextColor={themeColor3.bgColor(1)}
+                  editable={false}
+                />
+              </View>
+
               <TouchableOpacity
                 style={styles.boxedRow}
                 onPress={() => !saving && setShowBirthDatePicker(true)}
@@ -521,31 +505,29 @@ export default function PersonalInfoScreen({ navigation }) {
               <View style={styles.boxedRow}>
                 <Text style={styles.fieldKey}>کد ملی</Text>
                 <TextInput
-                  style={styles.boxedInput}
+                  style={[styles.boxedInput, styles.disabledInput]}
                   value={personalData.melicode}
-                  onChangeText={(value) => updateField('melicode', value)}
-                  placeholder="کد ملی : 10 رقم"
+                  placeholder="کد ملی : 10 رقم (غیرقابل ویرایش)"
                   placeholderTextColor={themeColor3.bgColor(1)}
                   keyboardType="number-pad"
                   maxLength={10}
-                  editable={!saving}
+                  editable={false}
                 />
               </View>
 
               <View style={styles.boxedRow}>
                 <Text style={styles.fieldKey}>نام پدر</Text>
                 <TextInput
-                  style={styles.boxedInput}
+                  style={[styles.boxedInput, styles.disabledInput]}
                   value={personalData.father_name}
-                  onChangeText={(value) => updateField('father_name', value)}
-                  placeholder="نام پدر"
+                  placeholder="نام پدر (غیرقابل ویرایش)"
                   placeholderTextColor={themeColor3.bgColor(1)}
-                  editable={!saving}
+                  editable={false}
                 />
               </View>
 
               <View style={styles.boxedRow}>
-                <Text style={styles.fieldKey}>صادره</Text>
+                <Text style={styles.fieldKey}>صادره از</Text>
                 <TextInput
                   style={styles.boxedInput}
                   value={personalData.issued_from}
@@ -695,12 +677,13 @@ export default function PersonalInfoScreen({ navigation }) {
               <View style={styles.boxedRow}>
                 <Text style={styles.fieldKey}>آدرس منزل</Text>
                 <TextInput
-                  style={[styles.boxedInput, { minHeight: 60 }]}
+                  style={[styles.boxedInput, { minHeight: 60 , height:'auto'}]}
                   value={personalData.home_address}
                   onChangeText={(value) => updateField('home_address', value)}
                   placeholder="آدرس منزل :"
                   placeholderTextColor={themeColor3.bgColor(1)}
                   multiline
+                  maxLength={191}
                   editable={!saving}
                 />
               </View>
@@ -728,6 +711,7 @@ export default function PersonalInfoScreen({ navigation }) {
                   placeholder="نوع پرسنلی"
                   placeholderTextColor={themeColor3.bgColor(1)}
                   editable={!saving}
+
                 />
               </View>
 
@@ -735,19 +719,8 @@ export default function PersonalInfoScreen({ navigation }) {
                 <Text style={styles.fieldKey}>کد پرسنلی</Text>
                 <TextInput
                   style={[styles.boxedInput, styles.disabledInput]}
-                  value={personalData.id_card_number}
-                  placeholder="کد پرسنلی (غیرقابل ویرایش)"
-                  placeholderTextColor={themeColor3.bgColor(1)}
-                  editable={false}
-                />
-              </View>
-
-              <View style={styles.boxedRow}>
-                <Text style={styles.fieldKey}>کد معرف</Text>
-                <TextInput
-                  style={[styles.boxedInput, styles.disabledInput]}
                   value={personalData.referral_code}
-                  placeholder="کد معرف (غیرقابل ویرایش)"
+                  placeholder="کد پرسنلی (غیرقابل ویرایش)"
                   placeholderTextColor={themeColor3.bgColor(1)}
                   editable={false}
                 />
@@ -755,7 +728,7 @@ export default function PersonalInfoScreen({ navigation }) {
 
               {personalData.other_referral_code && (
                 <View style={styles.boxedRow}>
-                  <Text style={styles.fieldKey}>کد معرف دیگران</Text>
+                  <Text style={styles.fieldKey}>کد پرسنلی معرف</Text>
                   <TextInput
                     style={[styles.boxedInput, styles.disabledInput]}
                     value={personalData.other_referral_code}
@@ -767,9 +740,9 @@ export default function PersonalInfoScreen({ navigation }) {
               )}
 
               {/* Save Button */}
-              
+
               <Button title={'ذخیره تغییرات'} onPress={handleSave}
-                loading={saving}/>
+                loading={saving} />
             </View>
 
           </ScrollView>
@@ -898,12 +871,15 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     paddingHorizontal: 10,
     paddingVertical: 6,
+    ...NewStyles.border10
   },
   boxedInput: {
     ...NewStyles.text,
-    fontSize: 16,
     color: themeColor10.bgColor(1),
     textAlign: 'right',
+    fontSize:14,
+    height:40,
+    justifyContent:'center'
   },
   disabledInput: {
     backgroundColor: themeColor4.bgColor(1),
@@ -943,13 +919,10 @@ const styles = StyleSheet.create({
     color: themeColor3.bgColor(1),
   },
   fieldKey: {
-    position: 'absolute',
-    left: 12,
-    top: 8,
+    ...NewStyles.text3,
     fontSize: 12,
     color: themeColor3.bgColor(1),
-    opacity: 0.9,
-    zIndex: 5,
+    flex:1,
   },
 });
 

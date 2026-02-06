@@ -17,20 +17,19 @@ export default function IncentiveSchemeScreen({ navigation }) {
   const [selectedScheme, setSelectedScheme] = useState(null);
 
   return (
-    <LinearGradient 
-      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
+    <LinearGradient
+      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.background}
     >
       <CustomStatusBar />
-      <ScreenHeaders 
-        title={'طرح‌های تشویقی'} 
-        onPressLeft={() => navigation.goBack()} 
+      <ScreenHeaders
+        title={'طرح‌های تشویقی'}
       />
-      
+
       <ScrollView contentContainerStyle={styles.container}>
-        
+
         {/* دکمه جوایز */}
         <TouchableOpacity style={styles.prizeButton}>
           <Text style={styles.prizeButtonText}>جعبه جوایز</Text>
@@ -40,15 +39,15 @@ export default function IncentiveSchemeScreen({ navigation }) {
         <View style={styles.schemeBox}>
           <Text style={styles.schemeTitle}> تکنسین محترم</Text>
           <Text style={styles.schemeDescription}>
-عملکرد شما در 3 ماه گذشته بررسی گردید          </Text>
+            عملکرد شما در 3 ماه گذشته بررسی گردید          </Text>
           <Text style={styles.schemeDescription}>
-از طرف لوپ هزینه یکسال بیمه شخص ثالث به حساب شما در روز اینده واریز می شود.
+            از طرف لوپ هزینه یکسال بیمه شخص ثالث به حساب شما در روز اینده واریز می شود.
           </Text>
 
         </View>
 
       </ScrollView>
-      
+
 
     </LinearGradient>
   );

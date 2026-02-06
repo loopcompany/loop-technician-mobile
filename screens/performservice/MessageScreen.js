@@ -18,7 +18,7 @@ import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor3, themeColor4, themeColor7, themeColor10, themeColor8, themeColor2 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import { getTicketsList, sendTicketMessage } from '../../services/Api';
-import { formatDate, formatDateTime , showAlert} from '../../helpers/Common';
+import { formatDate, formatDateTime, showAlert } from '../../helpers/Common';
 
 export default function MessageScreen({ navigation }) {
   const [messageText, setMessageText] = useState('');
@@ -37,7 +37,7 @@ export default function MessageScreen({ navigation }) {
       if (response.success && response.data) {
         // ترتیب معکوس برای نمایش جدیدترین پیام‌ها در پایین
         setMessages(response.data.reverse());
-        
+
         // محاسبه تعداد پیام‌های خوانده نشده از ادمین
         const unreadAdminMessages = response.data.filter(
           msg => !msg.is_read && !msg.is_mine
@@ -45,7 +45,7 @@ export default function MessageScreen({ navigation }) {
         setUnreadCount(unreadAdminMessages);
       }
     } catch (error) {
-      console.error('خطا در دریافت پیام‌ها:', error);
+      console.log('خطا در دریافت پیام‌ها:', error);
       showAlert('خطا', 'خطا در دریافت پیام‌ها');
     } finally {
       setLoading(false);
@@ -94,7 +94,7 @@ export default function MessageScreen({ navigation }) {
   };
 
   // تابع فورمت تاریخ
- 
+
 
   return (
     <LinearGradient
@@ -106,7 +106,6 @@ export default function MessageScreen({ navigation }) {
       <CustomStatusBar />
       <ScreenHeaders
         title={'پیام'}
-        onPressLeft={() => navigation.goBack()}
       />
 
       {loading ? (

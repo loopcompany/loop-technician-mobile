@@ -41,7 +41,7 @@ export default function DebtRequestsListScreen({ navigation }) {
         showAlert('خطا', 'خطا در دریافت لیست درخواست‌ها');
       }
     } catch (error) {
-      console.error('خطا در دریافت لیست:', error);
+      console.log('خطا در دریافت لیست:', error);
       showAlert('خطا', 'مشکلی در دریافت لیست پیش آمد');
     } finally {
       setLoading(false);
@@ -86,7 +86,7 @@ export default function DebtRequestsListScreen({ navigation }) {
         setModalVisible(false);
       }
     } catch (error) {
-      console.error('خطا در دریافت جزئیات:', error);
+      console.log('خطا در دریافت جزئیات:', error);
       showAlert('خطا', error.message || 'مشکلی در دریافت جزئیات پیش آمد');
       setModalVisible(false);
     } finally {
@@ -161,17 +161,11 @@ export default function DebtRequestsListScreen({ navigation }) {
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <Ionicons name="wallet-outline" size={80} color={themeColor10.bgColor(0.3)} />
+      <Ionicons name="wallet-outline" size={80} color={themeColor4.bgColor(1)} />
       <Text style={[NewStyles.title, styles.emptyText]}>
         هیچ درخواست وامی ثبت نشده است
       </Text>
-      {/* <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => navigation.goBack()}
-      >
-        <Ionicons name="add-circle-outline" size={24} color="#fff" />
-        <Text style={[NewStyles.title4, { marginRight: 8 }]}>ثبت درخواست جدید</Text>
-      </TouchableOpacity> */}
+     
     </View>
   );
 
@@ -303,8 +297,7 @@ export default function DebtRequestsListScreen({ navigation }) {
       style={styles.background}
     >
       <ScreenHeaders
-        title="درخواست‌های تسهیلات/وام"
-        onPressLeft={() => navigation.goBack()}
+        title="درخواست‌های تسهیلات/وام" 
       />
 
       {loading ? (
@@ -441,7 +434,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 30,
     textAlign: 'center',
-    color: themeColor10.bgColor(0.6),
+    color: themeColor4.bgColor(1),
   },
   addButton: {
     ...NewStyles.row,

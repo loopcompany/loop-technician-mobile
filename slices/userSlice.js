@@ -4,7 +4,7 @@ import { uri } from '../services/URL';
 
 export const fetchUser = createAsyncThunk('user/fetchUser', async (token) => {
     return await axios
-        .get(`${uri}/fetchUser`, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` } })
+        .post(`${uri}/technician/validate-token`,{}, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` } })
         .then(response => response?.data)
         .catch(error => { console.log(error) })
 })

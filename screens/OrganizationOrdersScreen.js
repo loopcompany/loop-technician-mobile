@@ -46,7 +46,7 @@ export default function OrganizationOrdersScreen() {
                 showAlert('خطا', result.message || 'خطا در دریافت سفارشات');
             }
         } catch (error) {
-            console.error('❌ خطا در دریافت سفارشات:', error);
+            console.log('❌ خطا در دریافت سفارشات:', error);
             showAlert('خطا', 'مشکلی در ارتباط با سرور پیش آمد');
         } finally {
             setLoading(false);
@@ -198,7 +198,6 @@ export default function OrganizationOrdersScreen() {
       
             <ScreenHeaders
                 title={organizationName}
-                onPressLeft={() => navigation.goBack()}
             />
             <FlatList
                 data={orders}

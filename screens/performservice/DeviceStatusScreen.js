@@ -35,8 +35,6 @@ export default function DeviceStatusScreen({ navigation }) {
     >
       <ScreenHeaders 
         title={'وضعیت محصول'} 
-        onPressLeft={() => navigation.goBack()} 
-        onPressRight={() => navigation.navigate('CompletionInfoScreen')} 
       />
       <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.container}>

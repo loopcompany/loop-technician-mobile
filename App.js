@@ -10,8 +10,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import store from "./store";
 import { FooterProvider, useFooter } from "./contexts/FooterProvider";
 import { navigationRef } from "./services/NavigationService";
-import { setToken } from "./slices/authSlice";
-import { setUserData } from "./slices/userSlice";
+import { removeToken, setToken } from "./slices/authSlice";
+import { fetchUser, setUserData } from "./slices/userSlice";
 import { validateToken } from "./services/Api";
 import FolderScreen from "./screens/FolderScreen";
 import SignInLanding from "./screens/auth/SignInLanding";
@@ -75,6 +75,7 @@ import PrivacyScreen from './screens/performservice/PrivacyScreen';
 import TrainingRegistrationScreen from './screens/TrainingRegistrationScreen';
 import OrganizationsListScreen from './screens/OrganizationsListScreen';
 import OrganizationOrdersScreen from './screens/OrganizationOrdersScreen';
+import RateCategory from './screens/RateCategory';
 
 
 I18nManager.forceRTL(false);
@@ -84,7 +85,7 @@ const Stack = createNativeStackNavigator();
 // Linking configuration برای پشتیبانی از Deep Linking و Browser History
 const linking = {
   prefixes: ['https://tech-panel.khayyamtech.com', 'http://localhost:8082', 'http://localhost:8081'],
-  
+
   // Safe URL normalization to prevent route concatenation
   getStateFromPath: (path, options) => {
     // Handle root path explicitly
@@ -93,14 +94,14 @@ const linking = {
         routes: [{ name: 'Welcome' }]
       };
     }
-    
+
     // Remove trailing slashes to prevent duplication
     const normalizedPath = path.replace(/\/+$/, '');
-    
+
     // Use default getStateFromPath for all other paths
     return getStateFromPath(normalizedPath, options);
   },
-  
+
   config: {
     screens: {
       Welcome: '',
@@ -144,6 +145,7 @@ const linking = {
       GameResultScreen: 'game/result',
       LearnMoreScreen: 'learn-more',
       AboutScreen: 'about',
+      RateCategory: 'category-rates',
       WarrantyScreen: 'warranty',
       PrivacyScreen: 'privacy',
       TrainingRegistrationScreen: 'training-registration',
@@ -174,39 +176,14 @@ const InitialRouteHandler = ({ children }) => {
         if (savedToken) {
           // Token exists, validate it
           const result = await validateToken();
-
           if (result.success) {
             // Token is valid
             dispatch(setToken(savedToken));
-
-            // validateToken already returns complete user data
-            if (result.data) {
-              console.log('✅ اطلاعات کامل از validateToken دریافت شد در App.js');
-              console.log('🔍 داده‌های کامل:', JSON.stringify(result.data, null, 2));
-
-              // Save complete user data
-              console.log('💾 ذخیره اطلاعات کامل در Redux و AsyncStorage');
-              await AsyncStorage.setItem('userData', JSON.stringify(result.data));
-              dispatch(setUserData(result.data));
-            } else {
-              console.log('⚠️ validateToken اطلاعات برنگرداند، تلاش برای بارگذاری از AsyncStorage...');
-              // Fallback: Try to load from AsyncStorage
-              const storedUserData = await AsyncStorage.getItem('userData');
-              if (storedUserData) {
-                const parsedData = JSON.parse(storedUserData);
-                console.log('✅ اطلاعات کاربر از AsyncStorage بارگذاری شد');
-                dispatch(setUserData(parsedData));
-              } else {
-                console.log('❌ هیچ اطلاعاتی در AsyncStorage نیست');
-              }
-            }
+            dispatch(fetchUser(savedToken))
 
             setInitialRoute('FolderScreen');
           } else {
-            // Token is invalid, clear it
-            await AsyncStorage.removeItem('userToken');
-            await AsyncStorage.removeItem('userData');
-            dispatch(setToken(null));
+            dispatch(removeToken());
             setInitialRoute('Welcome');
           }
         } else {
@@ -214,7 +191,7 @@ const InitialRouteHandler = ({ children }) => {
           setInitialRoute('Welcome');
         }
       } catch (error) {
-        console.error('Error checking token:', error);
+        console.log('Error checking token:', error);
         // On error, start at Welcome
         setInitialRoute('Welcome');
       } finally {
@@ -279,7 +256,7 @@ const AppNavigator = () => {
                 headerShown: false,
               }}
             />
-            <Stack.Screen component={SignInScreen} name="SignInScreen" options={{ headerShown: false, }}/>
+            <Stack.Screen component={SignInScreen} name="SignInScreen" options={{ headerShown: false, }} />
 
             <Stack.Screen
               component={SignIn}
@@ -598,7 +575,7 @@ const AppNavigator = () => {
                 headerShown: false,
               }}
             />
-           
+
             <Stack.Screen
               component={FeedbackSuggestionScreen}
               name="FeedbackSuggestionScreen"
@@ -627,6 +604,7 @@ const AppNavigator = () => {
                 headerShown: false,
               }}
             />
+            <Stack.Screen component={RateCategory} name="RateCategory" />
             <Stack.Screen
               component={LearnMoreScreen}
               name="LearnMoreScreen"
@@ -684,8 +662,6 @@ const AppNavigator = () => {
               }}
             />
           </Stack.Navigator>
-
-          {/* Footer globally available through context */}
           <FooterComponent />
         </View>
       )}
@@ -694,9 +670,6 @@ const AppNavigator = () => {
 };
 
 const App = () => {
-  console.log('🚀 App component rendering...');
-  console.log('🌐 Platform:', Platform.OS);
-  
   const [loaded, error] = useFonts({
     'VazirBold': require("./assets/fonts/Vazir-Bold-FD.ttf"),
     'VazirLight': require("./assets/fonts/Vazir-Light-FD.ttf"),
@@ -705,27 +678,22 @@ const App = () => {
   const [isReady, setIsReady] = useState(false);
   const [initialState, setInitialState] = useState();
 
-  useEffect(() => {
-    console.log('📱 Fonts loaded:', loaded, 'error:', error);
-  }, [loaded, error]);
+
 
   useEffect(() => {
     const restoreState = async () => {
       try {
-        console.log('💾 Starting state restoration...');
-  // Persist/restore navigation state only for web builds.
-  // Native (Android/iOS) should not persist navigation across reloads
-  // so that hot reload (R) starts from the initial route.
-  if (Platform.OS === 'web') {
+        if (Platform.OS === 'web') {
           const savedStateString = await AsyncStorage.getItem(PERSISTENCE_KEY);
           const state = savedStateString ? JSON.parse(savedStateString) : undefined;
-
-          if (state !== undefined) {
+          const userToken = await AsyncStorage.getItem('userToken');
+          if (state !== undefined && userToken) {
             setInitialState(state);
+          }else{
+            
           }
         }
       } finally {
-        console.log('✅ State restoration complete, setting isReady to true');
         setIsReady(true);
       }
     };
@@ -737,25 +705,17 @@ const App = () => {
 
   useEffect(() => {
     if (loaded || error) {
-      console.log('🎨 Hiding splash screen...');
       SplashScreen.hideAsync();
     }
   }, [loaded, error]);
 
-  console.log('🔍 Check states - loaded:', loaded, 'error:', error, 'isReady:', isReady);
-
   if (!loaded && !error) {
-    console.log('⏳ Waiting for fonts to load...');
     return null;
   }
 
   if (!isReady) {
-    console.log('⏳ Waiting for state restoration...');
     return null;
   }
-
-  console.log('🎉 All checks passed, rendering NavigationContainer...');
-
   return (
     <SafeAreaProvider>
       <Provider store={store}>
@@ -765,8 +725,6 @@ const App = () => {
             linking={linking}
             initialState={initialState}
             onStateChange={(state) => {
-              // Only persist navigation state when running in web environment.
-              // Native apps receive hot reload and should start from initial route.
               if (state && Platform.OS === 'web') {
                 AsyncStorage.setItem(PERSISTENCE_KEY, JSON.stringify(state));
               }

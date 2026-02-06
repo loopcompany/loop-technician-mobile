@@ -27,9 +27,9 @@ export default function RequestsScreen({ navigation }) {
   const [expandedItems, setExpandedItems] = useState({});
 
   // محاسبه تاریخ امروز به صورت شمسی
-  const todayJalali = useMemo(() => 
-    getFormatedDate(new Date(), 'jYYYY/jMM/jDD'), 
-  []);
+  const todayJalali = useMemo(() =>
+    getFormatedDate(new Date(), 'jYYYY/jMM/jDD'),
+    []);
 
   // محاسبه تاریخ یک سال بعد به صورت شمسی
   const oneYearLaterJalali = useMemo(() => {
@@ -44,7 +44,7 @@ export default function RequestsScreen({ navigation }) {
   const [leaveToDate, setLeaveToDate] = useState('');
   const [leaveHour, setLeaveHour] = useState('');
   const [leaveDescription, setLeaveDescription] = useState('');
-  
+
   // وام states
   const [loanType, setLoanType] = useState(''); // 'sponsor' or 'free'
   const [loanAmount, setLoanAmount] = useState('');
@@ -52,21 +52,21 @@ export default function RequestsScreen({ navigation }) {
   const [loanSponsor, setLoanSponsor] = useState('');
   const [loanMonth, setLoanMonth] = useState('');
   const [loanUrgentDescription, setLoanUrgentDescription] = useState('');
-  
+
   // نیروی انسانی states
   const [manpowerType, setManpowerType] = useState(''); // 'field' or 'human'
   const [manpowerDescription, setManpowerDescription] = useState('');
-  
+
   // انتقال/سمت states
   const [transferType, setTransferType] = useState(''); // 'city' or 'position'
   const [transferDescription, setTransferDescription] = useState('');
-  
+
   // قطع همکاری states
   const [terminationType, setTerminationType] = useState(''); // 'temporary' or 'permanent'
   const [terminationStartDate, setTerminationStartDate] = useState('');
   const [terminationEndDate, setTerminationEndDate] = useState('');
   const [terminationDescription, setTerminationDescription] = useState('');
-  
+
   // Modal states
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showToDatePicker, setShowToDatePicker] = useState(false);
@@ -166,7 +166,7 @@ export default function RequestsScreen({ navigation }) {
         );
       }
     } catch (error) {
-      console.error('❌ خطا در ارسال درخواست:', error);
+      console.log('❌ خطا در ارسال درخواست:', error);
       showAlert('خطا', error.message || 'مشکلی در ارسال درخواست پیش آمد');
     } finally {
       setLoading(false);
@@ -246,7 +246,7 @@ export default function RequestsScreen({ navigation }) {
         );
       }
     } catch (error) {
-      console.error('❌ خطا در ارسال درخواست مرخصی:', error);
+      console.log('❌ خطا در ارسال درخواست مرخصی:', error);
       showAlert('خطا', error.message || 'مشکلی در ارسال درخواست مرخصی پیش آمد');
     } finally {
       setLoading(false);
@@ -306,7 +306,7 @@ export default function RequestsScreen({ navigation }) {
         requestData.amount = loanAmount.trim();
         requestData.sponsor = loanSponsor.trim();
         requestData.month = parseInt(loanMonth);
-        
+
         if (loanUrgentDescription.trim()) {
           requestData.urgent_description = loanUrgentDescription.trim();
         }
@@ -339,7 +339,7 @@ export default function RequestsScreen({ navigation }) {
         );
       }
     } catch (error) {
-      console.error('❌ خطا در ارسال درخواست وام:', error);
+      console.log('❌ خطا در ارسال درخواست وام:', error);
       showAlert('خطا', error.message || 'مشکلی در ارسال درخواست وام پیش آمد');
     } finally {
       setLoading(false);
@@ -394,7 +394,7 @@ export default function RequestsScreen({ navigation }) {
         );
       }
     } catch (error) {
-      console.error('❌ خطا در ارسال درخواست نیروی انسانی:', error);
+      console.log('❌ خطا در ارسال درخواست نیروی انسانی:', error);
       showAlert('خطا', error.message || 'مشکلی در ارسال درخواست نیروی انسانی پیش آمد');
     } finally {
       setLoading(false);
@@ -449,7 +449,7 @@ export default function RequestsScreen({ navigation }) {
         );
       }
     } catch (error) {
-      console.error('❌ خطا در ارسال درخواست انتقال/سمت:', error);
+      console.log('❌ خطا در ارسال درخواست انتقال/سمت:', error);
       showAlert('خطا', error.message || 'مشکلی در ارسال درخواست انتقال/سمت پیش آمد');
     } finally {
       setLoading(false);
@@ -521,7 +521,7 @@ export default function RequestsScreen({ navigation }) {
         );
       }
     } catch (error) {
-      console.error('❌ خطا در ارسال درخواست قطع همکاری:', error);
+      console.log('❌ خطا در ارسال درخواست قطع همکاری:', error);
       showAlert('خطا', error.message || 'مشکلی در ارسال درخواست قطع همکاری پیش آمد');
     } finally {
       setLoading(false);
@@ -535,7 +535,7 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, section === 'مدیر آموزشی سخت افزار' && styles.selectedOption]}
         onPress={() => setSection('مدیر آموزشی سخت افزار')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center' }]}>مدیر آموزشی سخت افزار</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>مدیر آموزشی سخت افزار</Text>
 
       </TouchableOpacity>
 
@@ -543,7 +543,7 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, section === 'مدیر آموزشی نرم افزار' && styles.selectedOption]}
         onPress={() => setSection('مدیر آموزشی نرم افزار')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center' }]}>مدیر آموزشی نرم افزار</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>مدیر آموزشی نرم افزار</Text>
 
       </TouchableOpacity>
 
@@ -551,7 +551,7 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, section === 'مدیر داخلی' && styles.selectedOption]}
         onPress={() => setSection('مدیر داخلی')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center' }]}>مدیر داخلی</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>مدیر داخلی</Text>
 
       </TouchableOpacity>
 
@@ -559,7 +559,7 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, section === 'مدیر میدانی' && styles.selectedOption]}
         onPress={() => setSection('مدیر میدانی')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center' }]}>مدیر میدانی</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>مدیر میدانی</Text>
 
       </TouchableOpacity>
 
@@ -612,7 +612,7 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, leaveType === 'hourly' && styles.selectedOption]}
         onPress={() => setLeaveType('hourly')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center' }]}>ساعتی</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>ساعتی</Text>
       </TouchableOpacity>
 
       {leaveType === 'hourly' && (
@@ -669,7 +669,7 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, leaveType === 'daily' && styles.selectedOption]}
         onPress={() => setLeaveType('daily')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center' }]}>روزانه</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>روزانه</Text>
       </TouchableOpacity>
 
       {leaveType === 'daily' && (
@@ -761,7 +761,7 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, loanType === 'sponsor' && styles.selectedOption]}
         onPress={() => setLoanType('sponsor')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center' }]}>ضامن / ضمانت نامه</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>ضامن / ضمانت نامه</Text>
       </TouchableOpacity>
 
       {loanType === 'sponsor' && (
@@ -789,22 +789,26 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, loanType === 'free' && styles.selectedOption]}
         onPress={() => setLoanType('free')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center' }]}>وام بدون بهره</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>وام بدون بهره</Text>
       </TouchableOpacity>
 
       {loanType === 'free' && (
         <>
           <View style={styles.loanRow}>
-            <Text style={styles.loanLabel}>مبلغ وام:</Text>
+            <View style={[{ backgroundColor: themeColor4.bgColor(1), paddingVertical: 8, paddingHorizontal: 5 }, NewStyles.center, NewStyles.border5]}>
+              <Text style={NewStyles.text10}>مبلغ وام:</Text>
+            </View>
             <TextInput
-              style={styles.loanInput}
+              style={[styles.loanInput, NewStyles.text10]}
               placeholder="مثلاً: 30000000"
               placeholderTextColor={themeColor10.bgColor(0.5)}
-              value={loanAmount}
-              onChangeText={setLoanAmount}
+              value={loanAmount?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+              onChangeText={(p) => { setLoanAmount(p?.replace(/,/g, "")) }}
               keyboardType="numeric"
             />
-            <Text style={styles.currency}>ریال</Text>
+            <View style={[{ backgroundColor: themeColor1.bgColor(1), paddingVertical: 8, paddingHorizontal: 5 }, NewStyles.center, NewStyles.border5]}>
+              <Text style={[NewStyles.text10]}>تومان</Text>
+            </View>
           </View>
 
           <View style={styles.inputContainer}>
@@ -839,16 +843,18 @@ export default function RequestsScreen({ navigation }) {
           </View>
 
           <View style={styles.monthRow}>
-            <Text style={styles.monthLabel}>مدت زمان پرداخت:</Text>
+            <View style={[{backgroundColor: themeColor4.bgColor(1), paddingHorizontal:5, paddingVertical:8}, NewStyles.border5]}>
+              <Text style={NewStyles.text10}>مدت زمان پرداخت:</Text>
+            </View>
             <TextInput
-              style={styles.monthInput}
+              style={[styles.monthInput, NewStyles.text10]}
               placeholder="1-60"
               placeholderTextColor={themeColor10.bgColor(0.5)}
               value={loanMonth}
               onChangeText={setLoanMonth}
               keyboardType="numeric"
             />
-            <Text style={styles.monthText}>ماه</Text>
+            <Text style={NewStyles.text10}>ماه</Text>
           </View>
 
           <View style={styles.inputContainer}>
@@ -906,7 +912,7 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, manpowerType === 'field' && styles.selectedOption]}
         onPress={() => setManpowerType('field')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center' }]}>نیروی میدانی</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>نیروی میدانی</Text>
       </TouchableOpacity>
 
       {manpowerType === 'field' && (
@@ -918,7 +924,7 @@ export default function RequestsScreen({ navigation }) {
             </Text>
             <TextInput
               style={[NewStyles.textInput, styles.textInput, { minHeight: 120 }]}
-              placeholder="مثال: نیاز به یک نفر نیروی میدانی با مهارت لوله‌کشی برای پروژه فوری در منطقه 5 تهران..."
+              placeholder="مثال: نیاز به یک نفر نیروی میدانی برای پروژه فوری در منطقه 5 تهران..."
               placeholderTextColor={themeColor10.bgColor(0.7)}
               multiline
               numberOfLines={6}
@@ -937,7 +943,7 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, manpowerType === 'human' && styles.selectedOption]}
         onPress={() => setManpowerType('human')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center' }]}>نیروی انسانی (داخلی)</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>نیروی انسانی (داخلی)</Text>
       </TouchableOpacity>
 
       {manpowerType === 'human' && (
@@ -1000,7 +1006,7 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, transferType === 'city' && styles.selectedOption]}
         onPress={() => setTransferType('city')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center' }]}>انتقال به شهر / منطقه دیگر</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>انتقال به شهر / منطقه دیگر</Text>
       </TouchableOpacity>
 
       {transferType === 'city' && (
@@ -1031,7 +1037,7 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, transferType === 'position' && styles.selectedOption]}
         onPress={() => setTransferType('position')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center' }]}>ارتقا / تغییر سمت</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>ارتقا / تغییر سمت</Text>
       </TouchableOpacity>
 
       {transferType === 'position' && (
@@ -1091,44 +1097,44 @@ export default function RequestsScreen({ navigation }) {
   const renderOtherContent = () => (
     <View style={styles.expandedContent}>
       <View style={styles.otherOptions}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.otherOption}
           onPress={() => navigation.navigate('RequestsListScreen')}
         >
           <Text style={[NewStyles.text4, styles.otherOptionText]}>آموزشی</Text>
         </TouchableOpacity>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.otherOption}
           onPress={() => navigation.navigate('LeaveRequestsListScreen')}
         >
           <Text style={[NewStyles.text4, styles.otherOptionText]}>مرخصی / استعلاجی</Text>
         </TouchableOpacity>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.otherOption}
           onPress={() => navigation.navigate('DebtRequestsListScreen')}
         >
           <Text style={[NewStyles.text4, styles.otherOptionText]}>تسهیلات / وام بدون بهره</Text>
         </TouchableOpacity>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.otherOption}
           onPress={() => navigation.navigate('ManpowerRequestsListScreen')}
         >
           <Text style={[NewStyles.text4, styles.otherOptionText]}>نیروی انسانی</Text>
         </TouchableOpacity>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.otherOption}
           onPress={() => navigation.navigate('TransferRequestsListScreen')}
         >
           <Text style={[NewStyles.text4, styles.otherOptionText]}>انتقال / سمت</Text>
         </TouchableOpacity>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.otherOption}
           onPress={() => navigation.navigate('TerminationRequestsListScreen')}
         >
           <Text style={[NewStyles.text4, styles.otherOptionText]}>عدم همراهی</Text>
         </TouchableOpacity>
       </View>
-      
+
     </View>
   );
 
@@ -1139,7 +1145,7 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, terminationType === 'temporary' && styles.selectedOption]}
         onPress={() => setTerminationType('temporary')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center' }]}>بصورت موقت</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>بصورت موقت</Text>
       </TouchableOpacity>
 
       {terminationType === 'temporary' && (
@@ -1202,7 +1208,7 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, terminationType === 'permanent' && styles.selectedOption]}
         onPress={() => setTerminationType('permanent')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center' }]}>بصورت دائم</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>بصورت دائم</Text>
       </TouchableOpacity>
 
       {terminationType === 'permanent' && (
@@ -1296,8 +1302,6 @@ export default function RequestsScreen({ navigation }) {
     >
       <ScreenHeaders
         title={'درخواست ها'}
-        onPressLeft={() => navigation.goBack()}
-        onPressRight={() => navigation.navigate}
       />
 
       <ScrollView contentContainerStyle={styles.container}>
@@ -1450,7 +1454,7 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   inputLabel: {
-    paddingBottom:10
+    paddingBottom: 10
   },
   textInput: {
     borderRadius: 8,
@@ -1480,7 +1484,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   dateLabel: {
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: themeColor4.bgColor(0.9),
     borderRadius: 6,
     padding: 6,
     marginBottom: 3,
@@ -1489,7 +1493,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   timeLabel: {
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: themeColor4.bgColor(0.9),
     borderRadius: 6,
     padding: 6,
     marginBottom: 3,
@@ -1498,14 +1502,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   dateInput: {
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: themeColor4.bgColor(0.9),
     borderRadius: 6,
     padding: 8,
     color: '#000',
     textAlign: 'center',
   },
   timeInput: {
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: themeColor4.bgColor(0.9),
     borderRadius: 6,
     padding: 8,
     color: '#000',
@@ -1517,7 +1521,7 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   loanLabel: {
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: themeColor4.bgColor(0.9),
     borderRadius: 6,
     padding: 8,
     color: '#000',
@@ -1525,11 +1529,10 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   loanInput: {
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: themeColor4.bgColor(0.9),
     borderRadius: 6,
     padding: 8,
     flex: 1,
-    color: '#000',
     textAlign: 'center',
     marginHorizontal: 5,
   },
@@ -1546,7 +1549,7 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   monthLabel: {
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: themeColor4.bgColor(0.9),
     borderRadius: 6,
     padding: 8,
     color: '#000',
@@ -1554,16 +1557,15 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   monthInput: {
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: themeColor4.bgColor(0.9),
     borderRadius: 6,
     padding: 8,
-    flex: 1,
-    color: '#000',
+    flex: 1, 
     textAlign: 'center',
     marginHorizontal: 5,
   },
   monthText: {
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: themeColor4.bgColor(0.9),
     borderRadius: 6,
     padding: 8,
     color: '#000',
@@ -1599,13 +1601,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'center',
   },
-  
+
   submitButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
-  
+
   viewListButtonText: {
     color: themeColor0.bgColor(1),
     fontSize: 14,
@@ -1631,7 +1633,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     borderWidth: 2,
     borderColor: themeColor0.bgColor(1),
-    ...NewStyles.row, 
+    ...NewStyles.row,
     ...NewStyles.center
   },
   viewListButtonText: {

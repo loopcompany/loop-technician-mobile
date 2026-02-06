@@ -16,6 +16,7 @@ import { useDispatch } from 'react-redux';
 import { setToken } from '../slices/authSlice';
 import { validateToken } from '../services/Api';
 import { fetchContacts } from "../slices/contactSlice";
+import { fetchUser } from "../slices/userSlice";
 
 export default function Welcome({ navigation }) {
   const [isChecking, setIsChecking] = useState(true);
@@ -24,55 +25,29 @@ export default function Welcome({ navigation }) {
   useEffect(() => {
     checkAutoLogin();
     dispatch(fetchContacts());
-    
+
   }, []);
 
   async function checkAutoLogin() {
     try {
-      console.log('🔍 بررسی auto-login...');
-      
-      // Check if user wants to be remembered
-      const savedReferralCode = await AsyncStorage.getItem('savedReferralCode');
-      const savedPassword = await AsyncStorage.getItem('savedPassword');
       const userToken = await AsyncStorage.getItem('userToken');
-      
-      console.log('کد معرف ذخیره شده:', savedReferralCode ? 'دارد' : 'ندارد');
-      console.log('توکن ذخیره شده:', userToken ? 'دارد' : 'ندارد');
-      
-      // If user has saved credentials and token, validate token
-      if (savedReferralCode && savedPassword && userToken) {
-        console.log('🔐 اعتبارسنجی توکن...');
-        
-        const result = await validateToken();
-        console.log('📦 نتیجه validateToken:', JSON.stringify(result, null, 2));
-        
-        // If API returns success, token is valid
-        const isValid = result.success === true;
-        console.log('آیا توکن معتبر است؟', isValid);
-        
+      if (userToken) {
+        const result = await validateToken(); 
+        const isValid = result.success === true; 
         if (isValid) {
-          console.log('✅ توکن معتبر است، auto-login انجام می‌شود...');
           dispatch(setToken(userToken));
-          
-          // Wait a moment for better UX
+          dispatch(fetchUser(userToken))
           setTimeout(() => {
             navigation.replace('FolderScreen');
           }, 1500);
         } else {
-          console.log('❌ توکن نامعتبر یا منقضی شده، پاک‌سازی اطلاعات...');
-          // Clear invalid token and credentials
           await AsyncStorage.removeItem('userToken');
-          await AsyncStorage.removeItem('savedReferralCode');
-          await AsyncStorage.removeItem('savedPassword');
           setIsChecking(false);
         }
       } else {
-        console.log('❌ Auto-login: اطلاعات کامل نیست، نمایش صفحه خوش‌آمد...');
         setIsChecking(false);
       }
     } catch (error) {
-      console.error('خطا در بررسی auto-login:', error);
-      // Clear data on error
       await AsyncStorage.removeItem('userToken');
       await AsyncStorage.removeItem('savedReferralCode');
       await AsyncStorage.removeItem('savedPassword');
@@ -83,7 +58,7 @@ export default function Welcome({ navigation }) {
   if (isChecking) {
     return (
       <ImageBackground
-        source={Platform.OS==='web' ? require("../assets/webbackground.jpg") : require("../assets/background2.jpg")}
+        source={Platform.OS === 'web' ? require("../assets/webbackground.jpg") : require("../assets/background2.jpg")}
         style={NewStyles.container}
       >
         <View style={{ flex: 1, backgroundColor: themeColor0.bgColor(0.25), justifyContent: 'center', alignItems: 'center' }}>
@@ -101,7 +76,7 @@ export default function Welcome({ navigation }) {
 
   return (
     <ImageBackground
-      source={Platform.OS==='web' ? require("../assets/webbackground.jpg") : require("../assets/background2.jpg")}
+      source={Platform.OS === 'web' ? require("../assets/webbackground.jpg") : require("../assets/background2.jpg")}
       style={NewStyles.container}
     >
       <TouchableWithoutFeedback

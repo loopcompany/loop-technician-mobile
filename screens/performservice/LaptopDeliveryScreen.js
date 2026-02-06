@@ -20,16 +20,14 @@ export default function LaptopDeliveryScreen({ navigation }) {
   const [isProcessConfirmed, setIsProcessConfirmed] = useState(false);
 
   return (
-    <LinearGradient 
-      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
+    <LinearGradient
+      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.background}
     >
-      <ScreenHeaders 
-        title={'ادامه تحویل لپ تاپ بصورت امانت'} 
-        onPressLeft={() => navigation.goBack()} 
-        onPressRight={() => navigation.navigate('NextScreen')} 
+      <ScreenHeaders
+        title={'ادامه تحویل لپ تاپ بصورت امانت'}
       />
       <ScrollView contentContainerStyle={styles.container}>
         <ScreenTitle title={'ادامه تحویل لپ تاپ بصورت امانت'} />
@@ -203,7 +201,7 @@ export default function LaptopDeliveryScreen({ navigation }) {
         </View>
 
       </ScrollView>
-  
+
     </LinearGradient>
   );
 }

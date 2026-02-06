@@ -42,7 +42,7 @@ export default function RequestsListScreen({ navigation }) {
                 console.log(`✅ ${response.data.length} درخواست بارگذاری شد`);
             }
         } catch (error) {
-            console.error('❌ خطا در بارگذاری درخواست‌ها:', error);
+            console.log('❌ خطا در بارگذاری درخواست‌ها:', error);
             showAlert('خطا', error.message || 'مشکلی در بارگذاری لیست درخواست‌ها پیش آمد');
         } finally {
             setLoading(false);
@@ -83,7 +83,7 @@ export default function RequestsListScreen({ navigation }) {
                 setSelectedRequest(response.data);
             }
         } catch (error) {
-            console.error('❌ خطا در نمایش جزئیات:', error);
+            console.log('❌ خطا در نمایش جزئیات:', error);
             setModalVisible(false);
             showAlert('خطا', error.message || 'مشکلی در نمایش جزئیات پیش آمد');
         } finally {
@@ -144,15 +144,8 @@ export default function RequestsListScreen({ navigation }) {
 
     const renderEmpty = () => (
         <View style={styles.emptyContainer}>
-            <Ionicons name="document-text-outline" size={64} color={themeColor10.bgColor(0.3)} />
+            <Ionicons name="document-text-outline" size={64} color={themeColor4.bgColor(1)} />
             <Text style={[NewStyles.text4, styles.emptyText]}>هیچ درخواستی ثبت نشده است</Text>
-            {/* <TouchableOpacity
-                style={styles.addButton}
-                onPress={() => navigation.goBack()}
-            >
-                <Ionicons name="add-circle" size={20} color="#fff" style={{ marginLeft: 8 }} />
-                <Text style={[NewStyles.text4, styles.addButtonText]}>ثبت درخواست جدید</Text>
-            </TouchableOpacity> */}
         </View>
     );
 
@@ -269,7 +262,6 @@ export default function RequestsListScreen({ navigation }) {
         >
             <ScreenHeaders
                 title={'لیست درخواست‌ها'}
-                onPressLeft={() => navigation.goBack()}
             />
 
             {loading ? (
@@ -398,8 +390,7 @@ const styles = StyleSheet.create({
         paddingVertical: 60,
     },
     emptyText: {
-        fontSize: 16,
-        color: themeColor10.bgColor(0.6),
+        fontSize: 16, 
         marginTop: 15,
         marginBottom: 20,
     },

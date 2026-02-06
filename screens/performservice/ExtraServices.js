@@ -1,4 +1,4 @@
-import { View, Text, FlatList, RefreshControl, Switch, StyleSheet, TextInput, BackHandler, ScrollView } from 'react-native';
+import { View, Text, FlatList, RefreshControl, Switch, StyleSheet, TextInput, BackHandler, ScrollView, Platform } from 'react-native';
 import { useCallback, useEffect, useState } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useDispatch, useSelector } from 'react-redux';
@@ -45,27 +45,31 @@ export default function ExtraServices({ route, navigation }) {
                 order_id: orderId,
                 extras: extraServices?.items
             });
-            
-            const response = await axios.post(`${uri}/technician/submit-extra-services`, { 
-                order_id: orderId, 
-                extras: extraServices?.items 
-            }, { 
-                headers: { 
-                    'Accept': 'application/json', 
-                    'Authorization': `Bearer ${token}` 
-                } 
+
+            const response = await axios.post(`${uri}/technician/submit-extra-services`, {
+                order_id: orderId,
+                extras: extraServices?.items
+            }, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
             });
-            
+
             console.log('✅ پاسخ ثبت خدمات:', response.data);
-            
+
             if (response.status == 200 || response.status == 201) {
                 showToastOrAlert(response?.data?.message || 'خدمات با موفقیت ثبت شد');
                 dispatch(emptyExtraServices());
-                
+
                 // رفرش داده‌های orderExtras
                 await dispatch(fetchOrderExtras(orderId));
-                
-                navigation.goBack();
+
+                if (Platform.OS == 'web') {
+                    window.history.back()
+                } else {
+                    navigation.goBack()
+                }
             }
         } catch (error) {
             console.log('❌ خطا در ثبت خدمات:', error?.response?.data || error.message);
@@ -80,7 +84,11 @@ export default function ExtraServices({ route, navigation }) {
         useCallback(() => {
             const onBackPress = () => {
                 dispatch(emptyExtraServices())
-                navigation.goBack();
+                if (Platform.OS == 'web') {
+                    window.history.back()
+                } else {
+                    navigation.goBack()
+                }
                 return true;
             };
             const backHandler = BackHandler.addEventListener('hardwareBackPress', onBackPress);
@@ -89,14 +97,14 @@ export default function ExtraServices({ route, navigation }) {
     );
 
     return (
-        <SafeAreaView edges={{top:'off', bottom:'additive'}} style={NewStyles.container}>
+        <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={NewStyles.container}>
             <ScreenHeaders title={'قطعات و هزینه ها'} />
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{padding:10}} refreshControl={<RefreshControl colors={[themeColor0.bgColor(1)]} progressBackgroundColor={themeColor5.bgColor(1)} refreshing={refreshing} onRefresh={() => { dispatch(fetchExtraServices({ categoryId, orderId })) }} />}>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 10 }} refreshControl={<RefreshControl colors={[themeColor0.bgColor(1)]} progressBackgroundColor={themeColor5.bgColor(1)} refreshing={refreshing} onRefresh={() => { dispatch(fetchExtraServices({ categoryId, orderId })) }} />}>
                 <FlatList
                     scrollEnabled={false}
                     data={extraServices?.data}
                     keyExtractor={(item) => item.id?.toString()}
-                    contentContainerStyle={[{paddingHorizontal:10, backgroundColor:themeColor4.bgColor(1)}, NewStyles.border10]}
+                    contentContainerStyle={[{ paddingHorizontal: 10, backgroundColor: themeColor4.bgColor(1) }, NewStyles.border10]}
                     ListHeaderComponent={() =>
                         <View style={[NewStyles.seperator, { gap: 10, paddingTop: '5%' }]}>
                             <View style={NewStyles.rowWrapper}>
@@ -105,7 +113,7 @@ export default function ExtraServices({ route, navigation }) {
                                     <Text style={NewStyles.title}>قطعات / هزینه ها</Text>
                                 </View>
                             </View>
-                            <Text style={NewStyles.text3}>خدمات مازادی که می‌خواهید به سرویس خود اضافه کنید را در این قسمت می‌توانید انتخاب کنید.</Text>
+                            <Text style={NewStyles.text3}>چنانچه قطعه و یا هزینه جانبی علاوه بر مبلغ پایه باید به هزینه اضافه شود انتخاب کنید.</Text>
                         </View>}
                     renderItem={({ item }) => {
                         const extraItem = extraServices?.items?.find(x => x?.id == item?.id);
@@ -164,7 +172,7 @@ export default function ExtraServices({ route, navigation }) {
                     }}
                 />
             </ScrollView>
-            <View style={[NewStyles.row,  NewStyles.shadow, {paddingHorizontal:'5%'}]}>
+            <View style={[NewStyles.row, NewStyles.shadow, { paddingHorizontal: '5%' }]}>
                 <Button title={'ثبت'} loading={loading} onPress={() => { addOrderExtraServices() }} />
             </View>
         </SafeAreaView>

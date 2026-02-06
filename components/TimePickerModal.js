@@ -112,7 +112,7 @@ const TimePickerModal = ({ visible, onClose, onSelect, selectedTime }) => {
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-              <Text style={[NewStyles.text, styles.cancelButtonText]}>انصراف</Text>
+              <Text style={[NewStyles.title]}>انصراف</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
               <Text style={[NewStyles.title4]}>تأیید</Text>
@@ -213,7 +213,6 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     fontSize: 16,
-    fontWeight: 'bold',
   },
   confirmButton: {
     flex: 1,

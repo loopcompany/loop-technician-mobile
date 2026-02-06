@@ -22,15 +22,15 @@ export default function Folder({
       style={[styles.button, NewStyles.center, style]}
       onPress={onPress}
     >
-  
+
       {/* {(!loading && image) && <Text style={NewStyles.title4}>{image}</Text>} */}
 
-  
-            <Image
-                    source={require("../assets/folder.png")}
-                    style={styles.folderIcon}
-                  />
-       <Text style={[NewStyles.title4, styles.folderText]}>{title}</Text>
+
+      <Image
+        source={require("../assets/folder.png")}
+        style={styles.folderIcon}
+      />
+      <Text style={[NewStyles.title4, styles.folderText]}>{title}</Text>
     </TouchableOpacity>
   );
 }
@@ -42,14 +42,14 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginVertical: 8,
     marginHorizontal: 8,
-    width: 65,
-    height: 65,
+    width: 80,
+    height: 80,
     alignItems: "center",
     justifyContent: "center",
   },
   folderIcon: {
-    width: 24,
-    height: 24,
+    width: 32,
+    height: 32,
     resizeMode: "contain",
     // marginTop: 5,
     marginBottom: 2,

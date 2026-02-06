@@ -16,7 +16,7 @@ import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor10, themeColor11, themeColor2, themeColor3, themeColor4, themeColor6, themeColor7, themeColor8 } from '../theme/Color';
 import { getLeaveRequests, getLeaveRequestById } from '../services/Api';
-import { formatDate, formatDateTime , showAlert} from '../helpers/Common';
+import { formatDate, formatDateTime, showAlert } from '../helpers/Common';
 
 export default function LeaveRequestsListScreen({ navigation }) {
     const [requests, setRequests] = useState([]);
@@ -42,7 +42,7 @@ export default function LeaveRequestsListScreen({ navigation }) {
                 console.log(`✅ ${response.data.length} درخواست مرخصی بارگذاری شد`);
             }
         } catch (error) {
-            console.error('❌ خطا در بارگذاری درخواست‌ها:', error);
+            console.log('❌ خطا در بارگذاری درخواست‌ها:', error);
             showAlert('خطا', error.message || 'مشکلی در بارگذاری لیست درخواست‌ها پیش آمد');
         } finally {
             setLoading(false);
@@ -58,7 +58,7 @@ export default function LeaveRequestsListScreen({ navigation }) {
     const getStatusBadge = (status) => {
         // تبدیل به string برای مقایسه
         const statusStr = String(status);
-        
+
         switch (statusStr) {
             case '0':
                 return { text: 'در انتظار بررسی', color: themeColor11.bgColor(1), icon: 'time' };
@@ -94,7 +94,7 @@ export default function LeaveRequestsListScreen({ navigation }) {
                 setSelectedRequest(response.data);
             }
         } catch (error) {
-            console.error('❌ خطا در نمایش جزئیات:', error);
+            console.log('❌ خطا در نمایش جزئیات:', error);
             setModalVisible(false);
             showAlert('خطا', error.message || 'مشکلی در نمایش جزئیات پیش آمد');
         } finally {
@@ -182,15 +182,8 @@ export default function LeaveRequestsListScreen({ navigation }) {
 
     const renderEmpty = () => (
         <View style={styles.emptyContainer}>
-            <Ionicons name="document-text-outline" size={64} color={themeColor10.bgColor(0.3)} />
+            <Ionicons name="document-text-outline" size={64} color={themeColor4.bgColor(1)} />
             <Text style={[NewStyles.text4, styles.emptyText]}>هیچ درخواست مرخصی ثبت نشده است</Text>
-            {/* <TouchableOpacity
-                style={styles.addButton}
-                onPress={() => navigation.goBack()}
-            >
-                <Ionicons name="add-circle" size={20} color="#fff" style={{ marginLeft: 8 }} />
-                <Text style={[NewStyles.text4, styles.addButtonText]}>ثبت درخواست جدید</Text>
-            </TouchableOpacity> */}
         </View>
     );
 
@@ -343,7 +336,6 @@ export default function LeaveRequestsListScreen({ navigation }) {
         >
             <ScreenHeaders
                 title={'لیست درخواست‌های مرخصی'}
-                onPressLeft={() => navigation.goBack()}
             />
 
             {loading ? (
@@ -476,7 +468,7 @@ const styles = StyleSheet.create({
     },
     emptyText: {
         fontSize: 16,
-        color: themeColor10.bgColor(0.6),
+        color: themeColor4.bgColor(1),
         marginTop: 15,
         marginBottom: 20,
     },

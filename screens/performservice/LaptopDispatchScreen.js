@@ -27,8 +27,6 @@ export default function LaptopDispatchScreen({ navigation }) {
     >
       <ScreenHeaders
         title={'اعزام به لوپ / لپ تاپ بصورت امانت'}
-        onPressLeft={() => navigation.goBack()}
-        onPressRight={() => navigation.navigate('TechnicalIssuesScreen')}
       />
       <ScrollView contentContainerStyle={styles.container}>
 

@@ -79,7 +79,7 @@ const fetchReports = async () => {
       console.log('Total:', result.total);
     }
   } catch (error) {
-    console.error('Error:', error);
+    console.log('Error:', error);
   }
 };
 ```
@@ -96,7 +96,7 @@ const fetchReportDetail = async (reportId) => {
       console.log('Report Detail:', result.data);
     }
   } catch (error) {
-    console.error('Error:', error);
+    console.log('Error:', error);
   }
 };
 ```
@@ -113,7 +113,7 @@ const submitReply = async (reportId, responseText) => {
       console.log('Reply submitted successfully');
     }
   } catch (error) {
-    console.error('Error:', error.message);
+    console.log('Error:', error.message);
   }
 };
 ```

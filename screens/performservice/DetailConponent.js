@@ -1,11 +1,11 @@
-import { SectionList, StyleSheet, Text, View, Linking, TouchableOpacity, Platform } from 'react-native'
+import { SectionList, StyleSheet, Text, View, Linking, TouchableOpacity, Platform, Image } from 'react-native'
 import React from 'react'
 import MapView, { Marker } from 'react-native-maps'
 import NewStyles from '../../styles/NewStyles'
 import { Ionicons } from '@expo/vector-icons'
 import { themeColor0, themeColor3, themeColor4, themeColor5, themeColor6, themeColor7 } from '../../theme/Color'
 import { formatDate, formatDateTime, formatPrice } from '../../helpers/Common'
-import { mainUri } from '../../services/URL'
+import { imageUri, mainUri } from '../../services/URL'
 
 const DetailConponent = ({ data, renderRow, }) => {
     const calculateTotalPrice = () => {
@@ -69,22 +69,24 @@ const DetailConponent = ({ data, renderRow, }) => {
                     {!data?.service_schedule_type && renderRow('زمان مراجعه تکنسین', data?.is_urgent > 0 ? 'درخواست فوری' : `${formatDate(data?.date)} ساعت ${data?.time?.split(':')?.slice(0, 2)?.join(':')}`, NewStyles.text, data?.is_urgent > 0 && NewStyles.title6)}
                     {renderRow('زمان ثبت سفارش', formatDateTime(data?.created_at))}
 
-                    {Number(data?.category?.has_gender) > 0 && renderRow(
-                        'جنسیت و تعداد تکنسینین',
-                        (() => {
-                            const male = Number(data.male_count) || 0;
-                            const female = Number(data.female_count) || 0;
-                            const unspecified = Number(data.unspecified_count) || 0;
-                            const total = male + female + unspecified;
+                    {Number(data?.category?.has_gender) > 0 && (
+                        renderRow(
+                            'جنسیت تکنسین',
+                            (() => {
+                                const male = Number(data.male_count) || 0;
+                                const female = Number(data.female_count) || 0;
+                                const unspecified = Number(data.unspecified_count) || 0;
+                                const total = male + female + unspecified;
 
-                            if (total === 0) return 'مشخص نشده';
+                                if (total === 0) return 'مشخص نشده';
 
-                            let details = [];
-                            if (male > 0) details.push(`${male} آقا`);
-                            if (female > 0) details.push(`${female} خانم`);
+                                let details = [];
+                                if (male > 0) details.push(`آقا`);
+                                if (female > 0) details.push(`خانم`);
 
-                            return `${total} تکنسین` + (details.length > 0 ? ` (${details.join(' ')} الزامی)` : '');
-                        })()
+                                return (details.length > 0 ? `${details.join(' ')}` : '');
+                            })()
+                        )
                     )}
 
                     {data?.status == 1 && renderRow('وضعیت سفارش', data?.started_at ? 'در حال انجام' : data?.arrived_at ? 'تکنسین به محل سفارش رسید' : data?.set_off_at ? 'تکنسین در راه است' : 'جاری', NewStyles.text, NewStyles.text7)}
@@ -108,7 +110,7 @@ const DetailConponent = ({ data, renderRow, }) => {
                     <View style={NewStyles.rowWrapper}>
                         <Text style={[NewStyles.text]}>وضعیت سفارش</Text>
                         <View style={[styles.statusBadge, { backgroundColor: getStatusColor(data?.status) }]}>
-                            <Text style={styles.statusText}>{getStatusLabel(data?.status)}</Text>
+                            <Text style={[NewStyles.text4, styles.statusText]}>{getStatusLabel(data?.status)}</Text>
                         </View>
                     </View>
                 </View>
@@ -127,9 +129,9 @@ const DetailConponent = ({ data, renderRow, }) => {
                     <View style={styles.separator} />
 
                     <View style={styles.cardContent}>
-                        {renderRow('نوع زمان‌بندی', 
-                            data?.service_schedule_type === 'long_term' ? 'بلندمدت' : 
-                            data?.service_schedule_type === 'short_term' ? 'کوتاه‌مدت' : 'نامشخص',
+                        {renderRow('نوع زمان‌بندی',
+                            data?.service_schedule_type === 'long_term' ? 'بلندمدت' :
+                                data?.service_schedule_type === 'short_term' ? 'کوتاه‌مدت' : 'نامشخص',
                             NewStyles.text,
                             data?.service_schedule_type === 'long_term' ? NewStyles.title7 : NewStyles.title6
                         )}
@@ -141,11 +143,11 @@ const DetailConponent = ({ data, renderRow, }) => {
                                 {data?.service_schedule_long_date && renderRow('تاریخ شروع', formatDate(data?.service_schedule_long_date))}
                                 {data?.service_schedule_long_time && renderRow('ساعت سرویس', data?.service_schedule_long_time?.split(':')?.slice(0, 2)?.join(':'))}
                                 {data?.service_schedule_long_file && (
-                                    <TouchableOpacity 
+                                    <TouchableOpacity
                                         style={styles.contractButton}
                                         onPress={() => {
                                             const fileUrl = `${mainUri}/storage/${data?.service_schedule_long_file}`;
-                                            Linking.openURL(fileUrl).catch(err => console.error('خطا در باز کردن فایل:', err));
+                                            Linking.openURL(fileUrl).catch(err => console.log('خطا در باز کردن فایل:', err));
                                         }}
                                     >
                                         <Ionicons name="document-text" size={20} color={themeColor0.bgColor(1)} />
@@ -154,18 +156,18 @@ const DetailConponent = ({ data, renderRow, }) => {
                                 )}
                             </>
                         )}
-                        
+
                         {/* اطلاعات سرویس کوتاه‌مدت */}
                         {data?.service_schedule_type == 'short_term' && (
                             <>
                                 {data?.service_schedule_short_date && renderRow('تاریخ سرویس', formatDate(data?.service_schedule_short_date))}
                                 {data?.service_schedule_short_time && renderRow('ساعت سرویس', data?.service_schedule_short_time?.split(':')?.slice(0, 2)?.join(':'))}
                                 {data?.service_schedule_short_file && (
-                                    <TouchableOpacity 
+                                    <TouchableOpacity
                                         style={styles.contractButton}
                                         onPress={() => {
                                             const fileUrl = `${mainUri}/storage/${data?.service_schedule_short_file}`;
-                                            Linking.openURL(fileUrl).catch(err => console.error('خطا در باز کردن فایل:', err));
+                                            Linking.openURL(fileUrl).catch(err => console.log('خطا در باز کردن فایل:', err));
                                         }}
                                     >
                                         <Ionicons name="document-text" size={20} color={themeColor0.bgColor(1)} />
@@ -202,9 +204,9 @@ const DetailConponent = ({ data, renderRow, }) => {
                     </View>
 
                     {/* نمایش نقشه اگر latitude و longitude وجود داشته باشد */}
-                   
+
                     {data?.user_address?.latitude && data?.user_address?.longitude && (
-                        <View style={{ padding:15 }}>
+                        <View style={{ padding: 15 }}>
                             <MapView
                                 style={styles.map}
                                 initialRegion={{
@@ -213,7 +215,7 @@ const DetailConponent = ({ data, renderRow, }) => {
                                     latitudeDelta: 0.005,
                                     longitudeDelta: 0.005,
                                 }}
-                                
+
                             >
                                 <Marker
                                     coordinate={{
@@ -232,7 +234,7 @@ const DetailConponent = ({ data, renderRow, }) => {
                                     const lat = parseFloat(data?.user_address.latitude);
                                     const lng = parseFloat(data?.user_address.longitude);
                                     const label = 'محل سفارش';
-                                    
+
                                     // باز کردن در Google Maps یا Apple Maps
                                     const scheme = Platform.select({
                                         ios: 'maps:0,0?q=',
@@ -243,12 +245,12 @@ const DetailConponent = ({ data, renderRow, }) => {
                                         ios: `${scheme}${label}@${latLng}`,
                                         android: `${scheme}${latLng}(${label})`
                                     });
-                                    
+
                                     Linking.openURL(url);
                                 }}
                             >
                                 <Ionicons name="navigate" size={20} color="#fff" />
-                                <Text style={styles.openMapButtonText}>مسیریابی</Text>
+                                <Text style={NewStyles.title4}>مسیریابی</Text>
                             </TouchableOpacity>
                         </View>
                     )}
@@ -268,7 +270,7 @@ const DetailConponent = ({ data, renderRow, }) => {
                             <View style={styles.sectionHeader}>
                                 <View style={[NewStyles.row, { gap: 5 }]}>
                                     <Ionicons name={section?.icon_name || 'list'} size={24} color={themeColor0.bgColor(1)} />
-                                    <Text style={NewStyles.title}>{section?.title}</Text>
+                                    <Text style={[NewStyles.title, { flex: 1 }]}>{section?.title}</Text>
                                 </View>
                             </View>
                         )}
@@ -313,6 +315,9 @@ const DetailConponent = ({ data, renderRow, }) => {
                     </View>
                 </View>
             )}
+            {data?.image_path &&
+                <Image style={[{ height: 250, margin: '5%', maxWidth:400, resizeMode:'contain', width:'90%', alignSelf:'center' }, NewStyles.border10]} source={{ uri: `${imageUri}/${data?.image_path}` }} />
+            }
 
             {/* Technician Description */}
             {data?.technician_des && (
@@ -354,133 +359,132 @@ const DetailConponent = ({ data, renderRow, }) => {
 export default DetailConponent
 
 const styles = StyleSheet.create({
-  background: { flex: 1 },
-  scrollContainer: {
-    paddingVertical: 15,
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    color: '#fff',
-    fontSize: 16,
-    marginTop: 10,
-    fontWeight: 'bold',
-  },
-  emptyText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  card: {
-    backgroundColor: themeColor4.bgColor(1),
-    borderRadius: 10,
-    marginBottom: 15,
-    width:'90%',
-    alignSelf:'center',
-    maxWidth:800,
-  },
-  cardHeader: {
-    padding: 15,
-    backgroundColor: themeColor3.bgColor(0.2),
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    alignItems: 'center',
-    gap: 10,
-  },
-  cardContent: {
-    padding: 15,
-    gap: 10,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: themeColor3.bgColor(0.2),
-    marginVertical: 10,
-  },
-  paymentBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 10,
-  },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 15,
-  },
-  statusText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  sectionHeader: {
-    padding: 15,
-    paddingBottom: 10,
-  },
-  addressItem: {
-    flexDirection: 'row-reverse',
-    backgroundColor: themeColor5.bgColor(1),
-    padding: 15,
-    marginHorizontal: 15,
-    marginBottom: 15,
-    borderRadius: 10,
-    gap: 10,
-  },
-  detailItem: {
-    backgroundColor: themeColor5.bgColor(1),
-    paddingVertical: 12,
-    paddingHorizontal: 15,
-    marginHorizontal: 15,
-    marginBottom: 5,
-    borderRadius: 10,
-    gap: 10,
-  },
-  descriptionItem: {
-    flexDirection: 'row-reverse',
-    backgroundColor: themeColor5.bgColor(1),
-    padding: 15,
-    marginHorizontal: 15,
-    marginBottom: 15,
-    borderRadius: 10,
-    gap: 10,
-  },
-  map: {
-    width: '100%',
-    height: 200,
-    borderRadius: 10,
-    ...NewStyles.border10
-  },
-  openMapButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: themeColor0.bgColor(1),
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    marginTop: 10,
-    gap: 8,
-  },
-  openMapButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  contractButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: themeColor0.bgColor(1),
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 8,
-    marginTop: 5,
-    gap: 8,
-  },
-  contractButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
+    background: { flex: 1 },
+    scrollContainer: {
+        paddingVertical: 15,
+    },
+    centerContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    loadingText: {
+        color: '#fff',
+        fontSize: 16,
+        marginTop: 10,
+        fontWeight: 'bold',
+    },
+    emptyText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    card: {
+        backgroundColor: themeColor4.bgColor(1),
+        borderRadius: 10,
+        marginBottom: 15,
+        width: '90%',
+        alignSelf: 'center',
+        maxWidth: 800,
+    },
+    cardHeader: {
+        padding: 15,
+        backgroundColor: themeColor3.bgColor(0.2),
+        borderTopLeftRadius: 10,
+        borderTopRightRadius: 10,
+        alignItems: 'center',
+        gap: 10,
+    },
+    cardContent: {
+        padding: 15,
+        gap: 10,
+    },
+    separator: {
+        height: 1,
+        backgroundColor: themeColor3.bgColor(0.2),
+        marginVertical: 10,
+    },
+    paymentBadge: {
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        borderRadius: 10,
+    },
+    statusBadge: {
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 15,
+    },
+    statusText: {
+        color: '#fff',
+        fontSize: 12,
+    },
+    sectionHeader: {
+        padding: 15,
+        paddingBottom: 10,
+    },
+    addressItem: {
+        flexDirection: 'row-reverse',
+        backgroundColor: themeColor5.bgColor(1),
+        padding: 15,
+        marginHorizontal: 15,
+        marginBottom: 15,
+        borderRadius: 10,
+        gap: 10,
+    },
+    detailItem: {
+        backgroundColor: themeColor5.bgColor(1),
+        paddingVertical: 12,
+        paddingHorizontal: 15,
+        marginHorizontal: 15,
+        marginBottom: 5,
+        borderRadius: 10,
+        gap: 10,
+    },
+    descriptionItem: {
+        flexDirection: 'row-reverse',
+        backgroundColor: themeColor5.bgColor(1),
+        padding: 15,
+        marginHorizontal: 15,
+        marginBottom: 15,
+        borderRadius: 10,
+        gap: 10,
+    },
+    map: {
+        width: '100%',
+        height: 200,
+        borderRadius: 10,
+        ...NewStyles.border10
+    },
+    openMapButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: themeColor0.bgColor(1),
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 8,
+        marginTop: 10,
+        gap: 8,
+    },
+    openMapButtonText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+    contractButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: themeColor0.bgColor(1),
+        paddingVertical: 10,
+        paddingHorizontal: 15,
+        borderRadius: 8,
+        marginTop: 5,
+        gap: 8,
+    },
+    contractButtonText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
 });

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   Keyboard,
   KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -28,6 +29,7 @@ import DetailConponent from './DetailConponent';
 import DatePickerModal from '../../components/DatePickerModal';
 import Button from '../../components/Button';
 import jalaali from 'jalaali-js';
+import { getFormatedDate } from 'react-native-modern-datepicker';
 
 export default function OrderDetailScreen({ route, navigation }) {
   const { orderId } = route?.params || {};
@@ -35,7 +37,7 @@ export default function OrderDetailScreen({ route, navigation }) {
   const orderExtras = useSelector(state => state.orderExtras.data);
   const loadingExtras = useSelector(state => state.orderExtras.loading);
 
-  
+
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -47,7 +49,11 @@ export default function OrderDetailScreen({ route, navigation }) {
   const [showSendloop, setShowSendloop] = useState(false);
   const [showPrices, setShowPrices] = useState(false);
   const [showDelivery, setShowDelivery] = useState(false);
-
+  const oneYearLaterJalali = useMemo(() => {
+    const oneYearLater = new Date();
+    oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
+    return getFormatedDate(oneYearLater, 'jYYYY/jMM/jDD');
+  }, []);
   // State برای مرحله بررسی/جایگزینی زمانی
   const [datePickerModal, setDatePickerModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState('');
@@ -145,7 +151,6 @@ export default function OrderDetailScreen({ route, navigation }) {
       console.log('📋 Fetching order details for orderId:', orderId);
       const result = await getTechnicianOrderById(orderId);
 
-      console.log('📦 API Result:', result);
       if (result.success) {
         setData(result.data);
         // تنظیم مقادیر اولیه از دیتا
@@ -179,7 +184,7 @@ export default function OrderDetailScreen({ route, navigation }) {
         showToastOrAlert(result.message || 'خطا در دریافت جزئیات سفارش');
       }
     } catch (error) {
-      console.error('Error fetching order details:', error);
+      console.log('Error fetching order details:', error);
       showToastOrAlert('خطا در دریافت جزئیات سفارش');
     } finally {
       setLoading(false);
@@ -256,9 +261,9 @@ export default function OrderDetailScreen({ route, navigation }) {
       // ✅ اگر تاریخ شمسی است (YYYY/MM/DD یا YYYY/M/D)
       if (/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(shamsiDate)) {
         const parts = shamsiDate.split('/');
-        
+
         if (parts.length !== 3) {
-          console.error('❌ فرمت تاریخ نامعتبر:', shamsiDate);
+          console.log('❌ فرمت تاریخ نامعتبر:', shamsiDate);
           return shamsiDate;
         }
 
@@ -268,7 +273,7 @@ export default function OrderDetailScreen({ route, navigation }) {
 
         // بررسی معتبر بودن اجزای تاریخ
         if (isNaN(jy) || isNaN(jm) || isNaN(jd)) {
-          console.error('❌ اجزای تاریخ نامعتبر:', { jy, jm, jd });
+          console.log('❌ اجزای تاریخ نامعتبر:', { jy, jm, jd });
           return shamsiDate;
         }
 
@@ -285,11 +290,11 @@ export default function OrderDetailScreen({ route, navigation }) {
       }
 
       // ❌ فرمت ناشناخته
-      console.error('❌ فرمت تاریخ ناشناخته:', shamsiDate);
+      console.log('❌ فرمت تاریخ ناشناخته:', shamsiDate);
       return shamsiDate;
 
     } catch (error) {
-      console.error('❌ خطا در تبدیل تاریخ:', error, 'تاریخ ورودی:', shamsiDate);
+      console.log('❌ خطا در تبدیل تاریخ:', error, 'تاریخ ورودی:', shamsiDate);
       return shamsiDate;
     }
   };
@@ -302,16 +307,16 @@ export default function OrderDetailScreen({ route, navigation }) {
       return;
     }
 
-    if(!technicianPrice) {
+    if (!technicianPrice) {
       showToastOrAlert('لطفاً مبلغ پایه تکنسین را وارد کنید');
       return;
     }
-    if(technicianPrice && isNaN(Number(technicianPrice))) {
+    if (technicianPrice && isNaN(Number(technicianPrice))) {
       showToastOrAlert('لطفاً مبلغ پایه تکنسین را به درستی وارد کنید');
       return;
     }
 
-    if(!reviewDescription){
+    if (!reviewDescription) {
       showToastOrAlert('لطفاً توضیحات بررسی را وارد کنید');
       return;
     }
@@ -327,7 +332,7 @@ export default function OrderDetailScreen({ route, navigation }) {
         console.log('🏢 سفارش سازمانی: استفاده از تاریخ و ساعت اصلی سفارش');
         requestData.date = data.date;
         requestData.time = data.time;
-      } 
+      }
       // برای سفارشات غیر سازمانی: از تاریخ و ساعت انتخابی استفاده کن
       else if (selectedDate && timeRange) {
         console.log('📅 OrderDetailScreen - selectedDate قبل از تبدیل:', selectedDate);
@@ -354,7 +359,7 @@ export default function OrderDetailScreen({ route, navigation }) {
         showToastOrAlert(result.message || 'خطا در ذخیره تغییرات');
       }
     } catch (error) {
-      console.error('Error saving review:', error);
+      console.log('Error saving review:', error);
       showToastOrAlert('خطا در ذخیره تغییرات');
     } finally {
       setSavingReview(false);
@@ -374,7 +379,7 @@ export default function OrderDetailScreen({ route, navigation }) {
         showToastOrAlert(result.message || 'خطا در ثبت زمان حرکت');
       }
     } catch (error) {
-      console.error('Error setting off:', error);
+      console.log('Error setting off:', error);
       showToastOrAlert('خطا در ثبت زمان حرکت');
     } finally {
       setSettingOff(false);
@@ -394,7 +399,7 @@ export default function OrderDetailScreen({ route, navigation }) {
         showToastOrAlert(result.message || 'خطا در ثبت زمان رسیدن');
       }
     } catch (error) {
-      console.error('Error arriving:', error);
+      console.log('Error arriving:', error);
       showToastOrAlert('خطا در ثبت زمان رسیدن');
     } finally {
       setArriving(false);
@@ -428,7 +433,11 @@ export default function OrderDetailScreen({ route, navigation }) {
 
               // بازگشت به صفحه قبل
               setTimeout(() => {
-                navigation.goBack();
+                if (Platform.OS == 'web') {
+                  window.history.back()
+                } else {
+                  navigation.goBack()
+                }
               }, 1500);
             } catch (error) {
               showToastOrAlert(error.message || 'خطا در لغو سفارش');
@@ -501,7 +510,7 @@ export default function OrderDetailScreen({ route, navigation }) {
       if (error.response?.status === 404) {
         console.log('ℹ️ هنوز گزارش محصولی ثبت نشده است (404)');
       } else {
-        console.error('❌ خطا در بارگذاری گزارش محصول:', error);
+        console.log('❌ خطا در بارگذاری گزارش محصول:', error);
       }
     } finally {
       setLoadingReport(false);
@@ -515,7 +524,10 @@ export default function OrderDetailScreen({ route, navigation }) {
       showToastOrAlert('لطفاً نام و کد ملی را وارد کنید');
       return;
     }
-
+    if (!productReport.product_name || !productReport.product_brand || !productReport.product_model || !productReport.product_color) {
+      showToastOrAlert('لطفا اطلاعات ستاره دار محصول را وارد کنید');
+      return;
+    }
     // اعتبارسنجی کد ملی (10 رقم)
     if (productReport.melicode.length !== 10 || !/^\d+$/.test(productReport.melicode)) {
       showToastOrAlert('کد ملی باید 10 رقم باشد');
@@ -528,13 +540,6 @@ export default function OrderDetailScreen({ route, navigation }) {
         order_id: orderId,
         ...productReport
       };
-
-      console.log('📤 ارسال داده به API:', requestData);
-      console.log('📤 فیلدهای جدید:', {
-        max_price: requestData.max_price,
-        min_price: requestData.min_price,
-        product_password: requestData.product_password
-      });
 
       let result;
       if (reportId) {
@@ -556,7 +561,7 @@ export default function OrderDetailScreen({ route, navigation }) {
         showToastOrAlert(result.message || 'خطا در ذخیره گزارش');
       }
     } catch (error) {
-      console.error('Error saving report:', error);
+      console.log('Error saving report:', error);
       showToastOrAlert('خطا در ذخیره گزارش');
     } finally {
       setSavingReport(false);
@@ -576,7 +581,7 @@ export default function OrderDetailScreen({ route, navigation }) {
         showToastOrAlert(result.message || 'خطا در ارسال سفارش به لوپ');
       }
     } catch (error) {
-      console.error('Error sending to loop:', error);
+      console.log('Error sending to loop:', error);
       showToastOrAlert('خطا در ارسال سفارش به لوپ');
     } finally {
       setSendingToLoop(false);
@@ -614,7 +619,7 @@ export default function OrderDetailScreen({ route, navigation }) {
         showToastOrAlert(result.message || 'خطا در ذخیره اطلاعات لوپ');
       }
     } catch (error) {
-      console.error('Error saving loop info:', error);
+      console.log('Error saving loop info:', error);
       showToastOrAlert('خطا در ذخیره اطلاعات لوپ');
     } finally {
       setSavingLoopInfo(false);
@@ -634,7 +639,7 @@ export default function OrderDetailScreen({ route, navigation }) {
         showToastOrAlert(result.message || 'خطا در ثبت شروع تعمیر');
       }
     } catch (error) {
-      console.error('Error starting repair:', error);
+      console.log('Error starting repair:', error);
       showToastOrAlert('خطا در ثبت شروع تعمیر');
     } finally {
       setStartingRepair(false);
@@ -670,7 +675,7 @@ export default function OrderDetailScreen({ route, navigation }) {
       if (error.response?.status === 404) {
         console.log('ℹ️ هنوز گزارش تحویلی ثبت نشده است (404)');
       } else {
-        console.error('❌ خطا در بارگذاری گزارش تحویل:', error);
+        console.log('❌ خطا در بارگذاری گزارش تحویل:', error);
       }
     } finally {
       setLoadingDeliveryReport(false);
@@ -721,7 +726,7 @@ export default function OrderDetailScreen({ route, navigation }) {
         showToastOrAlert(result.message || 'خطا در ذخیره گزارش تحویل');
       }
     } catch (error) {
-      console.error('Error saving delivery report:', error);
+      console.log('Error saving delivery report:', error);
       showToastOrAlert('خطا در ذخیره گزارش تحویل');
     } finally {
       setSavingDeliveryReport(false);
@@ -758,7 +763,7 @@ export default function OrderDetailScreen({ route, navigation }) {
         }
       }
     } catch (error) {
-      console.error('Error verifying code:', error);
+      console.log('Error verifying code:', error);
       showToastOrAlert('خطا در تایید گزارش');
     } finally {
       setVerifyingCode(false);
@@ -767,7 +772,7 @@ export default function OrderDetailScreen({ route, navigation }) {
 
   // تابع ارسال مجدد کد تایید
   const handleResendCode = async () => {
-    
+
     try {
       setResendingCode(true);
       const result = await resendDeliveryReportCode(orderId);
@@ -779,11 +784,11 @@ export default function OrderDetailScreen({ route, navigation }) {
         setResendTimer(60);
         setCanResend(false);
       } else {
-        
+
         showToastOrAlert(result.message || 'خطا در ارسال مجدد کد');
       }
     } catch (error) {
-      console.error('Error resending code:', error);
+      console.log('Error resending code:', error);
       showToastOrAlert('خطا در ارسال مجدد کد');
     } finally {
       setResendingCode(false);
@@ -803,7 +808,7 @@ export default function OrderDetailScreen({ route, navigation }) {
         showToastOrAlert(result.message || 'خطا در ثبت پایان کار');
       }
     } catch (error) {
-      console.error('Error ending order:', error);
+      console.log('Error ending order:', error);
       showToastOrAlert('خطا در ثبت پایان کار');
     } finally {
       setEndingOrder(false);
@@ -888,8 +893,6 @@ export default function OrderDetailScreen({ route, navigation }) {
       >
         <ScreenHeaders
           title={'جزئیات سفارش'}
-          onPressLeft={() => navigation.goBack()}
-          onPressRight={() => navigation.navigate('UserInfoScreen')}
         />
         <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={{ flex: 1 }}>
           <View style={styles.centerContainer}>
@@ -911,8 +914,6 @@ export default function OrderDetailScreen({ route, navigation }) {
       >
         <ScreenHeaders
           title={'جزئیات سفارش'}
-          onPressLeft={() => navigation.goBack()}
-          onPressRight={() => navigation.navigate('UserInfoScreen')}
         />
         <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={{ flex: 1 }}>
           <View style={styles.centerContainer}>
@@ -938,8 +939,6 @@ export default function OrderDetailScreen({ route, navigation }) {
 
           <ScreenHeaders
             title={'جزئیات سفارش'}
-            onPressLeft={() => navigation.goBack()}
-            onPressRight={() => navigation.navigate('UserInfoScreen')}
           />
 
           <ScrollView
@@ -977,7 +976,7 @@ export default function OrderDetailScreen({ route, navigation }) {
               <View style={styles.contentSection}>
                 {/* اطلاعات کاربر */}
                 <View style={{ gap: 10 }}>
-                  {data?.user?.name && renderRow('نام و نام خانوادگی:', data.user.name)}
+                  {data?.user?.name && renderRow('نام و نام خانوادگی:', data.user.name + ' ' + data.user.last_name)}
                   {data?.user?.phone && renderRow('شماره تماس:', data.user.phone)}
                   {data?.user?.email && renderRow('ایمیل:', data.user.email)}
                   {data?.user_type_info && renderRow('نوع کاربر:', data.user_type_info?.account_type_label || data.user_type_info?.account_type || 'نامشخص')}
@@ -1062,7 +1061,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                       <Text style={[NewStyles.title, { color: themeColor0.bgColor(1) }]}>راهنمای تکنسین</Text>
                     </View>
                     <Text style={[NewStyles.text10, { textAlign: 'right', lineHeight: 24 }]}>
-                      {data?.service_schedule_type 
+                      {data?.service_schedule_type
                         ? 'لطفاً مبلغ پایه تکنسین و توضیحات لازم را وارد کنید. پس از ثبت، اطلاعات برای کاربر ارسال می‌شود و باید منتظر تایید کاربر بمانید.'
                         : 'لطفاً تاریخ، بازه ساعت مراجعه، مبلغ پایه تکنسین و توضیحات را مشخص کنید. پس از ثبت اطلاعات، درخواست شما برای کاربر ارسال می‌شود و باید منتظر تایید کاربر بمانید.'
                       }
@@ -1207,7 +1206,10 @@ export default function OrderDetailScreen({ route, navigation }) {
               onPress={() => {
                 if (isPresenceActive) {
                   setShowPresence(!showPresence);
-                } else {
+                } else if ((data?.status != 0 || data?.status != 1 || data?.status != 2)) {
+                  showToastOrAlert('سفارش لغو شده است')
+                }
+                else {
                   showToastOrAlert('ابتدا باید مرحله بررسی/جایگزینی زمانی تکمیل شود.');
                 }
               }}
@@ -1387,12 +1389,12 @@ export default function OrderDetailScreen({ route, navigation }) {
                       multiline
                       numberOfLines={5}
                       textAlignVertical="top"
-                      maxLength={1000}
+                      maxLength={191}
                     />
 
                     {/* شمارنده کاراکتر */}
                     <Text style={[NewStyles.text10, { textAlign: 'left', marginTop: 5, color: themeColor3.bgColor(1) }]}>
-                      {emergencyHelpText.length}/1000
+                      {emergencyHelpText.length}/191
                     </Text>
 
                     {/* دکمه ثبت درخواست */}
@@ -1430,7 +1432,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                 <Text style={[NewStyles.title, styles.sectionTitle]}>اطلاعات تحویل دهنده </Text>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>نام و نام خانوادگی *</Text>
+                  <Text style={NewStyles.text}>نام و نام خانوادگی <Text style={NewStyles.text6}>*</Text></Text>
                   <TextInput
                     style={styles.textInput}
                     value={productReport.name}
@@ -1442,7 +1444,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>کد ملی *</Text>
+                  <Text style={NewStyles.text}>کد ملی <Text style={NewStyles.text6}>*</Text></Text>
                   <TextInput
                     style={styles.textInput}
                     value={productReport.melicode}
@@ -1456,10 +1458,10 @@ export default function OrderDetailScreen({ route, navigation }) {
                 </View>
 
                 {/* بخش اطلاعات محصول */}
-                <Text style={[NewStyles.title, styles.sectionTitle]}>اطلاعات محصول</Text>
+                <Text style={[NewStyles.title, styles.sectionTitle]}>اطلاعات محصول <Text style={NewStyles.text6}>*</Text></Text>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>نام محصول</Text>
+                  <Text style={NewStyles.text}>نام محصول <Text style={NewStyles.text6}>*</Text></Text>
                   <TextInput
                     style={styles.textInput}
                     value={productReport.product_name}
@@ -1471,7 +1473,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>برند محصول</Text>
+                  <Text style={NewStyles.text}>برند محصول <Text style={NewStyles.text6}>*</Text></Text>
                   <TextInput
                     style={styles.textInput}
                     value={productReport.product_brand}
@@ -1483,7 +1485,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>مدل محصول</Text>
+                  <Text style={NewStyles.text}>مدل محصول <Text style={NewStyles.text6}>*</Text></Text>
                   <TextInput
                     style={styles.textInput}
                     value={productReport.product_model}
@@ -1495,7 +1497,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>رنگ محصول</Text>
+                  <Text style={NewStyles.text}>رنگ محصول <Text style={NewStyles.text6}>*</Text></Text>
                   <TextInput
                     style={styles.textInput}
                     value={productReport.product_color}
@@ -1760,7 +1762,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                     </View>
 
                     {/* دکمه ذخیره - فقط اگر کاربر تأیید نکرده باشد */}
-                    {!data?.user_accept_date && (
+                    {(!data?.user_accept_date && !data?.user_cancellation_date) && (
                       <Button
                         title="ذخیره اطلاعات لوپ"
                         onPress={handleSaveLoopInfo}
@@ -1849,10 +1851,6 @@ export default function OrderDetailScreen({ route, navigation }) {
                     </Text>
                   </TouchableOpacity>
                 </View>}
-
-                {console.log('🔍 DEBUG - data.extra_services:', JSON.stringify(data?.extra_services, null, 2))}
-                {console.log('🔍 DEBUG - data.extra_services.length:', data?.extra_services?.length)}
-                
                 {(data?.extra_services && data.extra_services.length > 0) ? (
                   <View style={{ gap: 10, paddingHorizontal: 15 }}>
                     <View style={[NewStyles.row, { gap: 5 }]}>
@@ -1942,7 +1940,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                 {/* لاگ کردن وضعیت پرداخت */}
                 {console.log('💰 payment_status:', data?.payment_status)}
                 {console.log('💰 نوع داده payment_status:', typeof data?.payment_status)}
-                
+
                 {/* نمایش وضعیت پرداخت کاربر - payment_status: "1" = پرداخت شده، "0" = پرداخت نشده */}
                 <View style={[styles.infoCard, { backgroundColor: (data?.payment_status == "1" || data?.payment_status === 1) ? themeColor7.bgColor(0.2) : themeColor3.bgColor(0.2) }]}>
                   <View style={[NewStyles.row, { gap: 10, alignItems: 'center' }]}>
@@ -1976,7 +1974,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                 <Text style={[NewStyles.title, styles.sectionTitle]}>گزارش تحویل محصول</Text>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>نام گیرنده *</Text>
+                  <Text style={NewStyles.text}>نام گیرنده <Text style={NewStyles.text6}>*</Text></Text>
                   <TextInput
                     style={styles.textInput}
                     value={deliveryReport.name}
@@ -1988,7 +1986,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>کد ملی گیرنده *</Text>
+                  <Text style={NewStyles.text}>کد ملی گیرنده <Text style={NewStyles.text6}>*</Text></Text>
                   <TextInput
                     style={styles.textInput}
                     value={deliveryReport.melicode}
@@ -2002,7 +2000,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>اطلاعات محصول *</Text>
+                  <Text style={NewStyles.text}>اطلاعات محصول <Text style={NewStyles.text6}>*</Text></Text>
                   <TextInput
                     style={[styles.textInput, styles.multilineInput]}
                     value={deliveryReport.product_info}
@@ -2279,6 +2277,7 @@ export default function OrderDetailScreen({ route, navigation }) {
           setDatePickerModal={setDatePickerModal}
           birthDate={selectedDate}
           setBirthDate={setSelectedDate}
+          maximumDate={oneYearLaterJalali}
         />
       </LinearGradient>
     </SafeAreaView>

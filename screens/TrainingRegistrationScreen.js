@@ -94,11 +94,9 @@ export default function TrainingRegistrationScreen({ navigation }) {
           description: '',
         });
 
-        // Optional: Navigate back or to success screen
-        // navigation.goBack();
       }
     } catch (error) {
-      console.error('Error submitting education registration:', error);
+      console.log('Error submitting education registration:', error);
       const resp = error.response?.data;
       let errorMessage = 'خطا در ثبت درخواست';
 
@@ -132,7 +130,6 @@ export default function TrainingRegistrationScreen({ navigation }) {
     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'off' }}>
       <ScreenHeaders
         title="ثبت نام دوره‌های آموزشی"
-        onPressLeft={() => navigation.goBack()}
       />
       <KeyboardAvoidingView
         style={{ flex: 1 }}

@@ -12,7 +12,7 @@ import ScreenHeaders from "../../components/ScreenHeaders";
 import NewStyles from "../../styles/NewStyles";
 import { themeColor1, themeColor4, themeColor0, themeColor3 } from "../../theme/Color";
 import { notesAPI } from "../../services/Api";
-import { showToastOrAlert , showAlert} from "../../helpers/Common";
+import { showToastOrAlert, showAlert } from "../../helpers/Common";
 import Button from "../../components/Button";
 
 export default function AddEditNoteScreen({ route, navigation }) {
@@ -56,11 +56,15 @@ export default function AddEditNoteScreen({ route, navigation }) {
         showToastOrAlert(
           isEditMode ? 'یادداشت با موفقیت ویرایش شد' : 'یادداشت با موفقیت ثبت شد'
         );
-        navigation.goBack();
+        if (Platform.OS == 'web') {
+          window.history.back()
+        } else {
+          navigation.goBack()
+        }
       }
     } catch (error) {
-      console.error('Error saving note:', error);
-      
+      console.log('Error saving note:', error);
+
       // Handle validation errors
       if (error.response?.data?.errors) {
         const errors = error.response.data.errors;
@@ -79,11 +83,10 @@ export default function AddEditNoteScreen({ route, navigation }) {
   return (
     <KeyboardAvoidingView
       style={NewStyles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={'padding'}
     >
       <ScreenHeaders
         title={isEditMode ? "ویرایش یادداشت" : "افزودن یادداشت"}
-        onBackPress={() => navigation.goBack()}
       />
 
       <ScrollView
@@ -95,7 +98,7 @@ export default function AddEditNoteScreen({ route, navigation }) {
           {/* Info Box */}
           <View style={styles.infoBox}>
             <Text style={[NewStyles.text10, { fontSize: 13, lineHeight: 22 }]}>
-              یادداشت‌های شخصی خود را اینجا بنویسید. می‌توانید یادآوری‌ها، لیست کارها، 
+              یادداشت‌های شخصی خود را اینجا بنویسید. می‌توانید یادآوری‌ها، لیست کارها،
               اطلاعات مهم و هر چیزی که نیاز دارید را ثبت کنید.
             </Text>
           </View>
@@ -121,7 +124,7 @@ export default function AddEditNoteScreen({ route, navigation }) {
               onChangeText={setNoteText}
               multiline
               textAlignVertical="top"
-              maxLength={MAX_CHARS + 100} // Allow typing to show error
+              maxLength={MAX_CHARS}
             />
 
             {/* Character Counter */}
@@ -162,7 +165,7 @@ export default function AddEditNoteScreen({ route, navigation }) {
         <Button
           title={isEditMode ? "ذخیره تغییرات" : "ثبت یادداشت"}
           onPress={handleSave}
-          
+
           loading={loading}
           disabled={loading || !noteText.trim() || charCount > MAX_CHARS}
         />

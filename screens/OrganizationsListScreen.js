@@ -54,7 +54,7 @@ export default function OrganizationsListScreen() {
                 showAlert('خطا', result.message || 'خطا در دریافت لیست سازمان‌ها');
             }
         } catch (error) {
-            console.error('❌ خطا در دریافت سازمان‌ها:', error);
+            console.log('❌ خطا در دریافت سازمان‌ها:', error);
             showAlert('خطا', 'مشکلی در ارتباط با سرور پیش آمد');
         } finally {
             setLoading(false);

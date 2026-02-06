@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor3, themeColor10, themeColor2, themeColor8, themeColor4, themeColor7 } from '../../theme/Color';
@@ -19,14 +18,16 @@ import CustomStatusBar from '../../components/CustomStatusBar';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateBankInfo } from '../../services/Api';
 import { showAlert } from '../../helpers/Common';
-import { setUserData } from '../../slices/userSlice';
+import { fetchUser, setUserData } from '../../slices/userSlice';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../../components/Button';
 export default function FinancialInfoScreen({ navigation }) {
   const dispatch = useDispatch();
-  const userData = useSelector(state => state.user.data);
+  const userData = useSelector(state => state.user.data?.data?.technician);
+  const userToken = useSelector(state => state.auth.token);
+
   const [saving, setSaving] = useState(false);
-  const [isLoadingData, setIsLoadingData] = useState(false);
+
 
   const [financialData, setFinancialData] = useState({
     shabaNumber: '',
@@ -37,32 +38,15 @@ export default function FinancialInfoScreen({ navigation }) {
   // Load user financial data from AsyncStorage if not in Redux
   useEffect(() => {
     const loadUserData = async () => {
-      // If no data in Redux, try to load from AsyncStorage
-      if (!userData) {
-        console.log('⚠️ userData در Redux خالی است، از AsyncStorage می‌خوانیم...');
-        setIsLoadingData(true);
-        try {
-          const storedData = await AsyncStorage.getItem('userData');
-          if (storedData) {
-            const parsedData = JSON.parse(storedData);
-            console.log('✅ داده از AsyncStorage خوانده شد');
-            dispatch(setUserData(parsedData));
-          }
-        } catch (error) {
-          console.error('خطا در خواندن از AsyncStorage:', error);
-        } finally {
-          setIsLoadingData(false);
-        }
-        return;
-      }
+
 
       // API returns data in format: { technician: {...}, token_info: {...} }
-      const technicianData = userData.technician || userData;
+
 
       setFinancialData(prevData => ({
-        shabaNumber: technicianData.bank_shaba_number || prevData.shabaNumber,
-        bankName: technicianData.bank_name || prevData.bankName,
-        cardNumber: technicianData.bank_card_number || prevData.cardNumber
+        shabaNumber: userData.bank_shaba_number || prevData.shabaNumber,
+        bankName: userData.bank_name || prevData.bankName,
+        cardNumber: userData.bank_card_number || prevData.cardNumber
       }));
     };
 
@@ -119,35 +103,17 @@ export default function FinancialInfoScreen({ navigation }) {
         bank_card_number: financialData.cardNumber || null,
       };
 
-      console.log('📤 ارسال داده به API:', apiData);
 
       const result = await updateBankInfo(apiData);
 
       if (result.success) {
         showAlert('موفق', 'اطلاعات بانکی با موفقیت به‌روزرسانی شد');
 
-        // Update Redux with new data
-        if (result.data && result.data.technician) {
-          const updatedUserData = {
-            ...userData,
-            technician: {
-              ...userData.technician,
-              ...result.data.technician
-            }
-          };
-
-          // Update Redux
-          dispatch(setUserData(updatedUserData));
-
-          // ⭐ IMPORTANT: Update AsyncStorage as well!
-          await AsyncStorage.setItem('userData', JSON.stringify(updatedUserData));
-          console.log('✅ AsyncStorage هم به‌روز شد');
-        }
+        dispatch(fetchUser(userToken))
       } else {
         showAlert('خطا', result.message || 'مشکلی در به‌روزرسانی پیش آمد');
       }
-    } catch (error) {
-      console.error('خطا در ذخیره:', error);
+    } catch (error) { 
       showAlert('خطا', 'مشکلی در ارتباط با سرور پیش آمد');
     } finally {
       setSaving(false);
@@ -166,7 +132,6 @@ export default function FinancialInfoScreen({ navigation }) {
           <CustomStatusBar />
           <ScreenHeaders
             title={'حساب کاربری / حریم خصوصی'}
-            onPressLeft={() => navigation.goBack()}
           />
 
           <ScrollView contentContainerStyle={styles.container}>
@@ -217,7 +182,7 @@ export default function FinancialInfoScreen({ navigation }) {
               </View>
 
               {/* دکمه ثبت */}
-             
+
 
               <Button title={'ثبت اطلاعات'} onPress={handleSave} loading={saving} />
 

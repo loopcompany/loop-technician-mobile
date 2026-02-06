@@ -28,7 +28,7 @@ export default function ChatListScreen({ navigation }) {
         showToastOrAlert(result.message || 'خطا در دریافت لیست چت‌ها');
       }
     } catch (error) {
-      console.error('Error fetching chats:', error);
+      console.log('Error fetching chats:', error);
       showToastOrAlert('خطا در دریافت لیست چت‌ها');
     } finally {
       setLoading(false);
@@ -62,8 +62,6 @@ export default function ChatListScreen({ navigation }) {
         >
           <ScreenHeaders
             title={'پیام‌ها'}
-            onPressLeft={() => navigation.goBack()}
-            onPressRight={() => navigation.navigate('UserInfoScreen')}
           />
           <View style={styles.centerContainer}>
             <ActivityIndicator size="large" color="#fff" />
@@ -83,9 +81,7 @@ export default function ChatListScreen({ navigation }) {
         style={styles.background}
       >
         <ScreenHeaders
-          title={totalUnreadCount > 0 ? `پیام‌ها (${totalUnreadCount})` : 'پیام‌ها'}
-          onPressLeft={() => navigation.goBack()}
-          onPressRight={() => navigation.navigate('UserInfoScreen')}
+          title={totalUnreadCount > 0 ? `پیام‌ها (${totalUnreadCount})` : 'پیام‌ها'} 
         />
 
         <FlatList

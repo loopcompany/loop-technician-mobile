@@ -40,13 +40,6 @@ export const validateMeliCode = (meliCode) => {
 export const validateMobilePhone = (phone) => {
   const phoneRegex = /^09[0-9]{9}$/;
   
-  console.log('📱 validateMobilePhone called with:', {
-    phone,
-    phoneType: typeof phone,
-    phoneLength: phone?.length,
-    regexTest: phoneRegex.test(phone)
-  });
-  
   if (!phone) {
     return { isValid: false, message: 'شماره تلفن الزامی است' };
   }
@@ -205,7 +198,7 @@ export const validateLicenseDate = (licenseDate) => {
 /**
  * Validate required text field
  */
-export const validateRequiredText = (value, fieldName, minLength = 2, maxLength = 255) => {
+export const validateRequiredText = (value, fieldName, minLength = 1, maxLength = 255) => {
   if (!value || value.trim().length === 0) {
     return { isValid: false, message: `${fieldName} الزامی است` };
   }
@@ -273,7 +266,6 @@ export const validateTechnicianRegistration = (formData) => {
     { key: 'telephone', name: 'تلفن ثابت' },
     { key: 'mobile', name: 'تلفن همراه' },
     { key: 'email', name: 'آدرس ایمیل' },
-    { key: 'id_card_number', name: 'شماره کارت شناسایی' },
     { key: 'licence_date', name: 'تاریخ اعتبار گواهینامه' },
     { key: 'vehicle_type', name: 'نوع وسیله نقلیه' },
     { key: 'home_postal_code', name: 'کد پستی' },

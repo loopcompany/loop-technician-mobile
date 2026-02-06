@@ -17,7 +17,7 @@ import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor4, themeColor6, themeColor7, themeColor8, themeColor11 } from '../theme/Color';
 import { getTerminationRequests, getTerminationRequestById } from '../services/Api';
 import { useFocusEffect } from '@react-navigation/native';
-import { formatDateTime , showAlert} from '../helpers/Common';
+import { formatDateTime, showAlert } from '../helpers/Common';
 
 export default function TerminationRequestsListScreen({ navigation }) {
   const [requests, setRequests] = useState([]);
@@ -30,7 +30,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
   const fetchRequests = async (isRefresh = false) => {
     try {
       if (!isRefresh) setLoading(true);
-      
+
       console.log('📋 دریافت لیست درخواست‌های قطع همکاری...');
       const response = await getTerminationRequests();
 
@@ -39,7 +39,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
         console.log(`✅ ${response.data.length} درخواست دریافت شد`);
       }
     } catch (error) {
-      console.error('❌ خطا در دریافت لیست:', error);
+      console.log('❌ خطا در دریافت لیست:', error);
       showAlert('خطا', error.message || 'مشکلی در دریافت لیست پیش آمد');
     } finally {
       setLoading(false);
@@ -92,7 +92,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
         setSelectedRequest(response.data);
       }
     } catch (error) {
-      console.error('❌ خطا در نمایش جزئیات:', error);
+      console.log('❌ خطا در نمایش جزئیات:', error);
       setModalVisible(false);
       showAlert('خطا', error.message || 'مشکلی در نمایش جزئیات پیش آمد');
     } finally {
@@ -107,7 +107,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
 
   const renderItem = ({ item }) => {
     const statusBadge = getStatusBadge(item.status);
-    
+
     return (
       <TouchableOpacity
         style={styles.card}
@@ -115,27 +115,27 @@ export default function TerminationRequestsListScreen({ navigation }) {
         activeOpacity={0.7}
       >
         <View style={styles.header}>
-          <Text style={styles.id}>#{item.id}</Text>
+          <Text style={[NewStyles.title10,styles.id]}>#{item.id}</Text>
           <View style={[styles.badge, { backgroundColor: statusBadge.color }]}>
             <Ionicons name={statusBadge.icon} size={16} color="#fff" style={{ marginLeft: 4 }} />
             <Text style={styles.badgeText}>{statusBadge.text}</Text>
           </View>
         </View>
-        
+
         <View style={styles.typeContainer}>
           <Ionicons name={getTypeIcon(item.type)} size={20} color={themeColor0.bgColor(1)} style={{ marginLeft: 8 }} />
           <Text style={styles.typeLabel}>{getTypeLabel(item.type)}</Text>
         </View>
-        
+
         <View style={styles.dateInfo}>
           <Text style={styles.dateLabel}>از تاریخ: {item.start_date}</Text>
           {item.end_date && <Text style={styles.dateLabel}>تا تاریخ: {item.end_date}</Text>}
         </View>
-        
-        <Text style={styles.description} numberOfLines={2}>
+
+        <Text style={[NewStyles.text10,styles.description]} numberOfLines={2}>
           {item.description}
         </Text>
-        
+
         <View style={styles.footer}>
           <Text style={styles.date}>
             {formatDateTime(item.created_at)}
@@ -151,22 +151,15 @@ export default function TerminationRequestsListScreen({ navigation }) {
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <Ionicons name="power-outline" size={80} color={themeColor10.bgColor(0.3)} />
-      <Text style={styles.emptyText}>هیچ درخواستی ثبت نشده است</Text>
-      <Text style={styles.emptySubText}>درخواست‌های قطع همکاری شما اینجا نمایش داده می‌شود</Text>
-      {/* <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => navigation.goBack()}
-      >
-        <Ionicons name="add-circle" size={20} color="#fff" style={{ marginLeft: 8 }} />
-        <Text style={styles.addButtonText}>ثبت درخواست جدید</Text>
-      </TouchableOpacity> */}
+      <Ionicons name="power-outline" size={80} color={themeColor4.bgColor(1)} />
+      <Text style={[NewStyles.text4, styles.emptyText]}>هیچ درخواستی ثبت نشده است</Text>
+      <Text style={[NewStyles.text4, styles.emptySubText]}>درخواست‌های قطع همکاری شما اینجا نمایش داده می‌شود</Text>
     </View>
   );
 
   const renderDetailModal = () => {
     if (!selectedRequest) return null;
-    
+
     const statusBadge = getStatusBadge(selectedRequest.status);
 
     return (
@@ -189,7 +182,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
                   <Text style={styles.modalTitle}>
                     جزئیات درخواست #{selectedRequest.id}
                   </Text>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     onPress={closeModal}
                     style={styles.closeButton}
                   >
@@ -276,7 +269,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
                   </View>
                 </ScrollView>
 
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.modalCloseButton}
                   onPress={closeModal}
                 >
@@ -300,7 +293,6 @@ export default function TerminationRequestsListScreen({ navigation }) {
       >
         <ScreenHeaders
           title={'لیست درخواست‌های قطع همکاری'}
-          onPressLeft={() => navigation.goBack()}
         />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
@@ -319,7 +311,6 @@ export default function TerminationRequestsListScreen({ navigation }) {
     >
       <ScreenHeaders
         title={'لیست درخواست‌های قطع همکاری'}
-        onPressLeft={() => navigation.goBack()}
       />
 
       <FlatList
@@ -340,7 +331,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
         }
         ListEmptyComponent={renderEmpty}
       />
-      
+
       {renderDetailModal()}
     </LinearGradient>
   );
@@ -384,8 +375,7 @@ const styles = StyleSheet.create({
     borderBottomColor: themeColor10.bgColor(0.1),
   },
   id: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 14, 
     color: themeColor10.bgColor(0.6),
   },
   badge: {
@@ -451,13 +441,13 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 18,
-    color: themeColor10.bgColor(0.7),
+    color: themeColor4.bgColor(1),
     marginTop: 16,
     textAlign: 'center',
   },
   emptySubText: {
     fontSize: 14,
-    color: themeColor10.bgColor(0.5),
+    color: themeColor4.bgColor(1),
     marginTop: 8,
     textAlign: 'center',
     lineHeight: 22,

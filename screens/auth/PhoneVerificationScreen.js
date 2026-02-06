@@ -58,7 +58,7 @@ export default function PhoneVerificationScreen({ navigation, route }) {
   }, [verificationCode]);
 
   const handleVerifyCode = async () => {
-    if(canResend){
+    if (canResend) {
       showAlert('خطا', 'کد منقضی شده است. لطفاً کد جدید را درخواست کنید.');
       return;
     }
@@ -95,7 +95,7 @@ export default function PhoneVerificationScreen({ navigation, route }) {
         setVerificationCode('');
       }
     } catch (error) {
-      console.error('Verification error:', error);
+      console.log('Verification error:', error);
 
       let errorMessage = 'خطا در تأیید شماره تلفن';
 
@@ -135,7 +135,7 @@ export default function PhoneVerificationScreen({ navigation, route }) {
         setError(result.message || 'خطا در ارسال مجدد کد');
       }
     } catch (error) {
-      console.error('Resend error:', error);
+      console.log('Resend error:', error);
 
       let errorMessage = 'خطا در ارسال مجدد کد';
 
@@ -162,7 +162,15 @@ export default function PhoneVerificationScreen({ navigation, route }) {
       'آیا می‌خواهید شماره موبایل را ویرایش کنید؟',
       [
         { text: 'لغو', style: 'cancel' },
-        { text: 'بله', onPress: () => navigation.goBack() }
+        {
+          text: 'بله', onPress: () => {
+            if (Platform.OS == 'web') {
+              window.history.back()
+            } else {
+              navigation.goBack()
+            }
+          }
+        }
       ]
     );
   };
@@ -171,7 +179,7 @@ export default function PhoneVerificationScreen({ navigation, route }) {
     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
       <ImageBackground
         source={Platform.OS === 'web' ? require('../../assets/webbackground.jpg') : require('../../assets/background2.jpg')}
-        
+
         style={styles.background}
       >
         <CustomStatusBar />
@@ -267,7 +275,13 @@ export default function PhoneVerificationScreen({ navigation, route }) {
               {/* Back Button */}
               <TouchableOpacity
                 style={styles.backButton}
-                onPress={() => navigation.goBack()}
+                onPress={() => {
+                  if (Platform.OS == 'web') {
+                    window.history.back()
+                  } else {
+                    navigation.goBack()
+                  }
+                }}
               >
                 <Text style={NewStyles.text1}>بازگشت به صفحه ثبت نام</Text>
               </TouchableOpacity>

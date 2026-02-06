@@ -19,16 +19,14 @@ export default function ServiceCompletionScreen({ navigation }) {
   const [isConfirmed, setIsConfirmed] = useState(false);
 
   return (
-    <LinearGradient 
-      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
+    <LinearGradient
+      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.background}
     >
-      <ScreenHeaders 
-        title={'تحویل به کاربر / اتمام سرویس جاری'} 
-        onPressLeft={() => navigation.goBack()} 
-        onPressRight={() => navigation.navigate('NextScreen')} 
+      <ScreenHeaders
+        title={'تحویل به کاربر / اتمام سرویس جاری'}
       />
       <ScrollView contentContainerStyle={styles.container}>
 
@@ -136,7 +134,7 @@ export default function ServiceCompletionScreen({ navigation }) {
           <Text style={[NewStyles.text10, styles.completionSubtitle]}>ضمن تشکر از شما</Text>
           <Text style={[NewStyles.text10, styles.completionNote]}>لطفا نظر خود را از این سرویس  با ما در میان بگذارید.
 
-            
+
           </Text>
 
           {/* توضیحات تکنسین */}
@@ -216,8 +214,8 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 8,
     width: "25%",
-    alignSelf:"flex-end",
-    marginHorizontal:40
+    alignSelf: "flex-end",
+    marginHorizontal: 40
   },
   checkboxText: {
     marginLeft: 10,

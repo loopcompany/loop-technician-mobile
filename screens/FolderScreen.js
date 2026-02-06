@@ -13,63 +13,29 @@ import { getTechnicianOrders } from '../services/Api';
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function FolderScreen({ navigation }) {
-  const userToken = useSelector(state => state.auth.token)
-  const { showFooter, hideFooter, isFooterVisible } = useFooter();
   const [unseenCount, setUnseenCount] = useState(0);
-
-  // تابع دسترسی به ابجکت های یک استیت
-  console.log(userToken);
-  const fetchToken = async () => {
-    const userId = await AsyncStorage.getItem("userId");
-    // گت کوکی
-    console.log(userId);
-
-  }
 
   const computeUnseenFromOrders = (orders = []) => {
     if (!Array.isArray(orders)) return 0;
-    // شمارش سفارشاتی که در حال پردازش هستن (نه انجام شده، نه لغو شده)
-    // Status 0 = در انتظار
-    // Status 1 = در حال پردازش
-    // Status 2 = انجام شده (نباید شمارش بشه)
-    // Status 3,4,5 = لغو شده (نباید شمارش بشه)
     const activeOrders = orders.filter(o => {
       if (o == null) return false;
-      
-      console.log(`🔍 سفارش #${o.id}: status = ${o.status} (type: ${typeof o.status})`);
-      
-      // چک کردن به صورت number و string
       const status = typeof o.status === 'string' ? parseInt(o.status) : o.status;
       const isActive = status === 0 || status === 1;
-      
-      console.log(`   -> ${isActive ? '✅ فعال' : '❌ غیرفعال'}`);
-      
       return isActive;
     });
-    
-    console.log(`📊 مجموع سفارشات فعال: ${activeOrders.length} از ${orders.length}`);
     return activeOrders.length;
   }
 
   const fetchUnseenCount = async () => {
     try {
-      // دریافت همه سفارشات (بدون فیلتر status)
       const result = await getTechnicianOrders(null, 1, 100);
-      console.log('🔍 FolderScreen: کل response از API:', JSON.stringify(result, null, 2));
-      
       if (result?.success) {
         const orders = result.data.orders || result.data || [];
-        console.log('🔍 FolderScreen: تعداد کل سفارشات دریافتی:', orders.length);
-        console.log('🔍 FolderScreen: اولین سفارش:', JSON.stringify(orders[0], null, 2));
-        
         const count = computeUnseenFromOrders(orders);
-        console.log('📊 FolderScreen: تعداد سفارشات فعال (در انتظار + در حال پردازش) ->', count);
         setUnseenCount(count);
       } else {
-        console.warn('⚠️ FolderScreen: خطا در دریافت سفارشات', result?.message);
       }
     } catch (err) {
-      console.error('❌ FolderScreen fetchUnseenCount error', err);
     }
   }
 
@@ -77,43 +43,12 @@ export default function FolderScreen({ navigation }) {
     fetchUnseenCount();
   }, []);
 
-  // refresh when screen gains focus
   useFocusEffect(
     useCallback(() => {
       fetchUnseenCount();
     }, [])
   );
-  // const [menuVisible, setMenuVisible] = useState(false);
-  // const [selectedItems, setSelectedItems] = useState({});
-
-  // const menuItems = [
-  //   'سفارش‌های جاری / رزرو',
-  //   'سازمانی / شرکتی',
-  //   'سفارش‌ها',
-  //   'تراکنش‌ها',
-  //   'لوپ‌نامه‌ها',
-  //   'پیش‌رسید',
-  //   'رسید',
-  //   'ادرس‌های منتخب',
-  //   'کیف پول',
-  //   'ثبت نام دوره‌های آموزشی',
-  //   'طرح‌های تشویقی',
-  //   'عضویت سرویس / محصول',
-  //   'درخواست',
-  //   'ثبت / پیگیری تلفن',
-  //   'نظرات و پیشنهادات',
-  //   'مهلت تست / گارانتی',
-  //   'یادداشت',
-  //   'بیشتر بدانید',
-  //   'قوانین / درباره لوپ',
-  // ];
-
-  // const toggleItem = (item) => {
-  //   setSelectedItems((prev) => ({
-  //     ...prev,
-  //     [item]: !prev[item],
-  //   }));
-  // }
+  
   const folders = [
     {
       id: 1,
@@ -193,7 +128,7 @@ export default function FolderScreen({ navigation }) {
     {
       id: 15,
       title: " نرخنامه",
-      screen: 'RateListScreen'
+      screen: 'RateCategory'
     },
     {
       id: 16,
@@ -206,7 +141,6 @@ export default function FolderScreen({ navigation }) {
       screen: 'NotesScreen'
     },
   ];
-  fetchToken()
   return (
     <SafeAreaView edges={{top:'off', bottom:'off'}} style={NewStyles.container}>
       <ImageBackground

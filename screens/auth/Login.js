@@ -24,7 +24,7 @@ import { useDispatch } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { loginTechnician, validateToken } from '../../services/Api';
 import { setToken } from '../../slices/authSlice';
-import { setUserData } from '../../slices/userSlice';
+import { fetchUser, setUserData } from '../../slices/userSlice';
 import { showToastOrAlert, showAlert } from '../../helpers/Common';
 import { SafeAreaView } from 'react-native-safe-area-context';
 export default function Login() {
@@ -59,7 +59,7 @@ export default function Login() {
         console.log('✅ اطلاعات بارگذاری شد');
       }
     } catch (error) {
-      console.error('❌ خطا در بارگذاری اطلاعات:', error);
+      console.log('❌ خطا در بارگذاری اطلاعات:', error);
     }
   }
 
@@ -112,40 +112,27 @@ export default function Login() {
   }
 
   function validateInputs() {
-    console.log('🔍 شروع اعتبارسنجی...');
-    console.log('کد پرسنلی وارد شده:', referralCode);
-    console.log('طول کد پرسنلی:', referralCode.length);
-    console.log('رمز عبور:', password ? 'وارد شده' : 'خالی');
-    console.log('کپچا وارد شده:', captchaInput);
-    console.log('کپچا صحیح:', captcha);
 
     if (!referralCode.trim()) {
-      console.log('❌ کد پرسنلی خالی است');
       showAlert('خطا', 'لطفاً کد پرسنلی را وارد کنید');
       return false;
     }
     if (referralCode.trim().length < 6) {
-      console.log('❌ کد پرسنلی کمتر از 6 کاراکتر است');
       showAlert('خطا', 'کد پرسنلی باید حداقل 6 کاراکتر باشد');
       return false;
     }
     if (!password.trim()) {
-      console.log('❌ رمز عبور خالی است');
       showAlert('خطا', 'لطفاً رمز عبور را وارد کنید');
       return false;
     }
     if (!captchaInput.trim()) {
-      console.log('❌ کپچا خالی است');
       showAlert('خطا', 'لطفاً کد امنیتی را وارد کنید');
       return false;
     }
     const normalizedInput = normalizeDigits(captchaInput);
     const normalizedCaptcha = normalizeDigits(captcha);
-    console.log('کپچا نرمال شده (ورودی):', normalizedInput);
-    console.log('کپچا نرمال شده (صحیح):', normalizedCaptcha);
 
     if (normalizedInput !== normalizedCaptcha) {
-      console.log('❌ کپچا اشتباه است');
       showAlert(
         'کد امنیتی اشتباه',
         `کد وارد شده: ${captchaInput}\n\nلطفاً کد امنیتی جدید را وارد کنید.`,
@@ -161,55 +148,19 @@ export default function Login() {
   async function handleLogin() {
     if (!validateInputs()) return;
 
-    console.log('=== شروع فرآیند لاگین ===');
-    console.log('کد پرسنلی:', referralCode);
-    console.log('رمز عبور وارد شده:', password ? '***' : 'خالی');
-    console.log('کپچا:', captchaInput);
-
     setIsLoading(true);
     try {
-      console.log('در حال ارسال درخواست به سرور...');
       const result = await loginTechnician(referralCode.trim(), password.trim());
-      console.log('پاسخ سرور:', JSON.stringify(result, null, 2));
 
       if (result.success && result.data?.token) {
-        console.log('✅ ورود موفق - توکن دریافت شد');
 
         // Save token first
         await AsyncStorage.setItem('userToken', result.data.token);
         dispatch(setToken(result.data.token));
-
-        // Fetch complete profile data using validateToken
-        console.log('🔄 در حال دریافت اطلاعات کامل از validateToken...');
-
-        try {
-          const profileResult = await validateToken();
-
-          if (profileResult.success && profileResult.data) {
-            console.log('✅ اطلاعات کامل از validateToken دریافت شد');
-            console.log('🔍 داده‌های کامل:', JSON.stringify(profileResult.data, null, 2));
-
-            // Save complete user data
-            console.log('💾 ذخیره اطلاعات کامل در Redux و AsyncStorage');
-            await AsyncStorage.setItem('userData', JSON.stringify(profileResult.data));
-            dispatch(setUserData(profileResult.data));
-          } else {
-            console.log('⚠️ validateToken موفق نبود، استفاده از داده‌های اولیه');
-            // Fallback to basic data from login
-            await AsyncStorage.setItem('userData', JSON.stringify(result.data));
-            dispatch(setUserData(result.data));
-          }
-        } catch (validateError) {
-          console.error('❌ خطا در validateToken:', validateError);
-          console.log('⚠️ استفاده از داده‌های اولیه login به دلیل خطا در validateToken');
-          // Fallback to basic data from login
-          await AsyncStorage.setItem('userData', JSON.stringify(result.data));
-          dispatch(setUserData(result.data));
-        }
+        dispatch(fetchUser(result.data.token));
 
         // Save credentials if remember me is checked
         if (rememberPassword) {
-          console.log('ذخیره اطلاعات ورود برای دفعات بعد...');
           await AsyncStorage.setItem('savedReferralCode', referralCode.trim());
           await AsyncStorage.setItem('savedPassword', password.trim());
         } else {
@@ -219,14 +170,11 @@ export default function Login() {
 
         showToastOrAlert('موفق', result.message || 'ورود با موفقیت انجام شد');
 
-        // Navigate to FolderScreen
-        console.log('هدایت به FolderScreen...');
         navigation.reset({
           index: 0,
           routes: [{ name: 'FolderScreen' }],
         });
       } else {
-        console.log('❌ ورود ناموفق:', result.message);
 
         // Build detailed error message
         let errorMessage = '';
@@ -253,17 +201,11 @@ export default function Login() {
         createNewCaptcha();
       }
     } catch (error) {
-      console.error('❌❌❌ خطای لاگین:', error);
-      console.error('نوع خطا:', error.name);
-      console.error('پیام خطا:', error.message);
 
       // Build detailed error message
       let errorMessage = 'خطا در ورود به سیستم\n\n';
 
       if (error.response) {
-        console.error('وضعیت HTTP:', error.response.status);
-        console.error('داده خطا:', error.response.data);
-
         // Server responded with error
         errorMessage += `وضعیت: ${error.response.status}\n`;
 
@@ -282,7 +224,6 @@ export default function Login() {
           }
         }
       } else if (error.request) {
-        console.error('درخواست ارسال شده:', error.request);
         // Request made but no response
         errorMessage += 'سرور پاسخی نداد. لطفاً اتصال اینترنت خود را بررسی کنید.';
       } else {
@@ -299,16 +240,15 @@ export default function Login() {
       createNewCaptcha();
     } finally {
       setIsLoading(false);
-      console.log('=== پایان فرآیند لاگین ===');
     }
   }
 
 
   return (
     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'off' }}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+      <ImageBackground source={Platform.OS === 'web' ? require('../../assets/webbackground.jpg') : require('../../assets/background2.jpg')} style={styles.background} resizeMode='cover' >
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
 
-        <ImageBackground source={Platform.OS === 'web' ? require('../../assets/webbackground.jpg') : require('../../assets/background2.jpg')} style={styles.background} >
           <ScrollView>
             <CustomStatusBar />
             <View style={styles.spaceContainer}>
@@ -449,9 +389,9 @@ export default function Login() {
 
             </View>
           </ScrollView>
-        </ImageBackground>
 
-      </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
+      </ImageBackground>
     </SafeAreaView>
   );
 }

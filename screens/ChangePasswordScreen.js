@@ -126,7 +126,7 @@ export default function ChangePasswordScreen({ navigation }) {
                   
                   console.log('✅ خروج موفق - هدایت به صفحه ورود');
                 } catch (error) {
-                  console.error('❌ خطا در پاک کردن اطلاعات:', error);
+                  console.log('❌ خطا در پاک کردن اطلاعات:', error);
                   // Even if clearing fails, still navigate to login
                   navigation.reset({
                     index: 0,
@@ -154,7 +154,7 @@ export default function ChangePasswordScreen({ navigation }) {
         }
       }
     } catch (error) {
-      console.error('❌ خطا در تغییر رمز:', error);
+      console.log('❌ خطا در تغییر رمز:', error);
       showAlert('خطا', 'مشکلی در ارتباط با سرور پیش آمد. لطفاً دوباره تلاش کنید.');
     } finally {
       setLoading(false);
@@ -170,8 +170,6 @@ export default function ChangePasswordScreen({ navigation }) {
     >
       <ScreenHeaders 
         title={'تغییر رمز'} 
-        onPressLeft={() => navigation.goBack()} 
-        onPressRight={() => navigation.navigate} 
       />
       
       <ScrollView contentContainerStyle={styles.container}>

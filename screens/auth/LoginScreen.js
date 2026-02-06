@@ -66,7 +66,7 @@ export default function LoginScreen({ navigation, route }) {
         showAlert('خطا', result.message);
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.log('Login error:', error);
       showAlert('خطا', 'خطا در ورود به سیستم');
     } finally {
       setLoading(false);
@@ -82,7 +82,7 @@ export default function LoginScreen({ navigation, route }) {
     navigation.navigate("ResetPasswordScreen", { phone });
   };
   return (
-    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
+    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'off' }}>
       <CustomStatusBar />
       <ImageBackground
         source={require("../../assets/background2.jpg")}
@@ -198,7 +198,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingVertical: 40,
     backgroundColor: themeColor0.bgColor(0.22),
   },
   inputContainer: {
