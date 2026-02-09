@@ -12,6 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { getFormatedDate } from 'react-native-modern-datepicker';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 import ScreenHeaders from '../components/ScreenHeaders';
 import DatePickerModal from '../components/DatePickerModal';
@@ -21,6 +22,7 @@ import { getTransactions } from '../services/Api';
 import { formatDate, showAlert } from '../helpers/Common';
 
 export default function PerformanceScreen({ navigation }) {
+  const { t } = useTranslation();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -75,7 +77,7 @@ export default function PerformanceScreen({ navigation }) {
       }
     } catch (error) {
       console.log('❌ خطا در دریافت لیست تراکنش‌ها:', error);
-      showAlert('خطا', error.message || 'مشکلی در دریافت لیست تراکنش‌ها پیش آمد');
+      showAlert(t('Error'), error.message || t('There was a problem fetching the transactions list.'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -130,11 +132,11 @@ export default function PerformanceScreen({ navigation }) {
         style={styles.background}
       >
         <ScreenHeaders
-          title={'عملکرد من'}
+          title={t('My performance')}
         />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
-          <Text style={[NewStyles.text4, styles.loadingText]}>در حال بارگذاری...</Text>
+          <Text style={[NewStyles.text4, styles.loadingText]}>{t('Loading...')}</Text>
         </View>
       </LinearGradient>
     );
@@ -143,37 +145,37 @@ export default function PerformanceScreen({ navigation }) {
   const renderHeader = () => (
     <View style={styles.dateFilterContainer}>
       <View style={styles.filterHeader}>
-        <Text style={[NewStyles.title, styles.filterTitle]}>فیلتر بر اساس تاریخ</Text>
+        <Text style={[NewStyles.title, styles.filterTitle]}>{t('Filter by date')}</Text>
         {(fromDateJalali || toDateJalali) && (
           <TouchableOpacity onPress={clearFilters} style={styles.clearButton}>
             <Ionicons name="close-circle" size={20} color={themeColor6.bgColor(1)} />
-            <Text style={[NewStyles.text4, styles.clearText]}>پاک کردن</Text>
+            <Text style={[NewStyles.text4, styles.clearText]}>{t('Clear')}</Text>
           </TouchableOpacity>
         )}
       </View>
 
       <View style={styles.dateRow}>
         <View style={styles.dateInputContainer}>
-          <Text style={[NewStyles.text4, styles.dateLabel]}>از تاریخ</Text>
+          <Text style={[NewStyles.text4, styles.dateLabel]}>{t('From date')}</Text>
           <TouchableOpacity
             style={styles.dateInputButton}
             onPress={() => setShowFromDatePicker(true)}
           >
             <Text style={[NewStyles.text10, styles.dateText]}>
-              {fromDateJalali || 'انتخاب تاریخ'}
+              {fromDateJalali || t('Select Date')}
             </Text>
             <Ionicons name="calendar" size={20} color={themeColor0.bgColor(1)} />
           </TouchableOpacity>
         </View>
 
         <View style={styles.dateInputContainer}>
-          <Text style={[NewStyles.text4, styles.dateLabel]}>تا تاریخ</Text>
+          <Text style={[NewStyles.text4, styles.dateLabel]}>{t('To date')}</Text>
           <TouchableOpacity
             style={styles.dateInputButton}
             onPress={() => setShowToDatePicker(true)}
           >
             <Text style={[NewStyles.text10, styles.dateText]}>
-              {toDateJalali || 'انتخاب تاریخ'}
+              {toDateJalali || t('Select Date')}
             </Text>
             <Ionicons name="calendar" size={20} color={themeColor0.bgColor(1)} />
           </TouchableOpacity>
@@ -186,7 +188,7 @@ export default function PerformanceScreen({ navigation }) {
     <View style={styles.transactionsHeader}>
       <Ionicons name="receipt" size={24} color={themeColor0.bgColor(1)} />
       <Text style={[NewStyles.title, styles.transactionsTitle]}>
-        لیست تراکنش‌ها ({transactions.length})
+        {t('Transactions list')} ({transactions.length})
       </Text>
     </View>
   );
@@ -194,11 +196,11 @@ export default function PerformanceScreen({ navigation }) {
   const renderEmptyComponent = () => (
     <View style={styles.emptyContainer}>
       <Ionicons name="wallet-outline" size={80} color={themeColor10.bgColor(0.3)} />
-      <Text style={[NewStyles.text, styles.emptyText]}>هیچ تراکنشی یافت نشد</Text>
+      <Text style={[NewStyles.text, styles.emptyText]}>{t('No transactions found')}</Text>
       <Text style={[NewStyles.text4, styles.emptySubText]}>
         {fromDateJalali || toDateJalali
-          ? 'در بازه زمانی انتخاب شده تراکنشی وجود ندارد'
-          : 'هنوز هیچ تراکنشی ثبت نشده است'
+          ? t('No transactions found for the selected date range')
+          : t('No transactions have been recorded yet')
         }
       </Text>
     </View>
@@ -218,7 +220,7 @@ export default function PerformanceScreen({ navigation }) {
         <Text style={[NewStyles.title, styles.priceText, {
           color: parseFloat(item.price) >= 0 ? themeColor7.bgColor(1) : themeColor6.bgColor(1)
         }]}>
-          {parseFloat(item.price) >= 0 ? '+' : '-'} {formatPrice(item.price)} تومان
+          {parseFloat(item.price) >= 0 ? '+' : '-'} {formatPrice(item.price)} {t('Tomans')}
         </Text>
       </View>
 
@@ -246,7 +248,7 @@ export default function PerformanceScreen({ navigation }) {
       {item.order_id && (
         <View style={styles.orderInfo}>
           <Ionicons name="document-text-outline" size={16} color={themeColor0.bgColor(1)} />
-          <Text style={[NewStyles.text4, styles.orderText]}>سفارش #{item.order_id}</Text>
+          <Text style={[NewStyles.text4, styles.orderText]}>{t('Order #')}{item.order_id}</Text>
         </View>
       )}
 
@@ -259,7 +261,7 @@ export default function PerformanceScreen({ navigation }) {
       {item.commission > 0 && (
         <View style={styles.commissionBadge}>
           <Text style={[NewStyles.text4, styles.commissionText]}>
-            درصد شما: {item.commission}%
+            {t('Your percentage:')} {item.commission}%
           </Text>
         </View>
       )}
@@ -274,7 +276,7 @@ export default function PerformanceScreen({ navigation }) {
       style={styles.background}
     >
       <ScreenHeaders
-        title={'عملکرد من'}
+        title={t('My performance')}
       />
 
       <FlatList

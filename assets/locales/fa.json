@@ -1167,7 +1167,25 @@
   "Information updated successfully.": "اطلاعات با موفقیت به‌روزرسانی شد",
   "Iran": "ایران",
   "Privacy": "حریم خصوصی",
-  "Error loading privacy policy.": "خطا در بارگذاری حریم خصوصی"
+  "Error loading privacy policy.": "خطا در بارگذاری حریم خصوصی",
+  "Invalid IBAN format.\nCorrect format: IR followed by 24 digits\nExample: IR123456789012345678901234": "فرمت شماره شبا نامعتبر است.\nفرمت صحیح: IR به همراه 24 رقم\nمثال: IR123456789012345678901234",
+  "Card number must be exactly 16 digits.\nExample: 6037991234567890": "شماره کارت باید دقیقاً 16 رقم باشد.\nمثال: 6037991234567890",
+  "Bank name must not exceed 100 characters": "نام بانک نباید بیشتر از 100 کاراکتر باشد",
+  "Bank information updated successfully.": "اطلاعات بانکی با موفقیت به‌روزرسانی شد",
+  "IBAN (IR + 24 digits) :": "شماره شبا (IR + 24 رقم) :",
+  "Bank name :": "نام بانک :",
+  "Card number (16 digits) :": "شماره کارت (16 رقم) :",
+  "Bank Melli Iran": "بانک ملی ایران",
+  "My performance": "عملکرد من",
+  "Filter by date": "فیلتر بر اساس تاریخ",
+  "From date": "از تاریخ",
+  "To date": "تا تاریخ",
+  "Transactions list": "لیست تراکنش‌ها",
+  "No transactions found": "هیچ تراکنشی یافت نشد",
+  "No transactions found for the selected date range": "در بازه زمانی انتخاب شده تراکنشی وجود ندارد",
+  "No transactions have been recorded yet": "هنوز هیچ تراکنشی ثبت نشده است",
+  "There was a problem fetching the transactions list.": "مشکلی در دریافت لیست تراکنش‌ها پیش آمد",
+  "Your percentage:": "درصد شما:"
 }
 
 

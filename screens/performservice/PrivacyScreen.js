@@ -12,23 +12,25 @@ import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor3, themeColor10, themeColor2, themeColor8 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
+import { useTranslation } from 'react-i18next';
 
 export default function PrivacyScreen({ navigation }) {
+  const { t } = useTranslation();
 
   const privacyOptions = [
     {
       id: 1,
-      title: 'مشخصات فردی',
+      title: t('Personal Information'),
       screen: 'PersonalInfoScreen'
     },
     {
       id: 2,
-      title: 'مشخصات وسیله نقلیه',
+      title: t('Vehicle Information'),
       screen: 'VehicleInfoScreen'
     },
     {
       id: 3,
-      title: 'اطلاعات مالی',
+      title: t('Financial information'),
       screen: 'FinancialInfoScreen'
     }
   ];
@@ -42,7 +44,7 @@ export default function PrivacyScreen({ navigation }) {
     >
       <CustomStatusBar />
       <ScreenHeaders
-        title={'حریم خصوصی'}
+        title={t('Privacy')}
       />
 
       <ScrollView contentContainerStyle={styles.container}>

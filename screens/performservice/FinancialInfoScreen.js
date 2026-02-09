@@ -21,10 +21,12 @@ import { showAlert } from '../../helpers/Common';
 import { fetchUser, setUserData } from '../../slices/userSlice';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../../components/Button';
+import { useTranslation } from 'react-i18next';
 export default function FinancialInfoScreen({ navigation }) {
   const dispatch = useDispatch();
   const userData = useSelector(state => state.user.data?.data?.technician);
   const userToken = useSelector(state => state.auth.token);
+  const { t } = useTranslation();
 
   const [saving, setSaving] = useState(false);
 
@@ -80,17 +82,17 @@ export default function FinancialInfoScreen({ navigation }) {
   const handleSave = async () => {
     // Validation
     if (financialData.shabaNumber && !validateShaba(financialData.shabaNumber)) {
-      showAlert('خطا', 'فرمت شماره شبا نامعتبر است.\nفرمت صحیح: IR به همراه 24 رقم\nمثال: IR123456789012345678901234');
+      showAlert(t('Error'), t('Invalid IBAN format.\nCorrect format: IR followed by 24 digits\nExample: IR123456789012345678901234'));
       return;
     }
 
     if (financialData.cardNumber && !validateCardNumber(financialData.cardNumber)) {
-      showAlert('خطا', 'شماره کارت باید دقیقاً 16 رقم باشد.\nمثال: 6037991234567890');
+      showAlert(t('Error'), t('Card number must be exactly 16 digits.\nExample: 6037991234567890'));
       return;
     }
 
     if (financialData.bankName && financialData.bankName.length > 100) {
-      showAlert('خطا', 'نام بانک نباید بیشتر از 100 کاراکتر باشد');
+      showAlert(t('Error'), t('Bank name must not exceed 100 characters'));
       return;
     }
 
@@ -107,14 +109,14 @@ export default function FinancialInfoScreen({ navigation }) {
       const result = await updateBankInfo(apiData);
 
       if (result.success) {
-        showAlert('موفق', 'اطلاعات بانکی با موفقیت به‌روزرسانی شد');
+        showAlert(t('Success'), t('Bank information updated successfully.'));
 
         dispatch(fetchUser(userToken))
       } else {
-        showAlert('خطا', result.message || 'مشکلی در به‌روزرسانی پیش آمد');
+        showAlert(t('Error'), result.message || t('There was a problem updating.'));
       }
     } catch (error) { 
-      showAlert('خطا', 'مشکلی در ارتباط با سرور پیش آمد');
+      showAlert(t('Error'), t('There was an error connecting to the server.'));
     } finally {
       setSaving(false);
     }
@@ -131,21 +133,21 @@ export default function FinancialInfoScreen({ navigation }) {
         >
           <CustomStatusBar />
           <ScreenHeaders
-            title={'حساب کاربری / حریم خصوصی'}
+            title={t('Account / Privacy')}
           />
 
           <ScrollView contentContainerStyle={styles.container}>
 
             {/* دکمه اطلاعات مالی */}
             <TouchableOpacity style={[styles.mainButton, { backgroundColor: themeColor0.bgColor(0.8) }]}>
-              <Text style={styles.buttonText}>اطلاعات مالی</Text>
+              <Text style={styles.buttonText}>{t('Financial information')}</Text>
             </TouchableOpacity>
 
             {/* فرم اطلاعات مالی */}
             <View style={styles.formContainer}>
 
               <View style={styles.inputRow}>
-                <Text style={styles.label}>شماره شبا (IR + 24 رقم) :</Text>
+                <Text style={styles.label}>{t('IBAN (IR + 24 digits) :')}</Text>
                 <TextInput
                   style={styles.input}
                   value={financialData.shabaNumber}
@@ -157,19 +159,19 @@ export default function FinancialInfoScreen({ navigation }) {
               </View>
 
               <View style={styles.inputRow}>
-                <Text style={styles.label}>نام بانک :</Text>
+                <Text style={styles.label}>{t('Bank name :')}</Text>
                 <TextInput
                   style={styles.input}
                   value={financialData.bankName}
                   onChangeText={(value) => updateField('bankName', value)}
-                  placeholder="بانک ملی ایران"
+                  placeholder={t('Bank Melli Iran')}
                   maxLength={100}
                   editable={!saving}
                 />
               </View>
 
               <View style={styles.inputRow}>
-                <Text style={styles.label}>شماره کارت (16 رقم) :</Text>
+                <Text style={styles.label}>{t('Card number (16 digits) :')}</Text>
                 <TextInput
                   style={styles.input}
                   value={financialData.cardNumber}
@@ -184,7 +186,7 @@ export default function FinancialInfoScreen({ navigation }) {
               {/* دکمه ثبت */}
 
 
-              <Button title={'ثبت اطلاعات'} onPress={handleSave} loading={saving} />
+              <Button title={t('Save information')} onPress={handleSave} loading={saving} />
 
             </View>
 
