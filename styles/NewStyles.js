@@ -55,7 +55,10 @@ export const gradientColors = [
 ];
 const RTL_LANGS = new Set(['fa', 'ar', 'he', 'ur', 'ps', 'ckb']);
 const langIsRTL = (lang) => (lang || '').toLowerCase().split('-')[0] && RTL_LANGS.has((lang || '').toLowerCase().split('-')[0]);
-const NewStyles = StyleSheet.create({
+
+export const createStyles = (lang) => {
+  return (
+      StyleSheet.create({
   selectBox: {
     height: 50,
     alignItems: "center",
@@ -108,7 +111,7 @@ const NewStyles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     ...Platform.select({ web: { lineHeight: 65 } }),
     fontSize: 24,
-    textAlign: "center",
+    textAlign: langIsRTL(lang) ? "right" : "left",
     borderRadius: 8,
     borderCurve: "continuous",
     overflow: "hidden",
@@ -141,13 +144,13 @@ const NewStyles = StyleSheet.create({
   },
 
   rowWrapper: {
-    flexDirection: "row-reverse",
+    flexDirection: langIsRTL(lang) ? "row-reverse" : "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
 
   row: {
-    flexDirection: "row-reverse",
+    flexDirection: langIsRTL(lang) ? "row-reverse" : "row",
     alignItems: "center",
   },
 
@@ -183,67 +186,67 @@ const NewStyles = StyleSheet.create({
   text: {
     fontFamily: "VazirLight",
     color: COLOR_0_FULL,
-    textAlign: "right",
+    textAlign: langIsRTL(lang) ? "right" : "left",
   },
 
   text1: {
     fontFamily: "VazirLight",
     color: COLOR_1_FULL,
-    textAlign: "right",
+    textAlign: langIsRTL(lang) ? "right" : "left",
   },
 
   text2: {
     fontFamily: "VazirLight",
     color: COLOR_2_FULL,
-    textAlign: "right",
+    textAlign: langIsRTL(lang) ? "right" : "left",
   },
 
   text3: {
     fontFamily: "VazirLight",
     color: COLOR_3_FULL,
-    textAlign: "right",
+    textAlign: langIsRTL(lang) ? "right" : "left",
   },
 
   text4: {
     fontFamily: "VazirLight",
     color: COLOR_4_FULL,
-    textAlign: "right",
+    textAlign: langIsRTL(lang) ? "right" : "left",
   },
 
   text6: {
     fontFamily: "VazirLight",
     color: COLOR_6_FULL,
-    textAlign: "right",
+    textAlign: langIsRTL(lang) ? "right" : "left",
   },
 
   text7: {
     fontFamily: "VazirLight",
     color: COLOR_7_FULL,
-    textAlign: "right",
+    textAlign: langIsRTL(lang) ? "right" : "left",
   },
 
   text10: {
     fontFamily: "VazirLight",
     color: COLOR_10_FULL,
-    textAlign: "right",
+    textAlign: langIsRTL(lang) ? "right" : "left",
   },
   text11: {
     fontFamily: "VazirLight",
     color: COLOR_11_FULL,
-    textAlign: "right",
+    textAlign: langIsRTL(lang) ? "right" : "left",
   },
 
   title: {
     fontSize: 16,
     fontFamily: "VazirBold",
     color: COLOR_0_FULL,
-    textAlign: "right",
+    textAlign: langIsRTL(lang) ? "right" : "left",
   },
   title1: {
     fontSize: 16,
     fontFamily: "VazirBold",
     color: COLOR_1_FULL,
-    textAlign: "right",
+    textAlign: langIsRTL(lang) ? "right" : "left",
   },
 
   title4: {
@@ -263,7 +266,7 @@ const NewStyles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "VazirBold",
     color: COLOR_10_FULL,
-    textAlign: "right",
+    textAlign: langIsRTL(lang) ? "right" : "left",
   },
   background: {
     position: "absolute",
@@ -276,7 +279,7 @@ const NewStyles = StyleSheet.create({
     fontFamily: "VazirLight",
     color: COLOR_3_FULL,
     textDecorationLine: "line-through",
-    textAlign: "right",
+    textAlign: langIsRTL(lang) ? "right" : "left",
   },
 
   textInput: {
@@ -298,6 +301,8 @@ const NewStyles = StyleSheet.create({
     borderColor: COLOR_4_FULL,
     borderWidth: 0.2,
   },
-});
-
+})
+  );
+}
+export const NewStyles = createStyles('fa');
 export default NewStyles;
