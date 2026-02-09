@@ -10,6 +10,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor3, themeColor4, themeColor10 } from '../theme/Color';
+import { useTranslation } from 'react-i18next';
 
 const TimePickerModal = ({ visible, onClose, onSelect, selectedTime }) => {
   const [tempHour, setTempHour] = useState(
@@ -18,6 +19,7 @@ const TimePickerModal = ({ visible, onClose, onSelect, selectedTime }) => {
   const [tempMinute, setTempMinute] = useState(
     selectedTime ? parseInt(selectedTime.split(':')[1]) : 0
   );
+  const { t } = useTranslation();
 
   const hours = Array.from({ length: 24 }, (_, i) => i);
   const minutes = Array.from({ length: 60 }, (_, i) => i);
@@ -38,7 +40,7 @@ const TimePickerModal = ({ visible, onClose, onSelect, selectedTime }) => {
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <View style={styles.modalHeader}>
-            <Text style={[NewStyles.title, styles.modalTitle]}>انتخاب ساعت</Text>
+            <Text style={[NewStyles.title, styles.modalTitle]}>{t("Select Time")}</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
               <Ionicons name="close" size={28} color={themeColor10.bgColor(0.8)} />
             </TouchableOpacity>
@@ -46,7 +48,7 @@ const TimePickerModal = ({ visible, onClose, onSelect, selectedTime }) => {
 
           <View style={styles.pickerContainer}>
             <View style={styles.pickerColumn}>
-              <Text style={[NewStyles.title, styles.columnLabel]}>ساعت</Text>
+              <Text style={[NewStyles.title, styles.columnLabel]}>{t("Hour")}</Text>
               <ScrollView 
                 style={styles.scrollView}
                 showsVerticalScrollIndicator={false}
@@ -79,7 +81,7 @@ const TimePickerModal = ({ visible, onClose, onSelect, selectedTime }) => {
             <Text style={[NewStyles.title, styles.separator]}>:</Text>
 
             <View style={styles.pickerColumn}>
-              <Text style={[NewStyles.title, styles.columnLabel]}>دقیقه</Text>
+              <Text style={[NewStyles.title, styles.columnLabel]}>{t("Minute")}</Text>
               <ScrollView 
                 style={styles.scrollView}
                 showsVerticalScrollIndicator={false}
@@ -112,10 +114,10 @@ const TimePickerModal = ({ visible, onClose, onSelect, selectedTime }) => {
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-              <Text style={[NewStyles.title]}>انصراف</Text>
+              <Text style={[NewStyles.title]}>{t("Cancel")}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
-              <Text style={[NewStyles.title4]}>تأیید</Text>
+              <Text style={[NewStyles.title4]}>{t("Confirm")}</Text>
             </TouchableOpacity>
           </View>
         </View>

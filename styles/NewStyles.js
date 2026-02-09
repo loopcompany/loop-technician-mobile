@@ -53,7 +53,8 @@ export const gradientColors = [
   COLOR_1_08,
   COLOR_1_FULL,
 ];
-
+const RTL_LANGS = new Set(['fa', 'ar', 'he', 'ur', 'ps', 'ckb']);
+const langIsRTL = (lang) => (lang || '').toLowerCase().split('-')[0] && RTL_LANGS.has((lang || '').toLowerCase().split('-')[0]);
 const NewStyles = StyleSheet.create({
   selectBox: {
     height: 50,

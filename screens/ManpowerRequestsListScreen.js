@@ -18,6 +18,7 @@ import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor4, theme
 import { getManpowerRequests, getManpowerRequestById } from '../services/Api';
 import { useFocusEffect } from '@react-navigation/native';
 import { formatDateTime, showAlert } from '../helpers/Common';
+import { useTranslation } from 'react-i18next';
 
 export default function ManpowerRequestsListScreen({ navigation }) {
   const [requests, setRequests] = useState([]);
@@ -26,6 +27,7 @@ export default function ManpowerRequestsListScreen({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const { t } = useTranslation();
 
   const fetchRequests = async (isRefresh = false) => {
     try {
@@ -40,7 +42,7 @@ export default function ManpowerRequestsListScreen({ navigation }) {
       }
     } catch (error) {
       console.log('❌ خطا در دریافت لیست:', error);
-      showAlert('خطا', error.message || 'مشکلی در دریافت لیست پیش آمد');
+      showAlert(t("Error"), error.message || t("There was a problem fetching the list."));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -63,18 +65,18 @@ export default function ManpowerRequestsListScreen({ navigation }) {
     const statusStr = String(status);
     switch (statusStr) {
       case '0':
-        return { text: 'در انتظار بررسی', color: themeColor11.bgColor(1), icon: 'time' };
+        return { text: t("Pending review"), color: themeColor11.bgColor(1), icon: 'time' };
       case '1':
-        return { text: 'تأیید شده', color: themeColor7.bgColor(1), icon: 'checkmark-circle' };
+        return { text: t("Approved"), color: themeColor7.bgColor(1), icon: 'checkmark-circle' };
       case '2':
-        return { text: 'رد شده', color: themeColor6.bgColor(1), icon: 'close-circle' };
+        return { text: t("Rejected"), color: themeColor6.bgColor(1), icon: 'close-circle' };
       default:
-        return { text: 'نامشخص', color: themeColor10.bgColor(0.5), icon: 'help-circle' };
+        return { text: t("Unknown"), color: themeColor10.bgColor(0.5), icon: 'help-circle' };
     }
   };
 
   const getTypeLabel = (type) => {
-    return type === 'field' ? 'نیروی میدانی' : 'نیروی انسانی';
+    return type === 'field' ? t("Field personnel") : t("Manpower");
   };
 
   const getTypeIcon = (type) => {
@@ -95,7 +97,7 @@ export default function ManpowerRequestsListScreen({ navigation }) {
     } catch (error) {
       console.log('❌ خطا در نمایش جزئیات:', error);
       setModalVisible(false);
-      showAlert('خطا', error.message || 'مشکلی در نمایش جزئیات پیش آمد');
+      showAlert(t("Error"), error.message || t("There was a problem loading the details."));
     } finally {
       setLoadingDetail(false);
     }
@@ -141,7 +143,7 @@ export default function ManpowerRequestsListScreen({ navigation }) {
             })}
           </Text>
           <View style={styles.viewDetailsButton}>
-            <Text style={styles.viewDetailsText}>جزئیات</Text>
+            <Text style={styles.viewDetailsText}>{t("Details")}</Text>
             <Ionicons name="chevron-back" size={16} color={themeColor0.bgColor(1)} />
           </View>
         </View>
@@ -152,8 +154,8 @@ export default function ManpowerRequestsListScreen({ navigation }) {
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
       <Ionicons name="people-outline" size={80} color={themeColor4.bgColor(1)} />
-      <Text style={[NewStyles.text4,styles.emptyText]}>هیچ درخواستی ثبت نشده است</Text>
-      <Text style={[NewStyles.text4,styles.emptySubText]}>درخواست‌های نیروی انسانی شما اینجا نمایش داده می‌شود</Text>
+      <Text style={[NewStyles.text4,styles.emptyText]}>{t("No requests have been submitted.")}</Text>
+      <Text style={[NewStyles.text4,styles.emptySubText]}>{t("Your manpower requests will appear here.")}</Text>
 
     </View>
   );
@@ -175,13 +177,13 @@ export default function ManpowerRequestsListScreen({ navigation }) {
             {loadingDetail ? (
               <View style={styles.modalLoading}>
                 <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
-                <Text style={[NewStyles.text4, { marginTop: 10 }]}>در حال بارگذاری...</Text>
+                <Text style={[NewStyles.text4, { marginTop: 10 }]}>{t("Loading...")}</Text>
               </View>
             ) : (
               <>
                 <View style={styles.modalHeader}>
                   <Text style={[NewStyles.title, styles.modalTitle]}>
-                    جزئیات درخواست #{selectedRequest.id}
+                    {t("Request details #{{id}}", { id: selectedRequest.id })}
                   </Text>
                   <TouchableOpacity
                     onPress={closeModal}
@@ -195,7 +197,7 @@ export default function ManpowerRequestsListScreen({ navigation }) {
                   <View style={styles.detailRow}>
                     <View style={styles.detailLabel}>
                       <Ionicons name={getTypeIcon(selectedRequest.type)} size={18} color={themeColor0.bgColor(1)} />
-                      <Text style={[NewStyles.text, styles.labelText]}>نوع درخواست:</Text>
+                      <Text style={[NewStyles.text, styles.labelText]}>{t("Request type:")}</Text>
                     </View>
                     <Text style={[NewStyles.text4, styles.detailValue]}>
                       {getTypeLabel(selectedRequest.type)}
@@ -205,7 +207,7 @@ export default function ManpowerRequestsListScreen({ navigation }) {
                   <View style={styles.detailRow}>
                     <View style={styles.detailLabel}>
                       <Ionicons name="information-circle" size={18} color={themeColor0.bgColor(1)} />
-                      <Text style={[NewStyles.text, styles.labelText]}>وضعیت:</Text>
+                      <Text style={[NewStyles.text, styles.labelText]}>{t("Status:")}</Text>
                     </View>
                     <View style={[styles.statusBadgeLarge, { backgroundColor: statusBadge.color }]}>
                       <Ionicons name={statusBadge.icon} size={18} color={themeColor4.bgColor(1)} />
@@ -216,7 +218,7 @@ export default function ManpowerRequestsListScreen({ navigation }) {
                   <View style={styles.detailRow}>
                     <View style={styles.detailLabel}>
                       <Ionicons name="calendar" size={18} color={themeColor0.bgColor(1)} />
-                      <Text style={[NewStyles.text, styles.labelText]}>تاریخ ثبت:</Text>
+                      <Text style={[NewStyles.text, styles.labelText]}>{t("Submitted at:")}</Text>
                     </View>
                     <Text style={[NewStyles.text4, styles.detailValue]}>{formatDateTime(selectedRequest.created_at)}</Text>
                   </View>
@@ -225,7 +227,7 @@ export default function ManpowerRequestsListScreen({ navigation }) {
                     <View style={styles.detailRow}>
                       <View style={styles.detailLabel}>
                         <Ionicons name="time" size={18} color={themeColor0.bgColor(1)} />
-                        <Text style={[NewStyles.text, styles.labelText]}>آخرین بروزرسانی:</Text>
+                        <Text style={[NewStyles.text, styles.labelText]}>{t("Last updated:")}</Text>
                       </View>
                       <Text style={[NewStyles.text4, styles.detailValue]}>{formatDateTime(selectedRequest.updated_at)}</Text>
                     </View>
@@ -234,7 +236,7 @@ export default function ManpowerRequestsListScreen({ navigation }) {
                   <View style={styles.descriptionSection}>
                     <View style={styles.detailLabel}>
                       <Ionicons name="document-text" size={18} color={themeColor0.bgColor(1)} />
-                      <Text style={[NewStyles.text, styles.labelText]}>توضیحات:</Text>
+                      <Text style={[NewStyles.text, styles.labelText]}>{t("Description")}:</Text>
                     </View>
                     <View style={styles.descriptionBox}>
                       <Text style={[NewStyles.text4, styles.descriptionText]}>
@@ -248,7 +250,7 @@ export default function ManpowerRequestsListScreen({ navigation }) {
                   style={styles.modalCloseButton}
                   onPress={closeModal}
                 >
-                  <Text style={[NewStyles.title4, { fontSize: 16 }]}>بستن</Text>
+                  <Text style={[NewStyles.title4, { fontSize: 16 }]}>{t("Close")}</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -266,13 +268,13 @@ export default function ManpowerRequestsListScreen({ navigation }) {
       style={styles.background}
     >
       <ScreenHeaders
-        title={'لیست درخواست‌های نیروی انسانی'}
+        title={t("Manpower requests")}
       />
 
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
-          <Text style={[NewStyles.text4, styles.loadingText]}>در حال بارگذاری...</Text>
+          <Text style={[NewStyles.text4, styles.loadingText]}>{t("Loading...")}</Text>
         </View>
       ) : (
         <FlatList

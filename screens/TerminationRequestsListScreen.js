@@ -18,6 +18,7 @@ import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor4, theme
 import { getTerminationRequests, getTerminationRequestById } from '../services/Api';
 import { useFocusEffect } from '@react-navigation/native';
 import { formatDateTime, showAlert } from '../helpers/Common';
+import { useTranslation } from 'react-i18next';
 
 export default function TerminationRequestsListScreen({ navigation }) {
   const [requests, setRequests] = useState([]);
@@ -26,6 +27,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const { t } = useTranslation();
 
   const fetchRequests = async (isRefresh = false) => {
     try {
@@ -40,7 +42,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
       }
     } catch (error) {
       console.log('❌ خطا در دریافت لیست:', error);
-      showAlert('خطا', error.message || 'مشکلی در دریافت لیست پیش آمد');
+      showAlert(t("Error"), error.message || t("There was a problem fetching the list."));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -62,18 +64,18 @@ export default function TerminationRequestsListScreen({ navigation }) {
     const statusStr = String(status);
     switch (statusStr) {
       case '0':
-        return { text: 'در انتظار بررسی', color: themeColor11.bgColor(1), icon: 'time-outline' };
+        return { text: t("Pending review"), color: themeColor11.bgColor(1), icon: 'time-outline' };
       case '1':
-        return { text: 'تأیید شده', color: themeColor7.bgColor(1), icon: 'checkmark-circle-outline' };
+        return { text: t("Approved"), color: themeColor7.bgColor(1), icon: 'checkmark-circle-outline' };
       case '2':
-        return { text: 'رد شده', color: themeColor6.bgColor(1), icon: 'close-circle-outline' };
+        return { text: t("Rejected"), color: themeColor6.bgColor(1), icon: 'close-circle-outline' };
       default:
-        return { text: 'نامشخص', color: themeColor10.bgColor(0.5), icon: 'help-circle-outline' };
+        return { text: t("Unknown"), color: themeColor10.bgColor(0.5), icon: 'help-circle-outline' };
     }
   };
 
   const getTypeLabel = (type) => {
-    return type === 'temporary' ? 'موقت' : 'دائم';
+    return type === 'temporary' ? t("Temporary") : t("Permanent");
   };
 
   const getTypeIcon = (type) => {
@@ -94,7 +96,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
     } catch (error) {
       console.log('❌ خطا در نمایش جزئیات:', error);
       setModalVisible(false);
-      showAlert('خطا', error.message || 'مشکلی در نمایش جزئیات پیش آمد');
+      showAlert(t("Error"), error.message || t("There was a problem loading the details."));
     } finally {
       setLoadingDetail(false);
     }
@@ -128,8 +130,8 @@ export default function TerminationRequestsListScreen({ navigation }) {
         </View>
 
         <View style={styles.dateInfo}>
-          <Text style={styles.dateLabel}>از تاریخ: {item.start_date}</Text>
-          {item.end_date && <Text style={styles.dateLabel}>تا تاریخ: {item.end_date}</Text>}
+          <Text style={styles.dateLabel}>{t("From Date:")} {item.start_date}</Text>
+          {item.end_date && <Text style={styles.dateLabel}>{t("To Date:")} {item.end_date}</Text>}
         </View>
 
         <Text style={[NewStyles.text10,styles.description]} numberOfLines={2}>
@@ -141,7 +143,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
             {formatDateTime(item.created_at)}
           </Text>
           <View style={styles.viewDetailsButton}>
-            <Text style={styles.viewDetailsText}>مشاهده جزئیات</Text>
+            <Text style={styles.viewDetailsText}>{t("View Details")}</Text>
             <Ionicons name="chevron-back" size={16} color={themeColor0.bgColor(1)} />
           </View>
         </View>
@@ -152,8 +154,8 @@ export default function TerminationRequestsListScreen({ navigation }) {
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
       <Ionicons name="power-outline" size={80} color={themeColor4.bgColor(1)} />
-      <Text style={[NewStyles.text4, styles.emptyText]}>هیچ درخواستی ثبت نشده است</Text>
-      <Text style={[NewStyles.text4, styles.emptySubText]}>درخواست‌های قطع همکاری شما اینجا نمایش داده می‌شود</Text>
+      <Text style={[NewStyles.text4, styles.emptyText]}>{t("No requests have been submitted.")}</Text>
+      <Text style={[NewStyles.text4, styles.emptySubText]}>{t("Your termination requests will appear here.")}</Text>
     </View>
   );
 
@@ -174,13 +176,13 @@ export default function TerminationRequestsListScreen({ navigation }) {
             {loadingDetail ? (
               <View style={styles.modalLoading}>
                 <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
-                <Text style={styles.loadingText}>در حال بارگذاری...</Text>
+                <Text style={styles.loadingText}>{t("Loading...")}</Text>
               </View>
             ) : (
               <>
                 <View style={styles.modalHeader}>
                   <Text style={styles.modalTitle}>
-                    جزئیات درخواست #{selectedRequest.id}
+                    {t("Request details #{{id}}", { id: selectedRequest.id })}
                   </Text>
                   <TouchableOpacity
                     onPress={closeModal}
@@ -194,7 +196,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
                   <View style={styles.detailRow}>
                     <View style={styles.detailLabel}>
                       <Ionicons name={getTypeIcon(selectedRequest.type)} size={18} color={themeColor0.bgColor(1)} />
-                      <Text style={styles.labelText}>نوع درخواست:</Text>
+                      <Text style={styles.labelText}>{t("Request type:")}</Text>
                     </View>
                     <Text style={styles.detailValue}>
                       {getTypeLabel(selectedRequest.type)}
@@ -204,7 +206,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
                   <View style={styles.detailRow}>
                     <View style={styles.detailLabel}>
                       <Ionicons name="information-circle" size={18} color={themeColor0.bgColor(1)} />
-                      <Text style={styles.labelText}>وضعیت:</Text>
+                      <Text style={styles.labelText}>{t("Status:")}</Text>
                     </View>
                     <View style={[styles.statusBadgeLarge, { backgroundColor: statusBadge.color }]}>
                       <Ionicons name={statusBadge.icon} size={18} color="#fff" />
@@ -215,7 +217,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
                   <View style={styles.detailRow}>
                     <View style={styles.detailLabel}>
                       <Ionicons name="calendar" size={18} color={themeColor0.bgColor(1)} />
-                      <Text style={styles.labelText}>تاریخ شروع:</Text>
+                      <Text style={styles.labelText}>{t("Start date")}:</Text>
                     </View>
                     <Text style={styles.detailValue}>
                       {selectedRequest.start_date}
@@ -226,7 +228,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
                     <View style={styles.detailRow}>
                       <View style={styles.detailLabel}>
                         <Ionicons name="calendar-outline" size={18} color={themeColor0.bgColor(1)} />
-                        <Text style={styles.labelText}>تاریخ پایان:</Text>
+                        <Text style={styles.labelText}>{t("End Date")}:</Text>
                       </View>
                       <Text style={styles.detailValue}>
                         {selectedRequest.end_date}
@@ -237,7 +239,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
                   <View style={styles.detailRow}>
                     <View style={styles.detailLabel}>
                       <Ionicons name="time" size={18} color={themeColor0.bgColor(1)} />
-                      <Text style={styles.labelText}>تاریخ ثبت:</Text>
+                      <Text style={styles.labelText}>{t("Submitted at:")}</Text>
                     </View>
                     <Text style={styles.detailValue}>
                       {formatDateTime(selectedRequest.created_at)}
@@ -248,7 +250,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
                     <View style={styles.detailRow}>
                       <View style={styles.detailLabel}>
                         <Ionicons name="sync" size={18} color={themeColor0.bgColor(1)} />
-                        <Text style={styles.labelText}>آخرین بروزرسانی:</Text>
+                        <Text style={styles.labelText}>{t("Last updated:")}</Text>
                       </View>
                       <Text style={styles.detailValue}>
                         {formatDateTime(selectedRequest.updated_at)}
@@ -259,7 +261,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
                   <View style={styles.descriptionSection}>
                     <View style={styles.detailLabel}>
                       <Ionicons name="document-text" size={18} color={themeColor0.bgColor(1)} />
-                      <Text style={styles.labelText}>توضیحات:</Text>
+                      <Text style={styles.labelText}>{t("Description")}:</Text>
                     </View>
                     <View style={styles.descriptionBox}>
                       <Text style={styles.descriptionText}>
@@ -273,7 +275,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
                   style={styles.modalCloseButton}
                   onPress={closeModal}
                 >
-                  <Text style={styles.modalCloseButtonText}>بستن</Text>
+                  <Text style={styles.modalCloseButtonText}>{t("Close")}</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -292,11 +294,11 @@ export default function TerminationRequestsListScreen({ navigation }) {
         style={styles.background}
       >
         <ScreenHeaders
-          title={'لیست درخواست‌های قطع همکاری'}
+          title={t("Termination requests")}
         />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
-          <Text style={styles.loadingText}>در حال بارگذاری...</Text>
+          <Text style={styles.loadingText}>{t("Loading...")}</Text>
         </View>
       </LinearGradient>
     );
@@ -310,7 +312,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
       style={styles.background}
     >
       <ScreenHeaders
-        title={'لیست درخواست‌های قطع همکاری'}
+        title={t("Termination requests")}
       />
 
       <FlatList

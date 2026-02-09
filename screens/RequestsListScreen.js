@@ -17,6 +17,7 @@ import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor10, themeColor11, themeColor2, themeColor3, themeColor4, themeColor6, themeColor7, themeColor8 } from '../theme/Color';
 import { getEducationRequests, getEducationRequestById } from '../services/Api';
 import { formatDate, formatDateTime , showAlert} from '../helpers/Common';
+import { useTranslation } from 'react-i18next';
 
 export default function RequestsListScreen({ navigation }) {
     const [requests, setRequests] = useState([]);
@@ -25,6 +26,7 @@ export default function RequestsListScreen({ navigation }) {
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedRequest, setSelectedRequest] = useState(null);
     const [loadingDetail, setLoadingDetail] = useState(false);
+    const { t } = useTranslation();
 
     useEffect(() => {
         fetchRequests();
@@ -43,7 +45,7 @@ export default function RequestsListScreen({ navigation }) {
             }
         } catch (error) {
             console.log('❌ خطا در بارگذاری درخواست‌ها:', error);
-            showAlert('خطا', error.message || 'مشکلی در بارگذاری لیست درخواست‌ها پیش آمد');
+            showAlert(t("Error"), error.message || t("There was a problem loading the request list."));
         } finally {
             setLoading(false);
         }
@@ -59,13 +61,13 @@ export default function RequestsListScreen({ navigation }) {
         const statusStr = String(status);
         switch (statusStr) {
             case '0':
-                return { text: 'در انتظار بررسی', color: themeColor11.bgColor(1), icon: 'time' };
+                return { text: t("Pending review"), color: themeColor11.bgColor(1), icon: 'time' };
             case '1':
-                return { text: 'تایید شده', color: themeColor7.bgColor(1), icon: 'checkmark-circle' };
+                return { text: t("Approved"), color: themeColor7.bgColor(1), icon: 'checkmark-circle' };
             case '2':
-                return { text: 'رد شده', color: themeColor6.bgColor(1), icon: 'close-circle' };
+                return { text: t("Rejected"), color: themeColor6.bgColor(1), icon: 'close-circle' };
             default:
-                return { text: 'نامشخص', color: themeColor3.bgColor(1), icon: 'help-circle' };
+                return { text: t("Unknown"), color: themeColor3.bgColor(1), icon: 'help-circle' };
         }
     };
 
@@ -85,7 +87,7 @@ export default function RequestsListScreen({ navigation }) {
         } catch (error) {
             console.log('❌ خطا در نمایش جزئیات:', error);
             setModalVisible(false);
-            showAlert('خطا', error.message || 'مشکلی در نمایش جزئیات پیش آمد');
+            showAlert(t("Error"), error.message || t("There was a problem loading the details."));
         } finally {
             setLoadingDetail(false);
         }
@@ -134,7 +136,7 @@ export default function RequestsListScreen({ navigation }) {
                         style={styles.detailsButton}
                         onPress={() => handleViewDetails(item)}
                     >
-                        <Text style={[NewStyles.text]}>جزئیات</Text>
+                        <Text style={[NewStyles.text]}>{t("Details")}</Text>
                         <Ionicons name="chevron-back" size={16} color={themeColor0.bgColor(1)} />
                     </TouchableOpacity>
                 </View>
@@ -145,7 +147,7 @@ export default function RequestsListScreen({ navigation }) {
     const renderEmpty = () => (
         <View style={styles.emptyContainer}>
             <Ionicons name="document-text-outline" size={64} color={themeColor4.bgColor(1)} />
-            <Text style={[NewStyles.text4, styles.emptyText]}>هیچ درخواستی ثبت نشده است</Text>
+            <Text style={[NewStyles.text4, styles.emptyText]}>{t("No requests have been submitted.")}</Text>
         </View>
     );
 
@@ -166,13 +168,13 @@ export default function RequestsListScreen({ navigation }) {
                         {loadingDetail ? (
                             <View style={styles.modalLoading}>
                                 <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
-                                <Text style={[NewStyles.text4, { marginTop: 10 }]}>در حال بارگذاری...</Text>
+                                <Text style={[NewStyles.text4, { marginTop: 10 }]}>{t("Loading...")}</Text>
                             </View>
                         ) : (
                             <>
                                 <View style={styles.modalHeader}>
                                     <Text style={[NewStyles.title, styles.modalTitle]}>
-                                        جزئیات درخواست #{selectedRequest.id}
+                                        {t("Request details #{{id}}", { id: selectedRequest.id })}
                                     </Text>
                                     <TouchableOpacity 
                                         onPress={closeModal}
@@ -186,7 +188,7 @@ export default function RequestsListScreen({ navigation }) {
                                     <View style={styles.detailRow}>
                                         <View style={styles.detailLabel}>
                                             <Ionicons name="bookmarks" size={18} color={themeColor0.bgColor(1)} />
-                                            <Text style={[NewStyles.text, styles.labelText]}>بخش:</Text>
+                                            <Text style={[NewStyles.text, styles.labelText]}>{t("Section:")}</Text>
                                         </View>
                                         <Text style={[NewStyles.text4, styles.detailValue]}>
                                             {selectedRequest.section}
@@ -196,7 +198,7 @@ export default function RequestsListScreen({ navigation }) {
                                     <View style={styles.detailRow}>
                                         <View style={styles.detailLabel}>
                                             <Ionicons name="information-circle" size={18} color={themeColor0.bgColor(1)} />
-                                            <Text style={[NewStyles.text, styles.labelText]}>وضعیت:</Text>
+                                            <Text style={[NewStyles.text, styles.labelText]}>{t("Status:")}</Text>
                                         </View>
                                         <View style={[styles.statusBadgeLarge, { backgroundColor: statusBadge.color }]}>
                                             <Ionicons name={statusBadge.icon} size={18} color={themeColor4.bgColor(1)} />
@@ -207,7 +209,7 @@ export default function RequestsListScreen({ navigation }) {
                                     <View style={styles.detailRow}>
                                         <View style={styles.detailLabel}>
                                             <Ionicons name="calendar" size={18} color={themeColor0.bgColor(1)} />
-                                            <Text style={[NewStyles.text, styles.labelText]}>تاریخ ثبت:</Text>
+                                            <Text style={[NewStyles.text, styles.labelText]}>{t("Submitted at:")}</Text>
                                         </View>
                                         <Text style={[NewStyles.text4, styles.detailValue]}>
                                             {formatDateTime(selectedRequest.created_at)}
@@ -218,7 +220,7 @@ export default function RequestsListScreen({ navigation }) {
                                         <View style={styles.detailRow}>
                                             <View style={styles.detailLabel}>
                                                 <Ionicons name="time" size={18} color={themeColor0.bgColor(1)} />
-                                                <Text style={[NewStyles.text, styles.labelText]}>آخرین بروزرسانی:</Text>
+                                                <Text style={[NewStyles.text, styles.labelText]}>{t("Last updated:")}</Text>
                                             </View>
                                             <Text style={[NewStyles.text4, styles.detailValue]}>
                                                 {formatDateTime(selectedRequest.updated_at)}
@@ -229,7 +231,7 @@ export default function RequestsListScreen({ navigation }) {
                                     <View style={styles.descriptionSection}>
                                         <View style={styles.detailLabel}>
                                             <Ionicons name="document-text" size={18} color={themeColor0.bgColor(1)} />
-                                            <Text style={[NewStyles.text, styles.labelText]}>توضیحات:</Text>
+                                            <Text style={[NewStyles.text, styles.labelText]}>{t("Description")}:</Text>
                                         </View>
                                         <View style={styles.descriptionBox}>
                                             <Text style={[NewStyles.text4, styles.descriptionText]}>
@@ -243,7 +245,7 @@ export default function RequestsListScreen({ navigation }) {
                                     style={styles.modalCloseButton}
                                     onPress={closeModal}
                                 >
-                                    <Text style={[NewStyles.title4, { fontSize: 16 }]}>بستن</Text>
+                                    <Text style={[NewStyles.title4, { fontSize: 16 }]}>{t("Close")}</Text>
                                 </TouchableOpacity>
                             </>
                         )}
@@ -261,13 +263,13 @@ export default function RequestsListScreen({ navigation }) {
             style={styles.background}
         >
             <ScreenHeaders
-                title={'لیست درخواست‌ها'}
+                title={t("Request list")}
             />
 
             {loading ? (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
-                    <Text style={[NewStyles.text4, styles.loadingText]}>در حال بارگذاری...</Text>
+                    <Text style={[NewStyles.text4, styles.loadingText]}>{t("Loading...")}</Text>
                 </View>
             ) : (
                 <FlatList

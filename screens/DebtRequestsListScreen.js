@@ -17,6 +17,7 @@ import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor4, themeColor8 } from '../theme/Color';
 import { getDebtRequests, getDebtRequestById } from '../services/Api';
 import { formatDate, showAlert } from '../helpers/Common';
+import { useTranslation } from 'react-i18next';
 
 export default function DebtRequestsListScreen({ navigation }) {
   const [requests, setRequests] = useState([]);
@@ -25,6 +26,7 @@ export default function DebtRequestsListScreen({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     fetchRequests();
@@ -38,11 +40,11 @@ export default function DebtRequestsListScreen({ navigation }) {
       if (response.success) {
         setRequests(response.data);
       } else {
-        showAlert('خطا', 'خطا در دریافت لیست درخواست‌ها');
+        showAlert(t("Error"), t("Error fetching request list."));
       }
     } catch (error) {
       console.log('خطا در دریافت لیست:', error);
-      showAlert('خطا', 'مشکلی در دریافت لیست پیش آمد');
+      showAlert(t("Error"), t("There was a problem fetching the list."));
     } finally {
       setLoading(false);
     }
@@ -57,17 +59,17 @@ export default function DebtRequestsListScreen({ navigation }) {
   const getStatusBadge = (status) => {
     const statusStr = String(status);
     const badges = {
-      '0': { text: 'در انتظار بررسی', color: '#FF9800' },
-      '1': { text: 'تأیید شده', color: '#4CAF50' },
-      '2': { text: 'رد شده', color: '#F44336' },
+      '0': { text: t("Pending review"), color: '#FF9800' },
+      '1': { text: t("Approved"), color: '#4CAF50' },
+      '2': { text: t("Rejected"), color: '#F44336' },
     };
     return badges[statusStr] || badges['0'];
   };
 
   const getTypeBadge = (type) => {
     const badges = {
-      sponsor: { text: 'ضامن/ضمانت‌نامه', color: themeColor1.bgColor(1) },
-      free: { text: 'وام بدون بهره', color: '#2196F3' },
+      sponsor: { text: t("Guarantor / Guarantee"), color: themeColor1.bgColor(1) },
+      free: { text: t("Interest-free loan"), color: '#2196F3' },
     };
     return badges[type] || badges.sponsor;
   };
@@ -82,12 +84,12 @@ export default function DebtRequestsListScreen({ navigation }) {
       if (response.success) {
         setSelectedRequest(response.data);
       } else {
-        showAlert('خطا', 'خطا در دریافت جزئیات درخواست');
+        showAlert(t("Error"), t("Error fetching request details."));
         setModalVisible(false);
       }
     } catch (error) {
       console.log('خطا در دریافت جزئیات:', error);
-      showAlert('خطا', error.message || 'مشکلی در دریافت جزئیات پیش آمد');
+      showAlert(t("Error"), error.message || t("There was a problem fetching the details."));
       setModalVisible(false);
     } finally {
       setLoadingDetail(false);
@@ -96,7 +98,7 @@ export default function DebtRequestsListScreen({ navigation }) {
 
   const formatAmount = (amount) => {
     if (!amount) return '-';
-    return new Intl.NumberFormat('fa-IR').format(amount) + ' ریال';
+    return `${new Intl.NumberFormat('fa-IR').format(amount)} ${t("Rial")}`;
   };
 
   const renderItem = ({ item }) => {
@@ -108,7 +110,7 @@ export default function DebtRequestsListScreen({ navigation }) {
         {/* Header */}
         <View style={styles.cardHeader}>
           <View style={styles.headerRight}>
-            <Text style={[NewStyles.text, styles.requestId]}>درخواست #{item.id}</Text>
+            <Text style={[NewStyles.text, styles.requestId]}>{t("Request #{{id}}", { id: item.id })}</Text>
             <View style={[styles.typeBadge, { backgroundColor: typeBadge.color }]}>
               <Ionicons name="cash-outline" size={14} color="#fff" />
               <Text style={styles.badgeText}>{typeBadge.text}</Text>
@@ -123,7 +125,7 @@ export default function DebtRequestsListScreen({ navigation }) {
         {item.type === 'free' && item.amount && (
           <View style={styles.amountRow}>
             <Ionicons name="wallet-outline" size={18} color={themeColor0.bgColor(1)} />
-            <Text style={[NewStyles.text, styles.amountText]}>مبلغ: {formatAmount(item.amount)}</Text>
+            <Text style={[NewStyles.text, styles.amountText]}>{t("Amount")}: {formatAmount(item.amount)}</Text>
           </View>
         )}
 
@@ -132,7 +134,7 @@ export default function DebtRequestsListScreen({ navigation }) {
           <View style={styles.infoRow}>
             <Ionicons name="calendar-outline" size={16} color={themeColor10.bgColor(0.8)} />
             <Text style={[NewStyles.text4, styles.infoText]}>
-              مدت زمان: {item.month} ماه
+              {t("Duration")}: {item.month} {t("Month")}
             </Text>
           </View>
         )}
@@ -151,7 +153,7 @@ export default function DebtRequestsListScreen({ navigation }) {
             style={styles.detailButton}
             onPress={() => handleViewDetails(item.id)}
           >
-            <Text style={styles.detailButtonText}>جزئیات</Text>
+            <Text style={styles.detailButtonText}>{t("Details")}</Text>
             <Ionicons name="chevron-back" size={16} color={themeColor0.bgColor(1)} />
           </TouchableOpacity>
         </View>
@@ -163,7 +165,7 @@ export default function DebtRequestsListScreen({ navigation }) {
     <View style={styles.emptyContainer}>
       <Ionicons name="wallet-outline" size={80} color={themeColor4.bgColor(1)} />
       <Text style={[NewStyles.title, styles.emptyText]}>
-        هیچ درخواست وامی ثبت نشده است
+        {t("No loan requests have been submitted.")}
       </Text>
      
     </View>
@@ -181,13 +183,13 @@ export default function DebtRequestsListScreen({ navigation }) {
           {loadingDetail ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
-              <Text style={[NewStyles.text, { marginTop: 15 }]}>در حال بارگذاری...</Text>
+              <Text style={[NewStyles.text, { marginTop: 15 }]}>{t("Loading...")}</Text>
             </View>
           ) : selectedRequest ? (
             <>
               {/* Header */}
               <View style={styles.modalHeader}>
-                <Text style={[NewStyles.title, styles.modalTitle]}>جزئیات درخواست</Text>
+                <Text style={[NewStyles.title, styles.modalTitle]}>{t("Request details")}</Text>
                 <TouchableOpacity
                   style={styles.closeButton}
                   onPress={() => setModalVisible(false)}
@@ -200,7 +202,7 @@ export default function DebtRequestsListScreen({ navigation }) {
               <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
                 {/* Type */}
                 <View style={styles.detailRow}>
-                  <Text style={[NewStyles.text4, styles.detailLabel]}>نوع درخواست:</Text>
+                  <Text style={[NewStyles.text4, styles.detailLabel]}>{t("Request type:")}</Text>
                   <View style={[styles.typeBadgeLarge, { backgroundColor: getTypeBadge(selectedRequest.type).color }]}>
                     <Text style={styles.badgeTextLarge}>{getTypeBadge(selectedRequest.type).text}</Text>
                   </View>
@@ -208,7 +210,7 @@ export default function DebtRequestsListScreen({ navigation }) {
 
                 {/* Status */}
                 <View style={styles.detailRow}>
-                  <Text style={[NewStyles.text4, styles.detailLabel]}>وضعیت:</Text>
+                  <Text style={[NewStyles.text4, styles.detailLabel]}>{t("Status:")}</Text>
                   <View style={[styles.statusBadgeLarge, { backgroundColor: getStatusBadge(selectedRequest.status).color }]}>
                     <Text style={styles.statusTextLarge}>{getStatusBadge(selectedRequest.status).text}</Text>
                   </View>
@@ -217,7 +219,7 @@ export default function DebtRequestsListScreen({ navigation }) {
                 {/* Amount (for free type) */}
                 {selectedRequest.type === 'free' && selectedRequest.amount && (
                   <View style={styles.detailRow}>
-                    <Text style={[NewStyles.text4, styles.detailLabel]}>مبلغ وام:</Text>
+                    <Text style={[NewStyles.text4, styles.detailLabel]}>{t("Loan amount:")}</Text>
                     <Text style={[NewStyles.text, styles.detailValue]}>{formatAmount(selectedRequest.amount)}</Text>
                   </View>
                 )}
@@ -225,7 +227,7 @@ export default function DebtRequestsListScreen({ navigation }) {
                 {/* Sponsor (for free type) */}
                 {selectedRequest.type === 'free' && selectedRequest.sponsor && (
                   <View style={styles.detailRow}>
-                    <Text style={[NewStyles.text4, styles.detailLabel]}>وضعیت ضامن:</Text>
+                    <Text style={[NewStyles.text4, styles.detailLabel]}>{t("Guarantor status:")}</Text>
                     <Text style={[NewStyles.text, styles.detailValue]}>{selectedRequest.sponsor}</Text>
                   </View>
                 )}
@@ -233,28 +235,28 @@ export default function DebtRequestsListScreen({ navigation }) {
                 {/* Month (for free type) */}
                 {selectedRequest.type === 'free' && selectedRequest.month && (
                   <View style={styles.detailRow}>
-                    <Text style={[NewStyles.text4, styles.detailLabel]}>مدت زمان پرداخت:</Text>
-                    <Text style={[NewStyles.text, styles.detailValue]}>{selectedRequest.month} ماه</Text>
+                    <Text style={[NewStyles.text4, styles.detailLabel]}>{t("Repayment duration:")}</Text>
+                    <Text style={[NewStyles.text, styles.detailValue]}>{selectedRequest.month} {t("Month")}</Text>
                   </View>
                 )}
 
                 {/* Created At */}
                 <View style={styles.detailRow}>
-                  <Text style={[NewStyles.text4, styles.detailLabel]}>تاریخ ثبت:</Text>
+                  <Text style={[NewStyles.text4, styles.detailLabel]}>{t("Submitted at:")}</Text>
                   <Text style={[NewStyles.text4, styles.detailValue]}>{formatDate(selectedRequest.created_at)}</Text>
                 </View>
 
                 {/* Updated At */}
                 {selectedRequest.updated_at && selectedRequest.updated_at !== selectedRequest.created_at && (
                   <View style={styles.detailRow}>
-                    <Text style={[NewStyles.text4, styles.detailLabel]}>آخرین به‌روزرسانی:</Text>
+                    <Text style={[NewStyles.text4, styles.detailLabel]}>{t("Last updated:")}</Text>
                     <Text style={[NewStyles.text4, styles.detailValue]}>{formatDate(selectedRequest.updated_at)}</Text>
                   </View>
                 )}
 
                 {/* Description */}
                 <View style={styles.descriptionSection}>
-                  <Text style={[NewStyles.text4, styles.sectionTitle]}>توضیحات درخواست:</Text>
+                  <Text style={[NewStyles.text4, styles.sectionTitle]}>{t("Request description:")}</Text>
                   <View style={styles.descriptionBox}>
                     <Text style={[NewStyles.text10, styles.descriptionText]}>
                       {selectedRequest.description}
@@ -265,7 +267,7 @@ export default function DebtRequestsListScreen({ navigation }) {
                 {/* Urgent Description (for free type) */}
                 {selectedRequest.type === 'free' && selectedRequest.urgent_description && (
                   <View style={styles.descriptionSection}>
-                    <Text style={[NewStyles.text4, styles.sectionTitle]}>توضیحات اضطراری:</Text>
+                    <Text style={[NewStyles.text4, styles.sectionTitle]}>{t("Urgent description:")}</Text>
                     <View style={[styles.descriptionBox, { backgroundColor: '#FFF3E0' }]}>
                       <Text style={[NewStyles.text10, styles.descriptionText]}>
                         {selectedRequest.urgent_description}
@@ -277,7 +279,7 @@ export default function DebtRequestsListScreen({ navigation }) {
                 style={styles.closeModalButton}
                 onPress={() => setModalVisible(false)}
               >
-                <Text style={[NewStyles.title4]}>بستن</Text>
+                <Text style={[NewStyles.title4]}>{t("Close")}</Text>
               </TouchableOpacity>
               </ScrollView>
 
@@ -297,13 +299,13 @@ export default function DebtRequestsListScreen({ navigation }) {
       style={styles.background}
     >
       <ScreenHeaders
-        title="درخواست‌های تسهیلات/وام" 
+        title={t("Loan/facilities requests")} 
       />
 
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
-          <Text style={[NewStyles.text, { marginTop: 15 }]}>در حال بارگذاری...</Text>
+          <Text style={[NewStyles.text, { marginTop: 15 }]}>{t("Loading...")}</Text>
         </View>
       ) : (
         <FlatList

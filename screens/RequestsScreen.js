@@ -19,12 +19,14 @@ import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor4, themeColor7, themeColor8 } from '../theme/Color';
 import { createEducationRequest, createLeaveRequest, createDebtRequest, createManpowerRequest, createTransferRequest, createTerminationRequest } from '../services/Api';
 import { showAlert } from '../helpers/Common';
+import { useTranslation } from 'react-i18next';
 
 export default function RequestsScreen({ navigation }) {
   const [section, setSection] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [expandedItems, setExpandedItems] = useState({});
+  const { t } = useTranslation();
 
   // محاسبه تاریخ امروز به صورت شمسی
   const todayJalali = useMemo(() =>
@@ -76,37 +78,37 @@ export default function RequestsScreen({ navigation }) {
   const menuItems = [
     {
       id: 1,
-      title: 'آموزش / مراجعه',
+      title: t("Training / Visit"),
       type: 'training'
     },
     {
       id: 2,
-      title: 'مرخصی / استعلاجی',
+      title: t("Leave / Sick Leave"),
       type: 'leave'
     },
     {
       id: 3,
-      title: 'تسهیلات / وام بدون بهره',
+      title: t("Facilities / Interest-free Loan"),
       type: 'loan'
     },
     {
       id: 4,
-      title: 'نیروی انسانی',
+      title: t("Manpower"),
       type: 'hr'
     },
     {
       id: 5,
-      title: 'انتقال / سمت',
+      title: t("Transfer / Position"),
       type: 'transfer'
     },
     {
       id: 7,
-      title: 'عدم همراهی',
+      title: t("Termination"),
       type: 'cooperation'
     },
     {
       id: 6,
-      title: 'پیگیری',
+      title: t("Follow-up"),
       type: 'other'
     },
   ];
@@ -121,17 +123,17 @@ export default function RequestsScreen({ navigation }) {
   const handleSubmitRequest = async () => {
     // Validation
     if (!section.trim()) {
-      showAlert('خطا', 'لطفاً بخش را انتخاب کنید');
+      showAlert(t("Error"), t("Please select a section."));
       return;
     }
 
     if (!description.trim()) {
-      showAlert('خطا', 'لطفاً توضیحات را وارد کنید');
+      showAlert(t("Error"), t("Please enter the description."));
       return;
     }
 
     if (description.length > 5000) {
-      showAlert('خطا', 'توضیحات نباید بیشتر از 5000 کاراکتر باشد');
+      showAlert(t("Error"), t("Description must not exceed 5000 characters."));
       return;
     }
 
@@ -149,11 +151,11 @@ export default function RequestsScreen({ navigation }) {
 
       if (response.success) {
         showAlert(
-          'موفقیت',
-          'درخواست شما با موفقیت ثبت شد',
+          t("Success"),
+          t("Your request was submitted successfully."),
           [
             {
-              text: 'باشه',
+              text: t("Ok"),
               onPress: () => {
                 // پاک کردن فرم
                 setSection('');
@@ -167,7 +169,7 @@ export default function RequestsScreen({ navigation }) {
       }
     } catch (error) {
       console.log('❌ خطا در ارسال درخواست:', error);
-      showAlert('خطا', error.message || 'مشکلی در ارسال درخواست پیش آمد');
+      showAlert(t("Error"), error.message || t("There was a problem submitting the request."));
     } finally {
       setLoading(false);
     }
@@ -176,32 +178,32 @@ export default function RequestsScreen({ navigation }) {
   const handleSubmitLeaveRequest = async () => {
     // Validation
     if (!leaveType) {
-      showAlert('خطا', 'لطفاً نوع مرخصی را انتخاب کنید');
+      showAlert(t("Error"), t("Please select the leave type."));
       return;
     }
 
     if (!leaveDate) {
-      showAlert('خطا', 'لطفاً تاریخ را انتخاب کنید');
+      showAlert(t("Error"), t("Please select a date."));
       return;
     }
 
     if (leaveType === 'daily' && !leaveToDate) {
-      showAlert('خطا', 'لطفاً تاریخ پایان را انتخاب کنید');
+      showAlert(t("Error"), t("Please select an end date."));
       return;
     }
 
     if (leaveType === 'hourly' && !leaveHour) {
-      showAlert('خطا', 'لطفاً ساعت را انتخاب کنید');
+      showAlert(t("Error"), t("Please select a time."));
       return;
     }
 
     if (!leaveDescription.trim()) {
-      showAlert('خطا', 'لطفاً توضیحات را وارد کنید');
+      showAlert(t("Error"), t("Please enter the description."));
       return;
     }
 
     if (leaveDescription.length > 1000) {
-      showAlert('خطا', 'توضیحات نباید بیشتر از 1000 کاراکتر باشد');
+      showAlert(t("Error"), t("Description must not exceed 1000 characters."));
       return;
     }
 
@@ -226,11 +228,11 @@ export default function RequestsScreen({ navigation }) {
 
       if (response.success) {
         showAlert(
-          'موفقیت',
-          'درخواست مرخصی شما با موفقیت ثبت شد',
+          t("Success"),
+          t("Your leave request was submitted successfully."),
           [
             {
-              text: 'باشه',
+              text: t("Ok"),
               onPress: () => {
                 // پاک کردن فرم
                 setLeaveType('');
@@ -247,7 +249,7 @@ export default function RequestsScreen({ navigation }) {
       }
     } catch (error) {
       console.log('❌ خطا در ارسال درخواست مرخصی:', error);
-      showAlert('خطا', error.message || 'مشکلی در ارسال درخواست مرخصی پیش آمد');
+      showAlert(t("Error"), error.message || t("There was a problem submitting the leave request."));
     } finally {
       setLoading(false);
     }
@@ -256,40 +258,40 @@ export default function RequestsScreen({ navigation }) {
   const handleSubmitLoanRequest = async () => {
     // Validation
     if (!loanType) {
-      showAlert('خطا', 'لطفاً نوع درخواست را انتخاب کنید');
+      showAlert(t("Error"), t("Please select a request type."));
       return;
     }
 
     if (!loanDescription.trim()) {
-      showAlert('خطا', 'لطفاً توضیحات را وارد کنید');
+      showAlert(t("Error"), t("Please enter the description."));
       return;
     }
 
     if (loanDescription.length > 5000) {
-      showAlert('خطا', 'توضیحات نباید بیشتر از 5000 کاراکتر باشد');
+      showAlert(t("Error"), t("Description must not exceed 5000 characters."));
       return;
     }
 
     // اعتبارسنجی برای وام بدون بهره
     if (loanType === 'free') {
       if (!loanAmount.trim()) {
-        showAlert('خطا', 'لطفاً مبلغ وام را وارد کنید');
+        showAlert(t("Error"), t("Please enter the loan amount."));
         return;
       }
 
       if (!loanSponsor.trim()) {
-        showAlert('خطا', 'لطفاً وضعیت ضامن را مشخص کنید');
+        showAlert(t("Error"), t("Please specify the guarantor status."));
         return;
       }
 
       if (!loanMonth.trim()) {
-        showAlert('خطا', 'لطفاً مدت زمان پرداخت را وارد کنید');
+        showAlert(t("Error"), t("Please enter the repayment duration."));
         return;
       }
 
       const monthNum = parseInt(loanMonth);
       if (isNaN(monthNum) || monthNum < 1 || monthNum > 60) {
-        showAlert('خطا', 'مدت زمان پرداخت باید بین 1 تا 60 ماه باشد');
+        showAlert(t("Error"), t("Repayment duration must be between 1 and 60 months."));
         return;
       }
     }
@@ -318,11 +320,11 @@ export default function RequestsScreen({ navigation }) {
 
       if (response.success) {
         showAlert(
-          'موفقیت',
-          'درخواست وام شما با موفقیت ثبت شد',
+          t("Success"),
+          t("Your loan request was submitted successfully."),
           [
             {
-              text: 'باشه',
+              text: t("Ok"),
               onPress: () => {
                 // پاک کردن فرم
                 setLoanType('');
@@ -340,7 +342,7 @@ export default function RequestsScreen({ navigation }) {
       }
     } catch (error) {
       console.log('❌ خطا در ارسال درخواست وام:', error);
-      showAlert('خطا', error.message || 'مشکلی در ارسال درخواست وام پیش آمد');
+      showAlert(t("Error"), error.message || t("There was a problem submitting the loan request."));
     } finally {
       setLoading(false);
     }
@@ -349,17 +351,17 @@ export default function RequestsScreen({ navigation }) {
   const handleSubmitManpowerRequest = async () => {
     // Validation
     if (!manpowerType) {
-      showAlert('خطا', 'لطفاً نوع درخواست را انتخاب کنید');
+      showAlert(t("Error"), t("Please select a request type."));
       return;
     }
 
     if (!manpowerDescription.trim()) {
-      showAlert('خطا', 'لطفاً توضیحات را وارد کنید');
+      showAlert(t("Error"), t("Please enter the description."));
       return;
     }
 
     if (manpowerDescription.length > 5000) {
-      showAlert('خطا', 'توضیحات نباید بیشتر از 5000 کاراکتر باشد');
+      showAlert(t("Error"), t("Description must not exceed 5000 characters."));
       return;
     }
 
@@ -377,11 +379,11 @@ export default function RequestsScreen({ navigation }) {
 
       if (response.success) {
         showAlert(
-          'موفقیت',
-          'درخواست نیروی انسانی شما با موفقیت ثبت شد',
+          t("Success"),
+          t("Your manpower request was submitted successfully."),
           [
             {
-              text: 'باشه',
+              text: t("Ok"),
               onPress: () => {
                 // پاک کردن فرم
                 setManpowerType('');
@@ -395,7 +397,7 @@ export default function RequestsScreen({ navigation }) {
       }
     } catch (error) {
       console.log('❌ خطا در ارسال درخواست نیروی انسانی:', error);
-      showAlert('خطا', error.message || 'مشکلی در ارسال درخواست نیروی انسانی پیش آمد');
+      showAlert(t("Error"), error.message || t("There was a problem submitting the manpower request."));
     } finally {
       setLoading(false);
     }
@@ -404,17 +406,17 @@ export default function RequestsScreen({ navigation }) {
   const handleSubmitTransferRequest = async () => {
     // Validation
     if (!transferType) {
-      showAlert('خطا', 'لطفاً نوع درخواست را انتخاب کنید');
+      showAlert(t("Error"), t("Please select a request type."));
       return;
     }
 
     if (!transferDescription.trim()) {
-      showAlert('خطا', 'لطفاً توضیحات را وارد کنید');
+      showAlert(t("Error"), t("Please enter the description."));
       return;
     }
 
     if (transferDescription.length > 5000) {
-      showAlert('خطا', 'توضیحات نباید بیشتر از 5000 کاراکتر باشد');
+      showAlert(t("Error"), t("Description must not exceed 5000 characters."));
       return;
     }
 
@@ -432,11 +434,11 @@ export default function RequestsScreen({ navigation }) {
 
       if (response.success) {
         showAlert(
-          'موفقیت',
-          'درخواست انتقال/سمت شما با موفقیت ثبت شد',
+          t("Success"),
+          t("Your transfer/position request was submitted successfully."),
           [
             {
-              text: 'باشه',
+              text: t("Ok"),
               onPress: () => {
                 // پاک کردن فرم
                 setTransferType('');
@@ -450,7 +452,7 @@ export default function RequestsScreen({ navigation }) {
       }
     } catch (error) {
       console.log('❌ خطا در ارسال درخواست انتقال/سمت:', error);
-      showAlert('خطا', error.message || 'مشکلی در ارسال درخواست انتقال/سمت پیش آمد');
+      showAlert(t("Error"), error.message || t("There was a problem submitting the transfer/position request."));
     } finally {
       setLoading(false);
     }
@@ -459,27 +461,27 @@ export default function RequestsScreen({ navigation }) {
   const handleSubmitTerminationRequest = async () => {
     // Validation
     if (!terminationType) {
-      showAlert('خطا', 'لطفاً نوع درخواست را انتخاب کنید');
+      showAlert(t("Error"), t("Please select a request type."));
       return;
     }
 
     if (!terminationStartDate) {
-      showAlert('خطا', 'لطفاً تاریخ شروع را انتخاب کنید');
+      showAlert(t("Error"), t("Please select a start date."));
       return;
     }
 
     if (terminationType === 'temporary' && !terminationEndDate) {
-      showAlert('خطا', 'لطفاً تاریخ پایان را انتخاب کنید');
+      showAlert(t("Error"), t("Please select an end date."));
       return;
     }
 
     if (!terminationDescription.trim()) {
-      showAlert('خطا', 'لطفاً توضیحات را وارد کنید');
+      showAlert(t("Error"), t("Please enter the description."));
       return;
     }
 
     if (terminationDescription.length > 5000) {
-      showAlert('خطا', 'توضیحات نباید بیشتر از 5000 کاراکتر باشد');
+      showAlert(t("Error"), t("Description must not exceed 5000 characters."));
       return;
     }
 
@@ -502,11 +504,11 @@ export default function RequestsScreen({ navigation }) {
 
       if (response.success) {
         showAlert(
-          'موفقیت',
-          'درخواست قطع همکاری شما با موفقیت ثبت شد',
+          t("Success"),
+          t("Your termination request was submitted successfully."),
           [
             {
-              text: 'باشه',
+              text: t("Ok"),
               onPress: () => {
                 // پاک کردن فرم
                 setTerminationType('');
@@ -522,7 +524,7 @@ export default function RequestsScreen({ navigation }) {
       }
     } catch (error) {
       console.log('❌ خطا در ارسال درخواست قطع همکاری:', error);
-      showAlert('خطا', error.message || 'مشکلی در ارسال درخواست قطع همکاری پیش آمد');
+      showAlert(t("Error"), error.message || t("There was a problem submitting the termination request."));
     } finally {
       setLoading(false);
     }
@@ -535,7 +537,7 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, section === 'مدیر آموزشی سخت افزار' && styles.selectedOption]}
         onPress={() => setSection('مدیر آموزشی سخت افزار')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>مدیر آموزشی سخت افزار</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>{t("Hardware training manager")}</Text>
 
       </TouchableOpacity>
 
@@ -543,7 +545,7 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, section === 'مدیر آموزشی نرم افزار' && styles.selectedOption]}
         onPress={() => setSection('مدیر آموزشی نرم افزار')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>مدیر آموزشی نرم افزار</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>{t("Software training manager")}</Text>
 
       </TouchableOpacity>
 
@@ -551,7 +553,7 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, section === 'مدیر داخلی' && styles.selectedOption]}
         onPress={() => setSection('مدیر داخلی')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>مدیر داخلی</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>{t("Internal manager")}</Text>
 
       </TouchableOpacity>
 
@@ -559,15 +561,15 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, section === 'مدیر میدانی' && styles.selectedOption]}
         onPress={() => setSection('مدیر میدانی')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>مدیر میدانی</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>{t("Field manager")}</Text>
 
       </TouchableOpacity>
 
       <View style={styles.inputContainer}>
-        <Text style={[NewStyles.text4, styles.inputLabel]}>توضیحات (ضروری):</Text>
+        <Text style={[NewStyles.text4, styles.inputLabel]}>{t("Description (required):")}</Text>
         <TextInput
           style={[NewStyles.textInput, styles.textInput, { minHeight: 120 }]}
-          placeholder="توضیحات کامل درخواست خود را وارد کنید..."
+          placeholder={t("Enter the full details of your request...")}
           placeholderTextColor={themeColor10.bgColor(0.7)}
           multiline
           numberOfLines={6}
@@ -590,7 +592,7 @@ export default function RequestsScreen({ navigation }) {
         ) : (
           <>
             <Ionicons name="send" size={20} color="#fff" style={{ marginLeft: 8 }} />
-            <Text style={[NewStyles.title4]}>ارسال درخواست</Text>
+            <Text style={[NewStyles.title4]}>{t("Submit request")}</Text>
           </>
         )}
       </TouchableOpacity>
@@ -600,7 +602,7 @@ export default function RequestsScreen({ navigation }) {
         onPress={() => navigation.navigate('RequestsListScreen')}
       >
         <Ionicons name="list" size={20} color={themeColor0.bgColor(1)} style={{ marginLeft: 8 }} />
-        <Text style={[NewStyles.text]}>مشاهده لیست درخواست‌ها</Text>
+        <Text style={[NewStyles.text]}>{t("View request list")}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -612,13 +614,13 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, leaveType === 'hourly' && styles.selectedOption]}
         onPress={() => setLeaveType('hourly')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>ساعتی</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>{t("Hourly")}</Text>
       </TouchableOpacity>
 
       {leaveType === 'hourly' && (
         <>
           <View style={styles.inputContainer}>
-            <Text style={[NewStyles.text4, styles.inputLabel]}>تاریخ:</Text>
+            <Text style={[NewStyles.text4, styles.inputLabel]}>{t("Date:")}</Text>
             <TouchableOpacity
               style={[NewStyles.textInput, styles.dateInputButton]}
               onPress={() => {
@@ -627,30 +629,30 @@ export default function RequestsScreen({ navigation }) {
               }}
             >
               <Text style={[NewStyles.text10]}>
-                {leaveDate || 'انتخاب تاریخ'}
+                {leaveDate || t("Select Date")}
               </Text>
               <Ionicons name="calendar" size={20} color={themeColor0.bgColor(1)} />
             </TouchableOpacity>
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={[NewStyles.text4, styles.inputLabel]}>ساعت:</Text>
+            <Text style={[NewStyles.text4, styles.inputLabel]}>{t("Time:")}</Text>
             <TouchableOpacity
               style={[NewStyles.textInput, styles.dateInputButton]}
               onPress={() => setShowTimePicker(true)}
             >
               <Text style={[NewStyles.text10]}>
-                {leaveHour || 'انتخاب ساعت'}
+                {leaveHour || t("Select Time")}
               </Text>
               <Ionicons name="time" size={20} color={themeColor0.bgColor(1)} />
             </TouchableOpacity>
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={[NewStyles.text4, styles.inputLabel]}>توضیحات (ضروری):</Text>
+            <Text style={[NewStyles.text4, styles.inputLabel]}>{t("Description (required):")}</Text>
             <TextInput
               style={[NewStyles.textInput, styles.textInput, { minHeight: 100 }]}
-              placeholder="توضیحات کامل درخواست خود را وارد کنید..."
+              placeholder={t("Enter the full details of your request...")}
               placeholderTextColor={themeColor10.bgColor(0.7)}
               multiline
               numberOfLines={4}
@@ -669,13 +671,13 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, leaveType === 'daily' && styles.selectedOption]}
         onPress={() => setLeaveType('daily')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>روزانه</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>{t("Daily")}</Text>
       </TouchableOpacity>
 
       {leaveType === 'daily' && (
         <>
           <View style={styles.inputContainer}>
-            <Text style={[NewStyles.text4, styles.inputLabel]}>از تاریخ:</Text>
+            <Text style={[NewStyles.text4, styles.inputLabel]}>{t("From Date:")}</Text>
             <TouchableOpacity
               style={[NewStyles.textInput, styles.dateInputButton]}
               onPress={() => {
@@ -684,14 +686,14 @@ export default function RequestsScreen({ navigation }) {
               }}
             >
               <Text style={[NewStyles.text10]}>
-                {leaveDate || 'انتخاب تاریخ'}
+                {leaveDate || t("Select Date")}
               </Text>
               <Ionicons name="calendar" size={20} color={themeColor0.bgColor(1)} />
             </TouchableOpacity>
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={[NewStyles.text4, styles.inputLabel]}>تا تاریخ:</Text>
+            <Text style={[NewStyles.text4, styles.inputLabel]}>{t("To Date:")}</Text>
             <TouchableOpacity
               style={[NewStyles.textInput, styles.dateInputButton]}
               onPress={() => {
@@ -700,17 +702,17 @@ export default function RequestsScreen({ navigation }) {
               }}
             >
               <Text style={[NewStyles.text10]}>
-                {leaveToDate || 'انتخاب تاریخ'}
+                {leaveToDate || t("Select Date")}
               </Text>
               <Ionicons name="calendar" size={20} color={themeColor0.bgColor(1)} />
             </TouchableOpacity>
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={[NewStyles.text4, styles.inputLabel]}>توضیحات (ضروری):</Text>
+            <Text style={[NewStyles.text4, styles.inputLabel]}>{t("Description (required):")}</Text>
             <TextInput
               style={[NewStyles.textInput, styles.textInput, { minHeight: 100 }]}
-              placeholder="توضیحات کامل درخواست خود را وارد کنید..."
+              placeholder={t("Enter the full details of your request...")}
               placeholderTextColor={themeColor10.bgColor(0.7)}
               multiline
               numberOfLines={4}
@@ -737,7 +739,7 @@ export default function RequestsScreen({ navigation }) {
             ) : (
               <>
                 <Ionicons name="send" size={20} color="#fff" style={{ marginLeft: 8 }} />
-                <Text style={[NewStyles.title4]}>ارسال درخواست</Text>
+                <Text style={[NewStyles.title4]}>{t("Submit request")}</Text>
               </>
             )}
           </TouchableOpacity>
@@ -747,7 +749,7 @@ export default function RequestsScreen({ navigation }) {
             onPress={() => navigation.navigate('LeaveRequestsListScreen')}
           >
             <Ionicons name="list" size={20} color={themeColor0.bgColor(1)} style={{ marginLeft: 8 }} />
-            <Text style={[NewStyles.text]}>مشاهده لیست درخواست‌ها</Text>
+            <Text style={[NewStyles.text]}>{t("View request list")}</Text>
           </TouchableOpacity>
         </>
       )}
@@ -761,16 +763,16 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, loanType === 'sponsor' && styles.selectedOption]}
         onPress={() => setLoanType('sponsor')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>ضامن / ضمانت نامه</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>{t("Guarantor / Guarantee")}</Text>
       </TouchableOpacity>
 
       {loanType === 'sponsor' && (
         <>
           <View style={styles.inputContainer}>
-            <Text style={[NewStyles.text4, styles.inputLabel]}>توضیحات (ضروری):</Text>
+            <Text style={[NewStyles.text4, styles.inputLabel]}>{t("Description (required):")}</Text>
             <TextInput
               style={[NewStyles.textInput, styles.textInput, { minHeight: 120 }]}
-              placeholder="توضیحات کامل درخواست خود را وارد کنید..."
+              placeholder={t("Enter the full details of your request...")}
               placeholderTextColor={themeColor10.bgColor(0.7)}
               multiline
               numberOfLines={6}
@@ -789,33 +791,33 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, loanType === 'free' && styles.selectedOption]}
         onPress={() => setLoanType('free')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>وام بدون بهره</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>{t("Interest-free loan")}</Text>
       </TouchableOpacity>
 
       {loanType === 'free' && (
         <>
           <View style={styles.loanRow}>
             <View style={[{ backgroundColor: themeColor4.bgColor(1), paddingVertical: 8, paddingHorizontal: 5 }, NewStyles.center, NewStyles.border5]}>
-              <Text style={NewStyles.text10}>مبلغ وام:</Text>
+              <Text style={NewStyles.text10}>{t("Loan amount:")}</Text>
             </View>
             <TextInput
               style={[styles.loanInput, NewStyles.text10]}
-              placeholder="مثلاً: 30000000"
+              placeholder={t("Example: 30000000")}
               placeholderTextColor={themeColor10.bgColor(0.5)}
               value={loanAmount?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
               onChangeText={(p) => { setLoanAmount(p?.replace(/,/g, "")) }}
               keyboardType="numeric"
             />
             <View style={[{ backgroundColor: themeColor1.bgColor(1), paddingVertical: 8, paddingHorizontal: 5 }, NewStyles.center, NewStyles.border5]}>
-              <Text style={[NewStyles.text10]}>تومان</Text>
+              <Text style={[NewStyles.text10]}>{t("Tomans")}</Text>
             </View>
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={[NewStyles.text4, styles.inputLabel]}>توضیحات (ضروری):</Text>
+            <Text style={[NewStyles.text4, styles.inputLabel]}>{t("Description (required):")}</Text>
             <TextInput
               style={[NewStyles.textInput, styles.textInput, { minHeight: 100 }]}
-              placeholder="دلیل درخواست وام را توضیح دهید..."
+              placeholder={t("Explain the reason for your loan request...")}
               placeholderTextColor={themeColor10.bgColor(0.7)}
               multiline
               numberOfLines={4}
@@ -829,10 +831,10 @@ export default function RequestsScreen({ navigation }) {
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={[NewStyles.text4, styles.inputLabel]}>آیا ضامن دارید؟ توضیح دهید:</Text>
+            <Text style={[NewStyles.text4, styles.inputLabel]}>{t("Do you have a guarantor? Explain:")}</Text>
             <TextInput
               style={[NewStyles.textInput, styles.textInput, { minHeight: 80 }]}
-              placeholder="مثلاً: بله، ضامن دارم یا خیر، ضامن ندارم..."
+              placeholder={t("Example: Yes, I have a guarantor or no, I don't have one...")}
               placeholderTextColor={themeColor10.bgColor(0.7)}
               multiline
               numberOfLines={3}
@@ -844,7 +846,7 @@ export default function RequestsScreen({ navigation }) {
 
           <View style={styles.monthRow}>
             <View style={[{backgroundColor: themeColor4.bgColor(1), paddingHorizontal:5, paddingVertical:8}, NewStyles.border5]}>
-              <Text style={NewStyles.text10}>مدت زمان پرداخت:</Text>
+              <Text style={NewStyles.text10}>{t("Repayment duration:")}</Text>
             </View>
             <TextInput
               style={[styles.monthInput, NewStyles.text10]}
@@ -854,14 +856,14 @@ export default function RequestsScreen({ navigation }) {
               onChangeText={setLoanMonth}
               keyboardType="numeric"
             />
-            <Text style={NewStyles.text10}>ماه</Text>
+            <Text style={NewStyles.text10}>{t("Month")}</Text>
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={[NewStyles.text4, styles.inputLabel]}>در صورت نیاز فوری / شهری، توضیح دهید:</Text>
+            <Text style={[NewStyles.text4, styles.inputLabel]}>{t("If urgent or city-related, explain:")}</Text>
             <TextInput
               style={[NewStyles.textInput, styles.textInput, { minHeight: 100 }]}
-              placeholder="توضیحات اضطراری خود را وارد کنید (اختیاری)..."
+              placeholder={t("Enter your urgent notes (optional)...")}
               placeholderTextColor={themeColor10.bgColor(0.7)}
               multiline
               numberOfLines={4}
@@ -888,7 +890,7 @@ export default function RequestsScreen({ navigation }) {
             ) : (
               <>
                 <Ionicons name="send" size={20} color="#fff" style={{ marginLeft: 8 }} />
-                <Text style={[NewStyles.title4]}>ارسال درخواست</Text>
+                <Text style={[NewStyles.title4]}>{t("Submit request")}</Text>
               </>
             )}
           </TouchableOpacity>
@@ -898,7 +900,7 @@ export default function RequestsScreen({ navigation }) {
             onPress={() => navigation.navigate('DebtRequestsListScreen')}
           >
             <Ionicons name="list" size={20} color={themeColor0.bgColor(1)} style={{ marginLeft: 8 }} />
-            <Text style={[NewStyles.text]}>مشاهده لیست درخواست‌ها</Text>
+            <Text style={[NewStyles.text]}>{t("View request list")}</Text>
           </TouchableOpacity>
         </>
       )}
@@ -912,19 +914,19 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, manpowerType === 'field' && styles.selectedOption]}
         onPress={() => setManpowerType('field')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>نیروی میدانی</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>{t("Field personnel")}</Text>
       </TouchableOpacity>
 
       {manpowerType === 'field' && (
         <>
           <View style={styles.inputContainer}>
-            <Text style={[NewStyles.text4, styles.inputLabel]}>توضیحات درخواست (ضروری):</Text>
+            <Text style={[NewStyles.text4, styles.inputLabel]}>{t("Request description (required):")}</Text>
             <Text style={[NewStyles.text4, { fontSize: 12, color: themeColor10.bgColor(0.8), marginBottom: 8 }]}>
-              درخواست نیروی میدانی خود را با جزئیات کامل توضیح دهید
+              {t("Explain your field personnel request in full detail")}
             </Text>
             <TextInput
               style={[NewStyles.textInput, styles.textInput, { minHeight: 120 }]}
-              placeholder="مثال: نیاز به یک نفر نیروی میدانی برای پروژه فوری در منطقه 5 تهران..."
+              placeholder={t("Example: Need one field personnel for an urgent project in Tehran District 5...")}
               placeholderTextColor={themeColor10.bgColor(0.7)}
               multiline
               numberOfLines={6}
@@ -943,19 +945,19 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, manpowerType === 'human' && styles.selectedOption]}
         onPress={() => setManpowerType('human')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>نیروی انسانی (داخلی)</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>{t("Internal personnel")}</Text>
       </TouchableOpacity>
 
       {manpowerType === 'human' && (
         <>
           <View style={styles.inputContainer}>
-            <Text style={[NewStyles.text4, styles.inputLabel]}>توضیحات درخواست (ضروری):</Text>
+            <Text style={[NewStyles.text4, styles.inputLabel]}>{t("Request description (required):")}</Text>
             <Text style={[NewStyles.text4, { fontSize: 12, color: themeColor10.bgColor(0.8), marginBottom: 8 }]}>
-              درخواست نیروی انسانی داخلی خود را با جزئیات کامل توضیح دهید
+              {t("Explain your internal manpower request in full detail")}
             </Text>
             <TextInput
               style={[NewStyles.textInput, styles.textInput, { minHeight: 120 }]}
-              placeholder="مثال: نیاز به نیروی پشتیبانی تلفنی برای پاسخگویی به مشتریان..."
+              placeholder={t("Example: Need phone support staff to answer customers...")}
               placeholderTextColor={themeColor10.bgColor(0.7)}
               multiline
               numberOfLines={6}
@@ -982,7 +984,7 @@ export default function RequestsScreen({ navigation }) {
             ) : (
               <>
                 <Ionicons name="send" size={20} color="#fff" style={{ marginLeft: 8 }} />
-                <Text style={[NewStyles.title4]}>ارسال درخواست</Text>
+                <Text style={[NewStyles.title4]}>{t("Submit request")}</Text>
               </>
             )}
           </TouchableOpacity>
@@ -992,7 +994,7 @@ export default function RequestsScreen({ navigation }) {
             onPress={() => navigation.navigate('ManpowerRequestsListScreen')}
           >
             <Ionicons name="list" size={20} color={themeColor0.bgColor(1)} style={{ marginLeft: 8 }} />
-            <Text style={[NewStyles.text]}>مشاهده لیست درخواست‌ها</Text>
+            <Text style={[NewStyles.text]}>{t("View request list")}</Text>
           </TouchableOpacity>
         </>
       )}
@@ -1006,19 +1008,19 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, transferType === 'city' && styles.selectedOption]}
         onPress={() => setTransferType('city')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>انتقال به شهر / منطقه دیگر</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>{t("Transfer to another city / region")}</Text>
       </TouchableOpacity>
 
       {transferType === 'city' && (
         <>
           <View style={styles.inputContainer}>
-            <Text style={[NewStyles.text4, styles.inputLabel]}>توضیحات درخواست (ضروری):</Text>
+            <Text style={[NewStyles.text4, styles.inputLabel]}>{t("Request description (required):")}</Text>
             <Text style={[NewStyles.text4, { fontSize: 12, color: themeColor10.bgColor(0.8), marginBottom: 8 }]}>
-              دلیل درخواست انتقال و شهر مورد نظر خود را با جزئیات کامل توضیح دهید
+              {t("Explain the reason for the transfer and the desired city in full detail")}
             </Text>
             <TextInput
               style={[NewStyles.textInput, styles.textInput, { minHeight: 120 }]}
-              placeholder="مثال: به دلیل شرایط خانوادگی نیاز به انتقال به شهر تهران دارم. همسرم در تهران مشغول به کار است..."
+              placeholder={t("Example: Due to family circumstances, I need a transfer to Tehran. My spouse works in Tehran...")}
               placeholderTextColor={themeColor10.bgColor(0.7)}
               multiline
               numberOfLines={6}
@@ -1037,19 +1039,19 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, transferType === 'position' && styles.selectedOption]}
         onPress={() => setTransferType('position')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>ارتقا / تغییر سمت</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>{t("Promotion / Position change")}</Text>
       </TouchableOpacity>
 
       {transferType === 'position' && (
         <>
           <View style={styles.inputContainer}>
-            <Text style={[NewStyles.text4, styles.inputLabel]}>توضیحات درخواست (ضروری):</Text>
+            <Text style={[NewStyles.text4, styles.inputLabel]}>{t("Request description (required):")}</Text>
             <Text style={[NewStyles.text4, { fontSize: 12, color: themeColor10.bgColor(0.8), marginBottom: 8 }]}>
-              دلیل درخواست تغییر سمت، سابقه کاری و توانمندی‌های خود را شرح دهید
+              {t("Explain the reason for requesting a position change, your experience, and skills")}
             </Text>
             <TextInput
               style={[NewStyles.textInput, styles.textInput, { minHeight: 120 }]}
-              placeholder="مثال: با توجه به 5 سال سابقه کار و عملکرد مثبت، درخواست ارتقا به سمت سرپرست تیم فنی را دارم..."
+              placeholder={t("Example: With 5 years of experience and strong performance, I request promotion to technical team lead...")}
               placeholderTextColor={themeColor10.bgColor(0.7)}
               multiline
               numberOfLines={6}
@@ -1076,7 +1078,7 @@ export default function RequestsScreen({ navigation }) {
             ) : (
               <>
                 <Ionicons name="send" size={20} color="#fff" style={{ marginLeft: 8 }} />
-                <Text style={[NewStyles.title4]}>ارسال درخواست</Text>
+                <Text style={[NewStyles.title4]}>{t("Submit request")}</Text>
               </>
             )}
           </TouchableOpacity>
@@ -1086,7 +1088,7 @@ export default function RequestsScreen({ navigation }) {
             onPress={() => navigation.navigate('TransferRequestsListScreen')}
           >
             <Ionicons name="list" size={20} color={themeColor0.bgColor(1)} style={{ marginLeft: 8 }} />
-            <Text style={[NewStyles.text]}>مشاهده لیست درخواست‌ها</Text>
+            <Text style={[NewStyles.text]}>{t("View request list")}</Text>
           </TouchableOpacity>
         </>
       )}
@@ -1101,37 +1103,37 @@ export default function RequestsScreen({ navigation }) {
           style={styles.otherOption}
           onPress={() => navigation.navigate('RequestsListScreen')}
         >
-          <Text style={[NewStyles.text4, styles.otherOptionText]}>آموزشی</Text>
+          <Text style={[NewStyles.text4, styles.otherOptionText]}>{t("Training")}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.otherOption}
           onPress={() => navigation.navigate('LeaveRequestsListScreen')}
         >
-          <Text style={[NewStyles.text4, styles.otherOptionText]}>مرخصی / استعلاجی</Text>
+          <Text style={[NewStyles.text4, styles.otherOptionText]}>{t("Leave / Sick Leave")}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.otherOption}
           onPress={() => navigation.navigate('DebtRequestsListScreen')}
         >
-          <Text style={[NewStyles.text4, styles.otherOptionText]}>تسهیلات / وام بدون بهره</Text>
+          <Text style={[NewStyles.text4, styles.otherOptionText]}>{t("Facilities / Interest-free Loan")}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.otherOption}
           onPress={() => navigation.navigate('ManpowerRequestsListScreen')}
         >
-          <Text style={[NewStyles.text4, styles.otherOptionText]}>نیروی انسانی</Text>
+          <Text style={[NewStyles.text4, styles.otherOptionText]}>{t("Manpower")}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.otherOption}
           onPress={() => navigation.navigate('TransferRequestsListScreen')}
         >
-          <Text style={[NewStyles.text4, styles.otherOptionText]}>انتقال / سمت</Text>
+          <Text style={[NewStyles.text4, styles.otherOptionText]}>{t("Transfer / Position")}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.otherOption}
           onPress={() => navigation.navigate('TerminationRequestsListScreen')}
         >
-          <Text style={[NewStyles.text4, styles.otherOptionText]}>عدم همراهی</Text>
+          <Text style={[NewStyles.text4, styles.otherOptionText]}>{t("Termination")}</Text>
         </TouchableOpacity>
       </View>
 
@@ -1145,13 +1147,13 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, terminationType === 'temporary' && styles.selectedOption]}
         onPress={() => setTerminationType('temporary')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>بصورت موقت</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>{t("Temporary")}</Text>
       </TouchableOpacity>
 
       {terminationType === 'temporary' && (
         <>
           <View style={styles.inputContainer}>
-            <Text style={[NewStyles.text4, styles.inputLabel]}>از تاریخ:</Text>
+            <Text style={[NewStyles.text4, styles.inputLabel]}>{t("From Date:")}</Text>
             <TouchableOpacity
               style={[NewStyles.textInput, styles.dateInputButton]}
               onPress={() => {
@@ -1160,14 +1162,14 @@ export default function RequestsScreen({ navigation }) {
               }}
             >
               <Text style={[NewStyles.text10]}>
-                {terminationStartDate || 'انتخاب تاریخ'}
+                {terminationStartDate || t("Select Date")}
               </Text>
               <Ionicons name="calendar" size={20} color={themeColor0.bgColor(1)} />
             </TouchableOpacity>
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={[NewStyles.text4, styles.inputLabel]}>تا تاریخ:</Text>
+            <Text style={[NewStyles.text4, styles.inputLabel]}>{t("To Date:")}</Text>
             <TouchableOpacity
               style={[NewStyles.textInput, styles.dateInputButton]}
               onPress={() => {
@@ -1176,20 +1178,20 @@ export default function RequestsScreen({ navigation }) {
               }}
             >
               <Text style={[NewStyles.text10]}>
-                {terminationEndDate || 'انتخاب تاریخ'}
+                {terminationEndDate || t("Select Date")}
               </Text>
               <Ionicons name="calendar" size={20} color={themeColor0.bgColor(1)} />
             </TouchableOpacity>
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={[NewStyles.text4, styles.inputLabel]}>توضیحات (ضروری):</Text>
+            <Text style={[NewStyles.text4, styles.inputLabel]}>{t("Description (required):")}</Text>
             <Text style={[NewStyles.text4, { fontSize: 12, color: themeColor10.bgColor(0.8), marginBottom: 8 }]}>
-              دلیل درخواست قطع همکاری موقت خود را با جزئیات کامل توضیح دهید
+              {t("Explain the reason for your temporary termination request in full detail")}
             </Text>
             <TextInput
               style={[NewStyles.textInput, styles.textInput, { minHeight: 120 }]}
-              placeholder="مثال: به دلیل ادامه تحصیل در دوره کارشناسی ارشد، نیاز به تعلیق فعالیت برای 3 ماه دارم..."
+              placeholder={t("Example: Due to continuing my studies in a master's program, I need to suspend my activity for 3 months...")}
               placeholderTextColor={themeColor10.bgColor(0.7)}
               multiline
               numberOfLines={6}
@@ -1208,13 +1210,13 @@ export default function RequestsScreen({ navigation }) {
         style={[styles.subOption, terminationType === 'permanent' && styles.selectedOption]}
         onPress={() => setTerminationType('permanent')}
       >
-        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>بصورت دائم</Text>
+        <Text style={[NewStyles.title10, { textAlign: 'center', width: '100%' }]}>{t("Permanent")}</Text>
       </TouchableOpacity>
 
       {terminationType === 'permanent' && (
         <>
           <View style={styles.inputContainer}>
-            <Text style={[NewStyles.text4, styles.inputLabel]}>از تاریخ:</Text>
+            <Text style={[NewStyles.text4, styles.inputLabel]}>{t("From Date:")}</Text>
             <TouchableOpacity
               style={[NewStyles.textInput, styles.dateInputButton]}
               onPress={() => {
@@ -1223,20 +1225,20 @@ export default function RequestsScreen({ navigation }) {
               }}
             >
               <Text style={[NewStyles.text10]}>
-                {terminationStartDate || 'انتخاب تاریخ'}
+                {terminationStartDate || t("Select Date")}
               </Text>
               <Ionicons name="calendar" size={20} color={themeColor0.bgColor(1)} />
             </TouchableOpacity>
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={[NewStyles.text4, styles.inputLabel]}>توضیحات (ضروری):</Text>
+            <Text style={[NewStyles.text4, styles.inputLabel]}>{t("Description (required):")}</Text>
             <Text style={[NewStyles.text4, { fontSize: 12, color: themeColor10.bgColor(0.8), marginBottom: 8 }]}>
-              دلیل درخواست قطع همکاری دائم خود را با جزئیات کامل شرح دهید
+              {t("Explain the reason for your permanent termination request in full detail")}
             </Text>
             <TextInput
               style={[NewStyles.textInput, styles.textInput, { minHeight: 120 }]}
-              placeholder="مثال: به دلیل یافتن فرصت شغلی جدید در حوزه مدیریت، تصمیم به قطع همکاری گرفته‌ام..."
+              placeholder={t("Example: Due to finding a new job opportunity in management, I decided to terminate cooperation...")}
               placeholderTextColor={themeColor10.bgColor(0.7)}
               multiline
               numberOfLines={6}
@@ -1263,7 +1265,7 @@ export default function RequestsScreen({ navigation }) {
             ) : (
               <>
                 <Ionicons name="send" size={20} color="#fff" style={{ marginLeft: 8 }} />
-                <Text style={[NewStyles.title4]}>ارسال درخواست</Text>
+                <Text style={[NewStyles.title4]}>{t("Submit request")}</Text>
               </>
             )}
           </TouchableOpacity>
@@ -1273,7 +1275,7 @@ export default function RequestsScreen({ navigation }) {
             onPress={() => navigation.navigate('TerminationRequestsListScreen')}
           >
             <Ionicons name="list" size={20} color={themeColor0.bgColor(1)} style={{ marginLeft: 8 }} />
-            <Text style={[NewStyles.text]}>مشاهده لیست درخواست‌ها</Text>
+            <Text style={[NewStyles.text]}>{t("View request list")}</Text>
           </TouchableOpacity>
         </>
       )}
@@ -1301,7 +1303,7 @@ export default function RequestsScreen({ navigation }) {
       style={styles.background}
     >
       <ScreenHeaders
-        title={'درخواست ها'}
+        title={t("Requests")}
       />
 
       <ScrollView contentContainerStyle={styles.container}>
