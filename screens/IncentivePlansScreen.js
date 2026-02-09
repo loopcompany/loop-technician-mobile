@@ -11,6 +11,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
@@ -23,6 +24,7 @@ export default function IncentivePlansScreen({ navigation }) {
   const [statistics, setStatistics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const { t } = useTranslation();
 
   // دریافت لیست طرح‌ها
   const fetchPlans = async (isRefresh = false) => {
@@ -38,7 +40,7 @@ export default function IncentivePlansScreen({ navigation }) {
       }
     } catch (error) {
       console.log('❌ خطا در دریافت طرح‌ها:', error);
-      showAlert('خطا', error.message || 'مشکلی در دریافت طرح‌های تشویقی پیش آمد');
+      showAlert(t('Error'), error.message || t('There was a problem fetching incentive plans.'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -93,14 +95,14 @@ export default function IncentivePlansScreen({ navigation }) {
         <View style={styles.dateInfo}>
           <Ionicons name="calendar-outline" size={14} color={themeColor10.bgColor(0.7)} />
           <Text style={[NewStyles.text4, styles.dateText]}>
-            ایجاد: {formatDate(item.created_at)}
+            {t('Created:')} {formatDate(item.created_at)}
           </Text>
         </View>
         {item.status !== 0 && (
           <View style={styles.dateInfo}>
             <Ionicons name="time-outline" size={14} color={themeColor10.bgColor(0.7)} />
             <Text style={[NewStyles.text4, styles.dateText]}>
-              بروزرسانی: {formatDate(item.updated_at)}
+              {t('Updated:')} {formatDate(item.updated_at)}
             </Text>
           </View>
         )}
@@ -114,7 +116,7 @@ export default function IncentivePlansScreen({ navigation }) {
       {/* جعبه جوایز */}
       <TouchableOpacity style={styles.prizeBoxButton}>
         <Ionicons name="gift" size={28} color="#fff" />
-        <Text style={[NewStyles.text, styles.prizeBoxText]}>جعبه جوایز</Text>
+        <Text style={[NewStyles.text, styles.prizeBoxText]}>{t('Prize Box')}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -123,9 +125,9 @@ export default function IncentivePlansScreen({ navigation }) {
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
       <Ionicons name="gift-outline" size={80} color={themeColor10.bgColor(0.3)} />
-      <Text style={[NewStyles.text, styles.emptyText]}>هیچ طرح تشویقی یافت نشد</Text>
+      <Text style={[NewStyles.text, styles.emptyText]}>{t('No incentive plans found')}</Text>
       <Text style={[NewStyles.text4, styles.emptySubText]}>
-        در حال حاضر هیچ طرح تشویقی برای شما تعریف نشده است
+        {t('There are currently no incentive plans defined for you')}
       </Text>
     </View>
   );
@@ -139,11 +141,11 @@ export default function IncentivePlansScreen({ navigation }) {
         style={styles.background}
       >
         <ScreenHeaders
-          title={'طرح های تشویقی'}
+          title={t('Promotional Plans')}
         />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
-          <Text style={[NewStyles.text4, styles.loadingText]}>در حال بارگذاری...</Text>
+          <Text style={[NewStyles.text4, styles.loadingText]}>{t('Loading...')}</Text>
         </View>
       </LinearGradient>
     );
@@ -157,7 +159,7 @@ export default function IncentivePlansScreen({ navigation }) {
       style={styles.background}
     >
       <ScreenHeaders
-        title={'طرح های تشویقی'}
+        title={t('Promotional Plans')}
       />
 
       <FlatList

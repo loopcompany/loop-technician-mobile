@@ -13,6 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from '@react-navigation/native';
 import { BarChart } from 'react-native-gifted-charts';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
@@ -28,6 +29,7 @@ export default function IndexScreen({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedYear, setSelectedYear] = useState(null); // شروع با null
   const [chartData, setChartData] = useState([]);
+  const { t } = useTranslation();
   const [yearlyData, setYearlyData] = useState({
     year: 1404,
     yearly_summary: {
@@ -87,9 +89,9 @@ export default function IndexScreen({ navigation }) {
       useMockData();
 
       showAlert(
-        'اطلاعیه',
-        'در حال حاضر اطلاعات واقعی در دسترس نیست. داده‌های نمونه نمایش داده می‌شود.',
-        [{ text: 'باشه' }]
+        t('Notice'),
+        t('Real data is not available right now. Sample data is being shown.'),
+        [{ text: t('Ok') }]
       );
     } finally {
       setLoading(false);
@@ -177,11 +179,11 @@ export default function IndexScreen({ navigation }) {
     if (!item) return;
 
     showAlert(
-      `📊 ${item.monthName || 'ماه'}`,
-      `کل درآمد: ${formatPrice(item.totalIncome || 0)} تومان\n` +
-      `تسویه‌ها: ${formatPrice(item.totalSettlements || 0)} تومان\n` +
-      `خالص دریافتی: ${formatPrice(item.netIncome || 0)} تومان`,
-      [{ text: 'باشه', style: 'default' }]
+      `📊 ${item.monthName || t('Month')}`,
+      `${t('Total income')}: ${formatPrice(item.totalIncome || 0)} ${t('Tomans')}\n` +
+      `${t('Settlements')}: ${formatPrice(item.totalSettlements || 0)} ${t('Tomans')}\n` +
+      `${t('Net income')}: ${formatPrice(item.netIncome || 0)} ${t('Tomans')}`,
+      [{ text: t('Ok'), style: 'default' }]
     );
   };
 
@@ -195,7 +197,7 @@ export default function IndexScreen({ navigation }) {
       >
         <CustomStatusBar />
         <ScreenHeaders
-          title={'شاخص'}
+          title={t('Index')}
         />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
@@ -213,7 +215,7 @@ export default function IndexScreen({ navigation }) {
     >
       <CustomStatusBar />
       <ScreenHeaders
-        title={'شاخص'}
+        title={t('Index')}
       />
 
       <ScrollView
@@ -226,7 +228,7 @@ export default function IndexScreen({ navigation }) {
         {/* هدر گزارش عملکرد */}
         <View style={[styles.headerCard, { backgroundColor: themeColor0.bgColor(0.9) }]}>
           <Ionicons name="bar-chart" size={28} color="#fff" />
-          <Text style={[NewStyles.title, styles.headerTitle]}>گزارش عملکرد</Text>
+          <Text style={[NewStyles.title, styles.headerTitle]}>{t('Performance report')}</Text>
         </View>
 
         {/* انتخاب سال */}
@@ -241,7 +243,7 @@ export default function IndexScreen({ navigation }) {
           <View style={styles.yearDisplay}>
             <Ionicons name="calendar" size={20} color={themeColor0.bgColor(1)} />
             <Text style={[NewStyles.title, styles.yearText]}>
-              سال {selectedYear || yearlyData.year}
+              {t('Year')} {selectedYear || yearlyData.year}
             </Text>
           </View>
 
@@ -257,7 +259,7 @@ export default function IndexScreen({ navigation }) {
         <View style={styles.summaryContainer}>
           <View style={styles.summaryCard}>
             <Ionicons name="trending-up" size={24} color={themeColor7.bgColor(1)} />
-            <Text style={[NewStyles.text4, styles.summaryLabel]}>کل درآمد</Text>
+            <Text style={[NewStyles.text4, styles.summaryLabel]}>{t('Total income')}</Text>
             <Text style={[NewStyles.title, styles.summaryValue]}>
               {formatPrice(yearlyData.yearly_summary.total_income)}
             </Text>
@@ -265,7 +267,7 @@ export default function IndexScreen({ navigation }) {
 
           <View style={styles.summaryCard}>
             <Ionicons name="cash" size={24} color={themeColor0.bgColor(1)} />
-            <Text style={[NewStyles.text4, styles.summaryLabel]}>خالص دریافتی</Text>
+            <Text style={[NewStyles.text4, styles.summaryLabel]}>{t('Net income')}</Text>
             <Text style={[NewStyles.title, styles.summaryValue]}>
               {formatPrice(yearlyData.yearly_summary.net_income)}
             </Text>
@@ -273,7 +275,7 @@ export default function IndexScreen({ navigation }) {
 
           <View style={styles.summaryCard}>
             <Ionicons name="card" size={24} color={themeColor1.bgColor(1)} />
-            <Text style={[NewStyles.text4, styles.summaryLabel]}>تسویه‌ها</Text>
+            <Text style={[NewStyles.text4, styles.summaryLabel]}>{t('Settlements')}</Text>
             <Text style={[NewStyles.title, styles.summaryValue]}>
               {formatPrice(yearlyData.yearly_summary.total_settlements)}
             </Text>
@@ -283,14 +285,14 @@ export default function IndexScreen({ navigation }) {
         {/* نمودار میله‌ای */}
         <View style={styles.chartContainer}>
           <View style={styles.chartHeader}>
-            <Text style={[NewStyles.title, styles.chartTitle]}>نمودار درآمد ماهانه</Text>
+            <Text style={[NewStyles.title, styles.chartTitle]}>{t('Monthly income chart')}</Text>
             <Text style={[NewStyles.text4, styles.chartSubtitle]}>
-              (میلیون تومان)
+              {t('(Million Tomans)')}
             </Text>
             <View style={styles.chartHint}>
               <Ionicons name="information-circle" size={16} color={themeColor7.bgColor(0.7)} />
               <Text style={[NewStyles.text4, styles.chartHintText]}>
-                برای مشاهده جزئیات روی هر ستون کلیک کنید
+                {t('Tap a bar to view details')}
               </Text>
             </View>
           </View>
@@ -333,7 +335,7 @@ export default function IndexScreen({ navigation }) {
             <View style={styles.emptyChart}>
               <Ionicons name="bar-chart-outline" size={60} color={themeColor10.bgColor(0.3)} />
               <Text style={[NewStyles.text4, styles.emptyText]}>
-                داده‌ای برای نمایش وجود ندارد
+                {t('No records to display!')}
               </Text>
             </View>
           )}
@@ -343,9 +345,9 @@ export default function IndexScreen({ navigation }) {
         <View style={styles.walletCard}>
           <Ionicons name="wallet" size={28} color={themeColor7.bgColor(1)} />
           <View style={styles.walletInfo}>
-            <Text style={[NewStyles.text4, styles.walletLabel]}>موجودی فعلی کیف پول</Text>
+            <Text style={[NewStyles.text4, styles.walletLabel]}>{t('Wallet balance')}</Text>
             <Text style={[NewStyles.title, styles.walletValue]}>
-              {formatPrice(yearlyData.current_wallet)} تومان
+              {formatPrice(yearlyData.current_wallet)} {t('Tomans')}
             </Text>
           </View>
         </View>

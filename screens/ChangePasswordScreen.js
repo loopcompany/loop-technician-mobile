@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
 
 import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
@@ -23,25 +24,26 @@ export default function ChangePasswordScreen({ navigation }) {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   // Validate password strength
   const validatePasswordStrength = (password) => {
     const errors = [];
     
     if (password.length < 8) {
-      errors.push('رمز عبور باید حداقل 8 کاراکتر باشد');
+      errors.push(t('Password must be at least 8 characters'));
     }
     if (!/[A-Z]/.test(password)) {
-      errors.push('رمز عبور باید حداقل یک حرف بزرگ انگلیسی داشته باشد');
+      errors.push(t('Password must contain at least one uppercase English letter'));
     }
     if (!/[a-z]/.test(password)) {
-      errors.push('رمز عبور باید حداقل یک حرف کوچک انگلیسی داشته باشد');
+      errors.push(t('Password must contain at least one lowercase English letter'));
     }
     if (!/[0-9]/.test(password)) {
-      errors.push('رمز عبور باید حداقل یک عدد داشته باشد');
+      errors.push(t('Password must contain at least one number'));
     }
     if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      errors.push('رمز عبور باید حداقل یک نماد (!@#$%^&*...) داشته باشد');
+      errors.push(t('Password must contain at least one symbol (!@#$%^&*...)'));
     }
     
     return errors;
@@ -50,29 +52,29 @@ export default function ChangePasswordScreen({ navigation }) {
   const handleConfirm = async () => {
     // Validation
     if (!currentPassword.trim()) {
-      showAlert('خطا', 'لطفاً رمز عبور فعلی را وارد کنید');
+      showAlert(t('Error'), t('Please enter your current password.'));
       return;
     }
 
     if (!newPassword.trim()) {
-      showAlert('خطا', 'لطفاً رمز عبور جدید را وارد کنید');
+      showAlert(t('Error'), t('Please enter your new password.'));
       return;
     }
 
     if (!confirmPassword.trim()) {
-      showAlert('خطا', 'لطفاً تکرار رمز عبور جدید را وارد کنید');
+      showAlert(t('Error'), t('Please confirm your new password.'));
       return;
     }
 
     // Check if new password matches confirmation
     if (newPassword !== confirmPassword) {
-      showAlert('خطا', 'رمز عبور جدید و تکرار آن مطابقت ندارند');
+      showAlert(t('Error'), t('Password and repeat password do not match.'));
       return;
     }
 
     // Check if new password is same as current
     if (currentPassword === newPassword) {
-      showAlert('خطا', 'رمز عبور جدید نباید با رمز عبور فعلی یکسان باشد');
+      showAlert(t('Error'), t('New password must not be the same as the current password.'));
       return;
     }
 
@@ -80,9 +82,9 @@ export default function ChangePasswordScreen({ navigation }) {
     const strengthErrors = validatePasswordStrength(newPassword);
     if (strengthErrors.length > 0) {
       showAlert(
-        'رمز عبور ضعیف است',
-        'رمز عبور باید شامل موارد زیر باشد:\n\n' + strengthErrors.map(e => `• ${e}`).join('\n'),
-        [{ text: 'متوجه شدم' }]
+        t('Weak password'),
+        `${t('Password must include the following:')}\n\n${strengthErrors.map(e => `• ${e}`).join('\n')}`,
+        [{ text: t('Got it') }]
       );
       return;
     }
@@ -101,11 +103,11 @@ export default function ChangePasswordScreen({ navigation }) {
 
       if (result.success) {
         showAlert(
-          'موفقیت',
-          'رمز عبور با موفقیت تغییر یافت.\n\nلطفاً با رمز جدید وارد شوید.',
+          t('Success'),
+          t('Your password has been successfully changed. Please log in with the new information.'),
           [
             {
-              text: 'ورود مجدد',
+              text: t('Log in again'),
               onPress: async () => {
                 try {
                   // Clear authentication data
@@ -140,22 +142,22 @@ export default function ChangePasswordScreen({ navigation }) {
       } else {
         // Handle specific error codes from API
         if (result.error_code === 'INCORRECT_PASSWORD') {
-          showAlert('خطا', 'رمز عبور فعلی نادرست است');
+          showAlert(t('Error'), t('Password is incorrect'));
         } else if (result.error_code === 'SAME_PASSWORD') {
-          showAlert('خطا', 'رمز عبور جدید نباید با رمز عبور فعلی یکسان باشد');
+          showAlert(t('Error'), t('New password must not be the same as the current password.'));
         } else if (result.errors) {
           // Show validation errors from backend
           const errorMessages = Object.values(result.errors)
             .flat()
             .join('\n\n');
-          showAlert('خطای اعتبارسنجی', errorMessages);
+          showAlert(t('Validation error'), errorMessages);
         } else {
-          showAlert('خطا', result.message || 'مشکلی در تغییر رمز عبور پیش آمد');
+          showAlert(t('Error'), result.message || t('Error changing password'));
         }
       }
     } catch (error) {
       console.log('❌ خطا در تغییر رمز:', error);
-      showAlert('خطا', 'مشکلی در ارتباط با سرور پیش آمد. لطفاً دوباره تلاش کنید.');
+      showAlert(t('Error'), t('There was an error connecting to the server.'));
     } finally {
       setLoading(false);
     }
@@ -169,18 +171,18 @@ export default function ChangePasswordScreen({ navigation }) {
       style={styles.background}
     >
       <ScreenHeaders 
-        title={'تغییر رمز'} 
+        title={t('Change Password')} 
       />
       
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.passwordContainer}>
           <View style={styles.inputRow}>
-            <Text style={styles.inputLabel}>رمز عبور فعلی</Text>
+            <Text style={styles.inputLabel}>{t('Current password')}</Text>
             <TextInput
               style={styles.passwordInput}
               value={currentPassword}
               onChangeText={setCurrentPassword}
-              placeholder="رمز عبور فعلی"
+              placeholder={t('Current password')}
               placeholderTextColor={themeColor4.bgColor(0.5)}
               secureTextEntry
               editable={!loading}
@@ -188,28 +190,28 @@ export default function ChangePasswordScreen({ navigation }) {
           </View>
 
           <View style={styles.inputRow}>
-            <Text style={styles.inputLabel}>رمز عبور جدید (حداقل 8 کاراکتر)</Text>
+            <Text style={styles.inputLabel}>{t('New password (minimum 8 characters)')}</Text>
             <TextInput
               style={styles.passwordInput}
               value={newPassword}
               onChangeText={setNewPassword}
-              placeholder="رمز عبور جدید"
+              placeholder={t('New password')}
               placeholderTextColor={themeColor4.bgColor(0.5)}
               secureTextEntry
               editable={!loading}
             />
             <Text style={styles.passwordHint}>
-              باید شامل: حروف بزرگ/کوچک، اعداد و نمادها (!@#$%...)
+              {t('Must include: uppercase/lowercase letters, numbers, and symbols (!@#$%...)')}
             </Text>
           </View>
 
           <View style={styles.inputRow}>
-            <Text style={styles.inputLabel}>تکرار رمز عبور جدید</Text>
+            <Text style={styles.inputLabel}>{t('Confirm new password')}</Text>
             <TextInput
               style={styles.passwordInput}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
-              placeholder="تکرار رمز عبور جدید"
+              placeholder={t('Confirm new password')}
               placeholderTextColor={themeColor4.bgColor(0.5)}
               secureTextEntry
               editable={!loading}
@@ -217,7 +219,7 @@ export default function ChangePasswordScreen({ navigation }) {
           </View>
           
          
-          <Button title={'تایید رمز'} loading={loading} onPress={handleConfirm}/>
+          <Button title={t('Confirm Password')} loading={loading} onPress={handleConfirm}/>
         </View>
       </ScrollView>
       

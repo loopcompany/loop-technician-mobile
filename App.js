@@ -1,5 +1,9 @@
-import { StyleSheet, Text, View, ActivityIndicator, I18nManager, Platform } from "react-native";
+import { StyleSheet, View, ActivityIndicator, I18nManager, Platform } from "react-native";
 import React, { useEffect, useState } from "react";
+
+import i18n from 'i18next';
+import { I18nextProvider, initReactI18next } from 'react-i18next';
+
 import { NavigationContainer, getStateFromPath } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -7,12 +11,19 @@ import { Provider, useDispatch } from "react-redux";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import store from "./store";
 import { FooterProvider, useFooter } from "./contexts/FooterProvider";
 import { navigationRef } from "./services/NavigationService";
 import { removeToken, setToken } from "./slices/authSlice";
-import { fetchUser, setUserData } from "./slices/userSlice";
+import { fetchUser } from "./slices/userSlice";
 import { validateToken } from "./services/Api";
+
+// ✅ locales
+import en from './assets/locales/en.json';
+import fa from './assets/locales/fa.json';
+
+// screens...
 import FolderScreen from "./screens/FolderScreen";
 import SignInLanding from "./screens/auth/SignInLanding";
 import SignIn from "./screens/auth/SignIn";
@@ -77,31 +88,43 @@ import OrganizationsListScreen from './screens/OrganizationsListScreen';
 import OrganizationOrdersScreen from './screens/OrganizationOrdersScreen';
 import RateCategory from './screens/RateCategory';
 
-
 I18nManager.forceRTL(false);
 
 const Stack = createNativeStackNavigator();
 
+const PERSISTENCE_KEY = 'NAVIGATION_STATE_V1';
+
+SplashScreen.preventAutoHideAsync();
+SplashScreen.setOptions({
+  duration: 2000,
+  fade: true,
+});
+
+// ✅ init i18n (مثل فایل اول) — فقط یکبار، قبل از App
+i18n
+  .use(initReactI18next)
+  .init({
+    resources: {
+      en: { translation: en },
+      fa: { translation: fa },
+    },
+    lng: 'fa',
+    fallbackLng: 'fa',
+    interpolation: {
+      escapeValue: false,
+    },
+  });
+
 // Linking configuration برای پشتیبانی از Deep Linking و Browser History
 const linking = {
   prefixes: ['https://tech-panel.khayyamtech.com', 'http://localhost:8082', 'http://localhost:8081'],
-
-  // Safe URL normalization to prevent route concatenation
   getStateFromPath: (path, options) => {
-    // Handle root path explicitly
     if (!path || path === '/' || path === '') {
-      return {
-        routes: [{ name: 'Welcome' }]
-      };
+      return { routes: [{ name: 'Welcome' }] };
     }
-
-    // Remove trailing slashes to prevent duplication
     const normalizedPath = path.replace(/\/+$/, '');
-
-    // Use default getStateFromPath for all other paths
     return getStateFromPath(normalizedPath, options);
   },
-
   config: {
     screens: {
       Welcome: '',
@@ -155,14 +178,6 @@ const linking = {
   },
 };
 
-const PERSISTENCE_KEY = 'NAVIGATION_STATE_V1';
-
-SplashScreen.preventAutoHideAsync();
-SplashScreen.setOptions({
-  duration: 2000,
-  fade: true,
-});
-
 const InitialRouteHandler = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [initialRoute, setInitialRoute] = useState('Welcome');
@@ -174,25 +189,20 @@ const InitialRouteHandler = ({ children }) => {
         const savedToken = await AsyncStorage.getItem('userToken');
 
         if (savedToken) {
-          // Token exists, validate it
           const result = await validateToken();
           if (result.success) {
-            // Token is valid
             dispatch(setToken(savedToken));
-            dispatch(fetchUser(savedToken))
-
+            dispatch(fetchUser(savedToken));
             setInitialRoute('FolderScreen');
           } else {
             dispatch(removeToken());
             setInitialRoute('Welcome');
           }
         } else {
-          // No token, start at Welcome
           setInitialRoute('Welcome');
         }
       } catch (error) {
         console.log('Error checking token:', error);
-        // On error, start at Welcome
         setInitialRoute('Welcome');
       } finally {
         setIsLoading(false);
@@ -223,445 +233,73 @@ const AppNavigator = () => {
         <View style={{ flex: 1 }}>
           <Stack.Navigator
             initialRouteName={initialRoute}
-            screenOptions={{
-              headerShown: false,
-            }}
+            screenOptions={{ headerShown: false }}
           >
-            <Stack.Screen
-              component={Welcome}
-              name="Welcome"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={SignInLanding}
-              name="SignInLanding"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={FolderScreen}
-              name="FolderScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-
-            <Stack.Screen
-              component={Login}
-              name="Login"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen component={SignInScreen} name="SignInScreen" options={{ headerShown: false, }} />
-
-            <Stack.Screen
-              component={SignIn}
-              name="SignIn"
-              options={{
-                headerShown: false,
-                presentation: 'card',
-                gestureEnabled: true,
-              }}
-            />
-            <Stack.Screen
-              component={ResetPasswordScreen}
-              name="ResetPasswordScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={PhoneVerificationScreen}
-              name="PhoneVerification"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={GuideScreen}
-              name="GuideScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={HardwareIssueScreen}
-              name="HardwareIssueScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={SoftwareInstallScreen}
-              name="SoftwareInstallScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={DeviceModelInfoScreen}
-              name="DeviceModelInfoScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={OrderListScreen}
-              name="OrderListScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={OrderDetailScreen}
-              name="OrderDetailScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={ChatListScreen}
-              name="ChatListScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={ChatRoom}
-              name="ChatRoom"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={ExtraServices}
-              name="ExtraServices"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={DeviceStatusScreen}
-              name="DeviceStatusScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={UserInfoScreen}
-              name="UserInfoScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={CompletionInfoScreen}
-              name="CompletionInfoScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={AttendanceScreen}
-              name="AttendanceScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={UserHistoryScreen}
-              name="UserHistoryScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={LaptopDeliveryScreen}
-              name="LaptopDeliveryScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={LaptopDispatchScreen}
-              name="LaptopDispatchScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={PartsExpensesScreen}
-              name="PartsExpensesScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={TechnicalIssuesScreen}
-              name="TechnicalIssuesScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={ServiceCompletionScreen}
-              name="ServiceCompletionScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={NewServiceScreen}
-              name="NewServiceScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={RequestsScreen}
-              name="RequestsScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={RequestsListScreen}
-              name="RequestsListScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={LeaveRequestsListScreen}
-              name="LeaveRequestsListScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={DebtRequestsListScreen}
-              name="DebtRequestsListScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={GameMenuScreen}
-              name="GameMenu"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={GamePlayScreen}
-              name="GamePlay"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={GameResultScreen}
-              name="GameResult"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={ManpowerRequestsListScreen}
-              name="ManpowerRequestsListScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={TransferRequestsListScreen}
-              name="TransferRequestsListScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={TerminationRequestsListScreen}
-              name="TerminationRequestsListScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={PerformanceScreen}
-              name="PerformanceScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={ChangePasswordScreen}
-              name="ChangePasswordScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={PhotoArchiveScreen}
-              name="PhotoArchiveScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={DeliveryReceiptScreen}
-              name="DeliveryReceiptScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={NotesScreen}
-              name="NotesScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={AddEditNoteScreen}
-              name="AddEditNote"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={ThinkingScreen}
-              name="ThinkingScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={RateListScreen}
-              name="RateListScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={IncentivePlansScreen}
-              name="IncentivePlansScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={LoopReportScreen}
-              name="LoopReportScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={FinancialReportScreen}
-              name="FinancialReportScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={MessageScreen}
-              name="MessageScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-
-            <Stack.Screen
-              component={FeedbackSuggestionScreen}
-              name="FeedbackSuggestionScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={IndexScreen}
-              name="IndexScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={PrivacyScreen}
-              name="PrivacyScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={AboutScreen}
-              name="AboutScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
+            <Stack.Screen component={Welcome} name="Welcome" options={{ headerShown: false }} />
+            <Stack.Screen component={SignInLanding} name="SignInLanding" options={{ headerShown: false }} />
+            <Stack.Screen component={FolderScreen} name="FolderScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={Login} name="Login" options={{ headerShown: false }} />
+            <Stack.Screen component={SignInScreen} name="SignInScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={SignIn} name="SignIn" options={{ headerShown: false, presentation: 'card', gestureEnabled: true }} />
+            <Stack.Screen component={ResetPasswordScreen} name="ResetPasswordScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={PhoneVerificationScreen} name="PhoneVerification" options={{ headerShown: false }} />
+            <Stack.Screen component={GuideScreen} name="GuideScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={HardwareIssueScreen} name="HardwareIssueScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={SoftwareInstallScreen} name="SoftwareInstallScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={DeviceModelInfoScreen} name="DeviceModelInfoScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={OrderListScreen} name="OrderListScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={OrderDetailScreen} name="OrderDetailScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={ChatListScreen} name="ChatListScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={ChatRoom} name="ChatRoom" options={{ headerShown: false }} />
+            <Stack.Screen component={ExtraServices} name="ExtraServices" options={{ headerShown: false }} />
+            <Stack.Screen component={DeviceStatusScreen} name="DeviceStatusScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={UserInfoScreen} name="UserInfoScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={CompletionInfoScreen} name="CompletionInfoScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={AttendanceScreen} name="AttendanceScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={UserHistoryScreen} name="UserHistoryScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={LaptopDeliveryScreen} name="LaptopDeliveryScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={LaptopDispatchScreen} name="LaptopDispatchScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={PartsExpensesScreen} name="PartsExpensesScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={TechnicalIssuesScreen} name="TechnicalIssuesScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={ServiceCompletionScreen} name="ServiceCompletionScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={NewServiceScreen} name="NewServiceScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={RequestsScreen} name="RequestsScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={RequestsListScreen} name="RequestsListScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={LeaveRequestsListScreen} name="LeaveRequestsListScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={DebtRequestsListScreen} name="DebtRequestsListScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={GameMenuScreen} name="GameMenu" options={{ headerShown: false }} />
+            <Stack.Screen component={GamePlayScreen} name="GamePlay" options={{ headerShown: false }} />
+            <Stack.Screen component={GameResultScreen} name="GameResult" options={{ headerShown: false }} />
+            <Stack.Screen component={ManpowerRequestsListScreen} name="ManpowerRequestsListScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={TransferRequestsListScreen} name="TransferRequestsListScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={TerminationRequestsListScreen} name="TerminationRequestsListScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={PerformanceScreen} name="PerformanceScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={ChangePasswordScreen} name="ChangePasswordScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={PhotoArchiveScreen} name="PhotoArchiveScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={DeliveryReceiptScreen} name="DeliveryReceiptScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={NotesScreen} name="NotesScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={AddEditNoteScreen} name="AddEditNote" options={{ headerShown: false }} />
+            <Stack.Screen component={ThinkingScreen} name="ThinkingScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={RateListScreen} name="RateListScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={IncentivePlansScreen} name="IncentivePlansScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={LoopReportScreen} name="LoopReportScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={FinancialReportScreen} name="FinancialReportScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={MessageScreen} name="MessageScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={FeedbackSuggestionScreen} name="FeedbackSuggestionScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={IndexScreen} name="IndexScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={PrivacyScreen} name="PrivacyScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={AboutScreen} name="AboutScreen" options={{ headerShown: false }} />
             <Stack.Screen component={RateCategory} name="RateCategory" />
-            <Stack.Screen
-              component={LearnMoreScreen}
-              name="LearnMoreScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={WarrantyScreen}
-              name="WarrantyScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={PersonalInfoScreen}
-              name="PersonalInfoScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={VehicleInfoScreen}
-              name="VehicleInfoScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={FinancialInfoScreen}
-              name="FinancialInfoScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={TrainingRegistrationScreen}
-              name="TrainingRegistrationScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={OrganizationsListScreen}
-              name="OrganizationsListScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              component={OrganizationOrdersScreen}
-              name="OrganizationOrdersScreen"
-              options={{
-                headerShown: false,
-              }}
-            />
+            <Stack.Screen component={LearnMoreScreen} name="LearnMoreScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={WarrantyScreen} name="WarrantyScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={PersonalInfoScreen} name="PersonalInfoScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={VehicleInfoScreen} name="VehicleInfoScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={FinancialInfoScreen} name="FinancialInfoScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={TrainingRegistrationScreen} name="TrainingRegistrationScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={OrganizationsListScreen} name="OrganizationsListScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={OrganizationOrdersScreen} name="OrganizationOrdersScreen" options={{ headerShown: false }} />
           </Stack.Navigator>
+
           <FooterComponent />
         </View>
       )}
@@ -678,8 +316,6 @@ const App = () => {
   const [isReady, setIsReady] = useState(false);
   const [initialState, setInitialState] = useState();
 
-
-
   useEffect(() => {
     const restoreState = async () => {
       try {
@@ -689,8 +325,6 @@ const App = () => {
           const userToken = await AsyncStorage.getItem('userToken');
           if (state !== undefined && userToken) {
             setInitialState(state);
-          }else{
-            
           }
         }
       } finally {
@@ -698,9 +332,7 @@ const App = () => {
       }
     };
 
-    if (!isReady) {
-      restoreState();
-    }
+    if (!isReady) restoreState();
   }, [isReady]);
 
   useEffect(() => {
@@ -709,32 +341,30 @@ const App = () => {
     }
   }, [loaded, error]);
 
-  if (!loaded && !error) {
-    return null;
-  }
+  if (!loaded && !error) return null;
+  if (!isReady) return null;
 
-  if (!isReady) {
-    return null;
-  }
   return (
-    <SafeAreaProvider>
-      <Provider store={store}>
-        <FooterProvider>
-          <NavigationContainer
-            ref={navigationRef}
-            linking={linking}
-            initialState={initialState}
-            onStateChange={(state) => {
-              if (state && Platform.OS === 'web') {
-                AsyncStorage.setItem(PERSISTENCE_KEY, JSON.stringify(state));
-              }
-            }}
-          >
-            <AppNavigator />
-          </NavigationContainer>
-        </FooterProvider>
-      </Provider>
-    </SafeAreaProvider>
+    <I18nextProvider i18n={i18n}>
+      <SafeAreaProvider>
+        <Provider store={store}>
+          <FooterProvider>
+            <NavigationContainer
+              ref={navigationRef}
+              linking={linking}
+              initialState={initialState}
+              onStateChange={(state) => {
+                if (state && Platform.OS === 'web') {
+                  AsyncStorage.setItem(PERSISTENCE_KEY, JSON.stringify(state));
+                }
+              }}
+            >
+              <AppNavigator />
+            </NavigationContainer>
+          </FooterProvider>
+        </Provider>
+      </SafeAreaProvider>
+    </I18nextProvider>
   );
 };
 
