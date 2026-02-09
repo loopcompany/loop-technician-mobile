@@ -261,7 +261,6 @@
   "Please log in first.": "لطفا ابتدا وارد شوید.",
   "Message subject": "موضوع پیام",
   "Name and surname": "نام و نام خانوادگی",
-  "Message": "متن پیام",
   "Your Phone Number": "شماره تماس شما",
   "Website": "وبسایت",
   "A user with this email address already exists.": "کاربری با این آدرس ایمیل قبلا ثبت نام کرده است.",
@@ -1078,7 +1077,21 @@
   "Total reports:": "تعداد کل گزارش‌ها:",
   "Enter your reply...": "متن پاسخ خود را وارد کنید...",
   "characters": "کاراکتر",
-  "Send reply": "ارسال پاسخ"
+  "Send reply": "ارسال پاسخ",
+  "Financial report": "گزارش مالی",
+  "Current balance": "موجودی فعلی",
+  "Available for withdrawal": "قابل برداشت",
+  "Total settlements": "مجموع تسویه‌ها",
+  "Total amount received from the system": "کل مبلغ دریافتی از سیستم",
+  "Financial information": "اطلاعات مالی",
+  "Total earnings (Toman)": "کل دریافتی (تومان)",
+  "Settlement percentage": "درصد تسویه",
+  "Contact support to request a settlement or report an error": "برای درخواست تسویه یا گزارش خطا با پشتیبانی تماس بگیرید",
+  "Error report": "گزارش خطا",
+  "How would you like to contact support?": "چگونه می‌خواهید با پشتیبانی تماس بگیرید؟",
+  "There was a problem fetching information.": "مشکلی در دریافت اطلاعات پیش آمد",
+  "There was a problem starting the call.": "مشکلی در باز کردن تماس پیش آمد",
+  "Phone calls are not available on your device.": "امکان تماس تلفنی در دستگاه شما وجود ندارد"
 }
 
 

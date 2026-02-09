@@ -837,5 +837,21 @@
   "Total reports:": "Total reports:",
   "Enter your reply...": "Enter your reply...",
   "characters": "characters",
-  "Send reply": "Send reply"
+  "Send reply": "Send reply",
+  "Rate List": "Rate List",
+  "Loop Rate List": "Loop Rate List",
+  "Financial report": "Financial report",
+  "Current balance": "Current balance",
+  "Available for withdrawal": "Available for withdrawal",
+  "Total settlements": "Total settlements",
+  "Total amount received from the system": "Total amount received from the system",
+  "Financial information": "Financial information",
+  "Total earnings (Toman)": "Total earnings (Toman)",
+  "Settlement percentage": "Settlement percentage",
+  "Contact support to request a settlement or report an error": "Contact support to request a settlement or report an error",
+  "Error report": "Error report",
+  "How would you like to contact support?": "How would you like to contact support?",
+  "There was a problem fetching information.": "There was a problem fetching information.",
+  "There was a problem starting the call.": "There was a problem starting the call.",
+  "Phone calls are not available on your device.": "Phone calls are not available on your device."
 }

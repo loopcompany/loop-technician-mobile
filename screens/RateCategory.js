@@ -19,6 +19,7 @@ import { themeColor0, themeColor4 } from '../theme/Color';
 import { RefreshControl } from 'react-native';
 import letterRatesCategoryAPI from '../services/LetterRatesService';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 
 
@@ -26,6 +27,7 @@ export default function RateCategory() {
   const [rates, setRates] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
+  const { t } = useTranslation();
   useEffect(() => {
     fetchLetterRates();
   }, [refreshing]);
@@ -54,12 +56,14 @@ export default function RateCategory() {
 
   return (
     <SafeAreaView edges={{ top: 'off', bottom: 'off' }} style={NewStyles.container}>
-      <ScreenHeaders title={'نرخنامه'} />
+      <ScreenHeaders title={t('Rate List')} />
       <ScrollView showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true) }} />}>
 
         <View style={[{ flex: 1 }]}>
           <View style={styles.titleContainer}>
-              <Text style={NewStyles.title4}>نرخنامه لوپ {formatJalaaliDate(new Date())?.slice(0, 4)}</Text>
+              <Text style={NewStyles.title4}>
+                {t('Loop Rate List')} {formatJalaaliDate(new Date())?.slice(0, 4)}
+              </Text>
             </View>
           <View style={{ flex: 1 }}>
 

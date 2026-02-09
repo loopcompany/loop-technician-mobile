@@ -17,6 +17,7 @@ import { formatJalaaliDate } from '../helpers/Common';
 import { themeColor0, themeColor4 } from '../theme/Color';
 import letterRatesAPI from '../services/LetterRatesApi';
 import { RefreshControl } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 
 
@@ -27,6 +28,7 @@ export default function RateListScreen({ route }) {
   const [unionRates, setUnionRates] = useState([]);
   const [loopRates, setLoopRates] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const { t } = useTranslation();
   useEffect(() => {
     fetchLetterRates();
   }, [refreshing]);
@@ -51,7 +53,7 @@ export default function RateListScreen({ route }) {
 
   return (
     <SafeAreaView edges={{ top: 'off', bottom: 'off' }} style={NewStyles.container}>
-      <ScreenHeaders title={'نرخنامه'} />
+      <ScreenHeaders title={t('Rate List')} />
       <ScrollView showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true) }} />}>
 
         <View style={[NewStyles.row, { flex: 1 }]}>

@@ -13,6 +13,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
@@ -26,6 +27,7 @@ export default function FinancialReportScreen({ navigation }) {
   const user = useSelector(state => state.user.data);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const { t } = useTranslation();
   const [walletData, setWalletData] = useState({
     wallet: 0,
     total_settlements: 0,
@@ -45,7 +47,7 @@ export default function FinancialReportScreen({ navigation }) {
       }
     } catch (error) {
       console.log('❌ خطا در دریافت اطلاعات مالی:', error);
-      showAlert('خطا', 'مشکلی در دریافت اطلاعات پیش آمد');
+      showAlert(t('Error'), t('There was a problem fetching information.'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -77,12 +79,12 @@ export default function FinancialReportScreen({ navigation }) {
 
   const handleReportError = () => {
     showAlert(
-      'گزارش خطا',
-      'چگونه می‌خواهید با پشتیبانی تماس بگیرید؟',
+      t('Error report'),
+      t('How would you like to contact support?'),
       [
-        { text: 'لغو', style: 'cancel' },
+        { text: t('Cancel'), style: 'cancel' },
         {
-          text: 'تماس تلفنی',
+          text: t('Call Support'),
           onPress: async () => {
             const phoneNumber = '02122656819';
             const url = `tel:${phoneNumber}`;
@@ -97,10 +99,10 @@ export default function FinancialReportScreen({ navigation }) {
                 try {
                   window.open(url, '_self');
                 } catch (webErr) {
-                  showAlert('خطا', 'مشکلی در باز کردن تماس پیش آمد');
+                  showAlert(t('Error'), t('There was a problem starting the call.'));
                 }
               } else {
-                showAlert('خطا', 'امکان تماس تلفنی در دستگاه شما وجود ندارد');
+                showAlert(t('Error'), t('Phone calls are not available on your device.'));
               }
             }
           }
@@ -119,7 +121,7 @@ export default function FinancialReportScreen({ navigation }) {
       >
         <CustomStatusBar />
         <ScreenHeaders
-          title={'گزارش مالی'}
+          title={t('Financial report')}
         />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
@@ -137,7 +139,7 @@ export default function FinancialReportScreen({ navigation }) {
     >
       <CustomStatusBar />
       <ScreenHeaders
-        title={'گزارش مالی'}
+        title={t('Financial report')}
       />
 
       <ScrollView
@@ -151,13 +153,13 @@ export default function FinancialReportScreen({ navigation }) {
         <View style={[styles.card, styles.walletCard]}>
           <View style={styles.cardHeader}>
             <Ionicons name="wallet" size={32} color={themeColor7.bgColor(1)} />
-            <Text style={[NewStyles.title, styles.cardTitle]}>موجودی فعلی</Text>
+            <Text style={[NewStyles.title, styles.cardTitle]}>{t('Current balance')}</Text>
           </View>
           <Text style={[styles.amountLarge, { color: themeColor7.bgColor(1) }]}>
-            {formatPrice(walletData.wallet)} تومان
+            {formatPrice(walletData.wallet)} {t('Toman')}
           </Text>
           <Text style={[NewStyles.text4, styles.cardSubtitle]}>
-            قابل برداشت
+            {t('Available for withdrawal')}
           </Text>
         </View>
 
@@ -165,26 +167,26 @@ export default function FinancialReportScreen({ navigation }) {
         <View style={[styles.card, styles.settlementsCard]}>
           <View style={styles.cardHeader}>
             <Ionicons name="card" size={32} color={themeColor0.bgColor(1)} />
-            <Text style={[NewStyles.title, styles.cardTitle]}>مجموع تسویه‌ها</Text>
+            <Text style={[NewStyles.title, styles.cardTitle]}>{t('Total settlements')}</Text>
           </View>
           <Text style={[styles.amountLarge, { color: themeColor0.bgColor(1) }]}>
-            {formatPrice(walletData.total_settlements)} تومان
+            {formatPrice(walletData.total_settlements)} {t('Toman')}
           </Text>
           <Text style={[NewStyles.text4, styles.cardSubtitle]}>
-            کل مبلغ دریافتی از سیستم
+            {t('Total amount received from the system')}
           </Text>
         </View>
 
         {/* آمار مالی */}
         <View style={styles.statsContainer}>
           <Text style={[NewStyles.title, styles.statsTitle]}>
-            اطلاعات مالی
+            {t('Financial information')}
           </Text>
 
           <View style={styles.statRow}>
             <View style={styles.statItem}>
               <Ionicons name="trending-up" size={28} color={themeColor7.bgColor(1)} />
-              <Text style={[NewStyles.text4, styles.statLabel]}>کل دریافتی (تومان)</Text>
+              <Text style={[NewStyles.text4, styles.statLabel]}>{t('Total earnings (Toman)')}</Text>
               <Text style={[NewStyles.title, styles.statValue]}>
                 {formatPrice(getTotalEarnings())}
               </Text>
@@ -192,7 +194,7 @@ export default function FinancialReportScreen({ navigation }) {
 
             <View style={styles.statItem}>
               <Ionicons name="pie-chart" size={28} color={themeColor1.bgColor(1)} />
-              <Text style={[NewStyles.text4, styles.statLabel]}>درصد تسویه</Text>
+              <Text style={[NewStyles.text4, styles.statLabel]}>{t('Settlement percentage')}</Text>
               <Text style={[NewStyles.title, styles.statValue]}>
                 {getSettlementPercentage()}%
               </Text>
@@ -204,7 +206,7 @@ export default function FinancialReportScreen({ navigation }) {
         <View style={styles.infoBox}>
           <Ionicons name="information-circle" size={24} color={themeColor0.bgColor(1)} />
           <Text style={[NewStyles.text4, styles.infoText]}>
-            برای درخواست تسویه یا گزارش خطا با پشتیبانی تماس بگیرید
+            {t('Contact support to request a settlement or report an error')}
           </Text>
         </View>
 
@@ -221,14 +223,14 @@ export default function FinancialReportScreen({ navigation }) {
             }}
           >
             <Ionicons name="close-circle" size={20} color="#fff" />
-            <Text style={[NewStyles.text4, styles.buttonText]}>بستن</Text>
+            <Text style={[NewStyles.text4, styles.buttonText]}>{t('Close')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.actionButton, styles.errorButton]}
             onPress={handleReportError}
           >
             <Ionicons name="alert-circle" size={20} color="#fff" />
-            <Text style={[NewStyles.text4, styles.buttonText]}>گزارش خطا</Text>
+            <Text style={[NewStyles.text4, styles.buttonText]}>{t('Error report')}</Text>
           </TouchableOpacity>
         </View>
 
