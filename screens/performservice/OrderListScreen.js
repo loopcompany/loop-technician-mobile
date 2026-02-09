@@ -43,11 +43,11 @@ export default function OrderListScreen({ navigation }) {
         setPagination(result.data.pagination || null);
         setCurrentPage(page);
       } else {
-        showToastOrAlert(result.message || 'خطا در دریافت سفارشات');
+        showToastOrAlert(result.message || t("Error fetching orders"));
       }
     } catch (error) {
       console.log('Error fetching orders:', error);
-      showToastOrAlert('خطا در دریافت سفارشات');
+      showToastOrAlert(t("Error fetching orders"));
     } finally {
       setLoading(false);
     }
@@ -73,14 +73,14 @@ export default function OrderListScreen({ navigation }) {
 
   const getStatusLabel = (status) => {
     const labels = {
-      0: 'بررسی',
-      1: 'در حال پردازش',
-      2: 'انجام شده',
-      3: 'لغو شده توسط کاربر',
-      4: 'لغو شده توسط تکنسین',
-      5: 'لغو شده توسط ادمین'
+      0: t("Needs Review"),
+      1: t("Processing"),
+      2: t("Completed"),
+      3: t("Canceled by user"),
+      4: t("Canceled by technician"),
+      5: t("Canceled by admin")
     };
-    return labels[status] || 'نامشخص';
+    return labels[status] || t("Unknown");
   };
 
   const getStatusColor = (status) => {
@@ -115,7 +115,7 @@ export default function OrderListScreen({ navigation }) {
     <View key={order.id} style={[styles.orderCard, NewStyles.shadow, NewStyles.border10]}>
       {/* شماره سفارش */}
       <View style={styles.cardSection}>
-        <Text style={NewStyles.title}>سفارش #{order.id}</Text>
+        <Text style={NewStyles.title}>{t("Order #{{id}}", { id: order.id })}</Text>
       </View>
 
       <View style={styles.divider} />
@@ -133,10 +133,10 @@ export default function OrderListScreen({ navigation }) {
       {/* آدرس */}
       <View style={styles.cardSection}>
         <Text style={NewStyles.text10}>
-          {order.address?.city || ''}{order.address?.city && order.address?.region ? '، ' : ''}
-          {order.address?.region ? `منطقه ${order.address.region}` : ''}
+          {order.address?.city || ''}{order.address?.city && order.address?.region ? ', ' : ''}
+          {order.address?.region ? t("Region {{region}}", { region: order.address.region }) : ''}
           {(order.address?.city || order.address?.region) && order.address?.address ? ' - ' : ''}
-          {order.address?.address || 'آدرس نامشخص'}
+          {order.address?.address || t("Unknown address")}
         </Text>
       </View>
 
@@ -145,7 +145,7 @@ export default function OrderListScreen({ navigation }) {
 
       {/* دسته‌بندی */}
       <View style={styles.cardSection}>
-        <Text style={NewStyles.text10}>{order.category?.title || order.category?.name || 'دسته‌بندی نامشخص'}</Text>
+        <Text style={NewStyles.text10}>{order.category?.title || order.category?.name || t("Unknown category")}</Text>
       </View>
 
       {/* خط جداکننده */}
@@ -154,7 +154,7 @@ export default function OrderListScreen({ navigation }) {
       {/* وضعیت */}
       <View style={styles.cardSection}>
         <View style={[NewStyles.row]}>
-          <Text style={NewStyles.text10}>وضعیت: </Text>
+          <Text style={NewStyles.text10}>{t("Status:")}{' '}</Text>
           <View style={[styles.statusBadge, { backgroundColor: getStatusColor(order.status) }]}>
             <Text style={NewStyles.text4}>{getStatusLabel(order.status)}</Text>
           </View>
@@ -167,7 +167,7 @@ export default function OrderListScreen({ navigation }) {
       {/* ارسال به لوپ */}
       <View style={styles.cardSection}>
         <View style={[NewStyles.row]}>
-          <Text style={NewStyles.text10}>اعزام به لوپ: </Text>
+          <Text style={NewStyles.text10}>{t("Sent to Loop:")}{' '}</Text>
           <Text style={NewStyles.text10}>{formatSendToLoop(order.send_to_loop)}</Text>
         </View>
       </View>
@@ -178,7 +178,7 @@ export default function OrderListScreen({ navigation }) {
       {/* قیمت نهایی */}
       <View style={styles.cardSection}>
         <View style={[NewStyles.row]}>
-          <Text style={NewStyles.text10}>قیمت نهایی: </Text>
+          <Text style={NewStyles.text10}>{t("Final price:")}{' '}</Text>
           <Text style={NewStyles.text7}>{formatPrice(getFinalPrice(order))}</Text>
         </View>
       </View>
@@ -189,26 +189,26 @@ export default function OrderListScreen({ navigation }) {
       {/* هزینه اضافی */}
       <View style={styles.cardSection}>
         <View style={[NewStyles.row]}>
-          <Text style={NewStyles.text10}>هزینه مازاد: </Text>
+          <Text style={NewStyles.text10}>{t("Extra cost:")}{' '}</Text>
           <Text style={NewStyles.text7}>{formatPrice(order.extra_price)}</Text>
         </View>
       </View>
 
       {/* دکمه جزئیات */}
       
-      <Button title="مشاهده جزئیات" onPress={() => navigation.navigate('OrderDetailScreen', { orderId: order.id })}/>
+      <Button title={t("View Details")} onPress={() => navigation.navigate('OrderDetailScreen', { orderId: order.id })}/>
     </View>
   );
 
   const renderFilters = () => {
     const filters = [
-      { label: 'همه', value: null },
-      { label: 'بررسی', value: '0' },
-      { label: 'در حال پردازش', value: '1' },
-      { label: 'انجام شده', value: '2' },
-      { label: 'لغو کاربر', value: '3' },
-      { label: 'لغو تکنسین', value: '4' },
-      { label: 'لغو ادمین', value: '5' },
+      { label: t("All"), value: null },
+      { label: t("Needs Review"), value: '0' },
+      { label: t("Processing"), value: '1' },
+      { label: t("Completed"), value: '2' },
+      { label: t("Canceled by user"), value: '3' },
+      { label: t("Canceled by technician"), value: '4' },
+      { label: t("Canceled by admin"), value: '5' },
     ];
 
     return (
@@ -250,10 +250,10 @@ export default function OrderListScreen({ navigation }) {
       <View style={styles.paginationContainer}>
         <View style={[styles.paginationInfo, NewStyles.rowWrapper]}>
           <Text style={NewStyles.text4}>
-            صفحه {pagination.current_page} از {pagination.last_page}
+            {t("Page {{current}} of {{last}}", { current: pagination.current_page, last: pagination.last_page })}
           </Text>
           <Text style={NewStyles.title4}>
-            مجموع: {pagination.total} سفارش
+            {t("Total: {{total}} orders", { total: pagination.total })}
           </Text>
         </View>
 
@@ -261,11 +261,11 @@ export default function OrderListScreen({ navigation }) {
           <View style={[NewStyles.rowWrapper]}>
 
             <View style={{ flex: 1 }}>
-              <Button title={'صفحه قبل'} onPress={handlePrevPage} disabled={currentPage === 1} textStyle={[currentPage === 1 && NewStyles.title]} style={[currentPage === 1 && styles.pageButtonDisabled]} />
+              <Button title={t("Previous page")} onPress={handlePrevPage} disabled={currentPage === 1} textStyle={[currentPage === 1 && NewStyles.title]} style={[currentPage === 1 && styles.pageButtonDisabled]} />
             </View>
 
             <View style={{ flex: 1 }}>
-              <Button title={'صفحه بعد'} onPress={handleNextPage} disabled={currentPage === pagination.last_page} textStyle={[currentPage === pagination.last_page && NewStyles.text]} style={[currentPage === pagination.last_page && styles.pageButtonDisabled]} />
+              <Button title={t("Next page")} onPress={handleNextPage} disabled={currentPage === pagination.last_page} textStyle={[currentPage === pagination.last_page && NewStyles.text]} style={[currentPage === pagination.last_page && styles.pageButtonDisabled]} />
             </View>
 
 
@@ -284,7 +284,7 @@ export default function OrderListScreen({ navigation }) {
         style={styles.background}
       >
         <ScreenHeaders
-          title={'سرویس های من'}
+          title={t("My Services")}
           onPressLeft={() => navigation.navigate('FolderScreen')}
           onPressRight={() => navigation.navigate('UserInfoScreen')}
         />
@@ -295,7 +295,7 @@ export default function OrderListScreen({ navigation }) {
           {loading ? (
             <View style={styles.centerContainer}>
               <ActivityIndicator size="large" color={themeColor4.bgColor(1)} />
-              <Text style={NewStyles.text4}>در حال بارگذاری...</Text>
+              <Text style={NewStyles.text4}>{t("Loading...")}</Text>
             </View>
           ) : (
             <FlatList
@@ -305,7 +305,7 @@ export default function OrderListScreen({ navigation }) {
               contentContainerStyle={[styles.container, orders.length === 0 && { flex: 1 }]}
               ListEmptyComponent={() => {
                 return (
-                  <BlankScreen title='سرویسی یافت نشد' />
+                  <BlankScreen title={t("No service found")} />
                 )
               }}
               ListFooterComponent={renderFooter}

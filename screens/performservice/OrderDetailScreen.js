@@ -17,6 +17,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import ScreenHeaders from '../../components/ScreenHeaders';
@@ -33,6 +34,7 @@ import { getFormatedDate } from 'react-native-modern-datepicker';
 
 export default function OrderDetailScreen({ route, navigation }) {
   const { orderId } = route?.params || {};
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const orderExtras = useSelector(state => state.orderExtras.data);
   const loadingExtras = useSelector(state => state.orderExtras.loading);
@@ -139,9 +141,21 @@ export default function OrderDetailScreen({ route, navigation }) {
   const [technicianOpinion, setTechnicianOpinion] = useState('');
   const [submittingOpinion, setSubmittingOpinion] = useState(false);
 
+  const cancelReasonLabels = {
+    'اعلام حضور / لغو از سوی کاربر': t("Check-in / canceled by user"),
+    'اعلام حضور / لغو از سوی تکنسین': t("Check-in / canceled by technician"),
+    'اعلام حضور / نادرست بودن آدرس': t("Check-in / incorrect address"),
+    'اعلام حضور / موکول به زمان دیگر از سوی کاربر': t("Check-in / postponed by user"),
+    'اعلام حضور / عدم پاسخ تماس و پیام از سوی کاربر': t("Check-in / no answer to calls or messages from user"),
+    'اعلام حضور/عدم حضورکاربر - حضور خانواده یا آشنایان': t("Check-in / user absent - family or acquaintances present"),
+    'اعلام حضور / نادرست بودن مشخصات کاربر': t("Check-in / incorrect user information"),
+  };
+
+  const getCancelReasonLabel = (reason) => cancelReasonLabels[reason] || reason;
+
   const fetchOrderDetails = async () => {
     if (!orderId) {
-      showToastOrAlert('شناسه سفارش یافت نشد');
+      showToastOrAlert(t("Order ID not found"));
       setLoading(false);
       return;
     }
@@ -181,11 +195,11 @@ export default function OrderDetailScreen({ route, navigation }) {
           setTechnicianOpinion(result.data.technician_opinion);
         }
       } else {
-        showToastOrAlert(result.message || 'خطا در دریافت جزئیات سفارش');
+        showToastOrAlert(result.message || t("Error fetching order details"));
       }
     } catch (error) {
       console.log('Error fetching order details:', error);
-      showToastOrAlert('خطا در دریافت جزئیات سفارش');
+      showToastOrAlert(t("Error fetching order details"));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -303,21 +317,21 @@ export default function OrderDetailScreen({ route, navigation }) {
   const handleSaveReview = async () => {
     // برای سفارشات سازمانی، تاریخ و ساعت اجباری نیست
     if (!data?.service_schedule_type && (!selectedDate || !timeRange)) {
-      showToastOrAlert('لطفاً تاریخ و ساعت را وارد کنید');
+      showToastOrAlert(t("Please enter the date and time"));
       return;
     }
 
     if (!technicianPrice) {
-      showToastOrAlert('لطفاً مبلغ پایه تکنسین را وارد کنید');
+      showToastOrAlert(t("Please enter the technician base amount"));
       return;
     }
     if (technicianPrice && isNaN(Number(technicianPrice))) {
-      showToastOrAlert('لطفاً مبلغ پایه تکنسین را به درستی وارد کنید');
+      showToastOrAlert(t("Please enter the technician base amount correctly"));
       return;
     }
 
     if (!reviewDescription) {
-      showToastOrAlert('لطفاً توضیحات بررسی را وارد کنید');
+      showToastOrAlert(t("Please enter the review description"));
       return;
     }
     try {
@@ -352,15 +366,15 @@ export default function OrderDetailScreen({ route, navigation }) {
       const result = await submitTechnicianDescription(orderId, requestData);
 
       if (result.success) {
-        showToastOrAlert('تغییرات با موفقیت ذخیره شد', 'success');
+        showToastOrAlert(t("Your changes have been applied."), 'success');
         // بعد از ذخیره، دیتا را دوباره بارگذاری کن
         await fetchOrderDetails();
       } else {
-        showToastOrAlert(result.message || 'خطا در ذخیره تغییرات');
+        showToastOrAlert(result.message || t("Error saving changes"));
       }
     } catch (error) {
       console.log('Error saving review:', error);
-      showToastOrAlert('خطا در ذخیره تغییرات');
+      showToastOrAlert(t("Error saving changes"));
     } finally {
       setSavingReview(false);
     }
@@ -373,14 +387,14 @@ export default function OrderDetailScreen({ route, navigation }) {
       const result = await setOffToOrder(orderId);
 
       if (result.success) {
-        showToastOrAlert('زمان حرکت با موفقیت ثبت شد', 'success');
+        showToastOrAlert(t("Departure time saved successfully"), 'success');
         await fetchOrderDetails();
       } else {
-        showToastOrAlert(result.message || 'خطا در ثبت زمان حرکت');
+        showToastOrAlert(result.message || t("Error saving departure time"));
       }
     } catch (error) {
       console.log('Error setting off:', error);
-      showToastOrAlert('خطا در ثبت زمان حرکت');
+      showToastOrAlert(t("Error saving departure time"));
     } finally {
       setSettingOff(false);
     }
@@ -393,14 +407,14 @@ export default function OrderDetailScreen({ route, navigation }) {
       const result = await arriveToOrder(orderId);
 
       if (result.success) {
-        showToastOrAlert('زمان رسیدن با موفقیت ثبت شد', 'success');
+        showToastOrAlert(t("Arrival time saved successfully"), 'success');
         await fetchOrderDetails();
       } else {
-        showToastOrAlert(result.message || 'خطا در ثبت زمان رسیدن');
+        showToastOrAlert(result.message || t("Error saving arrival time"));
       }
     } catch (error) {
       console.log('Error arriving:', error);
-      showToastOrAlert('خطا در ثبت زمان رسیدن');
+      showToastOrAlert(t("Error saving arrival time"));
     } finally {
       setArriving(false);
     }
@@ -409,27 +423,27 @@ export default function OrderDetailScreen({ route, navigation }) {
   // تابع لغو سفارش توسط تکنسین
   const handleCancelOrder = async () => {
     if (!selectedCancelReason) {
-      showToastOrAlert('لطفاً دلیل لغو را انتخاب کنید');
+      showToastOrAlert(t("Please select a cancellation reason"));
       return;
     }
 
     showAlert(
-      'تأیید لغو سفارش',
-      `آیا از لغو این سفارش با دلیل "${selectedCancelReason}" اطمینان دارید؟`,
+      t("Confirm order cancellation"),
+      t("Are you sure you want to cancel this order for the reason \"{{reason}}\"?", { reason: getCancelReasonLabel(selectedCancelReason) }),
       [
         {
-          text: 'انصراف',
+          text: t("Cancel"),
           style: 'cancel'
         },
         {
-          text: 'تأیید',
+          text: t("Confirm"),
           style: 'destructive',
           onPress: async () => {
             try {
               setCancelingOrder(true);
               await cancelOrderByTechnician(orderId, selectedCancelReason);
 
-              showToastOrAlert('سفارش با موفقیت لغو شد', 'success');
+              showToastOrAlert(t("Your order has been canceled successfully!"), 'success');
 
               // بازگشت به صفحه قبل
               setTimeout(() => {
@@ -440,7 +454,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                 }
               }, 1500);
             } catch (error) {
-              showToastOrAlert(error.message || 'خطا در لغو سفارش');
+              showToastOrAlert(error.message || t("Error canceling order"));
             } finally {
               setCancelingOrder(false);
             }
@@ -453,7 +467,7 @@ export default function OrderDetailScreen({ route, navigation }) {
   // تابع ثبت درخواست کمک اضطراری
   const handleSubmitEmergencyHelp = async () => {
     if (!emergencyHelpText.trim()) {
-      showToastOrAlert('لطفاً توضیحات درخواست را وارد کنید');
+      showToastOrAlert(t("Please enter the request details"));
       return;
     }
 
@@ -461,13 +475,13 @@ export default function OrderDetailScreen({ route, navigation }) {
       setSubmittingEmergencyHelp(true);
       await submitEmergencyHelp(orderId, emergencyHelpText);
 
-      showToastOrAlert('درخواست کمک اضطراری با موفقیت ثبت شد', 'success');
+      showToastOrAlert(t("Emergency help request submitted successfully"), 'success');
 
       // به‌روزرسانی اطلاعات سفارش
       await fetchOrderDetails();
 
     } catch (error) {
-      showToastOrAlert(error.message || 'خطا در ثبت درخواست');
+      showToastOrAlert(error.message || t("Error submitting request"));
     } finally {
       setSubmittingEmergencyHelp(false);
     }
@@ -521,16 +535,16 @@ export default function OrderDetailScreen({ route, navigation }) {
   const handleSaveProductReport = async () => {
     // اعتبارسنجی فیلدهای الزامی
     if (!productReport.name || !productReport.melicode) {
-      showToastOrAlert('لطفاً نام و کد ملی را وارد کنید');
+      showToastOrAlert(t("Please enter the name and national ID"));
       return;
     }
     if (!productReport.product_name || !productReport.product_brand || !productReport.product_model || !productReport.product_color) {
-      showToastOrAlert('لطفا اطلاعات ستاره دار محصول را وارد کنید');
+      showToastOrAlert(t("Please enter the required product information"));
       return;
     }
     // اعتبارسنجی کد ملی (10 رقم)
     if (productReport.melicode.length !== 10 || !/^\d+$/.test(productReport.melicode)) {
-      showToastOrAlert('کد ملی باید 10 رقم باشد');
+      showToastOrAlert(t("National ID must be 10 digits"));
       return;
     }
 
@@ -551,18 +565,18 @@ export default function OrderDetailScreen({ route, navigation }) {
       }
 
       if (result.success) {
-        showToastOrAlert(reportId ? 'گزارش با موفقیت به‌روزرسانی شد' : 'گزارش با موفقیت ثبت شد', 'success');
+        showToastOrAlert(reportId ? t("Report updated successfully") : t("Report submitted successfully"), 'success');
         if (result.data?.report?.id) {
           setReportId(result.data.report.id);
         }
         await fetchOrderDetails();
         await loadProductReport();
       } else {
-        showToastOrAlert(result.message || 'خطا در ذخیره گزارش');
+        showToastOrAlert(result.message || t("Error saving report"));
       }
     } catch (error) {
       console.log('Error saving report:', error);
-      showToastOrAlert('خطا در ذخیره گزارش');
+      showToastOrAlert(t("Error saving report"));
     } finally {
       setSavingReport(false);
     }
@@ -575,14 +589,14 @@ export default function OrderDetailScreen({ route, navigation }) {
       const result = await sendOrderToLoop(orderId);
 
       if (result.success) {
-        showToastOrAlert('سفارش با موفقیت به لوپ ارسال شد', 'success');
+        showToastOrAlert(t("Order sent to Loop successfully"), 'success');
         await fetchOrderDetails();
       } else {
-        showToastOrAlert(result.message || 'خطا در ارسال سفارش به لوپ');
+        showToastOrAlert(result.message || t("Error sending order to Loop"));
       }
     } catch (error) {
       console.log('Error sending to loop:', error);
-      showToastOrAlert('خطا در ارسال سفارش به لوپ');
+      showToastOrAlert(t("Error sending order to Loop"));
     } finally {
       setSendingToLoop(false);
     }
@@ -592,7 +606,7 @@ export default function OrderDetailScreen({ route, navigation }) {
   const handleSaveLoopInfo = async () => {
     // حداقل یکی از فیلدها باید پر شده باشد
     if (!loopInfo.duration && !loopInfo.loop_cost_estimate && !loopInfo.loop_description) {
-      showToastOrAlert('لطفاً حداقل یکی از فیلدها را پر کنید');
+      showToastOrAlert(t("Please fill in at least one field"));
       return;
     }
 
@@ -613,14 +627,14 @@ export default function OrderDetailScreen({ route, navigation }) {
       const result = await updateLoopInfo(orderId, requestData);
 
       if (result.success) {
-        showToastOrAlert('اطلاعات لوپ با موفقیت ذخیره شد', 'success');
+        showToastOrAlert(t("Loop information saved successfully"), 'success');
         await fetchOrderDetails();
       } else {
-        showToastOrAlert(result.message || 'خطا در ذخیره اطلاعات لوپ');
+        showToastOrAlert(result.message || t("Error saving Loop information"));
       }
     } catch (error) {
       console.log('Error saving loop info:', error);
-      showToastOrAlert('خطا در ذخیره اطلاعات لوپ');
+      showToastOrAlert(t("Error saving Loop information"));
     } finally {
       setSavingLoopInfo(false);
     }
@@ -633,14 +647,14 @@ export default function OrderDetailScreen({ route, navigation }) {
       const result = await startRepair(orderId);
 
       if (result.success) {
-        showToastOrAlert('شروع کار با موفقیت ثبت شد', 'success');
+        showToastOrAlert(t("Work start saved successfully"), 'success');
         await fetchOrderDetails();
       } else {
-        showToastOrAlert(result.message || 'خطا در ثبت شروع تعمیر');
+        showToastOrAlert(result.message || t("Error saving repair start"));
       }
     } catch (error) {
       console.log('Error starting repair:', error);
-      showToastOrAlert('خطا در ثبت شروع تعمیر');
+      showToastOrAlert(t("Error saving repair start"));
     } finally {
       setStartingRepair(false);
     }
@@ -686,13 +700,13 @@ export default function OrderDetailScreen({ route, navigation }) {
   const handleSaveDeliveryReport = async () => {
     // اعتبارسنجی فیلدهای الزامی
     if (!deliveryReport.name || !deliveryReport.melicode || !deliveryReport.product_info) {
-      showToastOrAlert('لطفاً نام، کد ملی و اطلاعات محصول را وارد کنید');
+      showToastOrAlert(t("Please enter name, national ID, and product information"));
       return;
     }
 
     // اعتبارسنجی کد ملی (10 رقم)
     if (deliveryReport.melicode.length !== 10 || !/^\d+$/.test(deliveryReport.melicode)) {
-      showToastOrAlert('کد ملی باید 10 رقم باشد');
+      showToastOrAlert(t("National ID must be 10 digits"));
       return;
     }
 
@@ -714,8 +728,8 @@ export default function OrderDetailScreen({ route, navigation }) {
 
       if (result.success) {
         const message = deliveryReportId
-          ? 'گزارش تحویل با موفقیت به‌روزرسانی شد'
-          : 'گزارش تحویل ثبت شد و کد تایید برای کاربر ارسال شد';
+          ? t("Delivery report updated successfully")
+          : t("Delivery report submitted and verification code sent to user");
         showToastOrAlert(message, 'success');
         if (result.data?.report?.id) {
           setDeliveryReportId(result.data.report.id);
@@ -723,11 +737,11 @@ export default function OrderDetailScreen({ route, navigation }) {
         await fetchOrderDetails();
         await loadDeliveryReport();
       } else {
-        showToastOrAlert(result.message || 'خطا در ذخیره گزارش تحویل');
+        showToastOrAlert(result.message || t("Error saving delivery report"));
       }
     } catch (error) {
       console.log('Error saving delivery report:', error);
-      showToastOrAlert('خطا در ذخیره گزارش تحویل');
+      showToastOrAlert(t("Error saving delivery report"));
     } finally {
       setSavingDeliveryReport(false);
     }
@@ -737,12 +751,12 @@ export default function OrderDetailScreen({ route, navigation }) {
   const handleVerifyWithCode = async () => {
     // اعتبارسنجی کد
     if (!verificationCode || verificationCode.length !== 6) {
-      showToastOrAlert('لطفاً کد 6 رقمی را وارد کنید');
+      showToastOrAlert(t("Please enter the complete 6-digit code"));
       return;
     }
 
     if (!/^\d{6}$/.test(verificationCode)) {
-      showToastOrAlert('کد تایید باید 6 رقم عددی باشد');
+      showToastOrAlert(t("Verification code must be 6 digits"));
       return;
     }
 
@@ -751,20 +765,20 @@ export default function OrderDetailScreen({ route, navigation }) {
       const result = await verifyDeliveryReportWithCode(orderId, verificationCode);
 
       if (result.success) {
-        showToastOrAlert('گزارش تحویل با موفقیت تایید شد', 'success');
+        showToastOrAlert(t("Delivery report confirmed successfully"), 'success');
         setVerificationCode(''); // پاک کردن کد
         await fetchOrderDetails();
         await loadDeliveryReport();
       } else {
         if (result.error_code === 'INVALID_VERIFICATION_CODE') {
-          showToastOrAlert('کد تایید اشتباه است. لطفاً دوباره تلاش کنید');
+          showToastOrAlert(t("The verification code is incorrect. Please try again."));
         } else {
-          showToastOrAlert(result.message || 'خطا در تایید گزارش');
+          showToastOrAlert(result.message || t("Error verifying report"));
         }
       }
     } catch (error) {
       console.log('Error verifying code:', error);
-      showToastOrAlert('خطا در تایید گزارش');
+      showToastOrAlert(t("Error verifying report"));
     } finally {
       setVerifyingCode(false);
     }
@@ -778,18 +792,18 @@ export default function OrderDetailScreen({ route, navigation }) {
       const result = await resendDeliveryReportCode(orderId);
 
       if (result.success) {
-        showToastOrAlert('کد تایید مجدداً ارسال شد', 'success');
+        showToastOrAlert(t("Verification code resent"), 'success');
         setVerificationCode('');
         // شروع تایمر 60 ثانیه
         setResendTimer(60);
         setCanResend(false);
       } else {
 
-        showToastOrAlert(result.message || 'خطا در ارسال مجدد کد');
+        showToastOrAlert(result.message || t("Error resending code"));
       }
     } catch (error) {
       console.log('Error resending code:', error);
-      showToastOrAlert('خطا در ارسال مجدد کد');
+      showToastOrAlert(t("Error resending code"));
     } finally {
       setResendingCode(false);
     }
@@ -802,14 +816,14 @@ export default function OrderDetailScreen({ route, navigation }) {
       const result = await endOrder(orderId);
 
       if (result.success) {
-        showToastOrAlert('پایان کار با موفقیت ثبت شد', 'success');
+        showToastOrAlert(t("Work completion saved successfully"), 'success');
         await fetchOrderDetails();
       } else {
-        showToastOrAlert(result.message || 'خطا در ثبت پایان کار');
+        showToastOrAlert(result.message || t("Error saving work completion"));
       }
     } catch (error) {
       console.log('Error ending order:', error);
-      showToastOrAlert('خطا در ثبت پایان کار');
+      showToastOrAlert(t("Error saving work completion"));
     } finally {
       setEndingOrder(false);
     }
@@ -818,7 +832,7 @@ export default function OrderDetailScreen({ route, navigation }) {
   // تابع ثبت نظر تکنسین
   const handleSubmitTechnicianOpinion = async () => {
     if (!technicianOpinion.trim()) {
-      showToastOrAlert('لطفاً نظر خود را وارد کنید');
+      showToastOrAlert(t("Please enter your opinion"));
       return;
     }
 
@@ -826,13 +840,13 @@ export default function OrderDetailScreen({ route, navigation }) {
       setSubmittingOpinion(true);
       await submitTechnicianOpinion(orderId, technicianOpinion);
 
-      showToastOrAlert('نظر شما با موفقیت ثبت شد', 'success');
+      showToastOrAlert(t("Your opinion has been submitted successfully"), 'success');
 
       // به‌روزرسانی اطلاعات سفارش
       await fetchOrderDetails();
 
     } catch (error) {
-      showToastOrAlert(error.message || 'خطا در ثبت نظر');
+      showToastOrAlert(error.message || t("Error submitting opinion"));
     } finally {
       setSubmittingOpinion(false);
     }
@@ -892,12 +906,12 @@ export default function OrderDetailScreen({ route, navigation }) {
         style={styles.background}
       >
         <ScreenHeaders
-          title={'جزئیات سفارش'}
+          title={t("Order details")}
         />
         <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={{ flex: 1 }}>
           <View style={styles.centerContainer}>
             <ActivityIndicator size="large" color="#fff" />
-            <Text style={styles.loadingText}>در حال بارگذاری...</Text>
+            <Text style={styles.loadingText}>{t("Loading...")}</Text>
           </View>
         </SafeAreaView>
       </LinearGradient>
@@ -913,11 +927,11 @@ export default function OrderDetailScreen({ route, navigation }) {
         style={styles.background}
       >
         <ScreenHeaders
-          title={'جزئیات سفارش'}
+          title={t("Order details")}
         />
         <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={{ flex: 1 }}>
           <View style={styles.centerContainer}>
-            <Text style={styles.emptyText}>سفارش یافت نشد</Text>
+            <Text style={styles.emptyText}>{t("Order not found")}</Text>
           </View>
         </SafeAreaView>
       </LinearGradient>
@@ -938,7 +952,7 @@ export default function OrderDetailScreen({ route, navigation }) {
 
 
           <ScreenHeaders
-            title={'جزئیات سفارش'}
+            title={t("Order details")}
           />
 
           <ScrollView
@@ -953,7 +967,7 @@ export default function OrderDetailScreen({ route, navigation }) {
           >
 
             <AccordionHeader
-              title="جزئیات سفارش"
+              title={t("Order details")}
               isActive={true}
               isOpen={showDetails}
               onPress={() => setShowDetails(!showDetails)}
@@ -965,7 +979,7 @@ export default function OrderDetailScreen({ route, navigation }) {
             }
 
             <AccordionHeader
-              title="اطلاعات کاربر"
+              title={t("User information")}
               isActive={true}
               isOpen={showUserInfo}
               onPress={() => setShowUserInfo(!showUserInfo)}
@@ -976,11 +990,11 @@ export default function OrderDetailScreen({ route, navigation }) {
               <View style={styles.contentSection}>
                 {/* اطلاعات کاربر */}
                 <View style={{ gap: 10 }}>
-                  {data?.user?.name && renderRow('نام و نام خانوادگی:', data.user.name + ' ' + data.user.last_name)}
-                  {data?.user?.phone && renderRow('شماره تماس:', data.user.phone)}
-                  {data?.user?.email && renderRow('ایمیل:', data.user.email)}
-                  {data?.user_type_info && renderRow('نوع کاربر:', data.user_type_info?.account_type_label || data.user_type_info?.account_type || 'نامشخص')}
-                  {data?.address && renderRow('آدرس:', data.address)}
+                  {data?.user?.name && renderRow(`${t("Full Name")}:`, data.user.name + ' ' + data.user.last_name)}
+                  {data?.user?.phone && renderRow(`${t("Phone Number")}:`, data.user.phone)}
+                  {data?.user?.email && renderRow(`${t("Email")}:`, data.user.email)}
+                  {data?.user_type_info && renderRow(t("User type:"), data.user_type_info?.account_type_label || data.user_type_info?.account_type || t("Unknown"))}
+                  {data?.address && renderRow(`${t("Address")}:`, data.address)}
                 </View>
 
                 {/* دکمه چت - فقط برای سفارشات فعال */}
@@ -1001,7 +1015,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                       onPress={() => {
                         navigation.navigate('ChatRoom', {
                           userId: data.user_id,
-                          userName: data.user?.name || 'کاربر'
+                          userName: data.user?.name || t("User")
                         });
                       }}
                     >
@@ -1029,7 +1043,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                         )}
                       </View>
                       <Text style={[NewStyles.text4, { color: themeColor5.bgColor(1), flex: 1 }]}>
-                        گفتگو با کاربر
+                        {t("Chat with user")}
                       </Text>
                       <Ionicons name="chevron-back-outline" size={20} color={themeColor5.bgColor(1)} />
                     </TouchableOpacity>
@@ -1039,14 +1053,14 @@ export default function OrderDetailScreen({ route, navigation }) {
             )}
 
             <AccordionHeader
-              title="بررسی/جایگزینی زمانی/پیش رسید"
+              title={t("Review / Reschedule / Pre-arrival")}
               isActive={isReviewActive}
               isOpen={showReview}
               onPress={() => {
                 if (isReviewActive) {
                   setShowReview(!showReview);
                 } else {
-                  showToastOrAlert('این مرحله برای سفارش‌های لغو شده امکان‌پذیر نیست.');
+                  showToastOrAlert(t("This step is not available for canceled orders."));
                 }
               }}
             />
@@ -1058,12 +1072,12 @@ export default function OrderDetailScreen({ route, navigation }) {
                   <View style={[styles.infoCard, { backgroundColor: themeColor0.bgColor(0.1), borderWidth: 1, borderColor: themeColor0.bgColor(0.3) }]}>
                     <View style={[NewStyles.row, { gap: 10, alignItems: 'center', marginBottom: 10 }]}>
                       <Ionicons name="information-circle" size={24} color={themeColor0.bgColor(1)} />
-                      <Text style={[NewStyles.title, { color: themeColor0.bgColor(1) }]}>راهنمای تکنسین</Text>
+                      <Text style={[NewStyles.title, { color: themeColor0.bgColor(1) }]}>{t("Technician guide")}</Text>
                     </View>
                     <Text style={[NewStyles.text10, { textAlign: 'right', lineHeight: 24 }]}>
                       {data?.service_schedule_type
-                        ? 'لطفاً مبلغ پایه تکنسین و توضیحات لازم را وارد کنید. پس از ثبت، اطلاعات برای کاربر ارسال می‌شود و باید منتظر تایید کاربر بمانید.'
-                        : 'لطفاً تاریخ، بازه ساعت مراجعه، مبلغ پایه تکنسین و توضیحات را مشخص کنید. پس از ثبت اطلاعات، درخواست شما برای کاربر ارسال می‌شود و باید منتظر تایید کاربر بمانید.'
+                        ? t("Please enter the technician base amount and the required details. After saving, the information will be sent to the user and you must wait for the user's approval.")
+                        : t("Please specify the visit date, time range, technician base amount, and details. After saving the information, your request will be sent to the user and you must wait for the user's approval.")
                       }
                     </Text>
                   </View>
@@ -1072,9 +1086,9 @@ export default function OrderDetailScreen({ route, navigation }) {
                 {/* نمایش تاریخ و ساعت فعلی - فقط برای سفارشات معمولی */}
                 {!data?.service_schedule_type && !data?.user_initial_accept && (
                   <View style={styles.infoCard}>
-                    <Text style={NewStyles.text2}>تاریخ و ساعت مراجعه فعلی:</Text>
+                    <Text style={NewStyles.text2}>{t("Current visit date and time:")}</Text>
                     <Text style={[NewStyles.title, { marginTop: 5 }]}>
-                      {formatDate(data?.date)} - ساعت {data?.time?.split(':')?.slice(0, 2)?.join(':')}
+                      {t("{{date}} at {{time}}", { date: formatDate(data?.date), time: data?.time?.split(':')?.slice(0, 2)?.join(':') })}
                     </Text>
                   </View>
                 )}
@@ -1084,11 +1098,10 @@ export default function OrderDetailScreen({ route, navigation }) {
                   <View style={[styles.infoCard, { backgroundColor: themeColor0.bgColor(0.1) }]}>
                     <View style={[NewStyles.row, { gap: 10, alignItems: 'center', marginBottom: 10 }]}>
                       <Ionicons name="business-outline" size={24} color={themeColor0.bgColor(1)} />
-                      <Text style={NewStyles.title}>سفارش سازمانی</Text>
+                      <Text style={NewStyles.title}>{t("Corporate order")}</Text>
                     </View>
                     <Text style={[NewStyles.text10, { textAlign: 'center', lineHeight: 22 }]}>
-                      این سفارش از نوع سازمانی است و تاریخ و ساعت آن قابل تغییر نیست.{'\n'}
-                      فقط می‌توانید توضیحات اضافه کنید.
+                      {t("This order is corporate and its date and time cannot be changed.\nYou can only add descriptions.")}
                     </Text>
                   </View>
                 )}
@@ -1098,12 +1111,10 @@ export default function OrderDetailScreen({ route, navigation }) {
                   <View style={[styles.infoCard, { backgroundColor: themeColor3.bgColor(0.15), borderWidth: 1, borderColor: themeColor3.bgColor(0.5) }]}>
                     <View style={[NewStyles.row, { gap: 10, alignItems: 'center', marginBottom: 8 }]}>
                       <Ionicons name="hourglass-outline" size={24} color={themeColor3.bgColor(1)} />
-                      <Text style={[NewStyles.title, { color: themeColor3.bgColor(1) }]}>در انتظار تایید کاربر</Text>
+                      <Text style={[NewStyles.title, { color: themeColor3.bgColor(1) }]}>{t("Awaiting user approval")}</Text>
                     </View>
                     <Text style={[NewStyles.text10, { textAlign: 'center', lineHeight: 22, color: themeColor3.bgColor(1) }]}>
-                      پس از ثبت اطلاعات، درخواست شما برای کاربر ارسال می‌شود.{'\n'}
-                      تا زمانی که کاربر تایید نکند، امکان ادامه به مراحل بعدی وجود ندارد.{'\n'}
-                      لطفاً منتظر تایید کاربر باشید.
+                      {t("After saving the information, your request will be sent to the user.\nUntil the user approves, you cannot proceed to the next steps.\nPlease wait for the user's approval.")}
                     </Text>
                   </View>
                 )}
@@ -1114,14 +1125,14 @@ export default function OrderDetailScreen({ route, navigation }) {
 
                     {data?.technician_des && (
                       <View style={{ marginTop: 10, padding: 10, backgroundColor: themeColor5.bgColor(1), borderRadius: 8 }}>
-                        <Text style={NewStyles.text2}>توضیحات ثبت شده:</Text>
+                        <Text style={NewStyles.text2}>{t("Saved description:")}</Text>
                         <Text style={[NewStyles.text10, { marginTop: 5 }]}>{data.technician_des}</Text>
                       </View>
                     )}
                     <View style={[NewStyles.row, { gap: 10, alignItems: 'center' }]}>
                       <Ionicons name="checkmark-circle" size={24} color={themeColor7.bgColor(1)} />
                       <Text style={[NewStyles.title4, { color: themeColor7.bgColor(1) }]}>
-                        کاربر تایید کرده است
+                        {t("User has approved")}
                       </Text>
                     </View>
                   </View>
@@ -1132,13 +1143,13 @@ export default function OrderDetailScreen({ route, navigation }) {
                       <>
                         {/* انتخاب تاریخ جدید */}
                         <View style={styles.inputGroup}>
-                          <Text style={NewStyles.text}>تاریخ مراجعه: <Text style={NewStyles.text6}>*</Text></Text>
+                          <Text style={NewStyles.text}>{t("Visit date:")} <Text style={NewStyles.text6}>*</Text></Text>
                           <TouchableOpacity
                             style={styles.dateInput}
                             onPress={() => setDatePickerModal(true)}
                           >
                             <Text style={NewStyles.text10}>
-                              {selectedDate ? formatDate(selectedDate) : 'انتخاب تاریخ'}
+                              {selectedDate ? formatDate(selectedDate) : t("Select Date")}
                             </Text>
                             <Ionicons name="calendar-outline" size={20} color={themeColor0.bgColor(1)} />
                           </TouchableOpacity>
@@ -1146,12 +1157,12 @@ export default function OrderDetailScreen({ route, navigation }) {
 
                         {/* ورود بازه ساعت */}
                         <View style={styles.inputGroup}>
-                          <Text style={NewStyles.text}>بازه ساعت مراجعه: <Text style={NewStyles.text6}>*</Text></Text>
+                          <Text style={NewStyles.text}>{t("Visit time range:")} <Text style={NewStyles.text6}>*</Text></Text>
                           <TextInput
                             style={styles.textInput}
                             value={timeRange}
                             onChangeText={setTimeRange}
-                            placeholder="مثال: 09:00-12:00"
+                            placeholder={t("Example: 09:00-12:00")}
                             placeholderTextColor={themeColor3.bgColor(0.5)}
                           />
                         </View>
@@ -1161,12 +1172,12 @@ export default function OrderDetailScreen({ route, navigation }) {
 
                     {/* ورود مبلغ پایه تکنسین - برای هر دو نوع سفارش */}
                     <View style={styles.inputGroup}>
-                      <Text style={NewStyles.text}>مبلغ پایه تکنسین (تومان): <Text style={NewStyles.text6}>*</Text></Text>
+                      <Text style={NewStyles.text}>{t("Technician base amount (Toman):")} <Text style={NewStyles.text6}>*</Text></Text>
                       <TextInput
                         style={styles.textInput}
                         value={technicianPrice?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                         onChangeText={(p) => { setTechnicianPrice(p?.replace(/,/g, "")) }}
-                        placeholder="مثال: 500000"
+                        placeholder={t("Example: 500000")}
                         placeholderTextColor={themeColor3.bgColor(0.5)}
                         keyboardType="number-pad"
                       />
@@ -1174,12 +1185,12 @@ export default function OrderDetailScreen({ route, navigation }) {
 
                     {/* توضیحات - برای هر دو نوع سفارش */}
                     <View style={styles.inputGroup}>
-                      <Text style={NewStyles.text}>توضیحات :{!data?.service_schedule_type && <Text style={NewStyles.text6}>*</Text>}</Text>
+                      <Text style={NewStyles.text}>{t("Description")}: {!data?.service_schedule_type && <Text style={NewStyles.text6}>*</Text>}</Text>
                       <TextInput
                         style={[styles.textInput, styles.multilineInput]}
                         value={reviewDescription}
                         onChangeText={setReviewDescription}
-                        placeholder={data?.service_schedule_type ? "توضیحات خود را وارد کنید (اختیاری)..." : "توضیحات خود را وارد کنید..."}
+                        placeholder={data?.service_schedule_type ? t("Enter your description (optional)...") : t("Enter your description...")}
                         placeholderTextColor={themeColor3.bgColor(0.5)}
                         multiline
                         numberOfLines={4}
@@ -1189,7 +1200,7 @@ export default function OrderDetailScreen({ route, navigation }) {
 
                     {/* دکمه ذخیره */}
                     <Button
-                      title="ذخیره تغییرات"
+                      title={t("Save changes")}
                       onPress={handleSaveReview}
                       loading={savingReview}
                       disabled={savingReview}
@@ -1200,17 +1211,17 @@ export default function OrderDetailScreen({ route, navigation }) {
             )}
 
             <AccordionHeader
-              title="اعلام حضور"
+              title={t("Presence report")}
               isActive={isPresenceActive}
               isOpen={showPresence}
               onPress={() => {
                 if (isPresenceActive) {
                   setShowPresence(!showPresence);
                 } else if ((data?.status != 0 || data?.status != 1 || data?.status != 2)) {
-                  showToastOrAlert('سفارش لغو شده است')
+                  showToastOrAlert(t("Order has been canceled"))
                 }
                 else {
-                  showToastOrAlert('ابتدا باید مرحله بررسی/جایگزینی زمانی تکمیل شود.');
+                  showToastOrAlert(t("Please complete the review/reschedule step first."));
                 }
               }}
             />
@@ -1225,16 +1236,16 @@ export default function OrderDetailScreen({ route, navigation }) {
                       <View style={[NewStyles.row, { gap: 10, alignItems: 'center', justifyContent: 'center' }]}>
                         <Ionicons name="checkmark-circle" size={24} color={themeColor7.bgColor(1)} />
                         <Text style={[NewStyles.title4, { color: themeColor7.bgColor(1) }]}>
-                          حرکت کرده‌اید
+                          {t("You have departed")}
                         </Text>
                       </View>
                       <Text style={[NewStyles.text10, { textAlign: 'center', marginTop: 5 }]}>
-                        زمان حرکت: {formatDateTime(data.set_off_at)}
+                        {t("Departure time:")} {formatDateTime(data.set_off_at)}
                       </Text>
                     </View>
                   ) : (
                     <Button
-                      title="اعلام حرکت"
+                      title={t("Report departure")}
                       onPress={handleSetOff}
                       loading={settingOff}
                       disabled={settingOff}
@@ -1249,16 +1260,16 @@ export default function OrderDetailScreen({ route, navigation }) {
                           <View style={[NewStyles.row, { gap: 10, alignItems: 'center', justifyContent: 'center' }]}>
                             <Ionicons name="location" size={24} color={themeColor7.bgColor(1)} />
                             <Text style={[NewStyles.title4, { color: themeColor7.bgColor(1) }]}>
-                              رسیده‌اید
+                              {t("You have arrived")}
                             </Text>
                           </View>
                           <Text style={[NewStyles.text10, { textAlign: 'center', marginTop: 5 }]}>
-                            زمان رسیدن: {formatDateTime(data.arrived_at)}
+                            {t("Arrival time:")} {formatDateTime(data.arrived_at)}
                           </Text>
                         </View>
                       ) : (
                         <Button
-                          title="اعلام رسیدن"
+                          title={t("Report arrival")}
                           onPress={handleArrive}
                           loading={arriving}
                           disabled={arriving}
@@ -1271,13 +1282,13 @@ export default function OrderDetailScreen({ route, navigation }) {
                 {/* نمایش مدت زمان سفر */}
                 {data?.set_off_at && data?.arrived_at && (
                   <View style={styles.infoCard}>
-                    <Text style={NewStyles.text2}>مدت زمان سفر:</Text>
+                    <Text style={NewStyles.text2}>{t("Travel time:")}</Text>
                     <Text style={[NewStyles.title, { marginTop: 5 }]}>
                       {(() => {
                         const setOff = new Date(data.set_off_at);
                         const arrived = new Date(data.arrived_at);
                         const diffMinutes = Math.round((arrived - setOff) / 60000);
-                        return `${diffMinutes} دقیقه`;
+                        return t("{{count}} minutes", { count: diffMinutes });
                       })()}
                     </Text>
                   </View>
@@ -1289,12 +1300,12 @@ export default function OrderDetailScreen({ route, navigation }) {
                     <View style={[NewStyles.row, { gap: 10, alignItems: 'center', marginBottom: 15 }]}>
                       <Ionicons name="warning-outline" size={24} color={themeColor6.bgColor(1)} />
                       <Text style={[NewStyles.title4, { color: themeColor6.bgColor(1) }]}>
-                        در صورت بروز مشکل
+                        {t("If a problem occurs")}
                       </Text>
                     </View>
 
                     <Text style={[NewStyles.text10, { marginBottom: 10 }]}>
-                      اگر کاربر حضور ندارد یا مشکلی پیش آمده، دلیل لغو را انتخاب کنید:
+                      {t("If the user is absent or a problem occurred, select a cancellation reason:")}
                     </Text>
 
                     {/* گزینه‌های لغو */}
@@ -1320,7 +1331,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                           styles.cancelOptionText,
                           selectedCancelReason === option && NewStyles.text6
                         ]}>
-                          {option}
+                          {getCancelReasonLabel(option)}
                         </Text>
                       </TouchableOpacity>
                     ))}
@@ -1340,7 +1351,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                         ) : (
                           <>
                             <Ionicons name="close-circle-outline" size={22} color="#fff" />
-                            <Text style={NewStyles.text4}>لغو سفارش</Text>
+                            <Text style={NewStyles.text4}>{t("Cancel Order")}</Text>
                           </>
                         )}
                       </TouchableOpacity>
@@ -1353,7 +1364,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                   <View style={[styles.emergencySection, { marginTop: 20, padding: 15, backgroundColor: themeColor7.bgColor(0.1), borderRadius: 10, borderWidth: 1, borderColor: themeColor7.bgColor(1) }]}>
                     <View style={[NewStyles.row, { gap: 10, alignItems: 'center', marginBottom: 10 }]}>
                       <Text style={[NewStyles.title7]}>
-                        اعزام فوری همراه / جایگزین تکنسین / قطعات
+                        {t("Urgent dispatch / replacement technician / parts")}
                       </Text>
                     </View>
 
@@ -1363,20 +1374,20 @@ export default function OrderDetailScreen({ route, navigation }) {
                         <View style={[NewStyles.row, { gap: 10, alignItems: 'center' }]}>
                           <Ionicons name="checkmark-circle" size={24} color={themeColor7.bgColor(1)} />
                           <Text style={[NewStyles.title7]}>
-                            درخواست ثبت شده
+                            {t("Request submitted")}
                           </Text>
                         </View>
                         <Text style={[NewStyles.text10, { marginTop: 10, textAlign: 'right' }]}>
                           {data.emergency_help}
                         </Text>
                         <Text style={[NewStyles.text10, { marginTop: 5, textAlign: 'center', color: themeColor3.bgColor(1) }]}>
-                          زمان ثبت: {formatDateTime(data.emergency_help_at)}
+                          {t("Submitted at:")} {formatDateTime(data.emergency_help_at)}
                         </Text>
                       </View>
                     )}
 
                     <Text style={[NewStyles.text10, { marginBottom: 10 }]}>
-                      در صورت نیاز به همراه، قطعه یا ابزار خاص، درخواست خود را ثبت کنید:
+                      {t("If you need an assistant, a part, or a special tool, submit your request:")}
                     </Text>
 
                     {/* فیلد توضیحات */}
@@ -1384,7 +1395,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                       style={[styles.textInput, styles.multilineInput]}
                       value={emergencyHelpText}
                       onChangeText={setEmergencyHelpText}
-                      placeholder="مثال: نیاز به یک تکنسین همراه برای کمک در تعویض قطعه سنگین..."
+                      placeholder={t("Example: Need an assistant technician to help replace a heavy part...")}
                       placeholderTextColor={themeColor3.bgColor(0.5)}
                       multiline
                       numberOfLines={5}
@@ -1399,7 +1410,7 @@ export default function OrderDetailScreen({ route, navigation }) {
 
                     {/* دکمه ثبت درخواست */}
                     <Button
-                      title={data?.emergency_help ? "به‌روزرسانی درخواست" : "ثبت درخواست کمک"}
+                      title={data?.emergency_help ? t("Update request") : t("Submit help request")}
                       onPress={handleSubmitEmergencyHelp}
                       loading={submittingEmergencyHelp}
                       disabled={submittingEmergencyHelp || !emergencyHelpText.trim()}
@@ -1409,7 +1420,7 @@ export default function OrderDetailScreen({ route, navigation }) {
               </View>
             )}
 
-            <AccordionHeader title="وضعیت محصول" isActive={isProductStatusActive} isOpen={showProductStatus} onPress={() => { if (isProductStatusActive) { setShowProductStatus(!showProductStatus); } else { showToastOrAlert('ابتدا باید حضور شما توسط کاربر تأیید شود.'); } }} />
+            <AccordionHeader title={t("Product status")} isActive={isProductStatusActive} isOpen={showProductStatus} onPress={() => { if (isProductStatusActive) { setShowProductStatus(!showProductStatus); } else { showToastOrAlert(t("Your presence must be confirmed by the user first.")); } }} />
 
             {showProductStatus && isProductStatusActive && (
               <View style={styles.contentSection}>
@@ -1419,37 +1430,37 @@ export default function OrderDetailScreen({ route, navigation }) {
                     <View style={[NewStyles.row, { gap: 10, alignItems: 'center' }]}>
                       <Ionicons name="checkmark-circle" size={24} color={themeColor7.bgColor(1)} />
                       <Text style={[NewStyles.title4, { color: themeColor7.bgColor(1) }]}>
-                        کاربر گزارش را تأیید کرده است
+                        {t("User has confirmed the report")}
                       </Text>
                     </View>
                     <Text style={[NewStyles.text10, { textAlign: 'center', marginTop: 5 }]}>
-                      امکان ویرایش گزارش وجود ندارد
+                      {t("Editing the report is not available")}
                     </Text>
                   </View>
                 )}
 
                 {/* بخش اطلاعات کاربر */}
-                <Text style={[NewStyles.title, styles.sectionTitle]}>اطلاعات تحویل دهنده </Text>
+                <Text style={[NewStyles.title, styles.sectionTitle]}>{t("Deliverer information")}</Text>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>نام و نام خانوادگی <Text style={NewStyles.text6}>*</Text></Text>
+                  <Text style={NewStyles.text}>{t("Full Name")} <Text style={NewStyles.text6}>*</Text></Text>
                   <TextInput
                     style={styles.textInput}
                     value={productReport.name}
                     onChangeText={(text) => setProductReport({ ...productReport, name: text })}
-                    placeholder="نام کامل را وارد کنید"
+                    placeholder={t("Enter full name")}
                     placeholderTextColor={themeColor3.bgColor(0.5)}
                     editable={!reportConfirmed}
                   />
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>کد ملی <Text style={NewStyles.text6}>*</Text></Text>
+                  <Text style={NewStyles.text}>{t("National ID")} <Text style={NewStyles.text6}>*</Text></Text>
                   <TextInput
                     style={styles.textInput}
                     value={productReport.melicode}
                     onChangeText={(text) => setProductReport({ ...productReport, melicode: text })}
-                    placeholder="10 رقم"
+                    placeholder={t("10 digits")}
                     placeholderTextColor={themeColor3.bgColor(0.5)}
                     keyboardType="number-pad"
                     maxLength={10}
@@ -1458,87 +1469,87 @@ export default function OrderDetailScreen({ route, navigation }) {
                 </View>
 
                 {/* بخش اطلاعات محصول */}
-                <Text style={[NewStyles.title, styles.sectionTitle]}>اطلاعات محصول <Text style={NewStyles.text6}>*</Text></Text>
+                <Text style={[NewStyles.title, styles.sectionTitle]}>{t("Product information")} <Text style={NewStyles.text6}>*</Text></Text>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>نام محصول <Text style={NewStyles.text6}>*</Text></Text>
+                  <Text style={NewStyles.text}>{t("Product name")} <Text style={NewStyles.text6}>*</Text></Text>
                   <TextInput
                     style={styles.textInput}
                     value={productReport.product_name}
                     onChangeText={(text) => setProductReport({ ...productReport, product_name: text })}
-                    placeholder="مثال: لپ تاپ"
+                    placeholder={t("Example: Laptop")}
                     placeholderTextColor={themeColor3.bgColor(0.5)}
                     editable={!reportConfirmed}
                   />
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>برند محصول <Text style={NewStyles.text6}>*</Text></Text>
+                  <Text style={NewStyles.text}>{t("Product brand")} <Text style={NewStyles.text6}>*</Text></Text>
                   <TextInput
                     style={styles.textInput}
                     value={productReport.product_brand}
                     onChangeText={(text) => setProductReport({ ...productReport, product_brand: text })}
-                    placeholder="مثال: ایسوس"
+                    placeholder={t("Example: Asus")}
                     placeholderTextColor={themeColor3.bgColor(0.5)}
                     editable={!reportConfirmed}
                   />
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>مدل محصول <Text style={NewStyles.text6}>*</Text></Text>
+                  <Text style={NewStyles.text}>{t("Product model")} <Text style={NewStyles.text6}>*</Text></Text>
                   <TextInput
                     style={styles.textInput}
                     value={productReport.product_model}
                     onChangeText={(text) => setProductReport({ ...productReport, product_model: text })}
-                    placeholder="مثال: VivoBook 15"
+                    placeholder={t("Example: VivoBook 15")}
                     placeholderTextColor={themeColor3.bgColor(0.5)}
                     editable={!reportConfirmed}
                   />
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>رنگ محصول <Text style={NewStyles.text6}>*</Text></Text>
+                  <Text style={NewStyles.text}>{t("Product color")} <Text style={NewStyles.text6}>*</Text></Text>
                   <TextInput
                     style={styles.textInput}
                     value={productReport.product_color}
                     onChangeText={(text) => setProductReport({ ...productReport, product_color: text })}
-                    placeholder="مثال: مشکی"
+                    placeholder={t("Example: Black")}
                     placeholderTextColor={themeColor3.bgColor(0.5)}
                     editable={!reportConfirmed}
                   />
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>شماره سریال محصول</Text>
+                  <Text style={NewStyles.text}>{t("Product serial number")}</Text>
                   <TextInput
                     style={styles.textInput}
                     value={productReport.product_serial_number}
                     onChangeText={(text) => setProductReport({ ...productReport, product_serial_number: text })}
-                    placeholder="شماره سریال"
+                    placeholder={t("Serial number")}
                     placeholderTextColor={themeColor3.bgColor(0.5)}
                     editable={!reportConfirmed}
                   />
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>کد برچسب دارایی</Text>
+                  <Text style={NewStyles.text}>{t("Asset label code")}</Text>
                   <TextInput
                     style={styles.textInput}
                     value={productReport.asset_label_code}
                     onChangeText={(text) => setProductReport({ ...productReport, asset_label_code: text })}
-                    placeholder="کد دارایی"
+                    placeholder={t("Asset code")}
                     placeholderTextColor={themeColor3.bgColor(0.5)}
                     editable={!reportConfirmed}
                   />
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>لوازم جانبی</Text>
+                  <Text style={NewStyles.text}>{t("Accessories")}</Text>
                   <TextInput
                     style={[styles.textInput, styles.multilineInput]}
                     value={productReport.accessories}
                     onChangeText={(text) => setProductReport({ ...productReport, accessories: text })}
-                    placeholder="مثال: شارژر، کیف لپ تاپ"
+                    placeholder={t("Example: charger, laptop bag")}
                     placeholderTextColor={themeColor3.bgColor(0.5)}
                     multiline
                     numberOfLines={3}
@@ -1548,15 +1559,15 @@ export default function OrderDetailScreen({ route, navigation }) {
                 </View>
 
                 {/* بخش ایرادات و درخواست‌ها */}
-                <Text style={[NewStyles.title4, styles.sectionTitle]}>ایرادات و درخواست‌ها</Text>
+                <Text style={[NewStyles.title4, styles.sectionTitle]}>{t("Issues and requests")}</Text>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>ایرادات گزارش شده توسط کاربر</Text>
+                  <Text style={NewStyles.text}>{t("Issues reported by user")}</Text>
                   <TextInput
                     style={[styles.textInput, styles.multilineInput]}
                     value={productReport.user_reported_issues}
                     onChangeText={(text) => setProductReport({ ...productReport, user_reported_issues: text })}
-                    placeholder="ایرادات اعلام شده توسط کاربر"
+                    placeholder={t("Issues reported by user")}
                     placeholderTextColor={themeColor3.bgColor(0.5)}
                     multiline
                     numberOfLines={4}
@@ -1566,12 +1577,12 @@ export default function OrderDetailScreen({ route, navigation }) {
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>ایرادات گزارش شده توسط تکنسین</Text>
+                  <Text style={NewStyles.text}>{t("Issues reported by technician")}</Text>
                   <TextInput
                     style={[styles.textInput, styles.multilineInput]}
                     value={productReport.technician_reported_issues}
                     onChangeText={(text) => setProductReport({ ...productReport, technician_reported_issues: text })}
-                    placeholder="ایرادات تشخیص داده شده"
+                    placeholder={t("Identified issues")}
                     placeholderTextColor={themeColor3.bgColor(0.5)}
                     multiline
                     numberOfLines={4}
@@ -1581,12 +1592,12 @@ export default function OrderDetailScreen({ route, navigation }) {
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>ایرادات مشاهده شده توسط تکنسین</Text>
+                  <Text style={NewStyles.text}>{t("Issues observed by technician")}</Text>
                   <TextInput
                     style={[styles.textInput, styles.multilineInput]}
                     value={productReport.technician_observed_issues}
                     onChangeText={(text) => setProductReport({ ...productReport, technician_observed_issues: text })}
-                    placeholder="مثال: خراشیدگی روی قاب"
+                    placeholder={t("Example: scratches on the case")}
                     placeholderTextColor={themeColor3.bgColor(0.5)}
                     multiline
                     numberOfLines={4}
@@ -1596,12 +1607,12 @@ export default function OrderDetailScreen({ route, navigation }) {
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>خدمات درخواستی کاربر</Text>
+                  <Text style={NewStyles.text}>{t("User requested services")}</Text>
                   <TextInput
                     style={[styles.textInput, styles.multilineInput]}
                     value={productReport.user_requested_services}
                     onChangeText={(text) => setProductReport({ ...productReport, user_requested_services: text })}
-                    placeholder="مثال: تعمیر و نصب ویندوز"
+                    placeholder={t("Example: repair and Windows installation")}
                     placeholderTextColor={themeColor3.bgColor(0.5)}
                     multiline
                     numberOfLines={4}
@@ -1611,15 +1622,15 @@ export default function OrderDetailScreen({ route, navigation }) {
                 </View>
 
                 {/* بخش قیمت و رمز */}
-                <Text style={[NewStyles.title, styles.sectionTitle]}>اطلاعات تکمیلی</Text>
+                <Text style={[NewStyles.title, styles.sectionTitle]}>{t("Additional information")}</Text>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>بیشترین قیمت (تومان)</Text>
+                  <Text style={NewStyles.text}>{t("Maximum price (Toman)")}</Text>
                   <TextInput
                     style={styles.textInput}
                     value={productReport.max_price?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                     onChangeText={(text) => setProductReport({ ...productReport, max_price: text?.replace(/,/g, "") })}
-                    placeholder="مثال: 5000000"
+                    placeholder={t("Example: 5000000")}
                     placeholderTextColor={themeColor3.bgColor(0.5)}
                     keyboardType="number-pad"
                     editable={!reportConfirmed}
@@ -1627,12 +1638,12 @@ export default function OrderDetailScreen({ route, navigation }) {
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>کمترین قیمت (تومان)</Text>
+                  <Text style={NewStyles.text}>{t("Minimum price (Toman)")}</Text>
                   <TextInput
                     style={styles.textInput}
                     value={productReport.min_price?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                     onChangeText={(text) => setProductReport({ ...productReport, min_price: text?.replace(/,/g, "") })}
-                    placeholder="مثال: 3000000"
+                    placeholder={t("Example: 3000000")}
                     placeholderTextColor={themeColor3.bgColor(0.5)}
                     keyboardType="number-pad"
                     editable={!reportConfirmed}
@@ -1640,12 +1651,12 @@ export default function OrderDetailScreen({ route, navigation }) {
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>رمز محصول</Text>
+                  <Text style={NewStyles.text}>{t("Product password")}</Text>
                   <TextInput
                     style={styles.textInput}
                     value={productReport.product_password}
                     onChangeText={(text) => setProductReport({ ...productReport, product_password: text })}
-                    placeholder="رمز دستگاه (در صورت وجود)"
+                    placeholder={t("Device password (if any)")}
                     placeholderTextColor={themeColor3.bgColor(0.5)}
                     editable={!reportConfirmed}
                   />
@@ -1654,7 +1665,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                 {/* دکمه ذخیره - فقط اگر تأیید نشده باشد */}
                 {!reportConfirmed && (
                   <Button
-                    title={reportId ? "به‌روزرسانی گزارش" : "ثبت گزارش"}
+                    title={reportId ? t("Update report") : t("Submit report")}
                     onPress={handleSaveProductReport}
                     loading={savingReport}
                     disabled={savingReport || loadingReport}
@@ -1664,14 +1675,14 @@ export default function OrderDetailScreen({ route, navigation }) {
             )}
 
             <AccordionHeader
-              title="اعزام به لوپ"
+              title={t("Send to Loop")}
               isActive={isSendLoopActive}
               isOpen={showSendloop}
               onPress={() => {
                 if (isSendLoopActive) {
                   setShowSendloop(!showSendloop);
                 } else {
-                  showToastOrAlert('این مرحله بعد از تأیید گزارش توسط کاربر فعال می‌شود.');
+                  showToastOrAlert(t("This step becomes active after the user confirms the report."));
                 }
               }}
             />
@@ -1684,16 +1695,16 @@ export default function OrderDetailScreen({ route, navigation }) {
                     <View style={[NewStyles.row, { gap: 10, alignItems: 'center' }]}>
                       <Ionicons name="checkmark-circle" size={24} color={themeColor7.bgColor(1)} />
                       <Text style={[NewStyles.title4, { color: themeColor7.bgColor(1) }]}>
-                        سفارش به لوپ ارسال شده است
+                        {t("Order has been sent to Loop")}
                       </Text>
                     </View>
                     <Text style={[NewStyles.text10, { textAlign: 'center', marginTop: 5 }]}>
-                      زمان ارسال: {formatDateTime(data.send_to_loop)}
+                      {t("Sent at:")} {formatDateTime(data.send_to_loop)}
                     </Text>
                   </View>
                 ) : (
                   <Button
-                    title="ارسال به لوپ"
+                    title={t("Send to Loop")}
                     onPress={handleSendToLoop}
                     loading={sendingToLoop}
                     disabled={sendingToLoop}
@@ -1709,24 +1720,24 @@ export default function OrderDetailScreen({ route, navigation }) {
                         <View style={[NewStyles.row, { gap: 10, alignItems: 'center' }]}>
                           <Ionicons name="checkmark-circle" size={24} color={themeColor7.bgColor(1)} />
                           <Text style={[NewStyles.title4, { color: themeColor7.bgColor(1) }]}>
-                            کاربر اطلاعات لوپ را تأیید کرده است
+                            {t("User has confirmed Loop information")}
                           </Text>
                         </View>
                         <Text style={[NewStyles.text10, { textAlign: 'center', marginTop: 5 }]}>
-                          زمان تأیید: {formatDateTime(data.user_accept_date)}
+                          {t("Confirmed at:")} {formatDateTime(data.user_accept_date)}
                         </Text>
                       </View>
                     )}
 
-                    <Text style={[NewStyles.title, styles.sectionTitle]}>اطلاعات لوپ</Text>
+                    <Text style={[NewStyles.title, styles.sectionTitle]}>{t("Loop information")}</Text>
 
                     <View style={styles.inputGroup}>
-                      <Text style={NewStyles.text}>مدت زمان انجام کار (روز)</Text>
+                      <Text style={NewStyles.text}>{t("Work duration (days)")}</Text>
                       <TextInput
                         style={styles.textInput}
                         value={loopInfo.duration}
                         onChangeText={(text) => setLoopInfo({ ...loopInfo, duration: text })}
-                        placeholder="مثال: 5"
+                        placeholder={t("Example: 5")}
                         placeholderTextColor={themeColor3.bgColor(0.5)}
                         keyboardType="number-pad"
                         editable={!data?.user_accept_date}
@@ -1734,12 +1745,12 @@ export default function OrderDetailScreen({ route, navigation }) {
                     </View>
 
                     <View style={styles.inputGroup}>
-                      <Text style={NewStyles.text}>هزینه تقریبی (تومان)</Text>
+                      <Text style={NewStyles.text}>{t("Estimated cost (Toman)")}</Text>
                       <TextInput
                         style={styles.textInput}
                         value={loopInfo.loop_cost_estimate?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                         onChangeText={(text) => setLoopInfo({ ...loopInfo, loop_cost_estimate: text?.replace(/,/g, "") })}
-                        placeholder="مثال: 2500000"
+                        placeholder={t("Example: 2500000")}
                         placeholderTextColor={themeColor3.bgColor(0.5)}
                         keyboardType="number-pad"
                         editable={!data?.user_accept_date}
@@ -1747,12 +1758,12 @@ export default function OrderDetailScreen({ route, navigation }) {
                     </View>
 
                     <View style={styles.inputGroup}>
-                      <Text style={NewStyles.text}>توضیحات لوپ</Text>
+                      <Text style={NewStyles.text}>{t("Loop description")}</Text>
                       <TextInput
                         style={[styles.textInput, styles.multilineInput]}
                         value={loopInfo.loop_description}
                         onChangeText={(text) => setLoopInfo({ ...loopInfo, loop_description: text })}
-                        placeholder="توضیحات تکمیلی..."
+                        placeholder={t("Additional details...")}
                         placeholderTextColor={themeColor3.bgColor(0.5)}
                         multiline
                         numberOfLines={4}
@@ -1764,7 +1775,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                     {/* دکمه ذخیره - فقط اگر کاربر تأیید نکرده باشد */}
                     {(!data?.user_accept_date && !data?.user_cancellation_date) && (
                       <Button
-                        title="ذخیره اطلاعات لوپ"
+                        title={t("Save Loop information")}
                         onPress={handleSaveLoopInfo}
                         loading={savingLoopInfo}
                         disabled={savingLoopInfo}
@@ -1776,12 +1787,12 @@ export default function OrderDetailScreen({ route, navigation }) {
             )}
 
             <AccordionHeader
-              title="قطعات/هزینه ها/شروع"
+              title={t("Parts / Costs / Start")}
               isActive={isPricesActive}
               isOpen={showPrices}
               onPress={async () => {
                 if (!isPricesActive) {
-                  showToastOrAlert('ابتدا باید دستگاه به لوپ ارسال شود و کاربر تأیید کند.');
+                  showToastOrAlert(t("First, the device must be sent to Loop and the user must confirm."));
                   return;
                 }
 
@@ -1794,7 +1805,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                 <View style={[NewStyles.row, { gap: 10, paddingHorizontal: 15 }]}>
                   <Ionicons name="pricetag-outline" size={24} color={themeColor0.bgColor(1)} />
                   <Text style={[NewStyles.text, { flex: 1 }]}>
-                    در این بخش می‌توانید هزینه ها و قطعات مورد نیاز را مشخص کنید.
+                    {t("In this section, you can specify the required costs and parts.")}
                   </Text>
                 </View>
 
@@ -1804,17 +1815,17 @@ export default function OrderDetailScreen({ route, navigation }) {
                     <View style={[NewStyles.row, { gap: 10, alignItems: 'center' }]}>
                       <Ionicons name="construct" size={24} color={themeColor7.bgColor(1)} />
                       <Text style={[NewStyles.title, { color: themeColor7.bgColor(1) }]}>
-                        تعمیر شروع شده است
+                        {t("Repair has started")}
                       </Text>
                     </View>
                     <Text style={[NewStyles.text, { textAlign: 'center', marginTop: 5 }]}>
-                      زمان شروع: {formatDateTime(data.started_at)}
+                      {t("Start time:")} {formatDateTime(data.started_at)}
                     </Text>
                   </View>
                 ) : (
                   <View style={{ paddingHorizontal: 15 }}>
                     <Button
-                      title="اعلام شروع تعمیر"
+                      title={t("Start repair")}
                       onPress={handleStartRepair}
                       loading={startingRepair}
                       disabled={startingRepair}
@@ -1841,13 +1852,13 @@ export default function OrderDetailScreen({ route, navigation }) {
                           orderId: orderId
                         });
                       } else {
-                        showToastOrAlert('اطلاعات دسته‌بندی یافت نشد');
+                        showToastOrAlert(t("Category information not found"));
                       }
                     }}
                   >
                     <Ionicons name="add-circle-outline" size={24} color={themeColor5.bgColor(1)} />
                     <Text style={[NewStyles.text4, { color: themeColor5.bgColor(1) }]}>
-                      مدیریت هزینه ها و قطعات
+                      {t("Manage costs and parts")}
                     </Text>
                   </TouchableOpacity>
                 </View>}
@@ -1855,7 +1866,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                   <View style={{ gap: 10, paddingHorizontal: 15 }}>
                     <View style={[NewStyles.row, { gap: 5 }]}>
                       <Ionicons name="checkmark-circle" size={20} color={themeColor0.bgColor(1)} />
-                      <Text style={NewStyles.title}>هزینه های ثبت شده:</Text>
+                      <Text style={NewStyles.title}>{t("Recorded costs:")}</Text>
                     </View>
 
                     {data.extra_services.map((extra, index) => (
@@ -1877,7 +1888,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                           </Text>
                         </View>
                         <Text style={[NewStyles.text]}>
-                          {formatPrice(extra.price)} تومان
+                          {formatPrice(extra.price)}{t(" Toman")}
                         </Text>
                       </View>
                     ))}
@@ -1892,11 +1903,11 @@ export default function OrderDetailScreen({ route, navigation }) {
                         },
                       ]}
                     >
-                      <Text style={[NewStyles.title]}>جمع کل:</Text>
+                      <Text style={[NewStyles.title]}>{`${t("Total")}:`}</Text>
                       <Text style={[NewStyles.title]}>
                         {formatPrice(
                           data.extra_services.reduce((sum, extra) => sum + (parseFloat(extra.price) || 0), 0)
-                        )} تومان
+                        )}{t(" Toman")}
                       </Text>
                     </View>
                   </View>
@@ -1915,7 +1926,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                   >
                     <Ionicons name="information-circle-outline" size={32} color={themeColor3.bgColor(1)} />
                     <Text style={[NewStyles.text3, { textAlign: 'center' }]}>
-                      هنوز خدمات اضافی یا قطعه‌ای ثبت نشده است.
+                      {t("No extra services or parts have been recorded yet.")}
                     </Text>
                   </View>
                 )}
@@ -1923,14 +1934,14 @@ export default function OrderDetailScreen({ route, navigation }) {
             )}
 
             <AccordionHeader
-              title="تحویل به کاربر/اتمام سرویس جاری"
+              title={t("Delivery to user / Complete current service")}
               isActive={isDeliveryActive}
               isOpen={showDelivery}
               onPress={() => {
                 if (isDeliveryActive) {
                   setShowDelivery(!showDelivery);
                 } else {
-                  showToastOrAlert('این مرحله برای سفارش‌های لغو شده امکان‌پذیر نیست.');
+                  showToastOrAlert(t("This step is not available for canceled orders."));
                 }
               }}
             />
@@ -1950,7 +1961,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                       color={(data?.payment_status == "1" || data?.payment_status === 1) ? themeColor7.bgColor(1) : themeColor3.bgColor(1)}
                     />
                     <Text style={[NewStyles.title4, { color: (data?.payment_status == "1" || data?.payment_status === 1) ? themeColor7.bgColor(1) : themeColor3.bgColor(1) }]}>
-                      {(data?.payment_status == "1" || data?.payment_status === 1) ? 'کاربر پرداخت کرده است' : 'کاربر هنوز پرداخت نکرده است'}
+                      {(data?.payment_status == "1" || data?.payment_status === 1) ? t("User has paid") : t("User has not paid yet")}
                     </Text>
                   </View>
                 </View>
@@ -1961,37 +1972,37 @@ export default function OrderDetailScreen({ route, navigation }) {
                     <View style={[NewStyles.row, { gap: 10, alignItems: 'center' }]}>
                       <Ionicons name="checkmark-circle" size={24} color={themeColor7.bgColor(1)} />
                       <Text style={[NewStyles.title4, { color: themeColor7.bgColor(1) }]}>
-                        کاربر گزارش تحویل را تأیید کرده است
+                        {t("User has confirmed the delivery report")}
                       </Text>
                     </View>
                     <Text style={[NewStyles.text10, { textAlign: 'center', marginTop: 5 }]}>
-                      امکان ویرایش گزارش وجود ندارد
+                      {t("Editing the report is not available")}
                     </Text>
                   </View>
                 )}
 
                 {/* فرم گزارش تحویل */}
-                <Text style={[NewStyles.title, styles.sectionTitle]}>گزارش تحویل محصول</Text>
+                <Text style={[NewStyles.title, styles.sectionTitle]}>{t("Product delivery report")}</Text>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>نام گیرنده <Text style={NewStyles.text6}>*</Text></Text>
+                  <Text style={NewStyles.text}>{t("Recipient name")} <Text style={NewStyles.text6}>*</Text></Text>
                   <TextInput
                     style={styles.textInput}
                     value={deliveryReport.name}
                     onChangeText={(text) => setDeliveryReport({ ...deliveryReport, name: text })}
-                    placeholder="نام کامل گیرنده"
+                    placeholder={t("Recipient full name")}
                     placeholderTextColor={themeColor3.bgColor(0.5)}
                     editable={!deliveryReportConfirmed}
                   />
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>کد ملی گیرنده <Text style={NewStyles.text6}>*</Text></Text>
+                  <Text style={NewStyles.text}>{t("Recipient national ID")} <Text style={NewStyles.text6}>*</Text></Text>
                   <TextInput
                     style={styles.textInput}
                     value={deliveryReport.melicode}
                     onChangeText={(text) => setDeliveryReport({ ...deliveryReport, melicode: text })}
-                    placeholder="10 رقم"
+                    placeholder={t("10 digits")}
                     placeholderTextColor={themeColor3.bgColor(0.5)}
                     keyboardType="number-pad"
                     maxLength={10}
@@ -2000,12 +2011,12 @@ export default function OrderDetailScreen({ route, navigation }) {
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>اطلاعات محصول <Text style={NewStyles.text6}>*</Text></Text>
+                  <Text style={NewStyles.text}>{t("Product information")} <Text style={NewStyles.text6}>*</Text></Text>
                   <TextInput
                     style={[styles.textInput, styles.multilineInput]}
                     value={deliveryReport.product_info}
                     onChangeText={(text) => setDeliveryReport({ ...deliveryReport, product_info: text })}
-                    placeholder="مثال: لپ‌تاپ Dell مدل XPS 15"
+                    placeholder={t("Example: Dell laptop model XPS 15")}
                     placeholderTextColor={themeColor3.bgColor(0.5)}
                     multiline
                     numberOfLines={3}
@@ -2015,12 +2026,12 @@ export default function OrderDetailScreen({ route, navigation }) {
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>متعلقات همراه</Text>
+                  <Text style={NewStyles.text}>{t("Included accessories")}</Text>
                   <TextInput
                     style={[styles.textInput, styles.multilineInput]}
                     value={deliveryReport.accessories}
                     onChangeText={(text) => setDeliveryReport({ ...deliveryReport, accessories: text })}
-                    placeholder="مثال: شارژر، کیف، موس"
+                    placeholder={t("Example: charger, bag, mouse")}
                     placeholderTextColor={themeColor3.bgColor(0.5)}
                     multiline
                     numberOfLines={3}
@@ -2030,24 +2041,24 @@ export default function OrderDetailScreen({ route, navigation }) {
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>کد برچسب محصول</Text>
+                  <Text style={NewStyles.text}>{t("Product label code")}</Text>
                   <TextInput
                     style={styles.textInput}
                     value={deliveryReport.label_code}
                     onChangeText={(text) => setDeliveryReport({ ...deliveryReport, label_code: text })}
-                    placeholder="کد برچسب"
+                    placeholder={t("Label code")}
                     placeholderTextColor={themeColor3.bgColor(0.5)}
                     editable={!deliveryReportConfirmed}
                   />
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>عیوب ظاهری</Text>
+                  <Text style={NewStyles.text}>{t("Appearance defects")}</Text>
                   <TextInput
                     style={[styles.textInput, styles.multilineInput]}
                     value={deliveryReport.appearance_defect}
                     onChangeText={(text) => setDeliveryReport({ ...deliveryReport, appearance_defect: text })}
-                    placeholder="مثال: خراش روی درب"
+                    placeholder={t("Example: scratch on the cover")}
                     placeholderTextColor={themeColor3.bgColor(0.5)}
                     multiline
                     numberOfLines={3}
@@ -2057,12 +2068,12 @@ export default function OrderDetailScreen({ route, navigation }) {
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>توضیحات کاربر</Text>
+                  <Text style={NewStyles.text}>{t("User Description")}</Text>
                   <TextInput
                     style={[styles.textInput, styles.multilineInput]}
                     value={deliveryReport.user_description}
                     onChangeText={(text) => setDeliveryReport({ ...deliveryReport, user_description: text })}
-                    placeholder="توضیحات کاربر در مورد محصول"
+                    placeholder={t("User description about the product")}
                     placeholderTextColor={themeColor3.bgColor(0.5)}
                     multiline
                     numberOfLines={4}
@@ -2072,12 +2083,12 @@ export default function OrderDetailScreen({ route, navigation }) {
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>توضیحات فنی تکنسین</Text>
+                  <Text style={NewStyles.text}>{t("Technician technical description")}</Text>
                   <TextInput
                     style={[styles.textInput, styles.multilineInput]}
                     value={deliveryReport.technical_description}
                     onChangeText={(text) => setDeliveryReport({ ...deliveryReport, technical_description: text })}
-                    placeholder="توضیحات فنی در مورد تعمیرات انجام شده"
+                    placeholder={t("Technical description about completed repairs")}
                     placeholderTextColor={themeColor3.bgColor(0.5)}
                     multiline
                     numberOfLines={4}
@@ -2089,7 +2100,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                 {/* دکمه ذخیره گزارش - فقط اگر تأیید نشده باشد */}
                 {!deliveryReportConfirmed && (
                   <Button
-                    title={deliveryReportId ? "به‌روزرسانی گزارش تحویل" : "ثبت گزارش تحویل"}
+                    title={deliveryReportId ? t("Update delivery report") : t("Submit delivery report")}
                     onPress={handleSaveDeliveryReport}
                     loading={savingDeliveryReport}
                     disabled={savingDeliveryReport || loadingDeliveryReport}
@@ -2102,13 +2113,12 @@ export default function OrderDetailScreen({ route, navigation }) {
                     <View style={[styles.infoCard, { backgroundColor: themeColor0.bgColor(0.1) }]}>
                       <Ionicons name="mail-outline" size={24} color={themeColor0.bgColor(1)} />
                       <Text style={[NewStyles.text3, { textAlign: 'center', marginTop: 8 }]}>
-                        کد تایید 6 رقمی برای کاربر ارسال شده است.{'\n'}
-                        لطفاً کد را از کاربر دریافت کرده و وارد کنید.
+                        {t("A 6-digit verification code has been sent to the user.\nPlease get the code from the user and enter it.")}
                       </Text>
                     </View>
 
                     <View style={styles.inputGroup}>
-                      <Text style={NewStyles.text}>کد تایید 6 رقمی *</Text>
+                      <Text style={NewStyles.text}>{t("6-digit verification code *")}</Text>
                       <TextInput
                         style={[styles.textInput, { textAlign: 'center', fontSize: 24, letterSpacing: 8 }]}
                         value={verificationCode}
@@ -2121,7 +2131,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                     </View>
 
                     <Button
-                      title="تایید کد و ادامه"
+                      title={t("Verify code and continue")}
                       onPress={handleVerifyWithCode}
                       loading={verifyingCode}
                       disabled={verifyingCode || verificationCode.length !== 6}
@@ -2153,7 +2163,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                             <>
                               <Ionicons name="refresh-outline" size={20} color={themeColor0.bgColor(1)} />
                               <Text style={[NewStyles.text, { color: themeColor0.bgColor(1) }]}>
-                                ارسال مجدد کد
+                                {t("Resend Code")}
                               </Text>
                             </>
                           )}
@@ -2162,7 +2172,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                         <View style={[NewStyles.row, { alignItems: 'center', gap: 8 }]}>
                           <Ionicons name="time-outline" size={20} color={themeColor3.bgColor(1)} />
                           <Text style={[NewStyles.text10, { color: themeColor3.bgColor(1) }]}>
-                            ارسال مجدد کد بعد از {resendTimer} ثانیه
+                            {t("Resend code in {{seconds}} seconds", { seconds: resendTimer })}
                           </Text>
                         </View>
                       )}
@@ -2178,11 +2188,11 @@ export default function OrderDetailScreen({ route, navigation }) {
                         <View style={[NewStyles.row, { gap: 10, alignItems: 'center' }]}>
                           <Ionicons name="checkmark-done" size={24} color={themeColor7.bgColor(1)} />
                           <Text style={[NewStyles.title4, { color: themeColor7.bgColor(1) }]}>
-                            سرویس به پایان رسیده است
+                            {t("Service has ended")}
                           </Text>
                         </View>
                         <Text style={[NewStyles.text10, { textAlign: 'center', marginTop: 5 }]}>
-                          زمان پایان: {formatDateTime(data.finished_at)}
+                          {t("End time:")} {formatDateTime(data.finished_at)}
                         </Text>
                       </View>
                     ) : (
@@ -2190,13 +2200,12 @@ export default function OrderDetailScreen({ route, navigation }) {
                         <View style={[styles.infoCard, { backgroundColor: themeColor0.bgColor(0.1) }]}>
                           <Ionicons name="information-circle" size={24} color={themeColor0.bgColor(1)} />
                           <Text style={[NewStyles.text3, { textAlign: 'center', marginTop: 8 }]}>
-                            محصول تحویل شده و آماده اتمام سرویس است.{'\n'}
-                            با کلیک بر روی دکمه زیر، سرویس به پایان می‌رسد.
+                            {t("The product has been delivered and is ready to complete the service.\nClick the button below to finish the service.")}
                           </Text>
                         </View>
 
                         <Button
-                          title="اتمام سرویس جاری و تحویل محصول"
+                          title={t("Complete current service and deliver product")}
                           onPress={handleEndOrder}
                           loading={endingOrder}
                           disabled={endingOrder}
@@ -2212,7 +2221,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                     <View style={[NewStyles.row, { gap: 10, alignItems: 'center', marginBottom: 10 }]}>
                       <Ionicons name="create-outline" size={24} color={themeColor0.bgColor(1)} />
                       <Text style={[NewStyles.title]}>
-                        نظر تکنسین در مورد این سفارش
+                        {t("Technician opinion about this order")}
                       </Text>
                     </View>
 
@@ -2222,7 +2231,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                         <View style={[NewStyles.row, { gap: 10, alignItems: 'center' }]}>
                           <Ionicons name="checkmark-circle" size={24} color={themeColor7.bgColor(1)} />
                           <Text style={[NewStyles.title4, { color: themeColor7.bgColor(1) }]}>
-                            نظر شما ثبت شده است
+                            {t("Your opinion has been submitted")}
                           </Text>
                         </View>
                         <Text style={[NewStyles.text10, { marginTop: 10, textAlign: 'right', lineHeight: 24 }]}>
@@ -2232,7 +2241,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                     )}
 
                     <Text style={[NewStyles.text10, { marginBottom: 10 }]}>
-                      لطفاً نظر و توضیحات خود را در مورد این سفارش وارد کنید:
+                      {t("Please enter your opinion and details about this order:")}
                     </Text>
 
                     {/* فیلد نظر */}
@@ -2240,7 +2249,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                       style={[styles.textInput, styles.multilineInput]}
                       value={technicianOpinion}
                       onChangeText={setTechnicianOpinion}
-                      placeholder="مثال: برد اصلی دستگاه تعویض شد. باتری هم ضعیف بود که جایگزین شد. دستگاه به طور کامل تست شد و مشکلی ندارد..."
+                      placeholder={t("Example: The device main board was replaced. The battery was weak and got replaced too. The device was fully tested and has no issues...")}
                       placeholderTextColor={themeColor3.bgColor(0.5)}
                       multiline
                       numberOfLines={6}
@@ -2257,7 +2266,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                     {/* دکمه ثبت نظر */}
                     {!data?.technician_opinion && (
                       <Button
-                        title="ثبت نظر تکنسین"
+                        title={t("Submit technician opinion")}
                         onPress={handleSubmitTechnicianOpinion}
                         loading={submittingOpinion}
                         disabled={submittingOpinion || !technicianOpinion.trim()}

@@ -1,5 +1,6 @@
 import { SectionList, StyleSheet, Text, View, Linking, TouchableOpacity, Platform, Image } from 'react-native'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import MapView, { Marker } from 'react-native-maps'
 import NewStyles from '../../styles/NewStyles'
 import { Ionicons } from '@expo/vector-icons'
@@ -8,6 +9,7 @@ import { formatDate, formatDateTime, formatPrice } from '../../helpers/Common'
 import { imageUri, mainUri } from '../../services/URL'
 
 const DetailConponent = ({ data, renderRow, }) => {
+    const { t } = useTranslation();
     const calculateTotalPrice = () => {
         if (!data) return 0;
         const basePrice = Number(data?.technician_price || data?.pakar_price || 0);
@@ -37,15 +39,15 @@ const DetailConponent = ({ data, renderRow, }) => {
 
     const getStatusLabel = (status) => {
         const labels = {
-            0: 'در انتظار',
-            1: 'در حال پردازش',
-            2: 'انجام شده',
-            3: 'لغو شده توسط کاربر',
-            4: 'لغو شده توسط تکنسین',
-            5: 'لغو شده توسط ادمین',
-            6: 'منقضی شده'
+            0: t("Pending"),
+            1: t("Processing"),
+            2: t("Completed"),
+            3: t("Canceled by user"),
+            4: t("Canceled by technician"),
+            5: t("Canceled by admin"),
+            6: t("Expired")
         };
-        return labels[status] || 'نامشخص';
+        return labels[status] || t("Unknown");
     };
 
     const totalPrice = calculateTotalWithoutDiscount();
@@ -57,7 +59,7 @@ const DetailConponent = ({ data, renderRow, }) => {
                 <View style={styles.cardHeader}>
                     <View style={[NewStyles.row, { gap: 5 }]}>
                         <Ionicons name="newspaper-outline" size={24} color={themeColor0.bgColor(1)} />
-                        <Text style={NewStyles.title}>جزئیات سفارش - شناسه: {data?.id}</Text>
+                        <Text style={NewStyles.title}>{t("Order details - ID: {{id}}", { id: data?.id })}</Text>
                     </View>
                     <Text style={NewStyles.text3}>{data?.category?.title || data?.category?.name}</Text>
                 </View>
@@ -66,49 +68,49 @@ const DetailConponent = ({ data, renderRow, }) => {
 
                 <View style={styles.cardContent}>
                     {/* نمایش تاریخ و زمان معمولی فقط اگر سفارش سازمانی نباشد */}
-                    {!data?.service_schedule_type && renderRow('زمان مراجعه تکنسین', data?.is_urgent > 0 ? 'درخواست فوری' : `${formatDate(data?.date)} ساعت ${data?.time?.split(':')?.slice(0, 2)?.join(':')}`, NewStyles.text, data?.is_urgent > 0 && NewStyles.title6)}
-                    {renderRow('زمان ثبت سفارش', formatDateTime(data?.created_at))}
+                    {!data?.service_schedule_type && renderRow(t("Technician Visit Time"), data?.is_urgent > 0 ? t("Urgent Request") : t("{{date}} at {{time}}", { date: formatDate(data?.date), time: data?.time?.split(':')?.slice(0, 2)?.join(':') }), NewStyles.text, data?.is_urgent > 0 && NewStyles.title6)}
+                    {renderRow(t("Order registration time"), formatDateTime(data?.created_at))}
 
                     {Number(data?.category?.has_gender) > 0 && (
                         renderRow(
-                            'جنسیت تکنسین',
+                            t("Technician Gender"),
                             (() => {
                                 const male = Number(data.male_count) || 0;
                                 const female = Number(data.female_count) || 0;
                                 const unspecified = Number(data.unspecified_count) || 0;
                                 const total = male + female + unspecified;
 
-                                if (total === 0) return 'مشخص نشده';
+                                if (total === 0) return t("Not Specified");
 
                                 let details = [];
-                                if (male > 0) details.push(`آقا`);
-                                if (female > 0) details.push(`خانم`);
+                                if (male > 0) details.push(t("Male"));
+                                if (female > 0) details.push(t("Female"));
 
                                 return (details.length > 0 ? `${details.join(' ')}` : '');
                             })()
                         )
                     )}
 
-                    {data?.status == 1 && renderRow('وضعیت سفارش', data?.started_at ? 'در حال انجام' : data?.arrived_at ? 'تکنسین به محل سفارش رسید' : data?.set_off_at ? 'تکنسین در راه است' : 'جاری', NewStyles.text, NewStyles.text7)}
+                    {data?.status == 1 && renderRow(t("Order Status"), data?.started_at ? t("In progress") : data?.arrived_at ? t("Technician arrived at order location") : data?.set_off_at ? t("Technician is on the way") : t("Active"), NewStyles.text, NewStyles.text7)}
 
-                    {renderRow((Number(data?.is_fixed) == 1) ? 'مبلغ قطعی لوپ' : 'مبلغ پایه لوپ', data?.pakar_price > 0 ? `${formatPrice(data?.pakar_price)} تومان` : 'نیاز به بررسی')}
-                    {(data?.technician_price > 0 && Number(data?.is_fixed) == 0) && renderRow('مبلغ نهایی تکنسین', `${formatPrice(data?.technician_price)} تومان`)}
-                    {data?.extra_price > 0 && renderRow('مبلغ خدمات مازاد', `${formatPrice(data?.extra_price)} تومان`)}
-                    {data?.discount_price > 0 && renderRow('مبلغ تخفیف', `${formatPrice(data?.discount_price)} تومان`)}
-                    {totalPrice > totalDiscountedPrice && renderRow('مبلغ نهایی بدون تخفیف', `${formatPrice(totalPrice)} تومان`, NewStyles.text, [NewStyles.text10, { textDecorationLine: 'line-through' }])}
-                    {data?.status > 0 && renderRow('مبلغ قابل پرداخت', `${formatPrice(totalDiscountedPrice)} تومان`)}
+                    {renderRow((Number(data?.is_fixed) == 1) ? t("Loop Fixed Amount") : t("Loop Base Amount"), data?.pakar_price > 0 ? `${formatPrice(data?.pakar_price)}${t(" Toman")}` : t("Needs Review"))}
+                    {(data?.technician_price > 0 && Number(data?.is_fixed) == 0) && renderRow(t("Technician final amount"), `${formatPrice(data?.technician_price)}${t(" Toman")}`)}
+                    {data?.extra_price > 0 && renderRow(t("Extra service amount"), `${formatPrice(data?.extra_price)}${t(" Toman")}`)}
+                    {data?.discount_price > 0 && renderRow(t("Discount amount"), `${formatPrice(data?.discount_price)}${t(" Toman")}`)}
+                    {totalPrice > totalDiscountedPrice && renderRow(t("Final amount without discount"), `${formatPrice(totalPrice)}${t(" Toman")}`, NewStyles.text, [NewStyles.text10, { textDecorationLine: 'line-through' }])}
+                    {data?.status > 0 && renderRow(t("Payable amount"), `${formatPrice(totalDiscountedPrice)}${t(" Toman")}`)}
 
                     <View style={styles.separator} />
 
                     <View style={NewStyles.rowWrapper}>
-                        <Text style={[NewStyles.text]}>وضعیت پرداخت</Text>
+                        <Text style={[NewStyles.text]}>{t("Payment Status")}</Text>
                         <View style={[styles.paymentBadge, { backgroundColor: data?.payment_status > 0 ? themeColor7.bgColor(1) : themeColor6.bgColor(1) }]}>
-                            <Text style={NewStyles.text4}>{data?.payment_status > 0 ? 'پرداخت شده' : 'پرداخت نشده'}</Text>
+                            <Text style={NewStyles.text4}>{data?.payment_status > 0 ? t("Paid") : t("Unpaid")}</Text>
                         </View>
                     </View>
 
                     <View style={NewStyles.rowWrapper}>
-                        <Text style={[NewStyles.text]}>وضعیت سفارش</Text>
+                        <Text style={[NewStyles.text]}>{t("Order Status")}</Text>
                         <View style={[styles.statusBadge, { backgroundColor: getStatusColor(data?.status) }]}>
                             <Text style={[NewStyles.text4, styles.statusText]}>{getStatusLabel(data?.status)}</Text>
                         </View>
@@ -122,16 +124,16 @@ const DetailConponent = ({ data, renderRow, }) => {
                     <View style={styles.cardHeader}>
                         <View style={[NewStyles.row, { gap: 5 }]}>
                             <Ionicons name="business-outline" size={24} color={themeColor0.bgColor(1)} />
-                            <Text style={NewStyles.title}>اطلاعات سرویس سازمانی</Text>
+                            <Text style={NewStyles.title}>{t("Organization service information")}</Text>
                         </View>
                     </View>
 
                     <View style={styles.separator} />
 
                     <View style={styles.cardContent}>
-                        {renderRow('نوع زمان‌بندی',
-                            data?.service_schedule_type === 'long_term' ? 'بلندمدت' :
-                                data?.service_schedule_type === 'short_term' ? 'کوتاه‌مدت' : 'نامشخص',
+                        {renderRow(t("Schedule type"),
+                            data?.service_schedule_type === 'long_term' ? t("Long term") :
+                                data?.service_schedule_type === 'short_term' ? t("Short term") : t("Unknown"),
                             NewStyles.text,
                             data?.service_schedule_type === 'long_term' ? NewStyles.title7 : NewStyles.title6
                         )}
@@ -139,9 +141,9 @@ const DetailConponent = ({ data, renderRow, }) => {
                         {/* اطلاعات سرویس بلندمدت */}
                         {data?.service_schedule_type === 'long_term' && (
                             <>
-                                {data?.service_schedule_long_duration && renderRow('مدت قرارداد', `${data?.service_schedule_long_duration} ماه`)}
-                                {data?.service_schedule_long_date && renderRow('تاریخ شروع', formatDate(data?.service_schedule_long_date))}
-                                {data?.service_schedule_long_time && renderRow('ساعت سرویس', data?.service_schedule_long_time?.split(':')?.slice(0, 2)?.join(':'))}
+                                {data?.service_schedule_long_duration && renderRow(t("Contract duration"), t("{{count}} months", { count: data?.service_schedule_long_duration }))}
+                                {data?.service_schedule_long_date && renderRow(t("Start date"), formatDate(data?.service_schedule_long_date))}
+                                {data?.service_schedule_long_time && renderRow(t("Service time"), data?.service_schedule_long_time?.split(':')?.slice(0, 2)?.join(':'))}
                                 {data?.service_schedule_long_file && (
                                     <TouchableOpacity
                                         style={styles.contractButton}
@@ -151,7 +153,7 @@ const DetailConponent = ({ data, renderRow, }) => {
                                         }}
                                     >
                                         <Ionicons name="document-text" size={20} color={themeColor0.bgColor(1)} />
-                                        <Text style={styles.contractButtonText}>مشاهده قرارداد</Text>
+                                        <Text style={styles.contractButtonText}>{t("View contract")}</Text>
                                     </TouchableOpacity>
                                 )}
                             </>
@@ -160,8 +162,8 @@ const DetailConponent = ({ data, renderRow, }) => {
                         {/* اطلاعات سرویس کوتاه‌مدت */}
                         {data?.service_schedule_type == 'short_term' && (
                             <>
-                                {data?.service_schedule_short_date && renderRow('تاریخ سرویس', formatDate(data?.service_schedule_short_date))}
-                                {data?.service_schedule_short_time && renderRow('ساعت سرویس', data?.service_schedule_short_time?.split(':')?.slice(0, 2)?.join(':'))}
+                                {data?.service_schedule_short_date && renderRow(t("Service date"), formatDate(data?.service_schedule_short_date))}
+                                {data?.service_schedule_short_time && renderRow(t("Service time"), data?.service_schedule_short_time?.split(':')?.slice(0, 2)?.join(':'))}
                                 {data?.service_schedule_short_file && (
                                     <TouchableOpacity
                                         style={styles.contractButton}
@@ -171,7 +173,7 @@ const DetailConponent = ({ data, renderRow, }) => {
                                         }}
                                     >
                                         <Ionicons name="document-text" size={20} color={themeColor0.bgColor(1)} />
-                                        <Text style={styles.contractButtonText}>مشاهده قرارداد</Text>
+                                        <Text style={styles.contractButtonText}>{t("View contract")}</Text>
                                     </TouchableOpacity>
                                 )}
                             </>
@@ -185,7 +187,7 @@ const DetailConponent = ({ data, renderRow, }) => {
                     <View style={styles.sectionHeader}>
                         <View style={[NewStyles.row, { gap: 5 }]}>
                             <Ionicons name="locate" size={24} color={themeColor0.bgColor(1)} />
-                            <Text style={NewStyles.title}>محل سفارش</Text>
+                            <Text style={NewStyles.title}>{t("Order location")}</Text>
                         </View>
                     </View>
 
@@ -193,11 +195,11 @@ const DetailConponent = ({ data, renderRow, }) => {
                         <Ionicons name="ellipse" size={10} color={themeColor0.bgColor(0.5)} />
                         <View style={{ flex: 1 }}>
                             <Text style={[NewStyles.text10, { flex: 1 }]}>
-                                {data?.user_address?.city} - منطقه {data?.user_address?.region} - {data?.user_address?.address}
+                                {data?.user_address?.city} - {t("Region {{region}}", { region: data?.user_address?.region })} - {data?.user_address?.address}
                             </Text>
                             {data?.user_address?.phone && (
                                 <Text style={[NewStyles.text10, { flex: 1, marginTop: 5 }]}>
-                                    تلفن: {data?.user_address?.phone}
+                                    {t("Phone: {{phone}}", { phone: data?.user_address?.phone })}
                                 </Text>
                             )}
                         </View>
@@ -222,7 +224,7 @@ const DetailConponent = ({ data, renderRow, }) => {
                                         latitude: parseFloat(data?.user_address.latitude),
                                         longitude: parseFloat(data?.user_address.longitude),
                                     }}
-                                    title="محل سفارش"
+                                    title={t("Order location")}
                                     description={data?.user_address?.address}
                                 />
                             </MapView>
@@ -233,7 +235,7 @@ const DetailConponent = ({ data, renderRow, }) => {
                                 onPress={() => {
                                     const lat = parseFloat(data?.user_address.latitude);
                                     const lng = parseFloat(data?.user_address.longitude);
-                                    const label = 'محل سفارش';
+                                    const label = t("Order location");
 
                                     // باز کردن در Google Maps یا Apple Maps
                                     const scheme = Platform.select({
@@ -250,7 +252,7 @@ const DetailConponent = ({ data, renderRow, }) => {
                                 }}
                             >
                                 <Ionicons name="navigate" size={20} color="#fff" />
-                                <Text style={NewStyles.title4}>مسیریابی</Text>
+                                <Text style={NewStyles.title4}>{t("Directions")}</Text>
                             </TouchableOpacity>
                         </View>
                     )}
@@ -305,7 +307,7 @@ const DetailConponent = ({ data, renderRow, }) => {
                     <View style={styles.sectionHeader}>
                         <View style={[NewStyles.row, { gap: 5 }]}>
                             <Ionicons name="create-outline" size={24} color={themeColor0.bgColor(1)} />
-                            <Text style={NewStyles.title}>توضیحات کاربر</Text>
+                            <Text style={NewStyles.title}>{t("User Description")}</Text>
                         </View>
                     </View>
 
@@ -325,7 +327,7 @@ const DetailConponent = ({ data, renderRow, }) => {
                     <View style={styles.sectionHeader}>
                         <View style={[NewStyles.row, { gap: 5 }]}>
                             <Ionicons name="create-outline" size={24} color={themeColor0.bgColor(1)} />
-                            <Text style={NewStyles.title}>توضیحات تکنسین</Text>
+                            <Text style={NewStyles.title}>{t("Technician Description")}</Text>
                         </View>
                     </View>
 
@@ -342,7 +344,7 @@ const DetailConponent = ({ data, renderRow, }) => {
                     <View style={styles.sectionHeader}>
                         <View style={[NewStyles.row, { gap: 5 }]}>
                             <Ionicons name="document-text-outline" size={24} color={themeColor0.bgColor(1)} />
-                            <Text style={NewStyles.title}>توضیحات لوپ</Text>
+                            <Text style={NewStyles.title}>{t("Loop Description")}</Text>
                         </View>
                     </View>
 
