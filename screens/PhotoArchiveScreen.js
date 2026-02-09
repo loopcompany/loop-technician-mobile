@@ -18,6 +18,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
@@ -30,6 +31,7 @@ const imageSize = (width - 60) / 3; // 3 تصویر در هر ردیف با فا
 
 
 export default function PhotoArchiveScreen({ navigation }) {
+  const { t } = useTranslation();
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -51,7 +53,7 @@ export default function PhotoArchiveScreen({ navigation }) {
       }
     } catch (error) {
       console.log('❌ خطا در دریافت تصاویر:', error);
-      showAlert('خطا', error.message || 'مشکلی در دریافت تصاویر پیش آمد');
+      showAlert(t("Error"), error.message || t("Error fetching images"));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -115,7 +117,7 @@ export default function PhotoArchiveScreen({ navigation }) {
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (permissionResult.granted === false) {
-        showAlert('خطا', 'دسترسی به گالری لازم است');
+        showAlert(t("Error"), t("Gallery access is required"));
         return;
       }
 
@@ -132,7 +134,7 @@ export default function PhotoArchiveScreen({ navigation }) {
       }
     } catch (error) {
       console.log('❌ خطا در انتخاب تصاویر:', error);
-      showAlert('خطا', 'مشکلی در انتخاب تصاویر پیش آمد');
+      showAlert(t("Error"), t("Error selecting image"));
     }
   };
 
@@ -180,12 +182,12 @@ export default function PhotoArchiveScreen({ navigation }) {
       const response = await uploadArchiveImages(imagesToUpload);
 
       if (response.success) {
-        showAlert('موفقیت', response.message || 'تصاویر با موفقیت آپلود شدند');
+        showAlert(t("Success"), response.message || t("Images uploaded successfully"));
         fetchImages(); // بروزرسانی لیست
       }
     } catch (error) {
       console.log('❌ خطا در آپلود تصاویر:', error);
-      showAlert('خطا', error.message || 'مشکلی در آپلود تصاویر پیش آمد');
+      showAlert(t("Error"), error.message || t("Error uploading images"));
     } finally {
       setUploading(false);
     }
@@ -195,25 +197,25 @@ export default function PhotoArchiveScreen({ navigation }) {
   const handleDeleteImage = (imageId) => {
     setShowImageModal(false); // بستن مودال
     showAlert(
-      'حذف تصویر',
-      'آیا مطمئن هستید که می‌خواهید این تصویر را حذف کنید؟',
+      t("Delete image"),
+      t("Are you sure you want to delete this image?"),
       [
-        { text: 'انصراف', style: 'cancel' },
+        { text: t("Cancel"), style: 'cancel' },
         {
-          text: 'حذف',
+          text: t("Delete"),
           style: 'destructive',
           onPress: async () => {
             try {
               const response = await deleteArchiveImage(imageId);
 
               if (response.success) {
-                showAlert('موفقیت', 'تصویر با موفقیت حذف شد');
+                showAlert(t("Success"), t("Image deleted successfully"));
                 fetchImages(); // بروزرسانی لیست
                 setSelectedImage(null);
               }
             } catch (error) {
               console.log('❌ خطا در حذف تصویر:', error);
-              showAlert('خطا', error.message || 'مشکلی در حذف تصویر پیش آمد');
+              showAlert(t("Error"), error.message || t("Error deleting image"));
             }
           },
         },
@@ -244,7 +246,7 @@ export default function PhotoArchiveScreen({ navigation }) {
         link.click();
         document.body.removeChild(link);
 
-        showAlert('موفقیت', 'تصویر دانلود شد');
+        showAlert(t("Success"), t("Image downloaded"));
         setDownloading(false);
         return;
       }
@@ -253,7 +255,7 @@ export default function PhotoArchiveScreen({ navigation }) {
       const { status } = await MediaLibrary.requestPermissionsAsync();
 
       if (status !== 'granted') {
-        showAlert('خطا', 'دسترسی به گالری لازم است');
+        showAlert(t("Error"), t("Gallery access is required"));
         return;
       }
 
@@ -273,13 +275,13 @@ export default function PhotoArchiveScreen({ navigation }) {
         const asset = await MediaLibrary.createAssetAsync(downloadResult.uri);
         await MediaLibrary.createAlbumAsync('Loop', asset, false);
 
-        showAlert('موفقیت', 'تصویر در گالری ذخیره شد');
+        showAlert(t("Success"), t("Image saved to gallery"));
       } else {
         throw new Error('خطا در دانلود تصویر');
       }
     } catch (error) {
       console.log('❌ خطا در ذخیره تصویر:', error);
-      showAlert('خطا', 'مشکلی در ذخیره تصویر پیش آمد');
+      showAlert(t("Error"), t("Error saving image"));
     } finally {
       setDownloading(false);
     }
@@ -319,7 +321,7 @@ export default function PhotoArchiveScreen({ navigation }) {
             <Ionicons name="cloud-upload" size={24} color={themeColor4.bgColor(1)} />
           </View>
           <Text style={[styles.uploadButtonText]}>
-            {uploading ? 'در حال آپلود...' : 'بارگذاری تصویر'}
+            {uploading ? t("Uploading...") : t("Upload image")}
           </Text>
         </TouchableOpacity>
       </View>
@@ -327,7 +329,7 @@ export default function PhotoArchiveScreen({ navigation }) {
       <View style={styles.infoContainer}>
         <Ionicons name="information-circle" size={20} color={themeColor10.bgColor(0.7)} />
         <Text style={[NewStyles.text4, styles.infoText]}>
-          هر تصویر حداکثر 5 مگابایت
+          {t("Each image is up to 5 MB")}
         </Text>
       </View>
 
@@ -335,7 +337,7 @@ export default function PhotoArchiveScreen({ navigation }) {
         <View style={styles.countContainer}>
           <Ionicons name="images" size={20} color={themeColor0.bgColor(1)} />
           <Text style={[NewStyles.title, styles.countText]}>
-            تعداد تصاویر: {images.length}
+            {t("Image count:")} {images.length}
           </Text>
         </View>
       )}
@@ -346,9 +348,9 @@ export default function PhotoArchiveScreen({ navigation }) {
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
       <Ionicons name="image-outline" size={80} color={themeColor10.bgColor(0.3)} />
-      <Text style={[NewStyles.text, styles.emptyText]}>هیچ تصویری یافت نشد</Text>
+      <Text style={[NewStyles.text, styles.emptyText]}>{t("No images found")}</Text>
       <Text style={[NewStyles.text4, styles.emptySubText]}>
-        برای شروع، تصاویر خود را بارگذاری کنید
+        {t("To get started, upload your images")}
       </Text>
     </View>
   );
@@ -362,11 +364,11 @@ export default function PhotoArchiveScreen({ navigation }) {
         style={styles.background}
       >
         <ScreenHeaders
-          title={'آرشیو عکس'}
+          title={t("Photo Archive")}
         />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
-          <Text style={[NewStyles.text4, styles.loadingText]}>در حال بارگذاری...</Text>
+          <Text style={[NewStyles.text4, styles.loadingText]}>{t("Loading...")}</Text>
         </View>
       </LinearGradient>
     );
@@ -380,7 +382,7 @@ export default function PhotoArchiveScreen({ navigation }) {
       style={styles.background}
     >
       <ScreenHeaders
-        title={'آرشیو عکس'}
+        title={t("Photo Archive")}
       />
 
       <FlatList
@@ -407,7 +409,7 @@ export default function PhotoArchiveScreen({ navigation }) {
         <View style={styles.uploadingOverlay}>
           <View style={styles.uploadingContainer}>
             <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
-            <Text style={[NewStyles.text, styles.uploadingText]}>در حال آپلود تصاویر...</Text>
+            <Text style={[NewStyles.text, styles.uploadingText]}>{t("Uploading images...")}</Text>
           </View>
         </View>
       )}
@@ -451,7 +453,7 @@ export default function PhotoArchiveScreen({ navigation }) {
                       <Ionicons name="download" size={24} color={themeColor4.bgColor(1)} />
                     )}
                     <Text style={[NewStyles.title4]}>
-                      {downloading ? 'در حال ذخیره...' : 'ذخیره در گالری'}
+                      {downloading ? t("Saving...") : t("Save to gallery")}
                     </Text>
                   </TouchableOpacity>
 
@@ -460,7 +462,7 @@ export default function PhotoArchiveScreen({ navigation }) {
                     onPress={() => handleDeleteImage(selectedImage.id)}
                   >
                     <Ionicons name="trash" size={24} color={themeColor4.bgColor(1)} />
-                    <Text style={[NewStyles.title4]}>حذف</Text>
+                    <Text style={[NewStyles.title4]}>{t("Delete")}</Text>
                   </TouchableOpacity>
                 </View>
               </>

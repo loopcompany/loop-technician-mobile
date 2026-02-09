@@ -12,6 +12,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
@@ -21,6 +22,7 @@ import { getTicketsList, sendTicketMessage } from '../../services/Api';
 import { formatDate, formatDateTime, showAlert } from '../../helpers/Common';
 
 export default function MessageScreen({ navigation }) {
+  const { t } = useTranslation();
   const [messageText, setMessageText] = useState('');
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -46,7 +48,7 @@ export default function MessageScreen({ navigation }) {
       }
     } catch (error) {
       console.log('خطا در دریافت پیام‌ها:', error);
-      showAlert('خطا', 'خطا در دریافت پیام‌ها');
+      showAlert(t("Error"), t("Error fetching messages"));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -67,12 +69,12 @@ export default function MessageScreen({ navigation }) {
   // ارسال پیام جدید
   const handleSendMessage = async () => {
     if (!messageText.trim()) {
-      showAlert('هشدار', 'لطفاً متن پیام را وارد کنید');
+      showAlert(t("Warning"), t("Please enter the message text"));
       return;
     }
 
     if (messageText.length > 5000) {
-      showAlert('هشدار', 'متن پیام نباید بیشتر از 5000 کاراکتر باشد');
+      showAlert(t("Warning"), t("Message text must not exceed 5000 characters"));
       return;
     }
 
@@ -81,13 +83,13 @@ export default function MessageScreen({ navigation }) {
       const response = await sendTicketMessage(messageText);
 
       if (response.success) {
-        showAlert('موفق', 'پیام شما با موفقیت ارسال شد');
+        showAlert(t("Success"), t("Your message was sent successfully"));
         setMessageText('');
         // به‌روزرسانی لیست پیام‌ها
         await fetchMessages();
       }
     } catch (error) {
-      showAlert('خطا', error.message || 'خطا در ارسال پیام');
+      showAlert(t("Error"), error.message || t("Error sending message"));
     } finally {
       setSending(false);
     }
@@ -105,7 +107,7 @@ export default function MessageScreen({ navigation }) {
     >
       <CustomStatusBar />
       <ScreenHeaders
-        title={'پیام'}
+        title={t("Message")}
       />
 
       {loading ? (
@@ -125,12 +127,12 @@ export default function MessageScreen({ navigation }) {
 
           {/* باکس متن پیام */}
           <View style={styles.messageBox}>
-            <Text style={styles.sectionTitle}>متن پیام جدید</Text>
+            <Text style={styles.sectionTitle}>{t("New message text")}</Text>
             <TextInput
               style={styles.messageInput}
               multiline={true}
               numberOfLines={4}
-              placeholder="پیام خود را اینجا وارد کنید..."
+              placeholder={t("Enter your message here...")}
               placeholderTextColor="#999"
               value={messageText}
               onChangeText={setMessageText}
@@ -157,7 +159,7 @@ export default function MessageScreen({ navigation }) {
             ) : (
               <View style={styles.buttonContent}>
                 <Ionicons name="send" size={20} color="#fff" />
-                <Text style={styles.buttonText}>ارسال پیام به لوپ</Text>
+                <Text style={styles.buttonText}>{t("Send message to Loop")}</Text>
               </View>
             )}
           </TouchableOpacity>
@@ -166,7 +168,7 @@ export default function MessageScreen({ navigation }) {
           <View style={styles.infoBox}>
             <Ionicons name="information-circle" size={20} color={themeColor7.bgColor(0.7)} />
             <Text style={styles.infoText}>
-              پیام های شما به تیم پشتیبانی لوپ ارسال می‌شود و در اسرع وقت پاسخ داده خواهد شد.
+              {t("Your messages are sent to the Loop support team and will be answered as soon as possible.")}
             </Text>
           </View>
 
@@ -181,7 +183,7 @@ export default function MessageScreen({ navigation }) {
             }}
           >
             <View style={styles.buttonContent}>
-              <Text style={styles.buttonText}>پیام ها</Text>
+              <Text style={styles.buttonText}>{t("Messages")}</Text>
               {unreadCount > 0 && (
                 <View style={styles.unreadBadgeButton}>
                   <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
@@ -201,7 +203,7 @@ export default function MessageScreen({ navigation }) {
               {messages.length === 0 ? (
                 <View style={styles.emptyMessages}>
                   <Ionicons name="chatbubbles-outline" size={50} color={themeColor10.bgColor(0.3)} />
-                  <Text style={styles.emptyText}>هنوز پیامی دریافت نشده است</Text>
+                  <Text style={styles.emptyText}>{t("No messages received yet")}</Text>
                 </View>
               ) : (
                 messages.map((msg) => (
@@ -241,7 +243,7 @@ export default function MessageScreen({ navigation }) {
                     <Text style={styles.messageContent}>{msg.message}</Text>
                     {!msg.is_read && !msg.is_mine && (
                       <View style={styles.unreadBadge}>
-                        <Text style={styles.unreadText}>جدید</Text>
+                        <Text style={styles.unreadText}>{t("New")}</Text>
                       </View>
                     )}
                   </View>

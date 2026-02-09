@@ -65,11 +65,11 @@ export default function LoopReportScreen({ navigation }) {
       if (result.success && result.data) {
         setReports(result.data);
       } else {
-        showToastOrAlert(result.message || 'خطا در دریافت گزارش‌ها');
+        showToastOrAlert(result.message || t("Error fetching reports"));
       }
     } catch (error) {
       console.log('Error fetching reports:', error);
-      showToastOrAlert('خطا در دریافت گزارش‌ها');
+      showToastOrAlert(t("Error fetching reports"));
     } finally {
       setLoading(false);
     }
@@ -109,12 +109,12 @@ export default function LoopReportScreen({ navigation }) {
    */
   const openReplyModal = (report) => {
     if (!report.can_reply) {
-      showToastOrAlert('امکان پاسخ‌دهی به این گزارش وجود ندارد');
+      showToastOrAlert(t("Unable to reply to this report"));
       return;
     }
 
     if (report.has_response) {
-      showToastOrAlert('شما قبلاً به این گزارش پاسخ داده‌اید');
+      showToastOrAlert(t("You have already replied to this report"));
       return;
     }
 
@@ -128,12 +128,12 @@ export default function LoopReportScreen({ navigation }) {
    */
   const submitReply = async () => {
     if (!replyText || replyText.trim().length === 0) {
-      showToastOrAlert('لطفاً متن پاسخ را وارد کنید');
+      showToastOrAlert(t("Please enter the reply text"));
       return;
     }
 
     if (replyText.length > 5000) {
-      showToastOrAlert('متن پاسخ نباید بیش از 5000 کاراکتر باشد');
+      showToastOrAlert(t("Reply text must not exceed 5000 characters"));
       return;
     }
 
@@ -142,18 +142,18 @@ export default function LoopReportScreen({ navigation }) {
       const result = await replyToAdminReportViolation(selectedReport.id, replyText);
 
       if (result.success) {
-        showToastOrAlert('پاسخ شما با موفقیت ثبت شد');
+        showToastOrAlert(t("Your reply was submitted successfully"));
         setReplyModalVisible(false);
         setReplyText('');
         setSelectedReport(null);
         // Refresh the reports list
         await fetchReports();
       } else {
-        showToastOrAlert(result.message || 'خطا در ارسال پاسخ');
+        showToastOrAlert(result.message || t("Error sending reply"));
       }
     } catch (error) {
       console.log('Error submitting reply:', error);
-      showToastOrAlert(error.message || 'خطا در ارسال پاسخ');
+      showToastOrAlert(error.message || t("Error sending reply"));
     } finally {
       setSubmittingReply(false);
     }
@@ -186,13 +186,13 @@ export default function LoopReportScreen({ navigation }) {
 
       {/* Report Date */}
       <Text style={styles.reportDate}>
-        تاریخ ثبت: {formatDateTime(report.created_at)}
+        {t("Registration date:")} {formatDateTime(report.created_at)}
       </Text>
 
       {/* Technician Response (if exists) */}
       {report.has_response && report.technician_response && (
         <View style={styles.responseBox}>
-          <Text style={styles.responseLabel}>پاسخ شما:</Text>
+          <Text style={styles.responseLabel}>{t("Your response:")}</Text>
           <Text style={styles.responseText}>{report.technician_response}</Text>
         </View>
       )}
@@ -203,7 +203,7 @@ export default function LoopReportScreen({ navigation }) {
           style={styles.replyButton}
           onPress={() => openReplyModal(report)}
         >
-          <Text style={styles.replyButtonText}>پاسخ به گزارش</Text>
+          <Text style={styles.replyButtonText}>{t("Reply to report")}</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -218,13 +218,13 @@ export default function LoopReportScreen({ navigation }) {
     >
       <CustomStatusBar />
       <ScreenHeaders
-        title={'گزارش تخلفات'}
+        title={t("Violation reports")}
       />
 
       {loading ? (
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
-          <Text style={styles.loadingText}>در حال بارگذاری...</Text>
+          <Text style={styles.loadingText}>{t("Loading...")}</Text>
         </View>
       ) : (
         <ScrollView
@@ -235,7 +235,7 @@ export default function LoopReportScreen({ navigation }) {
         >
           {/* Header Section */}
           <TouchableOpacity style={[styles.mainButton, { backgroundColor: themeColor0.bgColor(0.8) }]}>
-            <Text style={styles.buttonText}>گزارش‌های تخلف</Text>
+            <Text style={styles.buttonText}>{t("Violation reports")}</Text>
           </TouchableOpacity>
 
           {/* Sort Button */}
@@ -244,14 +244,14 @@ export default function LoopReportScreen({ navigation }) {
             onPress={toggleSortOrder}
           >
             <Text style={styles.sortButtonText}>
-              {sortOrder === 'desc' ? '🔽 جدیدترین به قدیمی‌ترین' : '🔼 قدیمی‌ترین به جدیدترین'}
+              {sortOrder === 'desc' ? t("🔽 Newest to oldest") : t("🔼 Oldest to newest")}
             </Text>
           </TouchableOpacity>
 
           {/* Reports List */}
           {getSortedReports().length === 0 ? (
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>گزارش تخلفی یافت نشد</Text>
+              <Text style={styles.emptyText}>{t("No violation reports found")}</Text>
             </View>
           ) : (
             getSortedReports().map(report => renderReportCard(report))
@@ -261,7 +261,7 @@ export default function LoopReportScreen({ navigation }) {
           {reports.length > 0 && (
             <View style={styles.totalCountBox}>
               <Text style={styles.totalCountText}>
-                تعداد کل گزارش‌ها: {reports.length}
+                {t("Total reports:")} {reports.length}
               </Text>
             </View>
           )}
@@ -277,7 +277,7 @@ export default function LoopReportScreen({ navigation }) {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>پاسخ به گزارش</Text>
+            <Text style={styles.modalTitle}>{t("Reply to report")}</Text>
 
             {selectedReport && (
               <>
@@ -285,7 +285,7 @@ export default function LoopReportScreen({ navigation }) {
 
                 <TextInput
                   style={styles.replyInput}
-                  placeholder="متن پاسخ خود را وارد کنید..."
+                  placeholder={t("Enter your reply...")}
                   placeholderTextColor="#999"
                   multiline
                   numberOfLines={6}
@@ -296,7 +296,7 @@ export default function LoopReportScreen({ navigation }) {
                 />
 
                 <Text style={styles.charCount}>
-                  {replyText.length} / 5000 کاراکتر
+                  {replyText.length} / 5000 {t("characters")}
                 </Text>
 
                 <View style={styles.modalButtons}>
@@ -309,7 +309,7 @@ export default function LoopReportScreen({ navigation }) {
                     }}
                     disabled={submittingReply}
                   >
-                    <Text style={styles.modalButtonText}>انصراف</Text>
+                    <Text style={styles.modalButtonText}>{t("Cancel")}</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -321,7 +321,7 @@ export default function LoopReportScreen({ navigation }) {
                       <ActivityIndicator size="small" color="#fff" />
                     ) : (
                       <Text style={[styles.modalButtonText, { color: '#fff' }]}>
-                        ارسال پاسخ
+                        {t("Send reply")}
                       </Text>
                     )}
                   </TouchableOpacity>
