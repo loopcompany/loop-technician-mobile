@@ -26,8 +26,10 @@ import Button from '../../components/Button';
 import DatePickerModal from '../../components/DatePickerModal';
 import { getFormatedDate } from 'react-native-modern-datepicker';
 import { showAlert } from '../../helpers/Common';
+import { useTranslation } from 'react-i18next';
 export default function VehicleInfoScreen({ navigation }) {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const userData = useSelector(state => state.user.data?.data?.technician);
   const userToken = useSelector(state => state.auth.token);
   const [saving, setSaving] = useState(false);
@@ -54,11 +56,22 @@ export default function VehicleInfoScreen({ navigation }) {
   const [showVehicleTypeModal, setShowVehicleTypeModal] = useState(false);
 
   const vehicleTypeOptions = [
-    'خودرو',
-    'موتور سیکلت',
-    'دوچرخه',
-    'پیاده',
+    { value: 'خودرو', label: t('Car') },
+    { value: 'موتور سیکلت', label: t('Motorcycle') },
+    { value: 'دوچرخه', label: t('Bicycle') },
+    { value: 'پیاده', label: t('Pedestrian') },
   ];
+
+  const vehicleTypeLabels = {
+    'خودرو': t('Car'),
+    'موتور سیکلت': t('Motorcycle'),
+    'دوچرخه': t('Bicycle'),
+    'پیاده': t('Pedestrian'),
+  };
+
+  const vehicleTypeLabel = vehicleData.vehicleType
+    ? (vehicleTypeLabels[vehicleData.vehicleType] || vehicleData.vehicleType)
+    : t('Not Specified');
 
 
   useEffect(() => {
@@ -150,7 +163,7 @@ export default function VehicleInfoScreen({ navigation }) {
       const result = await updateVehicleInfo(payload);
 
       if (result && result.success) {
-        showAlert('موفق', 'نوع وسیله با موفقیت به‌روزرسانی شد');
+        showAlert(t('Success'), t('Vehicle type updated successfully.'));
 
         const newLocal = { ...vehicleData, vehicleType: type };
         if (type !== 'خودرو') {
@@ -167,7 +180,7 @@ export default function VehicleInfoScreen({ navigation }) {
         dispatch(fetchUser(userToken))
 
       } else {
-        showAlert('خطا', result?.message || 'به‌روزرسانی نوع وسیله موفقیت‌آمیز نبود');
+        showAlert(t('Error'), result?.message || t('Vehicle type update failed.'));
       }
     } catch (err) {
     } finally {
@@ -189,12 +202,12 @@ export default function VehicleInfoScreen({ navigation }) {
 
   const handleSave = async () => {
     if (vehicleData.vinNumber && vehicleData.vinNumber.length > 17) {
-      showAlert('خطا', 'شماره VIN نباید بیشتر از 17 کاراکتر باشد');
+      showAlert(t('Error'), t('VIN number must not exceed 17 characters.'));
       return;
     }
 
     if (vehicleData.manufacturingYear && vehicleData.manufacturingYear.length > 4) {
-      showAlert('خطا', 'سال ساخت نباید بیشتر از 4 رقم باشد');
+      showAlert(t('Error'), t('Manufacturing year must not exceed 4 digits.'));
       return;
     }
 
@@ -225,13 +238,13 @@ export default function VehicleInfoScreen({ navigation }) {
       };
       const result = await updateVehicleInfo(apiData);
       if (result.success) {
-        showAlert('موفق', 'اطلاعات  با موفقیت به‌روزرسانی شد');
+        showAlert(t('Success'), t('Information updated successfully.'));
         dispatch(fetchUser(userToken))
       } else {
-        showAlert('خطا', result.message || 'مشکلی در به‌روزرسانی پیش آمد');
+        showAlert(t('Error'), result.message || t('There was a problem updating.'));
       }
     } catch (error) {
-      showAlert('خطا', 'مشکلی در ارتباط با سرور پیش آمد');
+      showAlert(t('Error'), t('There was an error connecting to the server.'));
     } finally {
       setSaving(false);
     }
@@ -248,20 +261,20 @@ export default function VehicleInfoScreen({ navigation }) {
         >
           <CustomStatusBar />
           <ScreenHeaders
-            title={'حساب کاربری / حریم خصوصی'}
+            title={t('Account / Privacy')}
           />
 
           <ScrollView contentContainerStyle={styles.container}>
 
             {/* دکمه مشخصات وسیله نقلیه */}
             <TouchableOpacity style={[styles.mainButton, { backgroundColor: themeColor0.bgColor(0.8) }]}>
-              <Text style={styles.buttonText}>مشخصات وسیله نقلیه</Text>
+              <Text style={styles.buttonText}>{t('Vehicle Information')}</Text>
             </TouchableOpacity>
 
             {/* باکس نوع وسیله نقلیه (قابل ویرایش) */}
             <TouchableOpacity style={styles.vehicleTypeBox} onPress={() => setShowVehicleTypeModal(true)} disabled={saving}>
               <Text style={styles.vehicleTypeLabel}>
-                نوع وسیله نقلیه: {vehicleData.vehicleType || 'مشخص نشده'}
+                {t('Vehicle type: {{type}}', { type: vehicleTypeLabel })}
               </Text>
             </TouchableOpacity>
 
@@ -272,7 +285,7 @@ export default function VehicleInfoScreen({ navigation }) {
               {(vehicleData.vehicleType === 'دوچرخه' || vehicleData.vehicleType === 'پیاده') && (
                 <View style={styles.infoBox}>
                   <Text style={styles.infoText}>
-                    برای {vehicleData.vehicleType}، نیازی به ثبت اطلاعات خاصی نیست.
+                    {t('For {{type}}, no specific information is required.', { type: vehicleTypeLabel })}
                   </Text>
                 </View>
               )}
@@ -280,14 +293,14 @@ export default function VehicleInfoScreen({ navigation }) {
               {/* پلاک موتور سیکلت - فقط برای موتور */}
               {vehicleData.vehicleType === 'موتور سیکلت' && (
                 <View style={styles.plateSection}>
-                  <Text style={styles.label}>پلاک موتور سیکلت :</Text>
+                  <Text style={styles.label}>{t('Motorcycle plate:')}</Text>
                   <View style={styles.plateRow}>
                     <TextInput
                       style={[styles.input, styles.plateInput]}
                       value={vehicleData.motorPlate}
                       onChangeText={(value) => updateField('motorPlate', String(value).replace(/[^0-9]/g, '').slice(0, 3))}
                       keyboardType="numeric"
-                      placeholder="3 رقم بالا"
+                      placeholder={t('Top 3 digits')}
                       maxLength={3}
                       editable={!saving}
                     />
@@ -296,7 +309,7 @@ export default function VehicleInfoScreen({ navigation }) {
                       value={vehicleData.bodyPlate}
                       onChangeText={(value) => updateField('bodyPlate', String(value).replace(/[^0-9]/g, '').slice(0, 5))}
                       keyboardType="numeric"
-                      placeholder="5 رقم پایین"
+                      placeholder={t('Bottom 5 digits')}
                       maxLength={5}
                       editable={!saving}
                     />
@@ -310,13 +323,13 @@ export default function VehicleInfoScreen({ navigation }) {
               {/* پلاک خودرو - فقط برای خودرو */}
               {vehicleData.vehicleType === 'خودرو' && (
                 <View style={styles.plateSection}>
-                  <Text style={styles.label}>پلاک خودرو :</Text>
+                  <Text style={styles.label}>{t('Car plate:')}</Text>
                   <View style={styles.plateRow}>
                     <TextInput
                       style={[styles.input, styles.plateInput]}
                       value={vehicleData.carPlateLeft}
                       onChangeText={(v) => updateField('carPlateLeft', v)}
-                      placeholder="مثال: 12"
+                      placeholder={t('Example: 12')}
                       keyboardType="numeric"
                       maxLength={2}
                       editable={!saving}
@@ -325,7 +338,7 @@ export default function VehicleInfoScreen({ navigation }) {
                       style={[styles.input, styles.plateInput]}
                       value={vehicleData.carPlateRight}
                       onChangeText={(v) => updateField('carPlateRight', v)}
-                      placeholder="مثال: 345"
+                      placeholder={t('Example: 345')}
                       keyboardType="numeric"
                       maxLength={3}
                       editable={!saving}
@@ -337,7 +350,7 @@ export default function VehicleInfoScreen({ navigation }) {
                       style={[styles.input, styles.plateLetterInput]}
                       value={vehicleData.carPlateLetter}
                       onChangeText={(v) => updateField('carPlateLetter', v)}
-                      placeholder="حرف پلاک"
+                      placeholder={t('Plate letter')}
                       maxLength={1}
                       editable={!saving}
                     />
@@ -345,7 +358,7 @@ export default function VehicleInfoScreen({ navigation }) {
                       style={[styles.input, styles.plateProvinceInput]}
                       value={vehicleData.carPlateProvince}
                       onChangeText={(v) => updateField('carPlateProvince', v)}
-                      placeholder="کد استان"
+                      placeholder={t('Province code')}
                       keyboardType="numeric"
                       maxLength={2}
                       editable={!saving}
@@ -368,29 +381,29 @@ export default function VehicleInfoScreen({ navigation }) {
               {(vehicleData.vehicleType === 'موتور سیکلت' || vehicleData.vehicleType === 'خودرو') && (
                 <>
                   <View style={styles.inputRow}>
-                    <Text style={styles.label}>مدل :</Text>
+                    <Text style={styles.label}>{t('Model:')}</Text>
                     <TextInput
                       style={styles.input}
                       value={vehicleData.carModel}
                       onChangeText={(value) => updateField('carModel', value)}
-                      placeholder="مثال: پراید 131"
+                      placeholder={t('Example: Pride 131')}
                       editable={!saving}
                     />
                   </View>
 
                   <View style={styles.inputRow}>
-                    <Text style={styles.label}>رنگ :</Text>
+                    <Text style={styles.label}>{t('Color:')}</Text>
                     <TextInput
                       style={styles.input}
                       value={vehicleData.carColor}
                       onChangeText={(value) => updateField('carColor', value)}
-                      placeholder="مثال: سفید"
+                      placeholder={t('Example: White')}
                       editable={!saving}
                     />
                   </View>
 
                   <View style={styles.inputRow}>
-                    <Text style={styles.label}>سال ساخت :</Text>
+                    <Text style={styles.label}>{t('Manufacturing year:')}</Text>
                     <TextInput
                       style={styles.input}
                       value={vehicleData.manufacturingYear}
@@ -401,7 +414,7 @@ export default function VehicleInfoScreen({ navigation }) {
                   </View>
 
                   <View style={styles.inputRow}>
-                    <Text style={styles.label}>نوع سوخت :</Text>
+                    <Text style={styles.label}>{t('Fuel type:')}</Text>
                     <TextInput
                       style={styles.input}
                       value={vehicleData.softwareType}
@@ -412,7 +425,7 @@ export default function VehicleInfoScreen({ navigation }) {
                   </View>
 
                   <View style={styles.inputRow}>
-                    <Text style={styles.label}>شماره شناسه وسیله (VIN) :</Text>
+                    <Text style={styles.label}>{t('Vehicle identification number (VIN):')}</Text>
                     <TextInput
                       style={styles.input}
                       value={vehicleData.vinNumber}
@@ -424,7 +437,7 @@ export default function VehicleInfoScreen({ navigation }) {
                   </View>
 
                   <View style={styles.inputRow}>
-                    <Text style={styles.label}>کد یکتای بیمه شخص ثالث :</Text>
+                    <Text style={styles.label}>{t('Third-party insurance unique code:')}</Text>
                     <TextInput
                       style={styles.input}
                       value={vehicleData.insuranceExpiryCode}
@@ -435,7 +448,7 @@ export default function VehicleInfoScreen({ navigation }) {
                   </View>
 
                   <View style={styles.inputRow}>
-                    <Text style={styles.label}>تاریخ انقضاء بیمه شخص ثالث :</Text>
+                    <Text style={styles.label}>{t('Third-party insurance expiry date:')}</Text>
                     <TouchableOpacity
                       style={styles.input}
                       onPress={() => !saving && setShowInsuranceDatePicker(true)}
@@ -445,7 +458,7 @@ export default function VehicleInfoScreen({ navigation }) {
                         styles.dateText,
                         !vehicleData.insuranceExpiryDate && styles.placeholderText
                       ]}>
-                        {vehicleData.insuranceExpiryDate || 'انتخاب تاریخ (مثال: 1405/05/15)'}
+                        {vehicleData.insuranceExpiryDate || t('Select date (e.g., 1405/05/15)')}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -456,7 +469,7 @@ export default function VehicleInfoScreen({ navigation }) {
 
             {/* دکمه‌های ثبت و ویرایش */}
 
-            <Button title={'ثبت مشخصات'} onPress={handleSave} loading={saving} />
+            <Button title={t('Save information')} onPress={handleSave} loading={saving} />
 
           </ScrollView>
 
@@ -472,19 +485,19 @@ export default function VehicleInfoScreen({ navigation }) {
       >
         <Pressable style={styles.modalOverlay} onPress={() => setShowVehicleTypeModal(false)}>
           <View style={styles.modalContent}>
-            <Text style={[NewStyles.title, { textAlign: 'center', marginBottom: 10 }]}>انتخاب نوع وسیله</Text>
+            <Text style={[NewStyles.title, { textAlign: 'center', marginBottom: 10 }]}>{t('Select vehicle type')}</Text>
             {vehicleTypeOptions.map((opt) => (
               <TouchableOpacity
-                key={opt}
+                key={opt.value}
                 style={styles.modalOption}
-                onPress={() => handleSelectVehicleType(opt)}
+                onPress={() => handleSelectVehicleType(opt.value)}
                 disabled={saving}
               >
-                <Text style={NewStyles.text}>{opt}</Text>
+                <Text style={NewStyles.text}>{opt.label}</Text>
               </TouchableOpacity>
             ))}
             <TouchableOpacity style={[styles.modalCancel]} onPress={() => setShowVehicleTypeModal(false)}>
-              <Text style={NewStyles.text4}>انصراف</Text>
+              <Text style={NewStyles.text4}>{t('Cancel')}</Text>
             </TouchableOpacity>
           </View>
         </Pressable>
@@ -506,6 +519,7 @@ export default function VehicleInfoScreen({ navigation }) {
 
 // Small preview component that renders a stylized Iranian-like car plate
 function PlatePreview({ left = '', right = '', letter = 'ب', province = '11' }) {
+  const { t } = useTranslation();
   // helper: convert ASCII digits to Persian digits
   const toPersian = (s) => {
     const map = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
@@ -552,7 +566,7 @@ function PlatePreview({ left = '', right = '', letter = 'ب', province = '11' })
 
       {/* right small box with IRAN / province code */}
       <View style={styles.plateCityBoxNew}>
-        <Text style={styles.plateCityTop}>ایران</Text>
+        <Text style={styles.plateCityTop}>{t('Iran')}</Text>
         <Text style={styles.plateCityNumber}>{toPersian(plateProvince)}</Text>
       </View>
     </View>

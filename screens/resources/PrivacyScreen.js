@@ -11,8 +11,10 @@ import { showToastOrAlert } from '../../helpers/Common';
 import BlankScreen from '../../components/BlankScreen';
 import { RefreshControl } from 'react-native';
 import Loader from '../../components/Loader';
+import { useTranslation } from 'react-i18next';
 
 export default function PrivacyScreen() {
+  const { t } = useTranslation();
   const [privacies, setPrivacies] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -33,11 +35,11 @@ export default function PrivacyScreen() {
           setExpandedItems({ [response.data[0].id]: true });
         }
       } else {
-        showToastOrAlert('خطا در بارگذاری حریم خصوصی');
+        showToastOrAlert(t('Error loading privacy policy.'));
       }
     } catch (error) {
       console.log('Error loading privacies:', error);
-      showToastOrAlert('خطا در بارگذاری حریم خصوصی');
+      showToastOrAlert(t('Error loading privacy policy.'));
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -83,7 +85,7 @@ export default function PrivacyScreen() {
   }
   return (
     <SafeAreaView edges={{ top: 'off', bottom: 'off' }} style={NewStyles.container}>
-      <ScreenHeaders title="حریم خصوصی" />
+      <ScreenHeaders title={t('Privacy')} />
       <FlatList
         data={privacies}
         refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={() => { setIsRefreshing(true) }} />}
