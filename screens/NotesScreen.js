@@ -14,8 +14,10 @@ import { themeColor1, themeColor4, themeColor0, themeColor3 } from "../theme/Col
 import { notesAPI } from "../services/Api";
 import { showToastOrAlert , showAlert, formatDateTime} from "../helpers/Common";
 import Button from "../components/Button";
+import { useTranslation } from "react-i18next";
 
 export default function NotesScreen({ route, navigation }) {
+  const { t } = useTranslation();
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -43,7 +45,7 @@ export default function NotesScreen({ route, navigation }) {
     } catch (error) {
       console.log('Error fetching notes:', error);
       if (notes.length > 0) {
-        showToastOrAlert('خطا در دریافت یادداشت‌ها');
+        showToastOrAlert(t("Error fetching notes"));
       }
     } finally {
       setLoading(false);
@@ -58,23 +60,23 @@ export default function NotesScreen({ route, navigation }) {
 
   const handleDelete = (id) => {
     showAlert(
-      'حذف یادداشت',
-      'آیا مطمئن هستید که می‌خواهید این یادداشت را حذف کنید؟',
+      t("Delete note"),
+      t("Are you sure you want to delete this note?"),
       [
-        { text: 'لغو', style: 'cancel' },
+        { text: t("Cancel"), style: 'cancel' },
         {
-          text: 'حذف',
+          text: t("Delete"),
           style: 'destructive',
           onPress: async () => {
             try {
               const response = await notesAPI.delete(id);
               if (response.success) {
-                showToastOrAlert('یادداشت با موفقیت حذف شد');
+                showToastOrAlert(t("Note deleted successfully"));
                 fetchNotes();
               }
             } catch (error) {
               console.log('Error deleting note:', error);
-              showToastOrAlert('خطا در حذف یادداشت');
+              showToastOrAlert(t("Error deleting note"));
             }
           },
         },
@@ -125,7 +127,7 @@ export default function NotesScreen({ route, navigation }) {
         {item.updated_at !== item.created_at && (
           <View style={styles.editedBadge}>
             <Text style={styles.editedText}>
-              ویرایش شده: {formatDateTime(item.updated_at)}
+              {t("Edited")}: {formatDateTime(item.updated_at)}
             </Text>
           </View>
         )}
@@ -137,10 +139,10 @@ export default function NotesScreen({ route, navigation }) {
     <View style={styles.emptyContainer}>
       <Ionicons name="document-text-outline" size={80} color={themeColor3.bgColor(1)} />
       <Text style={[NewStyles.title10, { marginTop: 20 }]}>
-        یادداشتی ثبت نشده است
+        {t("You don't have any notes.")}
       </Text>
       <Text style={[NewStyles.text10, { marginTop: 10, textAlign: 'center' }]}>
-        برای افزودن یادداشت جدید روی دکمه زیر کلیک کنید
+        {t("Tap the button below to add a new note")}
       </Text>
     </View>
   );
@@ -155,7 +157,7 @@ export default function NotesScreen({ route, navigation }) {
 
   return (
     <View style={NewStyles.container}>
-      <ScreenHeaders title="یادداشت‌ها" />
+      <ScreenHeaders title={t("My Notes")} />
 
       <FlatList
         data={notes}
@@ -173,7 +175,7 @@ export default function NotesScreen({ route, navigation }) {
 
       <View style={styles.footer}>
         <Button
-          title="افزودن یادداشت جدید"
+          title={t("Add new note")}
           onPress={handleAddNew}
         />
       </View>

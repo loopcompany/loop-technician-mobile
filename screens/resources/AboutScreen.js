@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import NewStyles from '../../styles/NewStyles';
 import ScreenHeaders from '../../components/ScreenHeaders';
+import { useTranslation } from 'react-i18next';
 
 import { themeColor0, themeColor1, themeColor4, themeColor10 } from '../../theme/Color';
 import { infoAPI } from '../../services/Api';
@@ -13,6 +14,7 @@ import { RefreshControl } from 'react-native';
 import Loader from '../../components/Loader';
 
 export default function AboutScreen() {
+  const { t } = useTranslation();
   const [terms, setTerms] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -33,11 +35,11 @@ export default function AboutScreen() {
           setExpandedItems({ [response.data[0].id]: true });
         }
       } else {
-        showToastOrAlert('خطا در بارگذاری حریم خصوصی');
+        showToastOrAlert(t('Error loading privacy policy.'));
       }
     } catch (error) {
       console.log('Error loading terms:', error);
-      showToastOrAlert('خطا در بارگذاری حریم خصوصی');
+      showToastOrAlert(t('Error loading privacy policy.'));
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -83,7 +85,7 @@ export default function AboutScreen() {
   }
   return (
     <SafeAreaView edges={{ top: 'off', bottom: 'off' }} style={NewStyles.container}>
-      <ScreenHeaders title="قوانین / درباره لوپ" />
+      <ScreenHeaders title={t('Terms / About Loop')} />
       <FlatList
         data={terms}
         refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={() => { setIsRefreshing(true) }} />}

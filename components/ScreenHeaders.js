@@ -3,6 +3,7 @@ import React from "react";
 import NewStyles from "../styles/NewStyles";
 import { themeColor4 } from "../theme/Color";
 import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 
 const ScreenHeaders = ({
   title,
@@ -12,6 +13,7 @@ const ScreenHeaders = ({
   // New API (recommended - more clear naming)
   onBackPress
 }) => {
+  const { t } = useTranslation();
   const { width } = Dimensions.get('window');
   const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight : 0;
   const navigation = useNavigation();
@@ -45,7 +47,7 @@ const ScreenHeaders = ({
         style={[styles.iconContainer, { flexDirection: 'row', alignItems: 'center' }]}
       >
         <Image source={require("../assets/back.png")} style={styles.arrow} />
-        <Text style={[NewStyles.title10, styles.titleText]}>قبلی</Text>
+        <Text style={[NewStyles.title10, styles.titleText]}>{t("Previous")}</Text>
       </TouchableOpacity>
     </View>
   );

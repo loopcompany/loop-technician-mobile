@@ -13,6 +13,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from "react-i18next";
 
 import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
@@ -23,6 +24,7 @@ import { showAlert } from '../../helpers/Common';
 import Button from '../../components/Button';
 
 export default function FeedbackSuggestionScreen({ navigation }) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -38,11 +40,11 @@ export default function FeedbackSuggestionScreen({ navigation }) {
   });
 
   const categories = [
-    { id: 'user_application', title: 'اپلیکیشن کاربر', maxLength: 1000 },
-    { id: 'technician_application', title: 'اپلیکیشن تکنسین', maxLength: 1000 },
-    { id: 'inner_personnel', title: 'پرسنل داخلی', maxLength: 1000 },
-    { id: 'field_personnel', title: 'پرسنل میدانی', maxLength: 1000 },
-    { id: 'other', title: 'سایر موارد', maxLength: 2000 },
+    { id: 'user_application', title: t("User application"), maxLength: 1000 },
+    { id: 'technician_application', title: t("Technician application"), maxLength: 1000 },
+    { id: 'inner_personnel', title: t("Internal personnel"), maxLength: 1000 },
+    { id: 'field_personnel', title: t("Field personnel"), maxLength: 1000 },
+    { id: 'other', title: t("Other items"), maxLength: 2000 },
   ];
 
   // بررسی وضعیت ثبت نظر
@@ -91,8 +93,8 @@ export default function FeedbackSuggestionScreen({ navigation }) {
 
     if (emptyFields.length > 0) {
       showAlert(
-        'هشدار',
-        `لطفاً همه فیلدها را تکمیل کنید:\n${emptyFields.join('\n')}`
+        t("Warning"),
+        t("Please complete all fields:\n{{fields}}", { fields: emptyFields.join('\n') })
       );
       return;
     }
@@ -110,7 +112,7 @@ export default function FeedbackSuggestionScreen({ navigation }) {
 
       // اطمینان از اینکه حداقل یک فیلد پر شده باشد
       if (Object.keys(dataToSend).length === 0) {
-        showAlert('هشدار', 'لطفاً حداقل یکی از فیلدها را پر کنید');
+        showAlert(t("Warning"), t("Please fill in at least one field"));
         return;
       }
 
@@ -118,11 +120,11 @@ export default function FeedbackSuggestionScreen({ navigation }) {
 
       if (response.success) {
         showAlert(
-          'موفقیت',
-          response.message || 'نظرات شما با موفقیت ثبت شد',
+          t("Success"),
+          response.message || t("Your feedback was submitted successfully"),
           [
             {
-              text: 'باشه',
+              text: t("Ok"),
               onPress: () => {
                 setHasSubmitted(true);
                 if (response.data?.submitted_at) {
@@ -135,7 +137,7 @@ export default function FeedbackSuggestionScreen({ navigation }) {
       }
     } catch (error) {
       console.log('❌ خطا در ثبت نظرات:', error);
-      showAlert('خطا', error.message || 'مشکلی در ثبت نظرات پیش آمد');
+      showAlert(t("Error"), error.message || t("Something went wrong while submitting your feedback"));
     } finally {
       setSubmitting(false);
     }
@@ -151,7 +153,7 @@ export default function FeedbackSuggestionScreen({ navigation }) {
       >
         <CustomStatusBar />
         <ScreenHeaders
-          title={'نظرات / پیشنهادات'}
+          title={t("Feedback / Suggestions")}
         />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
@@ -170,15 +172,15 @@ export default function FeedbackSuggestionScreen({ navigation }) {
       >
         <CustomStatusBar />
         <ScreenHeaders
-          title={'نظرات / پیشنهادات'}
+          title={t("Feedback / Suggestions")}
         />
         <View style={styles.submittedContainer}>
           <Ionicons name="checkmark-circle" size={100} color={themeColor7.bgColor(1)} />
           <Text style={[NewStyles.title4, styles.submittedTitle]}>
-            نظرات شما قبلاً ثبت شده است
+            {t("You have already submitted your comment.")}
           </Text>
           <Text style={[NewStyles.text4, styles.submittedText]}>
-            از همکاری شما سپاسگزاریم
+            {t("Thank you for your cooperation")}
           </Text>
         </View>
       </LinearGradient>
@@ -194,7 +196,7 @@ export default function FeedbackSuggestionScreen({ navigation }) {
     >
       <CustomStatusBar />
       <ScreenHeaders
-        title={'نظرات / پیشنهادات'}
+        title={t("Feedback / Suggestions")}
       />
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={'padding'}>
@@ -220,7 +222,7 @@ export default function FeedbackSuggestionScreen({ navigation }) {
                   style={styles.feedbackInput}
                   multiline={true}
                   numberOfLines={3}
-                  placeholder="بازخورد :"
+                  placeholder={t("Feedback:")}
                   placeholderTextColor={themeColor3.bgColor(1)}
                   value={feedbacks[category.id]}
                   onChangeText={(text) => handleTextChange(category.id, text)}
@@ -233,7 +235,7 @@ export default function FeedbackSuggestionScreen({ navigation }) {
           ))}
 
           <Button
-            title={'ثبت نظرات'}
+            title={t("Submit feedback")}
             onPress={handleSubmit}
             loading={submitting}
           />

@@ -3,14 +3,16 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import NewStyles from '../styles/NewStyles'
 import { themeColor4 } from '../theme/Color'
+import { useTranslation } from 'react-i18next'
 
 const BlankScreen = ({
-    title = "صفحه خالی",
+    title = "Empty page",
     icon = "document-outline",
-    message = "هنوز محتوایی برای نمایش وجود ندارد",
-    buttonText = "بازگشت",
+    message = "No content to display yet",
+    buttonText = "Back",
     onButtonPress,
 }) => {
+    const { t } = useTranslation()
     return (
         <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={{ flex: 1 }}>
             <View style={styles.content}>
@@ -27,7 +29,7 @@ const BlankScreen = ({
 
                 {/* Message */}
                 <Text style={[NewStyles.title4]}>
-                    رکوردی در این صفحه یافت نشد.
+                    {t("No records to display.")}
                 </Text>
 
 
@@ -38,7 +40,7 @@ const BlankScreen = ({
                         style={styles.button}
                         onPress={onButtonPress}
                     >
-                        <Text style={styles.buttonText}>{buttonText}</Text>
+                        <Text style={styles.buttonText}>{t(buttonText)}</Text>
                     </TouchableOpacity>
                 )}
             </View>

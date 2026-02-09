@@ -21,6 +21,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import { themeColor0, themeColor4, themeColor6, themeColor7, themeColor10, themeColor13 } from '../theme/Color';
 import NewStyles from '../styles/NewStyles';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 const FooterContext = createContext();
 
@@ -36,6 +37,7 @@ export const FooterProvider = ({ children }) => {
   const [isFooterVisible, setIsFooterVisible] = useState(true);
   const [menuVisible, setMenuVisible] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const { t } = useTranslation();
 
   const menuAnimation = useRef(new Animated.Value(0)).current;
   const overlayOpacity = useRef(new Animated.Value(0)).current;
@@ -49,19 +51,19 @@ export const FooterProvider = ({ children }) => {
 
   // Menu items based on authentication state
   const menuItemsLoggedIn = [
-    { id: '1', title: 'سازمان ها', screen: 'OrganizationsListScreen' },
-    { id: '2', title: 'صفحه اصلی', screen: 'FolderScreen' },
-    { id: '3', title: 'گارانتی', screen: 'WarrantyScreen' },
-    { id: '4', title: 'بیشتر بدانید', screen: 'LearnMoreScreen' },
-    { id: '5', title: 'درباره ما', screen: 'AboutScreen' },
+    { id: '1', title: t('Organizations'), screen: 'OrganizationsListScreen' },
+    { id: '2', title: t('Home'), screen: 'FolderScreen' },
+    { id: '3', title: t('Warranty / Guarantee'), screen: 'WarrantyScreen' },
+    { id: '4', title: t('Learn More'), screen: 'LearnMoreScreen' },
+    { id: '5', title: t('About Us'), screen: 'AboutScreen' },
   ];
 
   const menuItemsLoggedOut = [
-    { id: '1', title: 'ورود', screen: 'Login' },
-    { id: '2', title: 'ثبت نام', screen: 'SignIn' },
-    { id: '3', title: 'گارانتی', screen: 'WarrantyScreen' },
-    { id: '4', title: 'بیشتر بدانید', screen: 'LearnMoreScreen' },
-    { id: '5', title: 'درباره ما', screen: 'AboutScreen' },
+    { id: '1', title: t('Login'), screen: 'Login' },
+    { id: '2', title: t('Sign Up'), screen: 'SignIn' },
+    { id: '3', title: t('Warranty / Guarantee'), screen: 'WarrantyScreen' },
+    { id: '4', title: t('Learn More'), screen: 'LearnMoreScreen' },
+    { id: '5', title: t('About Us'), screen: 'AboutScreen' },
   ];
 
   const menuItems = userToken ? menuItemsLoggedIn : menuItemsLoggedOut;
@@ -242,7 +244,7 @@ export const FooterProvider = ({ children }) => {
                       size={16}
                       color={themeColor4.bgColor(1)}
                     />
-                    <Text style={[NewStyles.text4, styles.exitButtonText]}>خروج</Text>
+                    <Text style={[NewStyles.text4, styles.exitButtonText]}>{t('Logout')}</Text>
                   </TouchableOpacity>
                 </View>
               )}
@@ -255,8 +257,8 @@ export const FooterProvider = ({ children }) => {
           confirmationModal={showLogoutConfirm}
           setConfirmationModal={setShowLogoutConfirm}
           action={handleLogout}
-          title="خروج از حساب کاربری"
-          message="آیا مطمئن به خروج هستید؟"
+          title={t('Log out of account')}
+          message={t('Are you sure you want to log out?')}
         />
 
         {/* Footer Bar */}
@@ -273,7 +275,7 @@ export const FooterProvider = ({ children }) => {
               style={styles.supportButton}
               onPress={() => NavigationService.navigate('MessageScreen')}
             >
-              <Text style={NewStyles.text4}>پشتیبانی</Text>
+              <Text style={NewStyles.text4}>{t('Support')}</Text>
             </TouchableOpacity>
           )}
 

@@ -20,10 +20,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFooter } from '../contexts/FooterProvider';
 import { uri } from '../services/URL';
 import ScreenHeaders from '../components/ScreenHeaders';
+import { useTranslation } from 'react-i18next';
 
 export default function OrganizationsListScreen() {
     const navigation = useNavigation();
     const { FooterComponent } = useFooter();
+    const { t } = useTranslation();
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [organizations, setOrganizations] = useState([]);
@@ -51,11 +53,11 @@ export default function OrganizationsListScreen() {
                     total_organizations: result.data.total_organizations || 0,
                 });
             } else {
-                showAlert('خطا', result.message || 'خطا در دریافت لیست سازمان‌ها');
+                showAlert(t('Error'), result.message || t('Error fetching organizations list'));
             }
         } catch (error) {
             console.log('❌ خطا در دریافت سازمان‌ها:', error);
-            showAlert('خطا', 'مشکلی در ارتباط با سرور پیش آمد');
+            showAlert(t('Error'), t('Error communicating with server'));
         } finally {
             setLoading(false);
         }
@@ -129,7 +131,7 @@ export default function OrganizationsListScreen() {
                         {item.organization_code && (
                             <View style={styles.detailsRow}>
                                 <Ionicons name="barcode-outline" size={14} color={themeColor10.bgColor(0.7)} />
-                                <Text style={styles.detailText}>کد: {item.organization_code}</Text>
+                                <Text style={styles.detailText}>{t('Code:')} {item.organization_code}</Text>
                             </View>
                         )}
                     </View>
@@ -142,7 +144,7 @@ export default function OrganizationsListScreen() {
                                     {activeOrdersCount > 99 ? '99+' : activeOrdersCount}
                                 </Text>
                             </View>
-                            <Text style={styles.badgeLabel}>سفارش</Text>
+                            <Text style={styles.badgeLabel}>{t('Order')}</Text>
                         </View>
                     )}
                 </View>
@@ -157,11 +159,11 @@ export default function OrganizationsListScreen() {
         <View style={styles.headerStats}>
             <View style={styles.statBox}>
                 <Text style={styles.statNumber}>{stats.total_organizations}</Text>
-                <Text style={styles.statLabel}>سازمان</Text>
+                <Text style={styles.statLabel}>{t('Organization')}</Text>
             </View>
             <View style={styles.statBox}>
                 <Text style={styles.statNumber}>{stats.total_organization_orders}</Text>
-                <Text style={styles.statLabel}>کل سفارشات</Text>
+                <Text style={styles.statLabel}>{t('Total orders')}</Text>
             </View>
         </View>
     );
@@ -169,7 +171,7 @@ export default function OrganizationsListScreen() {
     const renderEmpty = () => (
         <View style={styles.emptyContainer}>
             <Ionicons name="business-outline" size={80} color={themeColor10.bgColor(0.3)} />
-            <Text style={styles.emptyText}>هنوز سفارشی از سازمان‌ها دریافت نکرده‌اید</Text>
+            <Text style={styles.emptyText}>{t('You have not received any orders from organizations yet')}</Text>
         </View>
     );
 
@@ -179,7 +181,7 @@ export default function OrganizationsListScreen() {
                 <CustomStatusBar />
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color={themeColor6.bgColor(1)} />
-                    <Text style={styles.loadingText}>در حال بارگذاری...</Text>
+                    <Text style={styles.loadingText}>{t('Loading...')}</Text>
                 </View>
             </SafeAreaView>
         );
@@ -187,7 +189,7 @@ export default function OrganizationsListScreen() {
 
     return (
         <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
-            <ScreenHeaders title={'سازمانی/شرکتی'} />
+            <ScreenHeaders title={t('Organization / Company')} />
 
             <FlatList
                 data={organizations}

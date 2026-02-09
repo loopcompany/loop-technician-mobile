@@ -11,8 +11,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from '@react-navigation/native';
 import { getTechnicianOrders } from '../services/Api';
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 
 export default function FolderScreen({ navigation }) {
+  const { t } = useTranslation();
   const [unseenCount, setUnseenCount] = useState(0);
 
   const computeUnseenFromOrders = (orders = []) => {
@@ -52,42 +54,42 @@ export default function FolderScreen({ navigation }) {
   const folders = [
     {
       id: 1,
-      title: " انجام سرویس",
+      title: t("Perform service"),
       screen: 'OrderListScreen'
     },
     {
       id: 2,
-      title: "شاخص",
+      title: t("Index"),
       screen: 'IndexScreen'
     },
     {
       id: 3,
-      title: "جستجوی تخلفات",
+      title: t("Search violations"),
       screen: 'LoopReportScreen'
     },
     {
       id: 4,
-      title: "گزراش مالی  ",
+      title: t("Financial report"),
       screen: 'FinancialReportScreen'
     },
     {
       id: 5,
-      title: "عملکرد من",
+      title: t("My performance"),
       screen: 'PerformanceScreen'
     },
     {
       id: 6,
-      title: " تغییر رمز",
+      title: t("Change Password"),
       screen: 'ChangePasswordScreen'
     },
     {
       id: 7,
-      title: " درخواست ها",
+      title: t("Requests"),
       screen: 'RequestsScreen'
     },
     {
       id: 8,
-      title: " پیام ",
+      title: t("Messages"),
       screen: 'MessageScreen'
     },
     // {
@@ -97,12 +99,12 @@ export default function FolderScreen({ navigation }) {
     // },
     {
       id: 9,
-      title: " حریم خصوصی",
+      title: t("Privacy"),
       screen: 'PrivacyScreen'
     },
     {
       id: 10,
-      title: "نظرات و پیشنهادات ",
+      title: t("Feedback / Suggestions"),
       screen: 'FeedbackSuggestionScreen'
     },
     // {
@@ -117,27 +119,27 @@ export default function FolderScreen({ navigation }) {
     // },
     {
       id: 13,
-      title: "طرح های تشویقی ",
+      title: t("Promotional Plans"),
       screen: 'IncentivePlansScreen'
     },
     {
       id: 14,
-      title: "آرشیو عکس ",
+      title: t("Photo Archive"),
       screen: 'PhotoArchiveScreen'
     },
     {
       id: 15,
-      title: " نرخنامه",
+      title: t("Rate List"),
       screen: 'RateCategory'
     },
     {
       id: 16,
-      title: "فکر و بکر ",
+      title: t("Mastermind"),
       screen: 'GameMenu'
     },
     {
       id: 17,
-      title: " یادداشت",
+      title: t("My Notes"),
       screen: 'NotesScreen'
     },
   ];
@@ -164,7 +166,7 @@ export default function FolderScreen({ navigation }) {
                       if (item?.screen) {
                         navigation.navigate(item?.screen)
                       } else {
-                        showToastOrAlert('به زودی')
+                        showToastOrAlert(t("Coming soon"))
                       }
                     }}
                   />

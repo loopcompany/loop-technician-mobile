@@ -14,8 +14,10 @@ import { themeColor1, themeColor4, themeColor0, themeColor3 } from "../../theme/
 import { notesAPI } from "../../services/Api";
 import { showToastOrAlert, showAlert } from "../../helpers/Common";
 import Button from "../../components/Button";
+import { useTranslation } from "react-i18next";
 
 export default function AddEditNoteScreen({ route, navigation }) {
+  const { t } = useTranslation();
   const noteToEdit = route.params?.note;
   const isEditMode = !!noteToEdit;
 
@@ -32,12 +34,12 @@ export default function AddEditNoteScreen({ route, navigation }) {
   const handleSave = async () => {
     // Validation
     if (!noteText.trim()) {
-      showAlert('خطا', 'لطفاً متن یادداشت را وارد کنید');
+      showAlert(t("Error"), t("Please enter the note text"));
       return;
     }
 
     if (noteText.length > MAX_CHARS) {
-      showAlert('خطا', `یادداشت نباید بیشتر از ${MAX_CHARS} کاراکتر باشد`);
+      showAlert(t("Error"), t("The note cannot be longer than {{max}} characters", { max: MAX_CHARS }));
       return;
     }
 
@@ -54,7 +56,7 @@ export default function AddEditNoteScreen({ route, navigation }) {
 
       if (response.success) {
         showToastOrAlert(
-          isEditMode ? 'یادداشت با موفقیت ویرایش شد' : 'یادداشت با موفقیت ثبت شد'
+          isEditMode ? t("Note updated successfully") : t("Your note has been saved.")
         );
         if (Platform.OS == 'web') {
           window.history.back()
@@ -69,11 +71,11 @@ export default function AddEditNoteScreen({ route, navigation }) {
       if (error.response?.data?.errors) {
         const errors = error.response.data.errors;
         const errorMessages = Object.values(errors).flat().join('\n');
-        showAlert('خطا در ثبت', errorMessages);
+        showAlert(t("Error saving"), errorMessages);
       } else if (error.response?.data?.message) {
-        showAlert('خطا', error.response.data.message);
+        showAlert(t("Error"), error.response.data.message);
       } else {
-        showToastOrAlert('خطا در ثبت یادداشت');
+        showToastOrAlert(t("Error saving note"));
       }
     } finally {
       setLoading(false);
@@ -86,7 +88,7 @@ export default function AddEditNoteScreen({ route, navigation }) {
       behavior={'padding'}
     >
       <ScreenHeaders
-        title={isEditMode ? "ویرایش یادداشت" : "افزودن یادداشت"}
+        title={isEditMode ? t("Edit note") : t("Add note")}
       />
 
       <ScrollView
@@ -98,8 +100,7 @@ export default function AddEditNoteScreen({ route, navigation }) {
           {/* Info Box */}
           <View style={styles.infoBox}>
             <Text style={[NewStyles.text10, { fontSize: 13, lineHeight: 22 }]}>
-              یادداشت‌های شخصی خود را اینجا بنویسید. می‌توانید یادآوری‌ها، لیست کارها،
-              اطلاعات مهم و هر چیزی که نیاز دارید را ثبت کنید.
+              {t("Write your personal notes here. You can record reminders, to-do lists, important information, and anything you need.")}
             </Text>
           </View>
 
@@ -107,7 +108,7 @@ export default function AddEditNoteScreen({ route, navigation }) {
           <View style={styles.inputContainer}>
             <View style={styles.labelRow}>
               <Text style={[NewStyles.title10, { fontSize: 14 }]}>
-                متن یادداشت
+                {t("Note Text")}
                 <Text style={styles.required}> *</Text>
               </Text>
             </View>
@@ -118,7 +119,7 @@ export default function AddEditNoteScreen({ route, navigation }) {
                 NewStyles.border10,
                 charCount > MAX_CHARS && styles.textAreaError
               ]}
-              placeholder="متن یادداشت خود را اینجا بنویسید..."
+              placeholder={t("Write your note here...")}
               placeholderTextColor={themeColor3.bgColor(0.5)}
               value={noteText}
               onChangeText={setNoteText}
@@ -139,7 +140,7 @@ export default function AddEditNoteScreen({ route, navigation }) {
               </Text>
               {charCount > MAX_CHARS && (
                 <Text style={styles.errorText}>
-                  تعداد کاراکترها بیش از حد مجاز است
+                  {t("Character count exceeds the allowed limit")}
                 </Text>
               )}
             </View>
@@ -148,13 +149,16 @@ export default function AddEditNoteScreen({ route, navigation }) {
           {/* Tips Box */}
           <View style={styles.tipsBox}>
             <Text style={[NewStyles.title10, { fontSize: 13, marginBottom: 8 }]}>
-              💡 نکات مفید:
+              {t("💡 Helpful tips:")}
             </Text>
             <Text style={[NewStyles.text10, { fontSize: 12, lineHeight: 20 }]}>
-              • برای ایجاد لیست، از خط جدید استفاده کنید{'\n'}
-              • می‌توانید از emoji استفاده کنید 😊{'\n'}
-              • یادداشت‌های مهم را با عنوان‌های واضح بنویسید{'\n'}
-              • حداکثر {MAX_CHARS.toLocaleString('fa-IR')} کاراکتر مجاز است
+              {t("• To create a list, use a new line")}
+              {'\n'}
+              {t("• You can use emojis 😊")}
+              {'\n'}
+              {t("• Write important notes with clear headings")}
+              {'\n'}
+              {t("• Maximum {{count}} characters allowed", { count: MAX_CHARS.toLocaleString('fa-IR') })}
             </Text>
           </View>
         </View>
@@ -163,7 +167,7 @@ export default function AddEditNoteScreen({ route, navigation }) {
       {/* Save Button */}
       <View style={styles.footer}>
         <Button
-          title={isEditMode ? "ذخیره تغییرات" : "ثبت یادداشت"}
+          title={isEditMode ? t("Save changes") : t("Save The Note")}
           onPress={handleSave}
 
           loading={loading}
