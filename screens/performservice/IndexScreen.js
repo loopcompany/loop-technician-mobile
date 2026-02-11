@@ -21,10 +21,11 @@ import { themeColor0, themeColor1, themeColor3, themeColor4, themeColor7, themeC
 import CustomStatusBar from '../../components/CustomStatusBar';
 import { faDigitsToEn, formatPrice, getCurrentJalaliYear, showAlert } from '../../helpers/Common';
 import { getYearlyIncomeChart } from '../../services/Api';
-
+import { useSelector } from 'react-redux';
 const { width } = Dimensions.get('window');
 
 export default function IndexScreen({ navigation }) {
+  const user = useSelector((state) => state?.user?.data?.technician);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedYear, setSelectedYear] = useState(null); // شروع با null
@@ -256,6 +257,9 @@ export default function IndexScreen({ navigation }) {
         </View>
 
         {/* خلاصه سالانه */}
+          {user?.apple_check == 1 
+  ? null 
+  :
         <View style={styles.summaryContainer}>
           <View style={styles.summaryCard}>
             <Ionicons name="trending-up" size={24} color={themeColor7.bgColor(1)} />
@@ -280,7 +284,7 @@ export default function IndexScreen({ navigation }) {
               {formatPrice(yearlyData.yearly_summary.total_settlements)}
             </Text>
           </View>
-        </View>
+        </View>}
 
         {/* نمودار میله‌ای */}
         <View style={styles.chartContainer}>

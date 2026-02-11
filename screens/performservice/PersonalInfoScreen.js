@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useMemo } from 'react';
 import {
   View,
   Text,
@@ -17,7 +17,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { createStyles } from '../../styles/NewStyles';
 import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor3, themeColor4, themeColor7, themeColor8 } from '../../theme/Color';
@@ -34,7 +34,12 @@ import { useTranslation } from 'react-i18next';
 
 export default function PersonalInfoScreen({ navigation }) {
   const dispatch = useDispatch();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const NewStyles = useMemo(
+    () => createStyles(i18n.language),
+    [i18n.language]
+  );
+    const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
   const userToken = useSelector(state => state.auth.token);
   const user = useSelector(state => state.user);
   const userData = useSelector(state => state.user.data?.data?.technician); 
@@ -787,7 +792,7 @@ export default function PersonalInfoScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) =>  StyleSheet.create({
   background: {
     flex: 1,
   },
@@ -878,7 +883,7 @@ const styles = StyleSheet.create({
   boxedInput: {
     ...NewStyles.text,
     color: themeColor10.bgColor(1),
-    textAlign: 'right',
+    // textAlign: 'right',
     fontSize:14,
     height:40,
     justifyContent:'center'
@@ -915,7 +920,7 @@ const styles = StyleSheet.create({
   dateText: {
     ...NewStyles.text,
     fontSize: 16,
-    textAlign: 'right',
+    // textAlign: 'right',
   },
   placeholderText: {
     color: themeColor3.bgColor(1),

@@ -1,5 +1,5 @@
-import { SectionList, StyleSheet, Text, View, Linking, TouchableOpacity, Platform, Image } from 'react-native'
-import React from 'react'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import React, { useMemo,useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import MapView, { Marker } from 'react-native-maps'
 import NewStyles from '../../styles/NewStyles'
@@ -7,9 +7,19 @@ import { Ionicons } from '@expo/vector-icons'
 import { themeColor0, themeColor3, themeColor4, themeColor5, themeColor6, themeColor7 } from '../../theme/Color'
 import { formatDate, formatDateTime, formatPrice } from '../../helpers/Common'
 import { imageUri, mainUri } from '../../services/URL'
-
+import { createStyles } from '../../styles/NewStyles';
+import { useSelector } from 'react-redux';
 const DetailConponent = ({ data, renderRow, }) => {
-    const { t } = useTranslation();
+    const user = useSelector((state) => state?.user?.data?.technician);
+useEffect(() => {
+  console.log("USER CHANGED:", user);
+}, [user]);
+    const { t, i18n } = useTranslation();
+    const NewStyles = useMemo(
+        () => createStyles(i18n.language),
+        [i18n.language]
+    );
+    const styles = useMemo(() => createLocalStyles(NewStyles), [NewStyles]);
     const calculateTotalPrice = () => {
         if (!data) return 0;
         const basePrice = Number(data?.technician_price || data?.pakar_price || 0);
@@ -93,21 +103,46 @@ const DetailConponent = ({ data, renderRow, }) => {
 
                     {data?.status == 1 && renderRow(t("Order Status"), data?.started_at ? t("In progress") : data?.arrived_at ? t("Technician arrived at order location") : data?.set_off_at ? t("Technician is on the way") : t("Active"), NewStyles.text, NewStyles.text7)}
 
-                    {renderRow((Number(data?.is_fixed) == 1) ? t("Loop Fixed Amount") : t("Loop Base Amount"), data?.pakar_price > 0 ? `${formatPrice(data?.pakar_price)}${t(" Toman")}` : t("Needs Review"))}
-                    {(data?.technician_price > 0 && Number(data?.is_fixed) == 0) && renderRow(t("Technician final amount"), `${formatPrice(data?.technician_price)}${t(" Toman")}`)}
-                    {data?.extra_price > 0 && renderRow(t("Extra service amount"), `${formatPrice(data?.extra_price)}${t(" Toman")}`)}
-                    {data?.discount_price > 0 && renderRow(t("Discount amount"), `${formatPrice(data?.discount_price)}${t(" Toman")}`)}
-                    {totalPrice > totalDiscountedPrice && renderRow(t("Final amount without discount"), `${formatPrice(totalPrice)}${t(" Toman")}`, NewStyles.text, [NewStyles.text10, { textDecorationLine: 'line-through' }])}
-                    {data?.status > 0 && renderRow(t("Payable amount"), `${formatPrice(totalDiscountedPrice)}${t(" Toman")}`)}
+                    {user?.apple_check == 1 ? null : (
+                        <>
+                            {renderRow(
+                                (Number(data?.is_fixed) == 1) ? t("Loop Fixed Amount") : t("Loop Base Amount"),
+                                data?.pakar_price > 0 ? `${formatPrice(data?.pakar_price)}${t(" Toman")}` : t("Needs Review")
+                            )}
+
+                            {(data?.technician_price > 0 && Number(data?.is_fixed) == 0) &&
+                                renderRow(t("Technician final amount"), `${formatPrice(data?.technician_price)}${t(" Toman")}`)}
+
+                            {data?.extra_price > 0 &&
+                                renderRow(t("Extra service amount"), `${formatPrice(data?.extra_price)}${t(" Toman")}`)}
+
+                            {data?.discount_price > 0 &&
+                                renderRow(t("Discount amount"), `${formatPrice(data?.discount_price)}${t(" Toman")}`)}
+
+                            {totalPrice > totalDiscountedPrice &&
+                                renderRow(
+                                    t("Final amount without discount"),
+                                    `${formatPrice(totalPrice)}${t(" Toman")}`,
+                                    NewStyles.text,
+                                    [NewStyles.text10, { textDecorationLine: 'line-through' }]
+                                )}
+
+                            {data?.status > 0 &&
+                                renderRow(t("Payable amount"), `${formatPrice(totalDiscountedPrice)}${t(" Toman")}`)}
+                        </>
+                    )}
+
 
                     <View style={styles.separator} />
 
-                    <View style={NewStyles.rowWrapper}>
-                        <Text style={[NewStyles.text]}>{t("Payment Status")}</Text>
-                        <View style={[styles.paymentBadge, { backgroundColor: data?.payment_status > 0 ? themeColor7.bgColor(1) : themeColor6.bgColor(1) }]}>
-                            <Text style={NewStyles.text4}>{data?.payment_status > 0 ? t("Paid") : t("Unpaid")}</Text>
-                        </View>
-                    </View>
+                    {user?.apple_check == 1
+                        ? null
+                        : <View style={NewStyles.rowWrapper}>
+                            <Text style={[NewStyles.text]}>{t("Payment Status")}</Text>
+                            <View style={[styles.paymentBadge, { backgroundColor: data?.payment_status > 0 ? themeColor7.bgColor(1) : themeColor6.bgColor(1) }]}>
+                                <Text style={NewStyles.text4}>{data?.payment_status > 0 ? t("Paid") : t("Unpaid")}</Text>
+                            </View>
+                        </View>}
 
                     <View style={NewStyles.rowWrapper}>
                         <Text style={[NewStyles.text]}>{t("Order Status")}</Text>
@@ -318,7 +353,7 @@ const DetailConponent = ({ data, renderRow, }) => {
                 </View>
             )}
             {data?.image_path &&
-                <Image style={[{ height: 250, margin: '5%', maxWidth:400, resizeMode:'contain', width:'90%', alignSelf:'center' }, NewStyles.border10]} source={{ uri: `${imageUri}/${data?.image_path}` }} />
+                <Image style={[{ height: 250, margin: '5%', maxWidth: 400, resizeMode: 'contain', width: '90%', alignSelf: 'center' }, NewStyles.border10]} source={{ uri: `${imageUri}/${data?.image_path}` }} />
             }
 
             {/* Technician Description */}
@@ -360,7 +395,7 @@ const DetailConponent = ({ data, renderRow, }) => {
 
 export default DetailConponent
 
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) => StyleSheet.create({
     background: { flex: 1 },
     scrollContainer: {
         paddingVertical: 15,

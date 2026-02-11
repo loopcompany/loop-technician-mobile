@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -6,35 +6,50 @@ import {
   StyleSheet,
   ScrollView,
   TextInput,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Modal,
   Pressable,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { createStyles } from '../../styles/NewStyles';
 import ScreenHeaders from '../../components/ScreenHeaders';
-import NewStyles from '../../styles/NewStyles';
-import { themeColor0, themeColor1, themeColor3, themeColor10, themeColor8, themeColor2, themeColor4, themeColor7, themeColor6, themeColor11 } from '../../theme/Color';
+import {
+  themeColor0,
+  themeColor3,
+  themeColor10,
+  themeColor8,
+  themeColor2,
+  themeColor4,
+  themeColor7,
+  themeColor6,
+  themeColor11,
+} from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateVehicleInfo } from '../../services/Api';
-import { fetchUser, setUserData } from '../../slices/userSlice';
+import { fetchUser } from '../../slices/userSlice';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../../components/Button';
 import DatePickerModal from '../../components/DatePickerModal';
 import { getFormatedDate } from 'react-native-modern-datepicker';
 import { showAlert } from '../../helpers/Common';
 import { useTranslation } from 'react-i18next';
+
 export default function VehicleInfoScreen({ navigation }) {
   const dispatch = useDispatch();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  // ⛔️ قبلاً اسم NewStyles با import تداخل داشت؛ اینجا تمیزش کردیم
+  const baseStyles = useMemo(() => createStyles(i18n.language), [i18n.language]);
+  const styles = useMemo(() => createLocalStyles(baseStyles), [baseStyles]);
+
   const userData = useSelector(state => state.user.data?.data?.technician);
   const userToken = useSelector(state => state.auth.token);
+
   const [saving, setSaving] = useState(false);
   const [showInsuranceDatePicker, setShowInsuranceDatePicker] = useState(false);
   const [selectedInsuranceDate, setSelectedInsuranceDate] = useState('');
+
   const [vehicleData, setVehicleData] = useState({
     vehicleType: '',
     carModel: '',
@@ -49,9 +64,8 @@ export default function VehicleInfoScreen({ navigation }) {
     softwareType: '',
     vinNumber: '',
     insuranceExpiryCode: '',
-    insuranceExpiryDate: ''
+    insuranceExpiryDate: '',
   });
-
 
   const [showVehicleTypeModal, setShowVehicleTypeModal] = useState(false);
 
@@ -63,20 +77,18 @@ export default function VehicleInfoScreen({ navigation }) {
   ];
 
   const vehicleTypeLabels = {
-    'خودرو': t('Car'),
+    خودرو: t('Car'),
     'موتور سیکلت': t('Motorcycle'),
-    'دوچرخه': t('Bicycle'),
-    'پیاده': t('Pedestrian'),
+    دوچرخه: t('Bicycle'),
+    پیاده: t('Pedestrian'),
   };
 
   const vehicleTypeLabel = vehicleData.vehicleType
     ? (vehicleTypeLabels[vehicleData.vehicleType] || vehicleData.vehicleType)
     : t('Not Specified');
 
-
   useEffect(() => {
     const loadUserData = async () => {
-
       let plateLeft = '';
       let plateRight = '';
       let plateLetter = 'ب';
@@ -84,11 +96,10 @@ export default function VehicleInfoScreen({ navigation }) {
       let motorPlate = '';
       let bodyPlate = '';
 
-      if (userData.car_plate) {
+      if (userData?.car_plate) {
         const plate = userData.car_plate;
 
         if (userData.vehicle_type === 'خودرو') {
-          // پلاک خودرو: 12ب345ایران56
           const carMatch = plate.match(/^(\d{2})([آ-ی])(\d{3})(?:ایران)?(\d{2})$/);
           if (carMatch) {
             plateLeft = carMatch[1];
@@ -97,7 +108,6 @@ export default function VehicleInfoScreen({ navigation }) {
             plateProvince = carMatch[4];
           }
         } else if (userData.vehicle_type === 'موتور سیکلت') {
-          // پلاک موتور: 123-12345
           const motorMatch = plate.match(/^(\d{3})-(\d{5})$/);
           if (motorMatch) {
             motorPlate = motorMatch[1];
@@ -107,40 +117,39 @@ export default function VehicleInfoScreen({ navigation }) {
       }
 
       setVehicleData(prevData => ({
-        vehicleType: userData.vehicle_type || prevData.vehicleType,
-        carModel: userData.car_model || prevData.carModel,
-        carColor: userData.car_color || prevData.carColor,
+        vehicleType: userData?.vehicle_type || prevData.vehicleType,
+        carModel: userData?.car_model || prevData.carModel,
+        carColor: userData?.car_color || prevData.carColor,
         motorPlate: motorPlate || prevData.motorPlate,
         bodyPlate: bodyPlate || prevData.bodyPlate,
         carPlateLeft: plateLeft || prevData.carPlateLeft,
         carPlateRight: plateRight || prevData.carPlateRight,
         carPlateLetter: plateLetter || prevData.carPlateLetter,
         carPlateProvince: plateProvince || prevData.carPlateProvince,
-        manufacturingYear: userData.car_year || prevData.manufacturingYear,
-        softwareType: userData.car_fuel_type || prevData.softwareType,
-        vinNumber: userData.car_vin || prevData.vinNumber,
-        insuranceExpiryCode: userData.car_insurance_code || prevData.insuranceExpiryCode,
-        insuranceExpiryDate: userData.car_insurance_expiry_date || prevData.insuranceExpiryDate
+        manufacturingYear: userData?.car_year || prevData.manufacturingYear,
+        softwareType: userData?.car_fuel_type || prevData.softwareType,
+        vinNumber: userData?.car_vin || prevData.vinNumber,
+        insuranceExpiryCode: userData?.car_insurance_code || prevData.insuranceExpiryCode,
+        insuranceExpiryDate: userData?.car_insurance_expiry_date || prevData.insuranceExpiryDate,
       }));
     };
 
     loadUserData();
   }, [userData, dispatch]);
 
-
   useEffect(() => {
-    if (!showInsuranceDatePicker && selectedInsuranceDate && selectedInsuranceDate !== vehicleData.insuranceExpiryDate) {
+    if (
+      !showInsuranceDatePicker &&
+      selectedInsuranceDate &&
+      selectedInsuranceDate !== vehicleData.insuranceExpiryDate
+    ) {
       updateField('insuranceExpiryDate', selectedInsuranceDate);
     }
   }, [showInsuranceDatePicker, selectedInsuranceDate]);
 
   const updateField = (field, value) => {
-    setVehicleData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setVehicleData(prev => ({ ...prev, [field]: value }));
   };
-
 
   const handleSelectVehicleType = async (type) => {
     setShowVehicleTypeModal(false);
@@ -150,7 +159,7 @@ export default function VehicleInfoScreen({ navigation }) {
       vehicle_type: type,
       car_model: vehicleData.carModel?.trim() || null,
       car_color: vehicleData.carColor?.trim() || null,
-      car_plate: null, // clear plate when changing type; backend may accept null
+      car_plate: null,
       car_year: vehicleData.manufacturingYear || null,
       car_fuel_type: vehicleData.softwareType || null,
       car_vin: vehicleData.vinNumber || null,
@@ -176,24 +185,18 @@ export default function VehicleInfoScreen({ navigation }) {
           newLocal.motorPlate = '';
           newLocal.bodyPlate = '';
         }
-        setVehicleData(newLocal);
-        dispatch(fetchUser(userToken))
 
+        setVehicleData(newLocal);
+        dispatch(fetchUser(userToken));
       } else {
         showAlert(t('Error'), result?.message || t('Vehicle type update failed.'));
       }
-    } catch (err) {
     } finally {
       setSaving(false);
     }
   };
 
-  // محاسبه تاریخ امروز به صورت شمسی
-  const getTodayDate = () => {
-    return getFormatedDate(new Date(), 'jYYYY/jMM/jDD');
-  };
-
-  // محاسبه تاریخ 10 سال آینده برای بیمه
+  const getTodayDate = () => getFormatedDate(new Date(), 'jYYYY/jMM/jDD');
   const getTenYearsLater = () => {
     const futureDate = new Date();
     futureDate.setFullYear(futureDate.getFullYear() + 10);
@@ -216,8 +219,12 @@ export default function VehicleInfoScreen({ navigation }) {
       let carPlate = null;
 
       if (vehicleData.vehicleType === 'خودرو') {
-        if (vehicleData.carPlateLeft && vehicleData.carPlateLetter &&
-          vehicleData.carPlateRight && vehicleData.carPlateProvince) {
+        if (
+          vehicleData.carPlateLeft &&
+          vehicleData.carPlateLetter &&
+          vehicleData.carPlateRight &&
+          vehicleData.carPlateProvince
+        ) {
           carPlate = `${vehicleData.carPlateLeft}${vehicleData.carPlateLetter}${vehicleData.carPlateRight}ایران${vehicleData.carPlateProvince}`;
         }
       } else if (vehicleData.vehicleType === 'موتور سیکلت') {
@@ -236,10 +243,12 @@ export default function VehicleInfoScreen({ navigation }) {
         car_insurance_code: vehicleData.insuranceExpiryCode || null,
         car_insurance_expiry_date: vehicleData.insuranceExpiryDate || null,
       };
+
       const result = await updateVehicleInfo(apiData);
+
       if (result.success) {
         showAlert(t('Success'), t('Information updated successfully.'));
-        dispatch(fetchUser(userToken))
+        dispatch(fetchUser(userToken));
       } else {
         showAlert(t('Error'), result.message || t('There was a problem updating.'));
       }
@@ -251,7 +260,7 @@ export default function VehicleInfoScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'off' }}>
+    <SafeAreaView style={baseStyles.container} edges={{ top: 'off', bottom: 'off' }}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <LinearGradient
           colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
@@ -260,28 +269,24 @@ export default function VehicleInfoScreen({ navigation }) {
           style={styles.background}
         >
           <CustomStatusBar />
-          <ScreenHeaders
-            title={t('Account / Privacy')}
-          />
+          <ScreenHeaders title={t('Account / Privacy')} />
 
           <ScrollView contentContainerStyle={styles.container}>
-
-            {/* دکمه مشخصات وسیله نقلیه */}
             <TouchableOpacity style={[styles.mainButton, { backgroundColor: themeColor0.bgColor(0.8) }]}>
               <Text style={styles.buttonText}>{t('Vehicle Information')}</Text>
             </TouchableOpacity>
 
-            {/* باکس نوع وسیله نقلیه (قابل ویرایش) */}
-            <TouchableOpacity style={styles.vehicleTypeBox} onPress={() => setShowVehicleTypeModal(true)} disabled={saving}>
+            <TouchableOpacity
+              style={styles.vehicleTypeBox}
+              onPress={() => setShowVehicleTypeModal(true)}
+              disabled={saving}
+            >
               <Text style={styles.vehicleTypeLabel}>
                 {t('Vehicle type: {{type}}', { type: vehicleTypeLabel })}
               </Text>
             </TouchableOpacity>
 
-            {/* فرم اطلاعات وسیله */}
             <View style={styles.formContainer}>
-
-              {/* پیام برای دوچرخه و پیاده */}
               {(vehicleData.vehicleType === 'دوچرخه' || vehicleData.vehicleType === 'پیاده') && (
                 <View style={styles.infoBox}>
                   <Text style={styles.infoText}>
@@ -290,7 +295,6 @@ export default function VehicleInfoScreen({ navigation }) {
                 </View>
               )}
 
-              {/* پلاک موتور سیکلت - فقط برای موتور */}
               {vehicleData.vehicleType === 'موتور سیکلت' && (
                 <View style={styles.plateSection}>
                   <Text style={styles.label}>{t('Motorcycle plate:')}</Text>
@@ -298,7 +302,9 @@ export default function VehicleInfoScreen({ navigation }) {
                     <TextInput
                       style={[styles.input, styles.plateInput]}
                       value={vehicleData.motorPlate}
-                      onChangeText={(value) => updateField('motorPlate', String(value).replace(/[^0-9]/g, '').slice(0, 3))}
+                      onChangeText={(value) =>
+                        updateField('motorPlate', String(value).replace(/[^0-9]/g, '').slice(0, 3))
+                      }
                       keyboardType="numeric"
                       placeholder={t('Top 3 digits')}
                       maxLength={3}
@@ -307,20 +313,23 @@ export default function VehicleInfoScreen({ navigation }) {
                     <TextInput
                       style={[styles.input, styles.plateInput]}
                       value={vehicleData.bodyPlate}
-                      onChangeText={(value) => updateField('bodyPlate', String(value).replace(/[^0-9]/g, '').slice(0, 5))}
+                      onChangeText={(value) =>
+                        updateField('bodyPlate', String(value).replace(/[^0-9]/g, '').slice(0, 5))
+                      }
                       keyboardType="numeric"
                       placeholder={t('Bottom 5 digits')}
                       maxLength={5}
                       editable={!saving}
                     />
                   </View>
+
                   <View style={styles.platePreviewWrap}>
-                    <PlatePreviewMotorcycle left={vehicleData.motorPlate} right={vehicleData.bodyPlate} />
+                    {/* ✅ styles پاس داده شد */}
+                    <PlatePreviewMotorcycle styles={styles} left={vehicleData.motorPlate} right={vehicleData.bodyPlate} />
                   </View>
                 </View>
               )}
 
-              {/* پلاک خودرو - فقط برای خودرو */}
               {vehicleData.vehicleType === 'خودرو' && (
                 <View style={styles.plateSection}>
                   <Text style={styles.label}>{t('Car plate:')}</Text>
@@ -365,9 +374,10 @@ export default function VehicleInfoScreen({ navigation }) {
                     />
                   </View>
 
-                  {/* Plate preview */}
                   <View style={styles.platePreviewWrap}>
+                    {/* ✅ styles پاس داده شد */}
                     <PlatePreview
+                      styles={styles}
                       left={vehicleData.carPlateLeft}
                       right={vehicleData.carPlateRight}
                       letter={vehicleData.carPlateLetter}
@@ -377,7 +387,6 @@ export default function VehicleInfoScreen({ navigation }) {
                 </View>
               )}
 
-              {/* فیلدهای زیر فقط برای موتور و خودرو */}
               {(vehicleData.vehicleType === 'موتور سیکلت' || vehicleData.vehicleType === 'خودرو') && (
                 <>
                   <View style={styles.inputRow}>
@@ -408,7 +417,6 @@ export default function VehicleInfoScreen({ navigation }) {
                       style={styles.input}
                       value={vehicleData.manufacturingYear}
                       onChangeText={(value) => updateField('manufacturingYear', value)}
-                      placeholder=""
                       editable={!saving}
                     />
                   </View>
@@ -419,7 +427,6 @@ export default function VehicleInfoScreen({ navigation }) {
                       style={styles.input}
                       value={vehicleData.softwareType}
                       onChangeText={(value) => updateField('softwareType', value)}
-                      placeholder=""
                       editable={!saving}
                     />
                   </View>
@@ -430,7 +437,6 @@ export default function VehicleInfoScreen({ navigation }) {
                       style={styles.input}
                       value={vehicleData.vinNumber}
                       onChangeText={(value) => updateField('vinNumber', value)}
-                      placeholder=""
                       maxLength={17}
                       editable={!saving}
                     />
@@ -442,7 +448,6 @@ export default function VehicleInfoScreen({ navigation }) {
                       style={styles.input}
                       value={vehicleData.insuranceExpiryCode}
                       onChangeText={(value) => updateField('insuranceExpiryCode', value)}
-                      placeholder=""
                       editable={!saving}
                     />
                   </View>
@@ -454,29 +459,20 @@ export default function VehicleInfoScreen({ navigation }) {
                       onPress={() => !saving && setShowInsuranceDatePicker(true)}
                       disabled={saving}
                     >
-                      <Text style={[
-                        styles.dateText,
-                        !vehicleData.insuranceExpiryDate && styles.placeholderText
-                      ]}>
+                      <Text style={[styles.dateText, !vehicleData.insuranceExpiryDate && styles.placeholderText]}>
                         {vehicleData.insuranceExpiryDate || t('Select date (e.g., 1405/05/15)')}
                       </Text>
                     </TouchableOpacity>
                   </View>
                 </>
               )}
-
             </View>
 
-            {/* دکمه‌های ثبت و ویرایش */}
-
             <Button title={t('Save information')} onPress={handleSave} loading={saving} />
-
           </ScrollView>
-
         </LinearGradient>
       </KeyboardAvoidingView>
 
-      {/* Modal انتخاب نوع وسیله نقلیه */}
       <Modal
         visible={showVehicleTypeModal}
         animationType="slide"
@@ -485,7 +481,10 @@ export default function VehicleInfoScreen({ navigation }) {
       >
         <Pressable style={styles.modalOverlay} onPress={() => setShowVehicleTypeModal(false)}>
           <View style={styles.modalContent}>
-            <Text style={[NewStyles.title, { textAlign: 'center', marginBottom: 10 }]}>{t('Select vehicle type')}</Text>
+            <Text style={[baseStyles.title, { textAlign: 'center', marginBottom: 10 }]}>
+              {t('Select vehicle type')}
+            </Text>
+
             {vehicleTypeOptions.map((opt) => (
               <TouchableOpacity
                 key={opt.value}
@@ -493,17 +492,17 @@ export default function VehicleInfoScreen({ navigation }) {
                 onPress={() => handleSelectVehicleType(opt.value)}
                 disabled={saving}
               >
-                <Text style={NewStyles.text}>{opt.label}</Text>
+                <Text style={baseStyles.text}>{opt.label}</Text>
               </TouchableOpacity>
             ))}
+
             <TouchableOpacity style={[styles.modalCancel]} onPress={() => setShowVehicleTypeModal(false)}>
-              <Text style={NewStyles.text4}>{t('Cancel')}</Text>
+              <Text style={baseStyles.text4}>{t('Cancel')}</Text>
             </TouchableOpacity>
           </View>
         </Pressable>
       </Modal>
 
-      {/* DatePicker Modal for Insurance Expiry Date */}
       <DatePickerModal
         datePickerModal={showInsuranceDatePicker}
         setDatePickerModal={setShowInsuranceDatePicker}
@@ -517,33 +516,28 @@ export default function VehicleInfoScreen({ navigation }) {
   );
 }
 
-// Small preview component that renders a stylized Iranian-like car plate
-function PlatePreview({ left = '', right = '', letter = 'ب', province = '11' }) {
+// ✅ styles از بیرون میاد
+function PlatePreview({ styles, left = '', right = '', letter = 'ب', province = '11' }) {
   const { t } = useTranslation();
-  // helper: convert ASCII digits to Persian digits
+
   const toPersian = (s) => {
-    const map = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-    return String(s || '').split('').map(ch => {
-      if (ch >= '0' && ch <= '9') return map[ch.charCodeAt(0) - 48];
-      return ch;
-    }).join('');
+    const map = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+    return String(s || '')
+      .split('')
+      .map(ch => (ch >= '0' && ch <= '9' ? map[ch.charCodeAt(0) - 48] : ch))
+      .join('');
   };
 
-  // left should be 2 digits, right 3 digits
   const leftText = left ? left.padStart(2, '0') : '__';
   const rightText = right ? right.padStart(3, '0') : '___';
 
-  // use provided letter and province (already defaulted in params)
-  // تبدیل "ا" و "آ" به "الف"
   let plateLetter = letter || 'ب';
-  if (plateLetter === 'ا' || plateLetter === 'آ') {
-    plateLetter = 'الف';
-  }
+  if (plateLetter === 'ا' || plateLetter === 'آ') plateLetter = 'الف';
+
   const plateProvince = province || '11';
 
   return (
     <View style={styles.plateBox}>
-      {/* left vertical flag/blue strip */}
       <View style={styles.plateFlagStrip}>
         <View style={styles.flagColors}>
           <View style={[styles.flagStripe, { backgroundColor: themeColor7.bgColor(1) }]} />
@@ -553,7 +547,6 @@ function PlatePreview({ left = '', right = '', letter = 'ب', province = '11' })
         <Text style={styles.flagText}>I.R.{"\n"}IRAN</Text>
       </View>
 
-      {/* main plate area */}
       <View style={styles.plateMainArea}>
         <View style={styles.plateNumberWrap}>
           <Text style={styles.plateNumberText}>{toPersian(rightText)}</Text>
@@ -564,7 +557,6 @@ function PlatePreview({ left = '', right = '', letter = 'ب', province = '11' })
         </View>
       </View>
 
-      {/* right small box with IRAN / province code */}
       <View style={styles.plateCityBoxNew}>
         <Text style={styles.plateCityTop}>{t('Iran')}</Text>
         <Text style={styles.plateCityNumber}>{toPersian(plateProvince)}</Text>
@@ -573,14 +565,14 @@ function PlatePreview({ left = '', right = '', letter = 'ب', province = '11' })
   );
 }
 
-// Motorcycle plate preview (two-row Persian digits style)
-function PlatePreviewMotorcycle({ left = '', right = '' }) {
+// ✅ styles از بیرون میاد
+function PlatePreviewMotorcycle({ styles, left = '', right = '' }) {
   const toPersian = (s) => {
-    const map = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-    return String(s || '').split('').map(ch => {
-      if (ch >= '0' && ch <= '9') return map[ch.charCodeAt(0) - 48];
-      return ch;
-    }).join('');
+    const map = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+    return String(s || '')
+      .split('')
+      .map(ch => (ch >= '0' && ch <= '9' ? map[ch.charCodeAt(0) - 48] : ch))
+      .join('');
   };
 
   const leftText = left ? left : '__';
@@ -604,10 +596,8 @@ function PlatePreviewMotorcycle({ left = '', right = '' }) {
   );
 }
 
-const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-  },
+const createLocalStyles = (NewStyles) => StyleSheet.create({
+  background: { flex: 1 },
   container: {
     paddingHorizontal: 20,
     paddingVertical: 10,
@@ -659,12 +649,8 @@ const styles = StyleSheet.create({
     padding: 15,
     gap: 10,
   },
-  inputRow: {
-    marginVertical: 5,
-  },
-  plateSection: {
-    marginVertical: 5,
-  },
+  inputRow: { marginVertical: 5 },
+  plateSection: { marginVertical: 5 },
   plateRow: {
     flexDirection: 'row',
     gap: 10,
@@ -679,7 +665,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 5,
-    textAlign: 'right',
+    // textAlign: 'right',
   },
   input: {
     borderWidth: 1,
@@ -688,35 +674,9 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 14,
     backgroundColor: themeColor4.bgColor(1),
-    textAlign: 'right',
+    // textAlign: 'right',
     ...NewStyles.text10,
     minHeight: 40,
-  },
-  actionButtons: {
-    flexDirection: 'row',
-    gap: 15,
-    marginTop: 10,
-  },
-  actionButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  editButton: {
-    backgroundColor: themeColor11.bgColor(1),
-  },
-  saveButton: {
-    backgroundColor: themeColor7.bgColor(1),
-  },
-  saveButtonDisabled: {
-    backgroundColor: themeColor3.bgColor(1),
-  },
-  actionButtonText: {
-    ...NewStyles.text4,
-    color: themeColor4.bgColor(1),
-    fontSize: 14,
-    fontWeight: '600',
   },
   platePreviewWrap: {
     width: '100%',
@@ -732,12 +692,12 @@ const styles = StyleSheet.create({
   plateLetterInput: {
     width: 80,
     textAlign: 'center',
-    fontFamily: 'VazirBold'
+    fontFamily: 'VazirBold',
   },
   plateProvinceInput: {
     width: 100,
     textAlign: 'center',
-    fontFamily: 'VazirBold'
+    fontFamily: 'VazirBold',
   },
   plateBox: {
     width: 260,
@@ -768,20 +728,13 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginBottom: 4,
   },
-  flagStripe: {
-    flex: 1,
-  },
+  flagStripe: { flex: 1 },
   flagText: {
     color: themeColor4.bgColor(1),
     fontSize: 8,
     fontWeight: '700',
     textAlign: 'center',
     marginTop: 2,
-  },
-  plateNumberArea: {
-    flex: 1,
-    alignItems: 'flex-end',
-    paddingRight: 10,
   },
   plateMainArea: {
     flex: 1,
@@ -804,20 +757,6 @@ const styles = StyleSheet.create({
     fontSize: 28,
     marginHorizontal: 4,
   },
-  plateCityBox: {
-    width: 60,
-    height: '100%',
-    backgroundColor: themeColor10.bgColor(1),
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 4,
-  },
-  plateCityText: {
-    color: themeColor10.bgColor(1),
-    fontSize: 12,
-    fontWeight: '700',
-    transform: [{ rotate: '-90deg' }],
-  },
   plateCityBoxNew: {
     width: 56,
     height: '100%',
@@ -830,7 +769,6 @@ const styles = StyleSheet.create({
   plateCityTop: {
     ...NewStyles.title10,
     fontSize: 10,
-
   },
   plateCityNumber: {
     fontSize: 20,
@@ -862,23 +800,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 6,
   },
-  motorTop: {
-    fontSize: 36,
-    fontWeight: '900',
-  },
-  motorBottom: {
-    fontSize: 46,
-    fontWeight: '900',
-    marginTop: 6,
-  },
+  motorTop: { fontSize: 36, fontWeight: '900' },
+  motorBottom: { fontSize: 46, fontWeight: '900', marginTop: 6 },
   dateText: {
     ...NewStyles.text10,
     fontSize: 14,
-    textAlign: 'right',
+    // textAlign: 'right',
   },
-  placeholderText: {
-    color: themeColor3.bgColor(0.6),
-  },
+  placeholderText: { color: themeColor3.bgColor(0.6) },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',
@@ -889,10 +818,8 @@ const styles = StyleSheet.create({
     padding: 16,
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
-    // maxHeight: '60%',
     gap: 8,
-    paddingBottom: 40
-
+    paddingBottom: 40,
   },
   modalOption: {
     paddingVertical: 12,

@@ -9,6 +9,7 @@ import DatePickerModal from '../../components/DatePickerModal';
 import * as DocumentPicker from 'expo-document-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getFormatedDate } from 'react-native-modern-datepicker';
+import { createStyles } from '../../styles/NewStyles';
 import {
   registerTechnician,
   getExpertises,
@@ -72,8 +73,12 @@ export default function SignIn({ navigation }) {
     resume: '',
     expertise_ids: []
   });
-  const { t } = useTranslation();
-
+  const { t, i18n } = useTranslation();
+  const NewStyles = useMemo(
+    () => createStyles(i18n.language),
+    [i18n.language]
+  );
+  const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
   // Available expertises from API
   const [expertises, setExpertises] = useState([]);
   const [selectedExpertise, setSelectedExpertise] = useState('');
@@ -1317,7 +1322,7 @@ export default function SignIn({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) => StyleSheet.create({
   background: {
     flex: 1,
   },

@@ -1,5 +1,5 @@
 import { View, TextInput, Pressable, ImageBackground, Platform, KeyboardAvoidingView, Text, ActivityIndicator } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState,useMemo } from 'react'
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -9,10 +9,15 @@ import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor10, themeColor3, themeColor4, themeColor5, themeColor6 } from '../../theme/Color';
 import MessagesList from './MessagesList';
 import { getTechnicianChatMessages, sendTechnicianMessage, markTechnicianMessagesAsRead } from '../../services/Api';
-
+import { createStyles } from '../../styles/NewStyles';
 export default function ChatRoom({ route }) {
 
-    const { t } = useTranslation();
+   const { t, i18n } = useTranslation();
+   const NewStyles = useMemo(
+     () => createStyles(i18n.language),
+     [i18n.language]
+   );
+    //  const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
     const userId = route?.params?.userId;
     const userName = route?.params?.userName;
     const [message, setMessage] = useState('');
@@ -36,7 +41,7 @@ export default function ChatRoom({ route }) {
                 setIsChatOpen(response?.data?.is_chat_open);
             } else {
                 setData([]);
-                showToastOrAlert(response?.data?.message || 'خطا در دریافت پیام‌ها');
+                showToastOrAlert(response?.data?.message || t('Error fetching messages'));
             }
 
             // علامت‌گذاری به عنوان خوانده شده
@@ -73,15 +78,15 @@ export default function ChatRoom({ route }) {
                 setMessage('');
                 fetchData();
             } else if (response?.error_code === 'CHAT_CLOSED') {
-                showToastOrAlert(response.message || 'چت بسته شده است. سفارش فعالی وجود ندارد.');
+                showToastOrAlert(response.message || t('Chat is closed. There is no active order.'));
                 setIsChatOpen(false);
             } else {
-                showToastOrAlert(response?.message || 'خطا در ارسال پیام');
+                showToastOrAlert(response?.message || t('Error sending message'));
             }
         } catch (error) {
             // بررسی خطای 403 - چت بسته شده
             if (error?.response?.status === 403) {
-                const message = error?.response?.data?.message || 'چت بسته شده است. سفارش فعالی وجود ندارد.';
+                const message = error?.response?.data?.message || t('Chat is closed. There is no active order.');
                 showToastOrAlert(message);
                 setIsChatOpen(false);
             } else {
@@ -120,7 +125,7 @@ export default function ChatRoom({ route }) {
                                     {loading && <ActivityIndicator color={themeColor5.bgColor(1)} size={20} />}
                                 </Pressable>
                             </View>
-                            <TextInput style={[{ flex: 1, marginHorizontal: 10 }, NewStyles.text10]} placeholderTextColor={themeColor10.bgColor(1)} placeholder='پیام خود را بنویسید.' value={message} maxLength={5000} onChangeText={(p) => { setMessage(p) }} multiline={true} />
+                            <TextInput style={[{ flex: 1, marginHorizontal: 10 }, NewStyles.text10]} placeholderTextColor={themeColor10.bgColor(1)} placeholder={t('Write your message')} value={message} maxLength={5000} onChangeText={(p) => { setMessage(p) }} multiline={true} />
                         </View>
                     </View>
                     :
@@ -131,7 +136,7 @@ export default function ChatRoom({ route }) {
                                     <Ionicons name="close" size={20} color={themeColor4.bgColor(1)} />
                                 </View>
                             </View>
-                            <Text style={[{ flex: 1, marginHorizontal: 10 }, NewStyles.text10]}>امکان ارسال پیام وجود ندارد.</Text>
+                            <Text style={[{ flex: 1, marginHorizontal: 10 }, NewStyles.text10]}>{t('Cannot send messages.')}</Text>
                         </View>
                     </View>
                 }

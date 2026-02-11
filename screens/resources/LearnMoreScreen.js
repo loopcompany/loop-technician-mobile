@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import NewStyles from '../../styles/NewStyles';
 import ScreenHeaders from '../../components/ScreenHeaders';
 import { useTranslation } from 'react-i18next';
-
+import { createStyles } from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor4, themeColor10 } from '../../theme/Color';
 import { infoAPI } from '../../services/Api';
 import { showToastOrAlert } from '../../helpers/Common';
@@ -14,7 +14,12 @@ import { RefreshControl } from 'react-native';
 import Loader from '../../components/Loader';
 
 export default function LearnMoreScreen() {
-  const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const NewStyles = useMemo(
+      () => createStyles(i18n.language),
+      [i18n.language]
+    );
+      const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
   const [faqs, setFaqs] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -103,7 +108,7 @@ export default function LearnMoreScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#e0f0ff',
@@ -154,7 +159,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   faqHeader: {
-    flexDirection: 'row-reverse',
+   ...NewStyles.row,
     alignItems: 'center',
     padding: 15,
     borderBottomWidth: 1,
@@ -165,7 +170,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'VazirBold',
     color: '#333',
-    textAlign: 'right',
+      ...NewStyles.text10,
     marginRight: 10,
   },
   faqContent: {
@@ -176,7 +181,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'VazirLight',
     color: '#666',
-    textAlign: 'right',
+      ...NewStyles.text10,
     lineHeight: 22,
     marginBottom: 10,
   },

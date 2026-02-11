@@ -266,7 +266,7 @@ export const showToastOrAlert = (message) => {
 };
 
 
-export const showAlert = (title, message, buttons = []) => {
+export const showAlert = (title, message, buttons = [], t) => {
   if (Platform.OS === 'web') {
     if (typeof window === 'undefined') {
       console.warn('showAlert called on web but window is undefined');
@@ -317,7 +317,8 @@ export const showAlert = (title, message, buttons = []) => {
     // Native platform (iOS/Android)
     if (!buttons || buttons.length === 0) {
       // Add default "OK" button for simple alerts
-      Alert.alert(title, message, [{ text: 'باشه', style: 'default' }]);
+      const okText = t ? t("Ok") : "Ok";
+      Alert.alert(title, message, [{ text: okText, style: 'default' }]);
     } else {
       Alert.alert(title, message, buttons);
     }
@@ -506,6 +507,8 @@ export const getOrderStatusColor = (status) => {
   };
   return colorMap[status] || '#9E9E9E';
 };
+ const RTL_LANGS = new Set(['fa', 'ar', 'he', 'ur', 'ps', 'ckb']);
+export const langIsRTL =(lang) => (lang || '').toLowerCase().split('-')[0] && RTL_LANGS.has((lang || '').toLowerCase().split('-')[0]);
 
 export const calculateDaysDifference = (targetDate) => {
   const now = dayjs();

@@ -27,9 +27,11 @@ import { loginTechnician } from "../../services/Api";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { showAlert } from "../../helpers/Common";
 import { ImageBackground } from "react-native";
+import { useTranslation } from "react-i18next";
 export default function ResetPasswordScreen({ navigation, route }) {
   const params = route?.params;
   const dispatch = useDispatch();
+  const { t } = useTranslation();
 
   // Step 1: Verify Code
   const [step, setStep] = useState(1); // 1: verify code, 2: set new password
@@ -85,17 +87,17 @@ export default function ResetPasswordScreen({ navigation, route }) {
       console.log('📦 نتیجه ارسال مجدد:', result);
 
       if (result.success) {
-        showAlert("موفق", "کد بازیابی مجدداً ارسال شد");
+        showAlert(t("Success"), t("Verification code resent"), [], t);
         setValue(""); // Clear the code field
         setError("");
         setResendTimer(60); // Reset timer
         setCanResend(false);
       } else {
-        showAlert("خطا", result.message || "مشکلی در ارسال مجدد کد پیش آمد");
+        showAlert(t("Error"), result.message || t("Error resending code"), [], t);
       }
     } catch (error) {
       console.log('❌ خطا در ارسال مجدد کد:', error);
-      showAlert("خطا", "مشکلی در ارتباط با سرور پیش آمد");
+      showAlert(t("Error"), t("Error communicating with server"), [], t);
     } finally {
       setLoading(false);
     }
@@ -104,7 +106,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
   // Step 1: Verify the code
   const handleVerifyCode = async () => {
     if (value.length !== 6) {
-      showAlert("خطا", "لطفاً کد 6 رقمی را وارد کنید");
+      showAlert(t("Error"), t("Please enter the complete 6-digit code"), [], t);
       return;
     }
 
@@ -124,13 +126,13 @@ export default function ResetPasswordScreen({ navigation, route }) {
         console.log('✅ کد تأیید شد، انتقال به مرحله تنظیم رمز جدید');
         setStep(2); // Move to password setting step
       } else {
-        setError("کد وارد شده صحیح نیست");
-        showAlert("خطا", result.message || "کد وارد شده صحیح نمی‌باشد");
+        setError(t("The code entered is incorrect"));
+        showAlert(t("Error"), result.message || t("The code entered is incorrect"), [], t);
       }
     } catch (error) {
       console.log('❌ خطا در تأیید کد:', error);
-      setError("خطا در ارتباط با سرور");
-      showAlert("خطا", "مشکلی در ارتباط با سرور پیش آمد");
+      setError(t("Error communicating with server"));
+      showAlert(t("Error"), t("Error communicating with server"), [], t);
     } finally {
       setLoading(false);
     }
@@ -139,12 +141,12 @@ export default function ResetPasswordScreen({ navigation, route }) {
   // Step 2: Set new password
   const handleResetPassword = async () => {
     if (!newPassword || newPassword.length < 6) {
-      showAlert("خطا", "رمز عبور باید حداقل 6 کاراکتر باشد");
+      showAlert(t("Error"), t("Password must be at least 6 characters"), [], t);
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      showAlert("خطا", "رمز عبور و تکرار آن یکسان نیستند");
+      showAlert(t("Error"), t("Password and repeat password do not match."), [], t);
       return;
     }
 
@@ -177,11 +179,11 @@ export default function ResetPasswordScreen({ navigation, route }) {
             dispatch(setUserData(loginResult.data));
 
             showAlert(
-              "موفق",
-              "رمز عبور شما با موفقیت تغییر یافت و وارد شدید.",
+              t("Success"),
+              t("Your password was changed successfully and you are now logged in."),
               [
                 {
-                  text: "تأیید",
+                  text: t("Confirm"),
                   onPress: () => {
                     navigation.reset({
                       index: 0,
@@ -189,16 +191,17 @@ export default function ResetPasswordScreen({ navigation, route }) {
                     });
                   },
                 },
-              ]
+              ],
+              t
             );
           } else {
             // Login failed, navigate to login screen
             showAlert(
-              "موفق",
-              "رمز عبور شما با موفقیت تغییر یافت. لطفاً دوباره وارد شوید.",
+              t("Success"),
+              t("Your password has been successfully changed. Please log in with the new information."),
               [
                 {
-                  text: "تأیید",
+                  text: t("Confirm"),
                   onPress: () => {
                     navigation.reset({
                       index: 0,
@@ -206,18 +209,19 @@ export default function ResetPasswordScreen({ navigation, route }) {
                     });
                   },
                 },
-              ]
+              ],
+              t
             );
           }
         } catch (loginError) {
           console.log('❌ خطا در ورود خودکار:', loginError);
           // Login failed, navigate to login screen
           showAlert(
-            "موفق",
-            "رمز عبور شما با موفقیت تغییر یافت. لطفاً دوباره وارد شوید.",
+            t("Success"),
+            t("Your password has been successfully changed. Please log in with the new information."),
             [
               {
-                text: "تأیید",
+                text: t("Confirm"),
                 onPress: () => {
                   navigation.reset({
                     index: 0,
@@ -225,15 +229,16 @@ export default function ResetPasswordScreen({ navigation, route }) {
                   });
                 },
               },
-            ]
+            ],
+            t
           );
         }
       } else {
-        showAlert("خطا", result.message || "مشکلی در تغییر رمز عبور پیش آمد");
+        showAlert(t("Error"), result.message || t("Error changing password"), [], t);
       }
     } catch (error) {
       console.log('❌ خطا در تنظیم رمز:', error);
-      showAlert("خطا", "مشکلی در ارتباط با سرور پیش آمد");
+      showAlert(t("Error"), t("Error communicating with server"), [], t);
     } finally {
       setLoading(false);
     }
@@ -260,7 +265,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
               // Step 1: Enter verification code
               <View style={[NewStyles.center, { backgroundColor: themeColor10.bgColor(0.5), height: 300, width: "100%", borderRadius: 15, maxWidth: 800 }]}>
                 <Text style={[NewStyles.title1, { marginBottom: 20, fontSize: 17, textAlign: "center", paddingHorizontal: 20 }]}>
-                  کد 6 رقمی ارسال شده به شماره {params?.phone} را وارد کنید
+                  {t("Enter the 6-digit code sent to {{phone}}", { phone: params?.phone })}
                 </Text>
 
                 <CodeField
@@ -292,7 +297,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
                 {error && <Text style={[NewStyles.text6, { marginTop: 10 }]}>{error}</Text>}
                 {!canResend && <View style={{ paddingVertical: 15, paddingHorizontal: 20, width: "100%" }}>
                   <Button
-                    title={"تأیید کد"}
+                    title={t("Confirm code")}
                     loading={loading}
                     onPress={handleVerifyCode}
                   />
@@ -302,14 +307,14 @@ export default function ResetPasswordScreen({ navigation, route }) {
                 <View style={{ paddingHorizontal: 20, width: "100%", marginTop: 10 }}>
                   {canResend ? (
                     <Button
-                      title={"ارسال مجدد کد"}
+                      title={t("Resend Code")}
                       loading={loading}
                       onPress={handleResendCode}
 
                     />
                   ) : (
                     <Text style={[NewStyles.text4, { textAlign: "center" }]}>
-                      ارسال مجدد کد در {resendTimer} ثانیه
+                      {t("Resend code in {{seconds}} seconds", { seconds: resendTimer })}
                     </Text>
                   )}
                 </View>
@@ -318,12 +323,12 @@ export default function ResetPasswordScreen({ navigation, route }) {
               // Step 2: Enter new password
               <View style={[NewStyles.center, { gap: 15, backgroundColor: themeColor10.bgColor(0.5), height: "60%", width: "100%", borderRadius: 15, maxWidth: 800 }]}>
                 <Text style={[NewStyles.title1, { marginBottom: 10, fontSize: 16 }]}>
-                  رمز عبور جدید خود را وارد کنید
+                  {t("Enter your new password.")}
                 </Text>
                 <View style={{ paddingHorizontal: 1, width: "90%", paddingVertical: 15 }}>
                   <TextInput
                     style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-                    placeholder="رمز عبور جدید (حداقل 6 کاراکتر)"
+                    placeholder={t("New password (minimum 6 characters)")}
                     placeholderTextColor={themeColor10.bgColor(0.9)}
                     secureTextEntry
                     value={newPassword}
@@ -334,7 +339,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
                 <View style={{ paddingVertical: 15, paddingHorizontal: 1, width: "90%" }}>
                   <TextInput
                     style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-                    placeholder="تکرار رمز عبور جدید"
+                    placeholder={t("Confirm new password")}
                     placeholderTextColor={themeColor10.bgColor(0.9)}
                     secureTextEntry
                     value={confirmPassword}
@@ -344,7 +349,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
                 </View>
                 <View style={{ paddingVertical: 15, paddingHorizontal: 1, width: "90%" }}>
                   <Button
-                    title={"تغییر رمز عبور"}
+                    title={t("Change Password")}
                     loading={loading}
                     onPress={handleResetPassword}
                   />

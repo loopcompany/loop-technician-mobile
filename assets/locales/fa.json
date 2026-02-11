@@ -351,6 +351,7 @@
   "Authentication": "احراز هویت",
   "A one-time code has been sent to your email.": "کد یکبار مصرف به ایمیل شما ارسال شد.",
   "Confirm": "تأیید",
+  "Confirm code": "تأیید کد",
   "You entered the wrong one-time code.": "کد یکبار‌مصرف را اشتباه وارد کردید.",
   "Resend": "ارسال مجدد",
   "Your note has been saved.": "یادداشت شما ذخیره شد",
@@ -490,6 +491,7 @@
   "User with entered email not found": "کاربری با ایمیل وارد شده یافت نشد",
   "Your email has not been verified. Please register again.": "ایمیل شما احراز نشده است. لطفا مجدد ثبت نام کنید.",
   "Your password has been successfully changed. Please log in with the new information.": "رمز عبور شما با موفقیت تغییر پیدا کرد. لطفا با اطلاعات جدید وارد شوید",
+  "Your password was changed successfully and you are now logged in.": "رمز عبور شما با موفقیت تغییر یافت و وارد شدید.",
   "Change password": "تغییر رمز عبور",
   "Enter your new password.": "رمز عبور جدید خود را وارد کنید.",
   "Save": "ذخیره",
@@ -589,6 +591,7 @@
 
   "Mobile number is required": "شماره موبایل الزامی است",
   "Mobile number must be 11 digits and start with 09": "شماره موبایل باید 11 رقم و با 09 شروع شود",
+  "Please enter a valid 11-digit mobile number.": "لطفاً شماره موبایل 11 رقمی معتبر وارد کنید",
 
   "Invalid email format": "فرمت ایمیل صحیح نیست",
   "Province is required": "انتخاب استان الزامی است",
@@ -596,12 +599,14 @@
   "Region is required": "انتخاب منطقه الزامی است",
 
   "Verification code sent to your mobile number": "کد تایید به شماره موبایل شما ارسال شد",
+  "There was a problem sending the code.": "مشکلی در ارسال کد پیش آمد",
   "Registration failed": "خطا در ثبت نام",
   "Registration failed. Please try again": "خطا در ثبت نام. لطفاً مجدداً تلاش کنید",
 
   "Enter your 10-digit national ID": "کد ملی 10 رقمی خود را وارد کنید",
   "Mobile number": "شماره موبایل",
   "Mobile number: 09XXXXXXXXX": "شماره موبایل : 09XXXXXXXXX",
+  "Enter your mobile number.": "شماره موبایل خود را وارد کنید",
   "Enter your 11-digit mobile number starting with 09": "شماره موبایل 11 رقمی خود را با 09 وارد کنید",
   "Email address": "آدرس ایمیل",
   "Email address*": "آدرس ایمیل*",
@@ -700,9 +705,11 @@
   "Do you want to edit the mobile number?": "آیا می‌خواهید شماره موبایل را ویرایش کنید؟",
   "Verify mobile number": "تایید شماره موبایل",
   "Enter the verification code sent": "کد تایید ارسال شده را وارد کنید",
+  "Enter the 6-digit code sent to {{phone}}": "کد 6 رقمی ارسال شده به شماره {{phone}} را وارد کنید",
   "6-digit code to mobile number": "کد 6 رقمی به شماره موبایل",
   "has been sent": "ارسال شده است",
   "Resend code in": "ارسال مجدد کد در",
+  "Resend code in {{seconds}} seconds": "ارسال مجدد کد در {{seconds}} ثانیه",
   "Unexpected error during logout": "خطای غیرمنتظره در خروج",
   "Do you want to log out from all devices logged in with this account?": "آیا می‌خواهید از همه دستگاه‌هایی که با این حساب وارد شده‌اند خارج شوید؟",
   "Successfully logged out from all devices": "با موفقیت از همه دستگاه‌ها خارج شدید",
@@ -1018,6 +1025,7 @@
   "Weak password": "رمز عبور ضعیف است",
   "Password must include the following:": "رمز عبور باید شامل موارد زیر باشد:",
   "New password (minimum 8 characters)": "رمز عبور جدید (حداقل 8 کاراکتر)",
+  "New password (minimum 6 characters)": "رمز عبور جدید (حداقل 6 کاراکتر)",
   "Must include: uppercase/lowercase letters, numbers, and symbols (!@#$%...)": "باید شامل: حروف بزرگ/کوچک، اعداد و نمادها (!@#$%...)",
   "Log in again": "ورود مجدد",
   "Error fetching images": "خطا در دریافت تصاویر",
@@ -1046,6 +1054,8 @@
   "Message text must not exceed 5000 characters": "متن پیام نباید بیشتر از 5000 کاراکتر باشد",
   "Your message was sent successfully": "پیام شما با موفقیت ارسال شد",
   "Error sending message": "خطا در ارسال پیام",
+  "Chat is closed. There is no active order.": "چت بسته شده است. سفارش فعالی وجود ندارد.",
+  "Cannot send messages.": "امکان ارسال پیام وجود ندارد.",
   "Message": "پیام",
   "New message text": "متن پیام جدید",
   "Enter your message here...": "پیام خود را اینجا وارد کنید...",
@@ -1710,7 +1720,6 @@
   "Type:": "نوع:",
   "Submitted on:": "تاریخ ثبت:",
   "Description:": "توضیحات:",
-  "No leave requests have been submitted.": "هیچ درخواست مرخصی ثبت نشده است"
+  "No leave requests have been submitted.": "هیچ درخواست مرخصی ثبت نشده است",
+  "No orders found for this organization": "هیچ سفارشی برای این سازمان یافت نشد"
 }
-
-

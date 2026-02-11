@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useMemo } from "react";
 import {
   View,
   Text,
@@ -15,9 +15,14 @@ import { notesAPI } from "../../services/Api";
 import { showToastOrAlert, showAlert } from "../../helpers/Common";
 import Button from "../../components/Button";
 import { useTranslation } from "react-i18next";
-
+import { createStyles } from '../../styles/NewStyles';
 export default function AddEditNoteScreen({ route, navigation }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const NewStyles = useMemo(
+    () => createStyles(i18n.language),
+    [i18n.language]
+  );
+    const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
   const noteToEdit = route.params?.note;
   const isEditMode = !!noteToEdit;
 
@@ -178,7 +183,7 @@ export default function AddEditNoteScreen({ route, navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) =>  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: themeColor0.bgColor(1),
@@ -204,7 +209,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   labelRow: {
-    flexDirection: 'row-reverse',
+    ...NewStyles.row,
     alignItems: 'center',
     marginBottom: 8,
   },
@@ -218,7 +223,7 @@ const styles = StyleSheet.create({
     padding: 14,
     fontFamily: 'VazirLight',
     fontSize: 14,
-    textAlign: 'right',
+    // textAlign: 'right',
     minHeight: 200,
     borderWidth: 1,
     borderColor: themeColor3.bgColor(0.3),
@@ -228,7 +233,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   counterRow: {
-    flexDirection: 'row-reverse',
+ ...NewStyles.row,
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 8,

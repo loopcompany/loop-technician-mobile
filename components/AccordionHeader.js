@@ -1,9 +1,10 @@
 import { TouchableOpacity, Text, View } from 'react-native'
-import React from 'react'
+import React, { useMemo } from 'react'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import NewStyles from '../styles/NewStyles'
 import { themeColor0, themeColor4, themeColor6 } from '../theme/Color'
-
+import { createStyles } from '../styles/NewStyles';
+import { useTranslation } from 'react-i18next';
 const AccordionHeader = ({
     title,
     isActive,
@@ -12,6 +13,11 @@ const AccordionHeader = ({
     inactiveMessage,
     badgeCount
 }) => {
+      const { t, i18n } = useTranslation();
+      const NewStyles = useMemo(
+        () => createStyles(i18n.language),
+        [i18n.language]
+      );
     return (
         <TouchableOpacity
             style={[
@@ -33,8 +39,8 @@ const AccordionHeader = ({
             onPress={onPress}
         >
             {isActive && <Ionicons name="checkmark" size={20} color={themeColor4.bgColor(1)} />}
-            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
-                <Text style={[NewStyles.title4, { textAlign: 'right' }]}>{title}</Text>
+            <View style={[NewStyles.row,{ flex: 1,gap: 8 }]}>
+                <Text style={[NewStyles.title4]}>{title}</Text>
                 {badgeCount > 0 && (
                     <View style={{
                         backgroundColor: themeColor6.bgColor(1),

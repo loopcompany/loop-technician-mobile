@@ -18,7 +18,20 @@ import { requestPasswordReset } from "../../services/Api";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { showAlert } from "../../helpers/Common";
 import { createStyles } from '../../styles/NewStyles';
+import { useTranslation } from "react-i18next";
 export default function SignInScreen({ navigation }) {
+  // از اینجا
+  const { t, i18n } = useTranslation();
+  const NewStyles = useMemo(
+    () => createStyles(i18n.language),
+    [i18n.language]
+  );
+  // تا اینجا
+  
+
+
+  // این خط پایین
+  const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
   const [referralCode, setReferralCode] = useState("");
   const [mobile, setMobile] = useState("");
   const [nationalId, setNationalId] = useState("");
@@ -27,19 +40,19 @@ export default function SignInScreen({ navigation }) {
 
   const validateInputs = () => {
     if (!referralCode.trim()) {
-      showAlert("خطا", "لطفاً کد پرسنلی خود را وارد کنید");
+      showAlert(t("Error"), t("Please enter personnel code."));
       return false;
     }
     if (!mobile.trim() || mobile.length < 11) {
-      showAlert("خطا", "لطفاً شماره موبایل 11 رقمی معتبر وارد کنید");
+      showAlert(t("Error"), t("Please enter a valid 11-digit mobile number."));
       return false;
     }
     if (!nationalId.trim() || nationalId.length !== 10) {
-      showAlert("خطا", "لطفاً کد ملی 10 رقمی معتبر وارد کنید");
+      showAlert(t("Error"), t("National ID must be 10 digits."));
       return false;
     }
     if (!email.trim() || !email.includes('@')) {
-      showAlert("خطا", "لطفاً آدرس ایمیل معتبر وارد کنید");
+      showAlert(t("Error"), t("The email address you entered is not valid."));
       return false;
     }
     return true;
@@ -63,11 +76,11 @@ export default function SignInScreen({ navigation }) {
 
       if (result.success) {
         showAlert(
-          "موفق",
-          "کد تأیید به شماره موبایل شما ارسال شد",
+          t("Success"),
+          t("Verification code sent to your mobile number"),
           [
             {
-              text: "تأیید",
+              text: t("Confirm"),
               onPress: () => {
                 navigation.navigate("ResetPasswordScreen", {
                   phone: mobile.trim(),
@@ -80,11 +93,11 @@ export default function SignInScreen({ navigation }) {
           ]
         );
       } else {
-        showAlert("خطا", result.message || "مشکلی در ارسال کد پیش آمد");
+        showAlert(t("Error"), result.message || t("There was a problem sending the code."));
       }
     } catch (error) {
       console.log('❌ خطا در ارسال درخواست:', error);
-      showAlert("خطا", "مشکلی در ارتباط با سرور پیش آمد");
+      showAlert(t("Error"), t("There was an error connecting to the server."));
     } finally {
       setLoading(false);
     }
@@ -113,7 +126,7 @@ export default function SignInScreen({ navigation }) {
             <View style={[{ flex: 1, width: '100%', gap: 10 , maxWidth:800}, NewStyles.center]}>
               <TextInput
                 style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-                placeholder="کد پرسنلی خود را وارد کنید"
+                placeholder={t("Please enter personnel code.")}
                 placeholderTextColor={themeColor10.bgColor(0.9)}
                 value={referralCode}
                 onChangeText={setReferralCode}
@@ -121,7 +134,7 @@ export default function SignInScreen({ navigation }) {
 
               <TextInput
                 style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-                placeholder="شماره موبایل خود را وارد کنید"
+                placeholder={t("Enter your mobile number.")}
                 placeholderTextColor={themeColor10.bgColor(0.9)}
                 value={mobile}
                 onChangeText={setMobile}
@@ -131,7 +144,7 @@ export default function SignInScreen({ navigation }) {
 
               <TextInput
                 style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-                placeholder="کد ملی خود را وارد کنید"
+                placeholder={t("Enter your national ID")}
                 placeholderTextColor={themeColor10.bgColor(0.9)}
                 value={nationalId}
                 onChangeText={setNationalId}
@@ -141,7 +154,7 @@ export default function SignInScreen({ navigation }) {
 
               <TextInput
                 style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-                placeholder="آدرس ایمیل خود را وارد کنید"
+                placeholder={t("Enter your email address")}
                 placeholderTextColor={themeColor10.bgColor(0.9)}
                 value={email}
                 onChangeText={setEmail}
@@ -151,7 +164,7 @@ export default function SignInScreen({ navigation }) {
 
             <View style={[{ flex: 1, width: '100%' }, NewStyles.center]}>
               <Button
-                title={"ارسال رمز اعتباری"}
+                title={t("Send code")}
                 onPress={handleSendCode}
                 loading={loading}
               />
@@ -163,8 +176,7 @@ export default function SignInScreen({ navigation }) {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) => StyleSheet.create({
   background: {
     flex: 1,
     paddingBottom:50

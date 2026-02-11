@@ -31,10 +31,16 @@ import DatePickerModal from '../../components/DatePickerModal';
 import Button from '../../components/Button';
 import jalaali from 'jalaali-js';
 import { getFormatedDate } from 'react-native-modern-datepicker';
-
+import { createStyles } from '../../styles/NewStyles';
 export default function OrderDetailScreen({ route, navigation }) {
+  const user = useSelector((state) => state?.user?.data?.technician);
   const { orderId } = route?.params || {};
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const NewStyles = useMemo(
+    () => createStyles(i18n.language),
+    [i18n.language]
+  );
+  const styles = useMemo(() => createLocalStyles(NewStyles), [NewStyles]);
   const dispatch = useDispatch();
   const orderExtras = useSelector(state => state.orderExtras.data);
   const loadingExtras = useSelector(state => state.orderExtras.loading);
@@ -1624,19 +1630,23 @@ export default function OrderDetailScreen({ route, navigation }) {
                 {/* بخش قیمت و رمز */}
                 <Text style={[NewStyles.title, styles.sectionTitle]}>{t("Additional information")}</Text>
 
-                <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>{t("Maximum price (Toman)")}</Text>
-                  <TextInput
-                    style={styles.textInput}
-                    value={productReport.max_price?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                    onChangeText={(text) => setProductReport({ ...productReport, max_price: text?.replace(/,/g, "") })}
-                    placeholder={t("Example: 5000000")}
-                    placeholderTextColor={themeColor3.bgColor(0.5)}
-                    keyboardType="number-pad"
-                    editable={!reportConfirmed}
-                  />
-                </View>
-
+                {user?.apple_check == 1
+                  ? null
+                  : <View style={styles.inputGroup}>
+                    <Text style={NewStyles.text}>{t("Maximum price (Toman)")}</Text>
+                    <TextInput
+                      style={styles.textInput}
+                      value={productReport.max_price?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                      onChangeText={(text) => setProductReport({ ...productReport, max_price: text?.replace(/,/g, "") })}
+                      placeholder={t("Example: 5000000")}
+                      placeholderTextColor={themeColor3.bgColor(0.5)}
+                      keyboardType="number-pad"
+                      editable={!reportConfirmed}
+                    />
+                  </View>}
+  {user?.apple_check == 1 
+  ? null 
+  :
                 <View style={styles.inputGroup}>
                   <Text style={NewStyles.text}>{t("Minimum price (Toman)")}</Text>
                   <TextInput
@@ -1648,7 +1658,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                     keyboardType="number-pad"
                     editable={!reportConfirmed}
                   />
-                </View>
+                </View>}
 
                 <View style={styles.inputGroup}>
                   <Text style={NewStyles.text}>{t("Product password")}</Text>
@@ -1744,7 +1754,9 @@ export default function OrderDetailScreen({ route, navigation }) {
                       />
                     </View>
 
-                    <View style={styles.inputGroup}>
+                 {user?.apple_check == 1 
+  ? null 
+  :     <View style={styles.inputGroup}>
                       <Text style={NewStyles.text}>{t("Estimated cost (Toman)")}</Text>
                       <TextInput
                         style={styles.textInput}
@@ -1755,7 +1767,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                         keyboardType="number-pad"
                         editable={!data?.user_accept_date}
                       />
-                    </View>
+                    </View>}
 
                     <View style={styles.inputGroup}>
                       <Text style={NewStyles.text}>{t("Loop description")}</Text>
@@ -1786,7 +1798,9 @@ export default function OrderDetailScreen({ route, navigation }) {
               </View>
             )}
 
-            <AccordionHeader
+       {user?.apple_check == 1 
+  ? null 
+  :       <AccordionHeader
               title={t("Parts / Costs / Start")}
               isActive={isPricesActive}
               isOpen={showPrices}
@@ -1798,16 +1812,18 @@ export default function OrderDetailScreen({ route, navigation }) {
 
                 setShowPrices(!showPrices);
               }}
-            />
+            />}
 
             {showPrices && isPricesActive && (
               <View style={[styles.contentSection, { gap: 15, paddingVertical: 15 }]}>
-                <View style={[NewStyles.row, { gap: 10, paddingHorizontal: 15 }]}>
+                {user?.apple_check == 1 
+  ? null 
+  :  <View style={[NewStyles.row, { gap: 10, paddingHorizontal: 15 }]}>
                   <Ionicons name="pricetag-outline" size={24} color={themeColor0.bgColor(1)} />
                   <Text style={[NewStyles.text, { flex: 1 }]}>
                     {t("In this section, you can specify the required costs and parts.")}
                   </Text>
-                </View>
+                </View>}
 
                 {/* دکمه شروع تعمیر */}
                 {data?.started_at ? (
@@ -1960,9 +1976,11 @@ export default function OrderDetailScreen({ route, navigation }) {
                       size={24}
                       color={(data?.payment_status == "1" || data?.payment_status === 1) ? themeColor7.bgColor(1) : themeColor3.bgColor(1)}
                     />
-                    <Text style={[NewStyles.title4, { color: (data?.payment_status == "1" || data?.payment_status === 1) ? themeColor7.bgColor(1) : themeColor3.bgColor(1) }]}>
+                   {user?.apple_check == 1 
+  ? null 
+  :   <Text style={[NewStyles.title4, { color: (data?.payment_status == "1" || data?.payment_status === 1) ? themeColor7.bgColor(1) : themeColor3.bgColor(1) }]}>
                       {(data?.payment_status == "1" || data?.payment_status === 1) ? t("User has paid") : t("User has not paid yet")}
-                    </Text>
+                    </Text>}
                   </View>
                 </View>
 
@@ -2293,7 +2311,7 @@ export default function OrderDetailScreen({ route, navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) => StyleSheet.create({
   background: { flex: 1 },
   scrollContainer: {
     paddingVertical: 15,

@@ -1522,7 +1522,7 @@ const createLocalStyles = (NewStyles) =>  StyleSheet.create({
     textAlign: 'center',
   },
   loanRow: {
-    flexDirection: 'row-reverse',
+   ...NewStyles.row,
     alignItems: 'center',
     marginVertical: 8,
   },
@@ -1550,7 +1550,7 @@ const createLocalStyles = (NewStyles) =>  StyleSheet.create({
     fontWeight: 'bold',
   },
   monthRow: {
-    flexDirection: 'row-reverse',
+    ...NewStyles.row,
     alignItems: 'center',
     marginVertical: 8,
   },

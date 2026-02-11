@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useMemo } from 'react';
 import {
   View,
   Text,
@@ -22,12 +22,17 @@ import { fetchUser, setUserData } from '../../slices/userSlice';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../../components/Button';
 import { useTranslation } from 'react-i18next';
+import { createStyles } from '../../styles/NewStyles';
 export default function FinancialInfoScreen({ navigation }) {
   const dispatch = useDispatch();
   const userData = useSelector(state => state.user.data?.data?.technician);
   const userToken = useSelector(state => state.auth.token);
-  const { t } = useTranslation();
-
+  const { t, i18n } = useTranslation();
+  const NewStyles = useMemo(
+    () => createStyles(i18n.language),
+    [i18n.language]
+  );
+  const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
   const [saving, setSaving] = useState(false);
 
 
@@ -198,7 +203,7 @@ export default function FinancialInfoScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) =>  StyleSheet.create({
   background: {
     flex: 1,
   },
@@ -235,7 +240,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: themeColor10.bgColor(1),
     marginBottom: 8,
-    textAlign: 'right',
+    // textAlign: 'right',
   },
   input: {
     borderWidth: 1,
@@ -244,7 +249,7 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 14,
     backgroundColor: themeColor4.bgColor(1),
-    textAlign: 'right',
+    // textAlign: 'right',
     ...NewStyles.text10,
     minHeight: 45,
   },

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useMemo } from "react";
 import {
   View,
   Text,
@@ -15,9 +15,14 @@ import { notesAPI } from "../services/Api";
 import { showToastOrAlert , showAlert, formatDateTime} from "../helpers/Common";
 import Button from "../components/Button";
 import { useTranslation } from "react-i18next";
-
+import { createStyles } from '../styles/NewStyles';
 export default function NotesScreen({ route, navigation }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const NewStyles = useMemo(
+    () => createStyles(i18n.language),
+    [i18n.language]
+  );
+    const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -183,7 +188,7 @@ export default function NotesScreen({ route, navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) =>  StyleSheet.create({
   
   listContent: {
     padding: 16,

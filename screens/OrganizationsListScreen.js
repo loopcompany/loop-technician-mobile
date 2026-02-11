@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useMemo } from 'react';
 import {
     View,
     Text,
@@ -21,11 +21,18 @@ import { useFooter } from '../contexts/FooterProvider';
 import { uri } from '../services/URL';
 import ScreenHeaders from '../components/ScreenHeaders';
 import { useTranslation } from 'react-i18next';
-
+import { createStyles } from '../styles/NewStyles';
+import {langIsRTL} from'../helpers/Common';
 export default function OrganizationsListScreen() {
     const navigation = useNavigation();
     const { FooterComponent } = useFooter();
-    const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const NewStyles = useMemo(
+    () => createStyles(i18n.language),
+    [i18n.language]
+  );
+    const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
+        const isRtl = langIsRTL(i18n.language)
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [organizations, setOrganizations] = useState([]);
@@ -150,7 +157,7 @@ export default function OrganizationsListScreen() {
                 </View>
 
                 {/* Arrow */}
-                <Ionicons name="chevron-back" size={20} color={themeColor10.bgColor(0.5)} style={styles.arrow} />
+                <Ionicons   name={isRtl ? 'chevron-back' : 'chevron-forward'} size={20} color={themeColor10.bgColor(0.5)} style={styles.arrow} />
             </TouchableOpacity>
         );
     };
@@ -211,7 +218,7 @@ export default function OrganizationsListScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) => StyleSheet.create({
     loadingContainer: {
         flex: 1,
         ...NewStyles.center,

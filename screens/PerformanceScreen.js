@@ -20,9 +20,14 @@ import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor4, themeColor6, themeColor7, themeColor8, themeColor11 } from '../theme/Color';
 import { getTransactions } from '../services/Api';
 import { formatDate, showAlert } from '../helpers/Common';
-
+import { createStyles } from '../styles/NewStyles';
 export default function PerformanceScreen({ navigation }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const NewStyles = useMemo(
+    () => createStyles(i18n.language),
+    [i18n.language]
+  );
+    const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -325,7 +330,7 @@ export default function PerformanceScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) => StyleSheet.create({
   background: {
     flex: 1
   },

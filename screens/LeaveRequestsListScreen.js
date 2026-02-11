@@ -202,6 +202,7 @@ export default function LeaveRequestsListScreen({ navigation }) {
 
         return (
             <Modal
+            ScrollView
                 visible={modalVisible}
                 transparent={true}
                 animationType="fade"
@@ -483,7 +484,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
         backgroundColor: themeColor0.bgColor(1),
         borderRadius: 10,
         padding: 15,
-        flexDirection: 'row',
+      ...NewStyles.row,
         alignItems: 'center',
     },
     addButtonText: {
@@ -496,14 +497,15 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.6)',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 20,
+        // padding: 20,
     },
     modalContent: {
-        backgroundColor: '#fff',
-        borderRadius: 20,
-        width: '100%',
-        ...NewStyles.shadow,
-    },
+  width: '90%',
+  maxHeight: '80%',     // ✅ خیلی مهم: محدود کردن ارتفاع
+  backgroundColor: '#fff',
+  borderRadius: 12,
+  overflow: 'hidden',   // ✅ برای اینکه گوشه‌ها با اسکرول خراب نشه
+},
     modalLoading: {
         padding: 40,
         alignItems: 'center',
@@ -511,7 +513,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     },
     modalHeader: {
         ...NewStyles.rowWrapper,
-        padding: 20,
+        padding: 16,
         paddingBottom: 15,
         borderBottomWidth: 1,
         borderBottomColor: themeColor3.bgColor(0.2),
@@ -528,7 +530,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
         // maxHeight: 400,
     },
     detailRow: {
-        // ...NewStyles.rowWrapper,
+        ...NewStyles.rowWrapper,
         marginBottom: 15,
         paddingBottom: 12,
         borderBottomWidth: 1,

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useMemo } from 'react';
 import {
     View,
     Text,
@@ -7,6 +7,7 @@ import {
     TouchableOpacity,
     ActivityIndicator,
     RefreshControl,
+    Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -18,17 +19,24 @@ import { formatDate, showAlert } from '../helpers/Common';
 import { Ionicons } from '@expo/vector-icons';
 import { useFooter } from '../contexts/FooterProvider';
 import ScreenHeaders from '../components/ScreenHeaders';
-
+import { useTranslation } from 'react-i18next';
+import { createStyles } from '../styles/NewStyles';
 export default function OrganizationOrdersScreen() {
     const navigation = useNavigation();
     const route = useRoute();
     const { FooterComponent } = useFooter();
     const { organizationId, organizationName } = route.params;
-
+  const { t, i18n } = useTranslation();
+  const NewStyles = useMemo(
+    () => createStyles(i18n.language),
+    [i18n.language]
+  );
+  const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [orders, setOrders] = useState([]);
     const [total, setTotal] = useState(0);
+    const alertButtons = Platform.OS === 'web' ? undefined : [{ text: t('Ok'), style: 'default' }];
 
     useEffect(() => {
         fetchOrders();
@@ -43,11 +51,11 @@ export default function OrganizationOrdersScreen() {
                 setOrders(result.data.orders || []);
                 setTotal(result.data.total || 0);
             } else {
-                showAlert('خطا', result.message || 'خطا در دریافت سفارشات');
+                showAlert(t('Error'), result.message || t('Error fetching orders'), alertButtons);
             }
         } catch (error) {
             console.log('❌ خطا در دریافت سفارشات:', error);
-            showAlert('خطا', 'مشکلی در ارتباط با سرور پیش آمد');
+            showAlert(t('Error'), t('Error communicating with server'), alertButtons);
         } finally {
             setLoading(false);
         }
@@ -61,15 +69,15 @@ export default function OrganizationOrdersScreen() {
 
     const getStatusText = (status) => {
         const statusMap = {
-            0: 'در انتظار',
-            1: 'در حال انجام',
-            2: 'انجام شده',
-            3: 'لغو توسط کاربر',
-            4: 'لغو توسط تکنسین',
-            5: 'لغو توسط ادمین',
-            6: 'منقضی شده',
+            0: t('Pending'),
+            1: t('Processing'),
+            2: t('Completed'),
+            3: t('Canceled by user'),
+            4: t('Canceled by technician'),
+            5: t('Canceled by admin'),
+            6: t('Expired'),
         };
-        return statusMap[status] || 'نامشخص';
+        return statusMap[status] || t('Unknown');
     };
 
     const getStatusColor = (status) => {
@@ -148,13 +156,13 @@ export default function OrganizationOrdersScreen() {
                 {/* Footer: Price and Urgent Badge */}
                 <View style={styles.orderFooter}>
                     <View style={styles.priceContainer}>
-                        <Text style={styles.priceLabel}>مبلغ کل:</Text>
-                        <Text style={styles.priceValue}>{formatPrice(totalPrice)} تومان</Text>
+                        <Text style={styles.priceLabel}>{t('Total Price:')}</Text>
+                        <Text style={styles.priceValue}>{formatPrice(totalPrice)} {t('Tomans')}</Text>
                     </View>
                     {item.is_urgent === 1 && (
                         <View style={styles.urgentBadge}>
                             <Ionicons name="flash" size={12} color={themeColor0.bgColor(1)} />
-                            <Text style={styles.urgentText}>فوری</Text>
+                            <Text style={styles.urgentText}>{t('Urgent')}</Text>
                         </View>
                     )}
                 </View>
@@ -163,7 +171,7 @@ export default function OrganizationOrdersScreen() {
                 {item.payment_status === 1 && (
                     <View style={styles.paymentBadge}>
                         <Ionicons name="checkmark-circle" size={14} color={themeColor3.bgColor(1)} />
-                        <Text style={styles.paymentText}>پرداخت شده</Text>
+                        <Text style={styles.paymentText}>{t('Paid')}</Text>
                     </View>
                 )}
             </TouchableOpacity>
@@ -173,7 +181,7 @@ export default function OrganizationOrdersScreen() {
     const renderEmpty = () => (
         <View style={styles.emptyContainer}>
             <Ionicons name="document-text-outline" size={80} color={themeColor10.bgColor(0.3)} />
-            <Text style={styles.emptyText}>هیچ سفارشی برای این سازمان یافت نشد</Text>
+            <Text style={styles.emptyText}>{t('No orders found for this organization')}</Text>
         </View>
     );
 
@@ -183,7 +191,7 @@ export default function OrganizationOrdersScreen() {
                 <CustomStatusBar />
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color={themeColor6.bgColor(1)} />
-                    <Text style={styles.loadingText}>در حال بارگذاری...</Text>
+                    <Text style={styles.loadingText}>{t('Loading...')}</Text>
                 </View>
             </SafeAreaView>
         );
@@ -218,7 +226,7 @@ export default function OrganizationOrdersScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) =>  StyleSheet.create({
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',

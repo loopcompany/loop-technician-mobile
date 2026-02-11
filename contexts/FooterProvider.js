@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
+import React, { createContext, useContext, useState, useRef, useEffect,useMemo } from 'react';
 import {
   View,
   Text,
@@ -22,7 +22,7 @@ import { themeColor0, themeColor4, themeColor6, themeColor7, themeColor10, theme
 import NewStyles from '../styles/NewStyles';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-
+import { createStyles } from '../styles/NewStyles';
 const FooterContext = createContext();
 
 export const useFooter = () => {
@@ -37,8 +37,12 @@ export const FooterProvider = ({ children }) => {
   const [isFooterVisible, setIsFooterVisible] = useState(true);
   const [menuVisible, setMenuVisible] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const { t } = useTranslation();
-
+  const { t, i18n } = useTranslation();
+  const NewStyles = useMemo(
+    () => createStyles(i18n.language),
+    [i18n.language]
+  );
+  const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles])
   const menuAnimation = useRef(new Animated.Value(0)).current;
   const overlayOpacity = useRef(new Animated.Value(0)).current;
 
@@ -305,7 +309,7 @@ export const FooterProvider = ({ children }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) => StyleSheet.create({
   overlay: {
     position: 'absolute',
     top: 0,
@@ -365,8 +369,9 @@ const styles = StyleSheet.create({
     // borderBottomColor: themeColor4.bgColor(0.2),
   },
   title: {
+    ...NewStyles.text10,
     fontSize: 16,
-    textAlign: 'right',
+    // textAlign: 'right',
     fontWeight: '600',
   },
   bottomButtons: {
