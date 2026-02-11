@@ -11,7 +11,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { getFormatedDate } from 'react-native-modern-datepicker';
-
+import { createStyles } from '../styles/NewStyles';
 import ScreenHeaders from '../components/ScreenHeaders';
 import DatePickerModal from '../components/DatePickerModal';
 import TimePickerModal from '../components/TimePickerModal';
@@ -26,8 +26,12 @@ export default function RequestsScreen({ navigation }) {
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [expandedItems, setExpandedItems] = useState({});
-  const { t } = useTranslation();
-
+  const { t, i18n } = useTranslation();
+  const NewStyles = useMemo(
+    () => createStyles(i18n.language),
+    [i18n.language]
+  );
+  const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
   // محاسبه تاریخ امروز به صورت شمسی
   const todayJalali = useMemo(() =>
     getFormatedDate(new Date(), 'jYYYY/jMM/jDD'),
@@ -1375,7 +1379,7 @@ export default function RequestsScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) =>  StyleSheet.create({
   background: {
     flex: 1
   },

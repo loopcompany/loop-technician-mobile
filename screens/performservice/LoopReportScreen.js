@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useMemo } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-
+import { createStyles } from '../../styles/NewStyles';
 import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
 import {
@@ -36,7 +36,12 @@ import {
 import { showToastOrAlert, formatDateTime } from '../../helpers/Common';
 
 export default function LoopReportScreen({ navigation }) {
-  const { t } = useTranslation();
+const { t, i18n } = useTranslation();
+  const NewStyles = useMemo(
+    () => createStyles(i18n.language),
+    [i18n.language]
+  );
+    const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
   const token = useSelector((state) => state.auth.token);
 
   // State management
@@ -335,7 +340,7 @@ export default function LoopReportScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) =>  StyleSheet.create({
   background: {
     flex: 1,
   },

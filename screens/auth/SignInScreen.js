@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useMemo } from "react";
 import {
   View,
   Text,
@@ -17,7 +17,7 @@ import { themeColor10, themeColor4 } from "../../theme/Color";
 import { requestPasswordReset } from "../../services/Api";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { showAlert } from "../../helpers/Common";
-
+import { createStyles } from '../../styles/NewStyles';
 export default function SignInScreen({ navigation }) {
   const [referralCode, setReferralCode] = useState("");
   const [mobile, setMobile] = useState("");

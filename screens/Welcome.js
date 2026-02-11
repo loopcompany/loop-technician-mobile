@@ -17,10 +17,12 @@ import { setToken } from '../slices/authSlice';
 import { validateToken } from '../services/Api';
 import { fetchContacts } from "../slices/contactSlice";
 import { fetchUser } from "../slices/userSlice";
+import { useTranslation } from "react-i18next";
 
 export default function Welcome({ navigation }) {
   const [isChecking, setIsChecking] = useState(true);
   const dispatch = useDispatch();
+  const { t } = useTranslation();
 
   useEffect(() => {
     checkAutoLogin();
@@ -68,7 +70,7 @@ export default function Welcome({ navigation }) {
             resizeMode="contain"
           />
           <ActivityIndicator size="large" color={themeColor10.bgColor(1)} style={{ marginTop: 20 }} />
-          <Text style={[NewStyles.text10, { marginTop: 10 }]}>در حال بررسی...</Text>
+          <Text style={[NewStyles.text10, { marginTop: 10 }]}>{t("Checking...")}</Text>
         </View>
       </ImageBackground>
     );
@@ -96,17 +98,17 @@ export default function Welcome({ navigation }) {
             <Text
               style={[NewStyles.title4, { textAlign: "center", fontSize: 40 }]}
             >
-              سلام
+              {t("Hello")}
             </Text>
             <Text
               style={[NewStyles.title1, { textAlign: "center", fontSize: 45 }]}
             >
-              به جوهر آینده
+              {t("To the essence of the future")}
             </Text>
             <Text
               style={[NewStyles.title4, { textAlign: "center", fontSize: 40 }]}
             >
-              خوش آمدید
+              {t("Welcome")}
             </Text>
           </View>
         </View>

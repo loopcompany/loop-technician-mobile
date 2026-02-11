@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback,useMemo } from 'react';
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
-
+import { createStyles } from '../styles/NewStyles';
 import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor2, themeColor8, themeColor4, themeColor10, themeColor7, themeColor6, themeColor11 } from '../theme/Color';
@@ -24,8 +24,12 @@ export default function IncentivePlansScreen({ navigation }) {
   const [statistics, setStatistics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const { t } = useTranslation();
-
+  const { t, i18n } = useTranslation();
+  const NewStyles = useMemo(
+    () => createStyles(i18n.language),
+    [i18n.language]
+  );
+  const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
   // دریافت لیست طرح‌ها
   const fetchPlans = async (isRefresh = false) => {
     try {
@@ -183,7 +187,7 @@ export default function IncentivePlansScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) => StyleSheet.create({
   background: {
     flex: 1
   },

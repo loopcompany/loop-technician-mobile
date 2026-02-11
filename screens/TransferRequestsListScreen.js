@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback,useMemo } from 'react';
 import {
   View,
   Text,
@@ -19,7 +19,7 @@ import { getTransferRequests, getTransferRequestById } from '../services/Api';
 import { useFocusEffect } from '@react-navigation/native';
 import { formatDateTime, showAlert } from '../helpers/Common';
 import { useTranslation } from 'react-i18next';
-
+import { createStyles } from '../styles/NewStyles';
 export default function TransferRequestsListScreen({ navigation }) {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,8 +27,12 @@ export default function TransferRequestsListScreen({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
-  const { t } = useTranslation();
-
+ const { t, i18n } = useTranslation();
+  const NewStyles = useMemo(
+    () => createStyles(i18n.language),
+    [i18n.language]
+  );
+  const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
   const fetchRequests = async (isRefresh = false) => {
     try {
       if (!isRefresh) setLoading(true);
@@ -314,7 +318,7 @@ export default function TransferRequestsListScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) =>StyleSheet.create({
   background: {
     flex: 1,
   },

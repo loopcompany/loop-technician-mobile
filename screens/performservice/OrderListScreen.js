@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
+import { createStyles } from '../../styles/NewStyles';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -20,7 +21,12 @@ import BlankScreen from '../../components/BlankScreen';
 import Button from '../../components/Button';
 
 export default function OrderListScreen({ navigation }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const NewStyles = useMemo(
+    () => createStyles(i18n.language),
+    [i18n.language]
+  );
+    const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -323,7 +329,7 @@ export default function OrderListScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) => StyleSheet.create({
   background: { flex: 1 },
   container: {
     padding: 15,

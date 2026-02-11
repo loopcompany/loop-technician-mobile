@@ -18,6 +18,7 @@ import {
 } from '../../services/Api';
 import { validateTechnicianRegistration } from '../../utils/validation';
 import { showAlert } from '../../helpers/Common';
+import { useTranslation } from "react-i18next";
 
 // Pre-calculate colors outside component to prevent re-renders
 const HEADER_BG_COLOR = themeColor0.bgColor(0.8);
@@ -71,6 +72,7 @@ export default function SignIn({ navigation }) {
     resume: '',
     expertise_ids: []
   });
+  const { t } = useTranslation();
 
   // Available expertises from API
   const [expertises, setExpertises] = useState([]);
@@ -120,51 +122,51 @@ export default function SignIn({ navigation }) {
         } else {
           console.warn('⚠️ Expertises load failed:', result.message);
 
-          let errorMessage = 'خطا در دریافت لیست تخصص‌ها\n\n';
+          let errorMessage = `${t("Error fetching expertises list")}\n\n`;
           if (result.message) {
             errorMessage += result.message;
           }
 
-          showAlert('خطا', errorMessage);
+          showAlert(t("Error"), errorMessage);
 
           // Set some default expertises for testing
           setExpertises([
-            { id: 1, title: 'کاربر سخت افزار' },
-            { id: 2, title: 'کاربر نرم افزار' },
-            { id: 3, title: 'کاربر شبکه' },
-            { id: 4, title: 'کاربر پرینتر / کپی صنعتی' },
-            { id: 5, title: 'کاربر جامع' },
-            { id: 6, title: 'کاربر هارد دیسک' },
-            { id: 7, title: 'کاربر دوربین مداربسته' }
+            { id: 1, title: t("Hardware user") },
+            { id: 2, title: t("Software user") },
+            { id: 3, title: t("Network user") },
+            { id: 4, title: t("Industrial printer / copier user") },
+            { id: 5, title: t("General user") },
+            { id: 6, title: t("Hard disk user") },
+            { id: 7, title: t("CCTV camera user") }
           ]);
         }
       } catch (error) {
         console.log('❌ Error loading expertises:', error);
 
-        let errorMessage = 'خطا در ارتباط با سرور\n\n';
+        let errorMessage = `${t("Error communicating with server")}\n\n`;
 
         if (error.response) {
-          errorMessage += `وضعیت: ${error.response.status}\n`;
+          errorMessage += `${t("Status")}: ${error.response.status}\n`;
           if (error.response.data?.message) {
-            errorMessage += `پیام: ${error.response.data.message}`;
+            errorMessage += `${t("Message:")} ${error.response.data.message}`;
           }
         } else if (error.request) {
-          errorMessage += 'سرور پاسخی نداد. لطفاً اتصال اینترنت خود را بررسی کنید.';
+          errorMessage += t("Server did not respond. Please check your internet connection.");
         } else {
-          errorMessage += `پیام خطا: ${error.message}`;
+          errorMessage += `${t("Error message:")} ${error.message}`;
         }
 
-        showAlert('خطا', errorMessage);
+        showAlert(t("Error"), errorMessage);
 
         // Set some default expertises for testing
         setExpertises([
-          { id: 1, title: 'کاربر سخت افزار' },
-          { id: 2, title: 'کاربر نرم افزار' },
-          { id: 3, title: 'کاربر شبکه' },
-          { id: 4, title: 'کاربر پرینتر / کپی صنعتی' },
-          { id: 5, title: 'کاربر جامع' },
-          { id: 6, title: 'کاربر هارد دیسک' },
-          { id: 7, title: 'کاربر دوربین مداربسته' }
+          { id: 1, title: t("Hardware user") },
+          { id: 2, title: t("Software user") },
+          { id: 3, title: t("Network user") },
+          { id: 4, title: t("Industrial printer / copier user") },
+          { id: 5, title: t("General user") },
+          { id: 6, title: t("Hard disk user") },
+          { id: 7, title: t("CCTV camera user") }
         ]);
       }
     };
@@ -176,41 +178,41 @@ export default function SignIn({ navigation }) {
   // Validate referral code
   const handleValidateReferralCode = async () => {
     if (!formData.other_referral_code) {
-      showAlert('خطا', 'لطفاً ابتدا کد معرف را وارد کنید');
+      showAlert(t("Error"), t("Please enter the referral code first."));
       return;
     }
 
     try {
       const result = await validateReferralCode(formData.other_referral_code);
       if (result.success) {
-        showAlert('موفقیت', result.data?.message || result.message || 'کد معرف معتبر است');
+        showAlert(t("Success"), result.data?.message || result.message || t("Referral code is valid."));
       } else {
-        let errorMessage = result.message || 'کد معرف نامعتبر است';
+        let errorMessage = result.message || t("Referral code is invalid.");
 
         if (result.errors) {
           const errorList = Object.values(result.errors).flat();
           errorMessage += '\n\n' + errorList.join('\n');
         }
 
-        showAlert('خطا', errorMessage);
+        showAlert(t("Error"), errorMessage);
       }
     } catch (error) {
       console.log('Error validating referral code:', error);
 
-      let errorMessage = 'خطا در بررسی کد معرف\n\n';
+      let errorMessage = `${t("Error validating referral code")}\n\n`;
 
       if (error.response) {
-        errorMessage += `وضعیت: ${error.response.status}\n`;
+        errorMessage += `${t("Status")}: ${error.response.status}\n`;
         if (error.response.data?.message) {
-          errorMessage += `پیام: ${error.response.data.message}`;
+          errorMessage += `${t("Message:")} ${error.response.data.message}`;
         }
       } else if (error.request) {
-        errorMessage += 'سرور پاسخی نداد. لطفاً اتصال اینترنت خود را بررسی کنید.';
+        errorMessage += t("Server did not respond. Please check your internet connection.");
       } else {
-        errorMessage += `پیام خطا: ${error.message}`;
+        errorMessage += `${t("Error message:")} ${error.message}`;
       }
 
-      showAlert('خطا', errorMessage);
+      showAlert(t("Error"), errorMessage);
     }
   };
 
@@ -235,9 +237,9 @@ export default function SignIn({ navigation }) {
         
         // نمایش پیام کلی بدون جزئیات (چون خطاها زیر فیلدها نمایش داده می‌شوند)
         showAlert(
-          'خطا در اعتبارسنجی فرم',
-          'لطفاً فیلدهای مشخص شده را تکمیل کنید',
-          [{ text: 'متوجه شدم', style: 'cancel' }]
+          t("Form validation error"),
+          t("Please complete the highlighted fields."),
+          [{ text: t("Ok"), style: 'cancel' }]
         );
         return false;
       }
@@ -252,9 +254,9 @@ export default function SignIn({ navigation }) {
       console.log('💥 Error stack:', error.stack);
       
       showAlert(
-        'خطای سیستمی',
-        `خطای غیرمنتظره در اعتبارسنجی:\n${error.message}`,
-        [{ text: 'متوجه شدم', style: 'cancel' }]
+        t("System error"),
+        `${t("Unexpected validation error:")}\n${error.message}`,
+        [{ text: t("Ok"), style: 'cancel' }]
       );
       return false;
     }
@@ -334,11 +336,11 @@ export default function SignIn({ navigation }) {
       if (result.success) {
         console.log('✅ Registration successful!');
         showAlert(
-          'موفقیت',
-          result.message || 'ثبت نام با موفقیت انجام شد',
+          t("Success"),
+          result.message || t("Your information was successfully registered."),
           [
             {
-              text: 'تایید',
+              text: t("Confirm"),
               onPress: () => {
                 // Navigate to phone verification screen
                 navigation.navigate('PhoneVerification', {
@@ -366,13 +368,13 @@ export default function SignIn({ navigation }) {
         } else if (result.message) {
           errorMessage = result.message;
         } else {
-          errorMessage = 'خطای نامشخص در ثبت نام';
+          errorMessage = t("Unknown error during registration.");
         }
 
         showAlert(
-          'خطا در ثبت نام',
+          t("Registration error"),
           errorMessage,
-          [{ text: 'متوجه شدم', style: 'cancel' }],
+          [{ text: t("Ok"), style: 'cancel' }],
           { cancelable: true }
         );
       }
@@ -386,19 +388,19 @@ export default function SignIn({ navigation }) {
       });
 
       // Build detailed error message
-      let errorMessage = 'خطا در ارتباط با سرور\n\n';
+      let errorMessage = `${t("Error communicating with server")}\n\n`;
 
       if (error.response) {
         // Server responded with error
-        errorMessage += `وضعیت: ${error.response.status}\n`;
+        errorMessage += `${t("Status")}: ${error.response.status}\n`;
 
         if (error.response.data) {
           if (error.response.data.message) {
-            errorMessage += `پیام: ${error.response.data.message}\n`;
+            errorMessage += `${t("Message:")} ${error.response.data.message}\n`;
           }
 
           if (error.response.data.errors) {
-            errorMessage += '\nجزئیات خطاها:\n';
+            errorMessage += `\n${t("Error details:")}\n`;
             const errorList = Object.entries(error.response.data.errors).map(([field, messages]) => {
               const messageList = Array.isArray(messages) ? messages : [messages];
               return `• ${field}: ${messageList.join(', ')}`;
@@ -408,16 +410,16 @@ export default function SignIn({ navigation }) {
         }
       } else if (error.request) {
         // Request made but no response
-        errorMessage += 'سرور پاسخی نداد. لطفاً اتصال اینترنت خود را بررسی کنید.';
+        errorMessage += t("Server did not respond. Please check your internet connection.");
       } else {
         // Something else happened
-        errorMessage += `پیام خطا: ${error.message}`;
+        errorMessage += `${t("Error message:")} ${error.message}`;
       }
 
       showAlert(
-        'خطا',
+        t("Error"),
         errorMessage,
-        [{ text: 'متوجه شدم', style: 'cancel' }],
+        [{ text: t("Ok"), style: 'cancel' }],
         { cancelable: true }
       );
     } finally {
@@ -457,7 +459,7 @@ export default function SignIn({ navigation }) {
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <CustomStatusBar />
         <TouchableOpacity style={[styles.headerButton, styles.headerButtonBg]}>
-          <Text style={[NewStyles.title4]}>اطلاعات تکمیلی</Text>
+          <Text style={[NewStyles.title4]}>{t("Additional information")}</Text>
         </TouchableOpacity>
 
         {/* Form Fields */}
@@ -465,7 +467,7 @@ export default function SignIn({ navigation }) {
 
           {/* نام و نام خانوادگی */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>نام و نام خانوادگی <Text style={styles.required}>*</Text> :</Text>
+            <Text style={[NewStyles.text10]}>{t("Full Name")} <Text style={styles.required}>*</Text> :</Text>
             <TextInput
               style={[
                 NewStyles.textInput, 
@@ -475,14 +477,14 @@ export default function SignIn({ navigation }) {
               ]}
               value={formData.name}
               onChangeText={(value) => updateField('name', value)}
-              placeholder="مثال: علی احمدی"
+              placeholder={t("Example: Ali Ahmadi")}
               placeholderTextColor={PLACEHOLDER_COLOR}
             />
             <FieldError field="name" />
           </View>
           
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>شماره تلفن اصلی <Text style={styles.required}>*</Text> :</Text>
+            <Text style={[NewStyles.text10]}>{t("Primary phone number")} <Text style={styles.required}>*</Text> :</Text>
             <View style={styles.phoneContainer}>
               <TextInput
                 style={[
@@ -505,7 +507,7 @@ export default function SignIn({ navigation }) {
 
           {/* شماره ملی */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>شماره ملی <Text style={styles.required}>*</Text> :</Text>
+            <Text style={[NewStyles.text10]}>{t("National ID number")} <Text style={styles.required}>*</Text> :</Text>
             <TextInput
               style={[
                 NewStyles.textInput, 
@@ -525,7 +527,7 @@ export default function SignIn({ navigation }) {
 
           {/* متولد */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>متولد (تاریخ شمسی) <Text style={styles.required}>*</Text> :</Text>
+            <Text style={[NewStyles.text10]}>{t("Birth date (Jalali)")} <Text style={styles.required}>*</Text> :</Text>
             <TouchableOpacity
               style={[
                 NewStyles.textInput, 
@@ -537,7 +539,7 @@ export default function SignIn({ navigation }) {
               onPress={() => setBirthDateModal(true)}
             >
               <Text style={[NewStyles.text10, formData.birth_date ? styles.dateTextFull : styles.dateTextHalf]}>
-                {formData.birth_date || 'انتخاب تاریخ تولد'}
+                {formData.birth_date || t("Select birth date")}
               </Text>
             </TouchableOpacity>
             <FieldError field="birth_date" />
@@ -545,7 +547,7 @@ export default function SignIn({ navigation }) {
 
           {/* نام پدر */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>نام پدر <Text style={styles.required}>*</Text> :</Text>
+            <Text style={[NewStyles.text10]}>{t("Father's name")} <Text style={styles.required}>*</Text> :</Text>
             <TextInput
               style={[
                 NewStyles.textInput, 
@@ -563,7 +565,7 @@ export default function SignIn({ navigation }) {
 
           {/* صادره از */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>صادره از <Text style={styles.required}>*</Text> :</Text>
+            <Text style={[NewStyles.text10]}>{t("Place of issue")} <Text style={styles.required}>*</Text> :</Text>
             <TextInput
               style={[
                 NewStyles.textInput, 
@@ -581,7 +583,7 @@ export default function SignIn({ navigation }) {
 
           {/* شماره شناسنامه */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>شماره شناسنامه <Text style={styles.required}>*</Text> :</Text>
+            <Text style={[NewStyles.text10]}>{t("Birth certificate number")} <Text style={styles.required}>*</Text> :</Text>
             <TextInput
               style={[
                 NewStyles.textInput, 
@@ -599,7 +601,7 @@ export default function SignIn({ navigation }) {
 
           {/* وضعیت تأهل */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>وضعیت تأهل <Text style={styles.required}>*</Text> :</Text>
+            <Text style={[NewStyles.text10]}>{t("Marital status")} <Text style={styles.required}>*</Text> :</Text>
             <View style={[
               NewStyles.textInput, 
               NewStyles.border10, 
@@ -611,8 +613,8 @@ export default function SignIn({ navigation }) {
                 onValueChange={(value) => updateField('marital_status', value)}
                 style={styles.picker}
               >
-                <Picker.Item label="متأهل" value="متأهل" />
-                <Picker.Item label="مجرد" value="مجرد" />
+                <Picker.Item label={t("Married")} value="متأهل" />
+                <Picker.Item label={t("Single")} value="مجرد" />
               </Picker>
             </View>
             <FieldError field="marital_status" />
@@ -620,7 +622,7 @@ export default function SignIn({ navigation }) {
 
           {/* وضعیت سربازی */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>وضعیت سربازی <Text style={styles.required}>*</Text> :</Text>
+            <Text style={[NewStyles.text10]}>{t("Military status")} <Text style={styles.required}>*</Text> :</Text>
             <View style={[
               NewStyles.textInput, 
               NewStyles.border10, 
@@ -632,9 +634,9 @@ export default function SignIn({ navigation }) {
                 onValueChange={(value) => updateField('military_status', value)}
                 style={styles.picker}
               >
-                <Picker.Item label="پایان خدمت" value="پایان خدمت" />
-                <Picker.Item label="معاف" value="معاف" />
-                <Picker.Item label="در حال خدمت" value="در حال خدمت" />
+                <Picker.Item label={t("Completed service")} value="پایان خدمت" />
+                <Picker.Item label={t("Exempt")} value="معاف" />
+                <Picker.Item label={t("In service")} value="در حال خدمت" />
               </Picker>
             </View>
             <FieldError field="military_status" />
@@ -642,7 +644,7 @@ export default function SignIn({ navigation }) {
 
           {/* وضعیت تحصیلات */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>وضعیت تحصیلات <Text style={styles.required}>*</Text> :</Text>
+            <Text style={[NewStyles.text10]}>{t("Education status")} <Text style={styles.required}>*</Text> :</Text>
             <TextInput
               style={[
                 NewStyles.textInput, 
@@ -660,7 +662,7 @@ export default function SignIn({ navigation }) {
 
           {/* شماره تلفن ثابت */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>شماره تلفن ثابت ۰۲۱ ۸ رقمی <Text style={styles.required}>*</Text> :</Text>
+            <Text style={[NewStyles.text10]}>{t("Landline number (021, 8 digits)")} <Text style={styles.required}>*</Text> :</Text>
             <View style={styles.phoneContainer}>
               <TextInput
                 style={[
@@ -682,7 +684,7 @@ export default function SignIn({ navigation }) {
 
           {/* شماره تلفن همراه */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>شماره تلفن همراه ۱۱ رقمی <Text style={styles.required}>*</Text> :</Text>
+            <Text style={[NewStyles.text10]}>{t("Mobile number (11 digits)")} <Text style={styles.required}>*</Text> :</Text>
             <View style={styles.phoneContainer}>
               <TextInput
                 style={[
@@ -705,7 +707,7 @@ export default function SignIn({ navigation }) {
 
           {/* آدرس ایمیل */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>آدرس ایمیل <Text style={styles.required}>*</Text> :</Text>
+            <Text style={[NewStyles.text10]}>{t("Email Address")} <Text style={styles.required}>*</Text> :</Text>
             <TextInput
               style={[
                 NewStyles.textInput, 
@@ -726,7 +728,7 @@ export default function SignIn({ navigation }) {
 
           {/* تاریخ اعتبار گواهینامه */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>تاریخ اعتبار گواهینامه (تاریخ شمسی) <Text style={styles.required}>*</Text> :</Text>
+            <Text style={[NewStyles.text10]}>{t("License expiry date (Jalali)")} <Text style={styles.required}>*</Text> :</Text>
             <TouchableOpacity
               style={[
                 NewStyles.textInput, 
@@ -738,7 +740,7 @@ export default function SignIn({ navigation }) {
               onPress={() => setLicenceDateModal(true)}
             >
               <Text style={[NewStyles.text10, formData.licence_date ? styles.dateTextFull : styles.dateTextHalf]}>
-                {formData.licence_date || 'انتخاب تاریخ اعتبار'}
+                {formData.licence_date || t("Select expiry date")}
               </Text>
             </TouchableOpacity>
             <FieldError field="licence_date" />
@@ -746,18 +748,18 @@ export default function SignIn({ navigation }) {
 
           {/* نوع وسیله نقلیه */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>نوع وسیله نقلیه <Text style={styles.required}>*</Text> :</Text>
+            <Text style={[NewStyles.text10]}>{t("Vehicle type")} <Text style={styles.required}>*</Text> :</Text>
             <View style={[NewStyles.textInput, NewStyles.border10, styles.pickerContainer, fieldErrors.vehicle_type && styles.inputError]}>
               <Picker
                 selectedValue={formData.vehicle_type}
                 onValueChange={(value) => updateField('vehicle_type', value)}
                 style={styles.picker}
               >
-                <Picker.Item label="انتخاب کنید..." value="" />
-                <Picker.Item label="موتور سیکلت" value="موتور سیکلت" />
-                <Picker.Item label="خودرو" value="خودرو" />
-                <Picker.Item label="دوچرخه" value="دوچرخه" />
-                <Picker.Item label="پیاده" value="پیاده" />
+                <Picker.Item label={t("Select...")} value="" />
+                <Picker.Item label={t("Motorcycle")} value="موتور سیکلت" />
+                <Picker.Item label={t("Car")} value="خودرو" />
+                <Picker.Item label={t("Bicycle")} value="دوچرخه" />
+                <Picker.Item label={t("On foot")} value="پیاده" />
               </Picker>
             </View>
             <FieldError field="vehicle_type" />
@@ -765,7 +767,7 @@ export default function SignIn({ navigation }) {
 
           {/* کد پستی منزل */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>کد پستی منزل <Text style={styles.required}>*</Text> :</Text>
+            <Text style={[NewStyles.text10]}>{t("Home postal code")} <Text style={styles.required}>*</Text> :</Text>
             <TextInput
               style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, fieldErrors.home_postal_code && styles.inputError]}
               value={formData.home_postal_code}
@@ -781,18 +783,18 @@ export default function SignIn({ navigation }) {
           {/* شهر + منطقه */}
           <View style={styles.cityRow}>
             <View style={styles.cityContainer}>
-              <Text style={[NewStyles.text10]}>شهر <Text style={styles.required}>*</Text> :</Text>
+              <Text style={[NewStyles.text10]}>{t("City")} <Text style={styles.required}>*</Text> :</Text>
               <TextInput
                 style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, fieldErrors.city && styles.inputError]}
                 value={formData.city}
                 onChangeText={(value) => updateField('city', value)}
-                placeholder="تهران"
+                placeholder={t("Tehran")}
                 placeholderTextColor={PLACEHOLDER_COLOR}
               />
               <FieldError field="city" />
             </View>
             <View style={styles.regionContainer}>
-              <Text style={[NewStyles.text10]}>منطقه <Text style={styles.required}>*</Text> :</Text>
+              <Text style={[NewStyles.text10]}>{t("Region")} <Text style={styles.required}>*</Text> :</Text>
               <TextInput
                 style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, fieldErrors.region && styles.inputError]}
                 value={formData.region}
@@ -807,7 +809,7 @@ export default function SignIn({ navigation }) {
 
           {/* آدرس منزل */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>آدرس منزل <Text style={styles.required}>*</Text> :</Text>
+            <Text style={[NewStyles.text10]}>{t("Home address")} <Text style={styles.required}>*</Text> :</Text>
             <TextInput
               style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.addressInput, fieldErrors.home_address && styles.inputError]}
               value={formData.home_address}
@@ -822,7 +824,7 @@ export default function SignIn({ navigation }) {
 
           {/* کد پرسنلی مصرف */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>کد پرسنلی معرف :</Text>
+            <Text style={[NewStyles.text10]}>{t("Referrer personnel code")} :</Text>
             <View style={styles.referralContainer}>
               <TextInput
                 style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, { flex: 1 }]}
@@ -835,7 +837,7 @@ export default function SignIn({ navigation }) {
                 style={styles.validateButton}
                 onPress={handleValidateReferralCode}
               >
-                <Text style={[NewStyles.text10]}>بررسی</Text>
+                <Text style={[NewStyles.text10]}>{t("Verify")}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -851,21 +853,21 @@ export default function SignIn({ navigation }) {
             
             // نام و نام خانوادگی - الزامی
             if (!formData.name || formData.name.trim().length === 0) {
-              errors.name = 'نام و نام خانوادگی الزامی است';
+              errors.name = t("Full name is required.");
             } else if (formData.name.trim().length < 1) {
-              errors.name = 'نام و نام خانوادگی باید حداقل 2 کاراکتر باشد';
+              errors.name = t("Full name must be at least 2 characters.");
             }
             
             // شماره ملی - الزامی و باید معتبر باشد
             if (!formData.melicode || formData.melicode.trim().length === 0) {
-              errors.melicode = 'شماره ملی الزامی است';
+              errors.melicode = t("National ID number is required.");
             } else if (formData.melicode.length !== 10) {
-              errors.melicode = 'کد ملی باید 10 رقم باشد';
+              errors.melicode = t("National ID must be 10 digits.");
             } else {
               // بررسی معتبر بودن کد ملی
               const allSame = formData.melicode.split('').every(digit => digit === formData.melicode[0]);
               if (allSame) {
-                errors.melicode = 'کد ملی نامعتبر است';
+                errors.melicode = t("National ID is invalid.");
               } else {
                 // بررسی رقم کنترل
                 const checkDigit = parseInt(formData.melicode.charAt(9));
@@ -876,49 +878,49 @@ export default function SignIn({ navigation }) {
                 const remainder = sum % 11;
                 const expectedCheckDigit = remainder < 2 ? remainder : 11 - remainder;
                 if (checkDigit !== expectedCheckDigit) {
-                  errors.melicode = 'کد ملی نامعتبر است';
+                  errors.melicode = t("National ID is invalid.");
                 }
               }
             }
             
             // شماره تلفن اصلی - الزامی
             if (!formData.phone || formData.phone.trim().length === 0) {
-              errors.phone = 'شماره تلفن اصلی الزامی است';
+              errors.phone = t("Primary phone number is required.");
             } else {
               const phoneRegex = /^09[0-9]{9}$/;
               if (!phoneRegex.test(formData.phone)) {
-                errors.phone = 'فرمت شماره تلفن صحیح نیست (09xxxxxxxxx)';
+                errors.phone = t("Phone number format is invalid (09xxxxxxxxx).");
               }
             }
             
             // شماره تلفن همراه - الزامی
             if (!formData.mobile || formData.mobile.trim().length === 0) {
-              errors.mobile = 'شماره تلفن همراه الزامی است';
+              errors.mobile = t("Mobile number is required.");
             } else {
               const mobileRegex = /^09[0-9]{9}$/;
               if (!mobileRegex.test(formData.mobile)) {
-                errors.mobile = 'فرمت شماره تلفن همراه صحیح نیست (09xxxxxxxxx)';
+                errors.mobile = t("Mobile number format is invalid (09xxxxxxxxx).");
               }
             }
             
             // تاریخ تولد - الزامی
             if (!formData.birth_date || formData.birth_date.trim().length === 0) {
-              errors.birth_date = 'لطفاً تاریخ تولد خود را انتخاب کنید';
+              errors.birth_date = t("Please select your birth date.");
             }
             
             // آدرس ایمیل - الزامی
             if (!formData.email || formData.email.trim().length === 0) {
-              errors.email = 'آدرس ایمیل الزامی است';
+              errors.email = t("Email address is required.");
             } else {
               const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
               if (!emailRegex.test(formData.email)) {
-                errors.email = 'فرمت ایمیل صحیح نیست';
+                errors.email = t("Email format is invalid.");
               }
             }
             
             // تاریخ اعتبار گواهینامه - الزامی
             if (!formData.licence_date || formData.licence_date.trim().length === 0) {
-              errors.licence_date = 'لطفاً تاریخ اعتبار گواهینامه را انتخاب کنید';
+              errors.licence_date = t("Please select the license expiry date.");
             }
             
             // اگر خطا وجود دارد، نمایش بده و از رفتن به مرحله بعدی جلوگیری کن
@@ -928,9 +930,9 @@ export default function SignIn({ navigation }) {
               
               // نمایش پیام کلی (خطاها زیر فیلدها نمایش داده می‌شوند)
               showAlert(
-                'خطا در اطلاعات فرم',
-                'لطفاً فیلدهای مشخص شده با قرمز را تکمیل کنید',
-                [{ text: 'متوجه شدم', style: 'cancel' }]
+                t("Form information error"),
+                t("Please complete the fields marked in red."),
+                [{ text: t("Ok"), style: 'cancel' }]
               );
               return;
             }
@@ -940,7 +942,7 @@ export default function SignIn({ navigation }) {
             setCurrentPage('computer');
           }}
         >
-          <Text style={[NewStyles.text10]}>بعدی - دانش کامپیوتر</Text>
+          <Text style={[NewStyles.text10]}>{t("Next - Computer skills")}</Text>
         </TouchableOpacity>
 
       </ScrollView>
@@ -953,7 +955,7 @@ export default function SignIn({ navigation }) {
 
       {/* Header */}
       <TouchableOpacity style={[styles.headerButton, styles.headerButtonBg]}>
-        <Text style={[NewStyles.title4]}>دانش کامپیوتر</Text>
+        <Text style={[NewStyles.title4]}>{t("Computer skills")}</Text>
       </TouchableOpacity>
 
       {/* Computer Skills Form */}
@@ -961,7 +963,7 @@ export default function SignIn({ navigation }) {
 
         {/* لیدز / شفافیت */}
         <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>ایده / خلاقیت : <Text style={styles.required}>*</Text></Text>
+          <Text style={[NewStyles.text10]}>{t("Idea / Creativity")} : <Text style={styles.required}>*</Text></Text>
           <TextInput
             style={[
               NewStyles.textInput, 
@@ -981,7 +983,7 @@ export default function SignIn({ navigation }) {
 
         {/* تسلط / توانایی ها (نرم افزار) */}
         <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>تسلط / توانایی ها (نرم افزار) : <Text style={styles.required}>*</Text></Text>
+          <Text style={[NewStyles.text10]}>{t("Proficiency / Skills (Software)")} : <Text style={styles.required}>*</Text></Text>
           <TextInput
             style={[
               NewStyles.textInput, 
@@ -1001,7 +1003,7 @@ export default function SignIn({ navigation }) {
 
         {/* تسلط / توانایی ها (سخت افزار) */}
         <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>تسلط / توانایی ها (سخت افزار) : <Text style={styles.required}>*</Text></Text>
+          <Text style={[NewStyles.text10]}>{t("Proficiency / Skills (Hardware)")} : <Text style={styles.required}>*</Text></Text>
           <TextInput
             style={[
               NewStyles.textInput, 
@@ -1021,7 +1023,7 @@ export default function SignIn({ navigation }) {
 
         {/* تاکاکس / نقطه ضعف (نرم افزار) */}
         <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>ناآگاهی / نقطه ضعف (نرم افزار) : <Text style={styles.required}>*</Text></Text>
+          <Text style={[NewStyles.text10]}>{t("Weakness / Blind spot (Software)")} : <Text style={styles.required}>*</Text></Text>
           <TextInput
             style={[
               NewStyles.textInput, 
@@ -1041,7 +1043,7 @@ export default function SignIn({ navigation }) {
 
         {/* تاکاکس / نقطه ضعف (سخت افزار) */}
         <View style={styles.inputRow}>
-          <Text style={[NewStyles.text10]}>ناآگاهی / نقاط ضعف (سخت افزار) : <Text style={styles.required}>*</Text></Text>
+          <Text style={[NewStyles.text10]}>{t("Weakness / Blind spots (Hardware)")} : <Text style={styles.required}>*</Text></Text>
           <TextInput
             style={[
               NewStyles.textInput, 
@@ -1063,7 +1065,7 @@ export default function SignIn({ navigation }) {
 
       {/* گرایش فعالیت Header */}
       <TouchableOpacity style={[styles.headerButton, styles.headerButtonBg]}>
-        <Text style={[NewStyles.title4]}>گرایش فعالیت / تخصص</Text>
+        <Text style={[NewStyles.title4]}>{t("Activity focus / Expertise")}</Text>
       </TouchableOpacity>
 
       {/* Expertise Selection */}
@@ -1093,7 +1095,7 @@ export default function SignIn({ navigation }) {
         ))}
 
         {expertises.length === 0 && (
-          <Text style={[NewStyles.text10]}>در حال دریافت لیست تخصص‌ها...</Text>
+          <Text style={[NewStyles.text10]}>{t("Fetching expertises list...")}</Text>
         )}
         
         <FieldError field="expertise_ids" />
@@ -1101,9 +1103,9 @@ export default function SignIn({ navigation }) {
 
       {/* بارگذاری رزومه */}
       <View style={styles.resumeSection}>
-        <Text style={[NewStyles.title10]}>بارگذاری رزومه (اختیاری)</Text>
+        <Text style={[NewStyles.title10]}>{t("Upload resume (optional)")}</Text>
         <Text style={[NewStyles.text10]}>
-          می‌توانید رزومه / اطلاعات تکمیلی خود را امضا شده با موضوع (همکاری / فعالیت در لوپ) بارگذاری نمایید.
+          {t("You can upload your resume / additional information, signed with the subject (Cooperation / Activity in Loop).")}
         </Text>
 
         {/* File picker + upload controls */}
@@ -1111,15 +1113,15 @@ export default function SignIn({ navigation }) {
           {resumeFile ? (
             <View style={styles.selectedFileRow}>
               <Text style={[NewStyles.text10]}>
-                {resumeFile.name || (resumeFile.uri ? resumeFile.uri.split('/').pop() : 'فایل انتخاب شده')}
+                {resumeFile.name || (resumeFile.uri ? resumeFile.uri.split('/').pop() : t("Selected file"))}
               </Text>
               <TouchableOpacity style={styles.removeFileButton} onPress={() => setResumeFile(null)}>
-                <Text style={[NewStyles.text4]}>حذف</Text>
+                <Text style={[NewStyles.text4]}>{t("Remove")}</Text>
               </TouchableOpacity>
             </View>
           ) : (
             <TouchableOpacity style={styles.pickFileButton} onPress={pickDocument}>
-              <Text style={[NewStyles.text10]}>انتخاب فایل رزومه</Text>
+              <Text style={[NewStyles.text10]}>{t("Select resume file")}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -1127,7 +1129,7 @@ export default function SignIn({ navigation }) {
 
       {/* Submit Button */}
       <Button
-        title={submitting ? "در حال ثبت نام..." : "ثبت نام"}
+        title={submitting ? t("Registering...") : t("Sign Up")}
         onPress={handleSubmit}
         style={styles.submitButton}
         disabled={submitting}
@@ -1136,7 +1138,7 @@ export default function SignIn({ navigation }) {
       {submitting && (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={themeColor1.bgColor(1)} />
-          <Text style={styles.loadingText}>در حال ارسال اطلاعات...</Text>
+          <Text style={styles.loadingText}>{t("Submitting information...")}</Text>
         </View>
       )}
 
@@ -1145,7 +1147,7 @@ export default function SignIn({ navigation }) {
         style={styles.backButton}
         onPress={() => setCurrentPage('personal')}
       >
-        <Text style={styles.backButtonText}>بازگشت به اطلاعات تکمیلی</Text>
+        <Text style={styles.backButtonText}>{t("Back to additional information")}</Text>
       </TouchableOpacity>
 
     </ScrollView>
@@ -1183,7 +1185,7 @@ export default function SignIn({ navigation }) {
           };
           
           reader.onerror = (error) => {
-            reject(new Error('خطا در خواندن فایل'));
+            reject(new Error(t("Error reading file")));
           };
           
           reader.readAsDataURL(file);
@@ -1256,24 +1258,24 @@ export default function SignIn({ navigation }) {
       // Validate file size (max 5MB)
       if (fileInfo.size > 5 * 1024 * 1024) {
         showAlert(
-          'فایل بزرگ است',
-          'حجم فایل نباید بیشتر از 5 مگابایت باشد.'
+          t("File is too large"),
+          t("File size must not exceed 5 MB.")
         );
         return;
       }
 
       setResumeFile(fileInfo);
-      showAlert('موفق', `فایل "${fileInfo.name}" انتخاب شد`);
+      showAlert(t("Success"), t("File \"{{name}}\" selected", { name: fileInfo.name }));
 
     } catch (err) {
       console.log('❌ خطا در انتخاب فایل:', err);
 
-      let errorMessage = 'انتخاب فایل با خطا مواجه شد\n\n';
+      let errorMessage = `${t("File selection failed")}\n\n`;
       if (err.message) {
-        errorMessage += `پیام خطا: ${err.message}`;
+        errorMessage += `${t("Error message:")} ${err.message}`;
       }
 
-      showAlert('خطا', errorMessage);
+      showAlert(t("Error"), errorMessage);
     }
   };
 

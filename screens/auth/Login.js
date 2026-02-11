@@ -27,9 +27,11 @@ import { setToken } from '../../slices/authSlice';
 import { fetchUser, setUserData } from '../../slices/userSlice';
 import { showToastOrAlert, showAlert } from '../../helpers/Common';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from "react-i18next";
 export default function Login() {
   const navigation = useNavigation();
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const [referralCode, setReferralCode] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -114,19 +116,19 @@ export default function Login() {
   function validateInputs() {
 
     if (!referralCode.trim()) {
-      showAlert('خطا', 'لطفاً کد پرسنلی را وارد کنید');
+      showAlert(t("Error"), t("Please enter personnel code."));
       return false;
     }
     if (referralCode.trim().length < 6) {
-      showAlert('خطا', 'کد پرسنلی باید حداقل 6 کاراکتر باشد');
+      showAlert(t("Error"), t("Personnel code must be at least 6 characters."));
       return false;
     }
     if (!password.trim()) {
-      showAlert('خطا', 'لطفاً رمز عبور را وارد کنید');
+      showAlert(t("Error"), t("Please enter your password."));
       return false;
     }
     if (!captchaInput.trim()) {
-      showAlert('خطا', 'لطفاً کد امنیتی را وارد کنید');
+      showAlert(t("Error"), t("Please enter the security code."));
       return false;
     }
     const normalizedInput = normalizeDigits(captchaInput);
@@ -134,9 +136,9 @@ export default function Login() {
 
     if (normalizedInput !== normalizedCaptcha) {
       showAlert(
-        'کد امنیتی اشتباه',
-        `کد وارد شده: ${captchaInput}\n\nلطفاً کد امنیتی جدید را وارد کنید.`,
-        [{ text: 'متوجه شدم', style: 'cancel' }]
+        t("Incorrect security code"),
+        `${t("Entered code:")} ${captchaInput}\n\n${t("Please enter a new security code.")}`,
+        [{ text: t("Ok"), style: 'cancel' }]
       );
       createNewCaptcha();
       return false;
@@ -168,7 +170,7 @@ export default function Login() {
           await AsyncStorage.removeItem('savedPassword');
         }
 
-        showToastOrAlert('موفق', result.message || 'ورود با موفقیت انجام شد');
+        showToastOrAlert(t("Success"), result.message || t("Login was successful"));
 
         navigation.reset({
           index: 0,
@@ -189,13 +191,13 @@ export default function Login() {
         } else if (result.message) {
           errorMessage = result.message;
         } else {
-          errorMessage = 'خطا در ورود به سیستم';
+          errorMessage = t("Error logging in");
         }
 
         showAlert(
-          'خطا در ورود',
+          t("Login error"),
           errorMessage,
-          [{ text: 'متوجه شدم', style: 'cancel' }],
+          [{ text: t("Ok"), style: 'cancel' }],
           { cancelable: true }
         );
         createNewCaptcha();
@@ -203,19 +205,19 @@ export default function Login() {
     } catch (error) {
 
       // Build detailed error message
-      let errorMessage = 'خطا در ورود به سیستم\n\n';
+      let errorMessage = `${t("Error logging in")}\n\n`;
 
       if (error.response) {
         // Server responded with error
-        errorMessage += `وضعیت: ${error.response.status}\n`;
+        errorMessage += `${t("Status")}: ${error.response.status}\n`;
 
         if (error.response.data) {
           if (error.response.data.message) {
-            errorMessage += `پیام: ${error.response.data.message}\n`;
+            errorMessage += `${t("Message:")} ${error.response.data.message}\n`;
           }
 
           if (error.response.data.errors) {
-            errorMessage += '\nجزئیات خطاها:\n';
+            errorMessage += `\n${t("Error details:")}\n`;
             const errorList = Object.entries(error.response.data.errors).map(([field, messages]) => {
               const messageList = Array.isArray(messages) ? messages : [messages];
               return `• ${field}: ${messageList.join(', ')}`;
@@ -225,16 +227,16 @@ export default function Login() {
         }
       } else if (error.request) {
         // Request made but no response
-        errorMessage += 'سرور پاسخی نداد. لطفاً اتصال اینترنت خود را بررسی کنید.';
+        errorMessage += t("Server did not respond. Please check your internet connection.");
       } else {
         // Something else happened
-        errorMessage += `پیام خطا: ${error.message}`;
+        errorMessage += `${t("Error message:")} ${error.message}`;
       }
 
       showAlert(
-        'خطا',
+        t("Error"),
         errorMessage,
-        [{ text: 'متوجه شدم', style: 'cancel' }],
+        [{ text: t("Ok"), style: 'cancel' }],
         { cancelable: true }
       );
       createNewCaptcha();
@@ -261,7 +263,7 @@ export default function Login() {
                     style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
                     value={referralCode}
                     onChangeText={setReferralCode}
-                    placeholder="کد پرسنلی"
+                    placeholder={t("Personnel code")}
                     placeholderTextColor={themeColor10.bgColor(0.9)}
                     textAlign="center"
                     editable={!isLoading}
@@ -282,7 +284,7 @@ export default function Login() {
                       style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.passwordInputStyle]}
                       value={password}
                       onChangeText={setPassword}
-                      placeholder="رمز عبور"
+                      placeholder={t("Password")}
                       placeholderTextColor={themeColor10.bgColor(0.9)}
                       secureTextEntry={!showPassword}
                       textAlign="center"
@@ -294,7 +296,7 @@ export default function Login() {
                     onPress={() => setRememberPassword(!rememberPassword)}
                     disabled={isLoading}
                   >
-                    <Text style={styles.checkboxText}>ذخیره رمز عبور</Text>
+                    <Text style={styles.checkboxText}>{t("Remember password")}</Text>
                     <View style={[styles.checkbox, rememberPassword && styles.checkboxChecked]}>
                       {rememberPassword && (
                         <Ionicons name="checkmark" size={14} color="white" />
@@ -341,10 +343,10 @@ export default function Login() {
                   </TouchableOpacity>
 
                   <TextInput
-                    style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.captchaInput]}
+                    style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, styles.captchaInput,{fontSize:8}]}
                     value={captchaInput}
                     onChangeText={setCaptchaInput}
-                    placeholder="کد امنیتی"
+                    placeholder={t("Security code")}
                     placeholderTextColor={themeColor10.bgColor(0.9)}
                     textAlign="center"
                     editable={!isLoading}
@@ -356,11 +358,11 @@ export default function Login() {
                   {isLoading ? (
                     <View style={styles.loadingContainer}>
                       <ActivityIndicator size="large" color={themeColor7.bgColor(1)} />
-                      <Text style={styles.loadingText}>در حال ورود...</Text>
+                      <Text style={styles.loadingText}>{t("Logging in...")}</Text>
                     </View>
                   ) : (
                     <Button
-                      title="ورود"
+                      title={t("Login")}
                       onPress={() => {
                         console.log('🔘 دکمه ورود کلیک شد');
                         handleLogin();
@@ -377,13 +379,13 @@ export default function Login() {
                   onPress={() => { navigation.navigate("SignInScreen") }}
                   disabled={isLoading}
                 >
-                  <Text style={styles.bottomSubtitle}>رمز عبور خود را فراموش کرده اید؟</Text>
+                  <Text style={styles.bottomSubtitle}>{t("Forgot your password?")}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => { navigation.navigate("SignIn") }}
                   disabled={isLoading}
                 >
-                  <Text style={styles.bottomFooter}>ثبت نام پرسنل جدید</Text>
+                  <Text style={styles.bottomFooter}>{t("Register new personnel")}</Text>
                 </TouchableOpacity>
               </View>
 

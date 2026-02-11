@@ -2,9 +2,11 @@ import React from "react";
 import { StyleSheet, Text, View, Image, ImageBackground, TouchableOpacity, Platform } from "react-native";
 import Button from "../../components/Button";
 import NewStyles from "../../styles/NewStyles";
+import { useTranslation } from "react-i18next";
 
 
 export default function SignInLanding({ navigation }) {
+  const { t } = useTranslation();
   return (
     <ImageBackground
       source={Platform.OS === 'web' ? require("../../assets/webbackground.jpg") : require("../../assets/background2.jpg")}
@@ -20,14 +22,14 @@ export default function SignInLanding({ navigation }) {
       />
       <Button
         style={{ width: "70%" }}
-        title={"ورود"}
+        title={t("Login")}
         onPress={() => {
           navigation.navigate("Login");
         }}
       />
       <Button
         style={{ width: "70%" }}
-        title={"ثبت نام"}
+        title={t("Sign Up")}
         onPress={() => {
           navigation.navigate("SignIn");
         }}

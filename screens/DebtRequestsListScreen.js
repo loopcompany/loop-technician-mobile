@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useMemo } from 'react';
 import {
   View,
   Text,
@@ -18,7 +18,7 @@ import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor4, theme
 import { getDebtRequests, getDebtRequestById } from '../services/Api';
 import { formatDate, showAlert } from '../helpers/Common';
 import { useTranslation } from 'react-i18next';
-
+import { createStyles } from '../styles/NewStyles';
 export default function DebtRequestsListScreen({ navigation }) {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,8 +26,12 @@ export default function DebtRequestsListScreen({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
-  const { t } = useTranslation();
-
+  const { t, i18n } = useTranslation();
+  const NewStyles = useMemo(
+    () => createStyles(i18n.language),
+    [i18n.language]
+  );
+  const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
   useEffect(() => {
     fetchRequests();
   }, []);
@@ -329,7 +333,7 @@ export default function DebtRequestsListScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) =>StyleSheet.create({
   background: {
     flex: 1,
   },

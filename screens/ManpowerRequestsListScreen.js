@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback,useMemo } from 'react';
 import {
   View,
   Text,
@@ -19,7 +19,7 @@ import { getManpowerRequests, getManpowerRequestById } from '../services/Api';
 import { useFocusEffect } from '@react-navigation/native';
 import { formatDateTime, showAlert } from '../helpers/Common';
 import { useTranslation } from 'react-i18next';
-
+import { createStyles } from '../styles/NewStyles';
 export default function ManpowerRequestsListScreen({ navigation }) {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,8 +27,12 @@ export default function ManpowerRequestsListScreen({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
-  const { t } = useTranslation();
-
+  const { t, i18n } = useTranslation();
+  const NewStyles = useMemo(
+    () => createStyles(i18n.language),
+    [i18n.language]
+  );
+  const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
   const fetchRequests = async (isRefresh = false) => {
     try {
       if (!isRefresh) setLoading(true);
@@ -298,8 +302,7 @@ export default function ManpowerRequestsListScreen({ navigation }) {
     </LinearGradient>
   );
 }
-
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) =>   StyleSheet.create({
   background: {
     flex: 1,
   },

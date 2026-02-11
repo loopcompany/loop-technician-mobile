@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback ,useMemo} from 'react';
 import {
   View,
   Text,
@@ -14,7 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
-
+import { createStyles } from '../../styles/NewStyles';
 import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor3, themeColor4, themeColor7, themeColor10, themeColor8, themeColor2 } from '../../theme/Color';
@@ -27,7 +27,12 @@ export default function FinancialReportScreen({ navigation }) {
   const user = useSelector(state => state.user.data);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const NewStyles = useMemo(
+    () => createStyles(i18n.language),
+    [i18n.language]
+  );
+    const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
   const [walletData, setWalletData] = useState({
     wallet: 0,
     total_settlements: 0,
@@ -239,7 +244,7 @@ export default function FinancialReportScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) =>  StyleSheet.create({
   background: {
     flex: 1,
   },

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
-
+import { createStyles } from '../styles/NewStyles';
 import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor2, themeColor3, themeColor4, themeColor8 } from '../theme/Color';
@@ -24,8 +24,12 @@ export default function ChangePasswordScreen({ navigation }) {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { t } = useTranslation();
-
+  const { t, i18n } = useTranslation();
+  const NewStyles = useMemo(
+    () => createStyles(i18n.language),
+    [i18n.language]
+  );
+  const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
   // Validate password strength
   const validatePasswordStrength = (password) => {
     const errors = [];
@@ -228,7 +232,7 @@ export default function ChangePasswordScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) => StyleSheet.create({
   background: { 
     flex: 1 
   },
@@ -288,17 +292,17 @@ const styles = StyleSheet.create({
     ...NewStyles.text1,
     fontSize: 11,
     marginTop: 4,
-    textAlign: 'right',
+    // textAlign: 'right',
   },
   inputRow: {
     marginVertical: 8,
-    alignItems: 'flex-end',
+    // alignItems: 'flex-end',
   },
   inputLabel: {
     ...NewStyles.text4,
     fontSize: 14,
     marginBottom: 6,
-    textAlign: 'right',
+    // textAlign: 'right',
   },
   passwordInput: {
     ...NewStyles.text10,
@@ -307,6 +311,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     fontSize: 14,
-    textAlign: 'right',
+    // textAlign: 'right',
   },
 });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback,useMemo } from 'react';
 import {
     View,
     Text,
@@ -18,7 +18,7 @@ import { themeColor0, themeColor10, themeColor11, themeColor2, themeColor3, them
 import { getEducationRequests, getEducationRequestById } from '../services/Api';
 import { formatDate, formatDateTime , showAlert} from '../helpers/Common';
 import { useTranslation } from 'react-i18next';
-
+import { createStyles } from '../styles/NewStyles';
 export default function RequestsListScreen({ navigation }) {
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -26,8 +26,12 @@ export default function RequestsListScreen({ navigation }) {
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedRequest, setSelectedRequest] = useState(null);
     const [loadingDetail, setLoadingDetail] = useState(false);
-    const { t } = useTranslation();
-
+  const { t, i18n } = useTranslation();
+  const NewStyles = useMemo(
+    () => createStyles(i18n.language),
+    [i18n.language]
+  );
+  const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
     useEffect(() => {
         fetchRequests();
     }, []);
@@ -294,7 +298,7 @@ export default function RequestsListScreen({ navigation }) {
     );
 }
 
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) =>  StyleSheet.create({
     background: {
         flex: 1,
     },
@@ -342,7 +346,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     statusBadge: {
-        flexDirection: 'row',
+        ...NewStyles.row,
         alignItems: 'center',
         paddingHorizontal: 10,
         paddingVertical: 5,
@@ -359,7 +363,7 @@ const styles = StyleSheet.create({
         color: '#666',
         lineHeight: 22,
         marginBottom: 12,
-        textAlign: 'right',
+        ...NewStyles.text10
     },
     cardFooter: {
         ...NewStyles.rowWrapper,
@@ -368,7 +372,7 @@ const styles = StyleSheet.create({
         paddingTop: 10,
     },
     dateContainer: {
-        flexDirection: 'row',
+       ...NewStyles.row,
         alignItems: 'center',
         gap: 5,
     },
@@ -400,7 +404,7 @@ const styles = StyleSheet.create({
         backgroundColor: themeColor0.bgColor(1),
         borderRadius: 10,
         padding: 15,
-        flexDirection: 'row',
+        ...NewStyles.row,
         alignItems: 'center',
     },
     addButtonText: {

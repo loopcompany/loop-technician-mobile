@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback,useMemo } from 'react';
 import {
     View,
     Text,
@@ -12,13 +12,20 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor10, themeColor11, themeColor2, themeColor3, themeColor4, themeColor6, themeColor7, themeColor8 } from '../theme/Color';
 import { getLeaveRequests, getLeaveRequestById } from '../services/Api';
 import { formatDate, formatDateTime, showAlert } from '../helpers/Common';
-
+import { createStyles } from '../styles/NewStyles';
 export default function LeaveRequestsListScreen({ navigation }) {
+  const { t, i18n } = useTranslation();
+  const NewStyles = useMemo(
+    () => createStyles(i18n.language),
+    [i18n.language]
+  );
+      const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -43,7 +50,7 @@ export default function LeaveRequestsListScreen({ navigation }) {
             }
         } catch (error) {
             console.log('❌ خطا در بارگذاری درخواست‌ها:', error);
-            showAlert('خطا', error.message || 'مشکلی در بارگذاری لیست درخواست‌ها پیش آمد');
+            showAlert(t("Error"), error.message || t("Error fetching request list."));
         } finally {
             setLoading(false);
         }
@@ -61,22 +68,22 @@ export default function LeaveRequestsListScreen({ navigation }) {
 
         switch (statusStr) {
             case '0':
-                return { text: 'در انتظار بررسی', color: themeColor11.bgColor(1), icon: 'time' };
+                return { text: t("Pending review"), color: themeColor11.bgColor(1), icon: 'time' };
             case '1':
-                return { text: 'تایید شده', color: themeColor7.bgColor(1), icon: 'checkmark-circle' };
+                return { text: t("Approved"), color: themeColor7.bgColor(1), icon: 'checkmark-circle' };
             case '2':
-                return { text: 'رد شده', color: themeColor6.bgColor(1), icon: 'close-circle' };
+                return { text: t("Rejected"), color: themeColor6.bgColor(1), icon: 'close-circle' };
             default:
-                return { text: 'نامشخص', color: themeColor3.bgColor(1), icon: 'help-circle' };
+                return { text: t("Unknown"), color: themeColor3.bgColor(1), icon: 'help-circle' };
         }
     };
 
     const getTypeBadge = (type) => {
         switch (type) {
             case 'hourly':
-                return { text: 'ساعتی', color: themeColor0.bgColor(1), icon: 'time-outline' };
+                return { text: t("Hourly"), color: themeColor0.bgColor(1), icon: 'time-outline' };
             case 'daily':
-                return { text: 'روزانه', color: themeColor7.bgColor(1), icon: 'calendar-outline' };
+                return { text: t("Daily"), color: themeColor7.bgColor(1), icon: 'calendar-outline' };
             default:
                 return { text: type, color: themeColor3.bgColor(1), icon: 'help-circle' };
         }
@@ -96,7 +103,7 @@ export default function LeaveRequestsListScreen({ navigation }) {
         } catch (error) {
             console.log('❌ خطا در نمایش جزئیات:', error);
             setModalVisible(false);
-            showAlert('خطا', error.message || 'مشکلی در نمایش جزئیات پیش آمد');
+            showAlert(t("Error"), error.message || t("There was a problem loading the details."));
         } finally {
             setLoadingDetail(false);
         }
@@ -135,14 +142,14 @@ export default function LeaveRequestsListScreen({ navigation }) {
                     <View style={styles.dateItem}>
                         <Ionicons name="calendar" size={16} color={themeColor0.bgColor(1)} />
                         <Text style={[NewStyles.text4, styles.dateLabel]}>
-                            {item.type === 'daily' ? 'از:' : 'تاریخ:'}
+                            {item.type === 'daily' ? t("From:") : t("Date:")}
                         </Text>
                         <Text style={[NewStyles.text, styles.dateValue]}>{(item.date)}</Text>
                     </View>
 
                     {item.type === 'daily' && item.to_date && (
                         <View style={styles.dateItem}>
-                            <Text style={[NewStyles.text4, styles.dateLabel]}>تا:</Text>
+                            <Text style={[NewStyles.text4, styles.dateLabel]}>{t("To:")}</Text>
                             <Text style={[NewStyles.text, styles.dateValue]}>{(item.to_date)}</Text>
                         </View>
                     )}
@@ -150,7 +157,7 @@ export default function LeaveRequestsListScreen({ navigation }) {
                     {item.type === 'hourly' && item.houre && (
                         <View style={styles.dateItem}>
                             <Ionicons name="time" size={16} color={themeColor0.bgColor(1)} />
-                            <Text style={[NewStyles.text4, styles.dateLabel]}>ساعت:</Text>
+                            <Text style={[NewStyles.text4, styles.dateLabel]}>{t("Time:")}</Text>
                             <Text style={[NewStyles.text, styles.dateValue]}>{item.houre}</Text>
                         </View>
                     )}
@@ -172,7 +179,7 @@ export default function LeaveRequestsListScreen({ navigation }) {
                         style={styles.detailsButton}
                         onPress={() => handleViewDetails(item)}
                     >
-                        <Text style={[NewStyles.text]}>جزئیات</Text>
+                        <Text style={[NewStyles.text]}>{t("Details")}</Text>
                         <Ionicons name="chevron-back" size={16} color={themeColor0.bgColor(1)} />
                     </TouchableOpacity>
                 </View>
@@ -183,7 +190,7 @@ export default function LeaveRequestsListScreen({ navigation }) {
     const renderEmpty = () => (
         <View style={styles.emptyContainer}>
             <Ionicons name="document-text-outline" size={64} color={themeColor4.bgColor(1)} />
-            <Text style={[NewStyles.text4, styles.emptyText]}>هیچ درخواست مرخصی ثبت نشده است</Text>
+            <Text style={[NewStyles.text4, styles.emptyText]}>{t("No leave requests have been submitted.")}</Text>
         </View>
     );
 
@@ -205,13 +212,13 @@ export default function LeaveRequestsListScreen({ navigation }) {
                         {loadingDetail ? (
                             <View style={styles.modalLoading}>
                                 <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
-                                <Text style={[NewStyles.text4, { marginTop: 10 }]}>در حال بارگذاری...</Text>
+                                <Text style={[NewStyles.text4, { marginTop: 10 }]}>{t("Loading...")}</Text>
                             </View>
                         ) : (
                             <>
                                 <View style={styles.modalHeader}>
                                     <Text style={[NewStyles.title, styles.modalTitle]}>
-                                        جزئیات درخواست مرخصی #{selectedRequest.id}
+                                        {t("Request details #{{id}}", { id: selectedRequest.id })}
                                     </Text>
                                     <TouchableOpacity
                                         onPress={closeModal}
@@ -225,7 +232,7 @@ export default function LeaveRequestsListScreen({ navigation }) {
                                     <View style={styles.detailRow}>
                                         <View style={styles.detailLabel}>
                                             <Ionicons name="albums" size={18} color={themeColor0.bgColor(1)} />
-                                            <Text style={[NewStyles.text, styles.labelText]}>نوع:</Text>
+                                            <Text style={[NewStyles.text, styles.labelText]}>{t("Type:")}</Text>
                                         </View>
                                         <View style={[styles.typeBadgeLarge, { backgroundColor: typeBadge.color }]}>
                                             <Ionicons name={typeBadge.icon} size={18} color={themeColor4.bgColor(1)} />
@@ -236,7 +243,7 @@ export default function LeaveRequestsListScreen({ navigation }) {
                                     <View style={styles.detailRow}>
                                         <View style={styles.detailLabel}>
                                             <Ionicons name="information-circle" size={18} color={themeColor0.bgColor(1)} />
-                                            <Text style={[NewStyles.text, styles.labelText]}>وضعیت:</Text>
+                                            <Text style={[NewStyles.text, styles.labelText]}>{t("Status:")}</Text>
                                         </View>
                                         <View style={[styles.statusBadgeLarge, { backgroundColor: statusBadge.color }]}>
                                             <Ionicons name={statusBadge.icon} size={18} color={themeColor4.bgColor(1)} />
@@ -248,7 +255,7 @@ export default function LeaveRequestsListScreen({ navigation }) {
                                         <View style={styles.detailLabel}>
                                             <Ionicons name="calendar" size={18} color={themeColor0.bgColor(1)} />
                                             <Text style={[NewStyles.text, styles.labelText]}>
-                                                {selectedRequest.type === 'daily' ? 'از تاریخ:' : 'تاریخ:'}
+                                                {selectedRequest.type === 'daily' ? t("From Date:") : t("Date:")}
                                             </Text>
                                         </View>
                                         <Text style={[NewStyles.text4, styles.detailValue]}>
@@ -260,7 +267,7 @@ export default function LeaveRequestsListScreen({ navigation }) {
                                         <View style={styles.detailRow}>
                                             <View style={styles.detailLabel}>
                                                 <Ionicons name="calendar" size={18} color={themeColor0.bgColor(1)} />
-                                                <Text style={[NewStyles.text, styles.labelText]}>تا تاریخ:</Text>
+                                                <Text style={[NewStyles.text, styles.labelText]}>{t("To Date:")}</Text>
                                             </View>
                                             <Text style={[NewStyles.text4, styles.detailValue]}>
                                                 {(selectedRequest.to_date)}
@@ -272,7 +279,7 @@ export default function LeaveRequestsListScreen({ navigation }) {
                                         <View style={styles.detailRow}>
                                             <View style={styles.detailLabel}>
                                                 <Ionicons name="time" size={18} color={themeColor0.bgColor(1)} />
-                                                <Text style={[NewStyles.text, styles.labelText]}>ساعت:</Text>
+                                                <Text style={[NewStyles.text, styles.labelText]}>{t("Time:")}</Text>
                                             </View>
                                             <Text style={[NewStyles.text4, styles.detailValue]}>
                                                 {selectedRequest.houre}
@@ -283,7 +290,7 @@ export default function LeaveRequestsListScreen({ navigation }) {
                                     <View style={styles.detailRow}>
                                         <View style={styles.detailLabel}>
                                             <Ionicons name="calendar-outline" size={18} color={themeColor0.bgColor(1)} />
-                                            <Text style={[NewStyles.text, styles.labelText]}>تاریخ ثبت:</Text>
+                                            <Text style={[NewStyles.text, styles.labelText]}>{t("Submitted on:")}</Text>
                                         </View>
                                         <Text style={[NewStyles.text4, styles.detailValue]}>
                                             {formatDateTime(selectedRequest.created_at)}
@@ -294,7 +301,7 @@ export default function LeaveRequestsListScreen({ navigation }) {
                                         <View style={styles.detailRow}>
                                             <View style={styles.detailLabel}>
                                                 <Ionicons name="time-outline" size={18} color={themeColor0.bgColor(1)} />
-                                                <Text style={[NewStyles.text, styles.labelText]}>آخرین بروزرسانی:</Text>
+                                                <Text style={[NewStyles.text, styles.labelText]}>{t("Last updated:")}</Text>
                                             </View>
                                             <Text style={[NewStyles.text4, styles.detailValue]}>
                                                 {formatDateTime(selectedRequest.updated_at)}
@@ -305,7 +312,7 @@ export default function LeaveRequestsListScreen({ navigation }) {
                                     <View style={styles.descriptionSection}>
                                         <View style={styles.detailLabel}>
                                             <Ionicons name="document-text" size={18} color={themeColor0.bgColor(1)} />
-                                            <Text style={[NewStyles.text, styles.labelText]}>توضیحات:</Text>
+                                            <Text style={[NewStyles.text, styles.labelText]}>{t("Description:")}</Text>
                                         </View>
                                         <View style={styles.descriptionBox}>
                                             <Text style={[NewStyles.text10, styles.descriptionText]}>{selectedRequest.description} </Text>
@@ -315,7 +322,7 @@ export default function LeaveRequestsListScreen({ navigation }) {
                                         style={styles.modalCloseButton}
                                         onPress={closeModal}
                                     >
-                                        <Text style={[NewStyles.title4, { fontSize: 16 }]}>بستن</Text>
+                                        <Text style={[NewStyles.title4, { fontSize: 16 }]}>{t("Close")}</Text>
                                     </TouchableOpacity>
                                 </ScrollView>
 
@@ -335,13 +342,13 @@ export default function LeaveRequestsListScreen({ navigation }) {
             style={styles.background}
         >
             <ScreenHeaders
-                title={'لیست درخواست‌های مرخصی'}
+                title={t("Leave requests list")}
             />
 
             {loading ? (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
-                    <Text style={[NewStyles.text4, styles.loadingText]}>در حال بارگذاری...</Text>
+                    <Text style={[NewStyles.text4, styles.loadingText]}>{t("Loading...")}</Text>
                 </View>
             ) : (
                 <FlatList
@@ -366,7 +373,7 @@ export default function LeaveRequestsListScreen({ navigation }) {
     );
 }
 
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) => StyleSheet.create({
     background: {
         flex: 1,
     },
@@ -410,7 +417,7 @@ const styles = StyleSheet.create({
         gap: 4,
     },
     statusBadge: {
-        flexDirection: 'row',
+         ...NewStyles.row,
         alignItems: 'center',
         paddingHorizontal: 10,
         paddingVertical: 5,
@@ -521,7 +528,7 @@ const styles = StyleSheet.create({
         // maxHeight: 400,
     },
     detailRow: {
-        ...NewStyles.rowWrapper,
+        // ...NewStyles.rowWrapper,
         marginBottom: 15,
         paddingBottom: 12,
         borderBottomWidth: 1,
