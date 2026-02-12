@@ -24,7 +24,7 @@ import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor3, themeColor4, themeColor5, themeColor6, themeColor7 } from '../../theme/Color';
 import { getTechnicianOrderById, submitTechnicianDescription, setOffToOrder, arriveToOrder, createOrderReport, updateOrderReport, getOrderReport, getOrderReportByOrderId, sendOrderToLoop, updateLoopInfo, startRepair, createDeliveryReport, updateDeliveryReport, getDeliveryReportByOrderId, verifyDeliveryReportWithCode, resendDeliveryReportCode, endOrder, getTechnicianChatMessages, cancelOrderByTechnician, submitEmergencyHelp, submitTechnicianOpinion } from '../../services/Api';
-import { showToastOrAlert, formatDate, formatDateTime, formatPrice, showAlert } from '../../helpers/Common';
+import { showToastOrAlert, formatDate, formatDateTime, formatPrice, showAlert, langIsRTL } from '../../helpers/Common';
 import AccordionHeader from '../../components/AccordionHeader';
 import DetailConponent from './DetailConponent';
 import DatePickerModal from '../../components/DatePickerModal';
@@ -33,7 +33,7 @@ import jalaali from 'jalaali-js';
 import { getFormatedDate } from 'react-native-modern-datepicker';
 import { createStyles } from '../../styles/NewStyles';
 export default function OrderDetailScreen({ route, navigation }) {
-  const user = useSelector((state) => state?.user?.data?.technician);
+  const user = useSelector((state) => state?.user?.data?.data?.technician);
   const { orderId } = route?.params || {};
   const { t, i18n } = useTranslation();
   const NewStyles = useMemo(
@@ -869,6 +869,8 @@ export default function OrderDetailScreen({ route, navigation }) {
 
   const isPricesActive = data?.send_to_loop && data?.user_accept_date;
 
+  const isRtl = langIsRTL(i18n.language);
+
   const isDeliveryActive = data?.started_at && (data?.status == 0 || data?.status == 1 || data?.status == 2);
 
   // بارگذاری گزارش محصول در صورت وجود
@@ -999,7 +1001,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                   {data?.user?.name && renderRow(`${t("Full Name")}:`, data.user.name + ' ' + data.user.last_name)}
                   {data?.user?.phone && renderRow(`${t("Phone Number")}:`, data.user.phone)}
                   {data?.user?.email && renderRow(`${t("Email")}:`, data.user.email)}
-                  {data?.user_type_info && renderRow(t("User type:"), data.user_type_info?.account_type_label || data.user_type_info?.account_type || t("Unknown"))}
+                  {(data?.user_type_info && user?.apple_check != 1)&& renderRow(t("User type:"), data.user_type_info?.account_type_label || data.user_type_info?.account_type || t("Unknown"))}
                   {data?.address && renderRow(`${t("Address")}:`, data.address)}
                 </View>
 
@@ -1051,14 +1053,14 @@ export default function OrderDetailScreen({ route, navigation }) {
                       <Text style={[NewStyles.text4, { color: themeColor5.bgColor(1), flex: 1 }]}>
                         {t("Chat with user")}
                       </Text>
-                      <Ionicons name="chevron-back-outline" size={20} color={themeColor5.bgColor(1)} />
+                      <Ionicons name={!isRtl ? "chevron-forward-outline" : "chevron-back-outline"} size={20} color={themeColor5.bgColor(1)} />
                     </TouchableOpacity>
                   </View>
                 )}
               </View>
             )}
 
-            <AccordionHeader
+            {user?.apple_check != 1 && <AccordionHeader
               title={t("Review / Reschedule / Pre-arrival")}
               isActive={isReviewActive}
               isOpen={showReview}
@@ -1069,7 +1071,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                   showToastOrAlert(t("This step is not available for canceled orders."));
                 }
               }}
-            />
+            />}
 
             {showReview && isReviewActive && (
               <View style={styles.contentSection}>
@@ -1644,21 +1646,21 @@ export default function OrderDetailScreen({ route, navigation }) {
                       editable={!reportConfirmed}
                     />
                   </View>}
-  {user?.apple_check == 1 
-  ? null 
-  :
-                <View style={styles.inputGroup}>
-                  <Text style={NewStyles.text}>{t("Minimum price (Toman)")}</Text>
-                  <TextInput
-                    style={styles.textInput}
-                    value={productReport.min_price?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                    onChangeText={(text) => setProductReport({ ...productReport, min_price: text?.replace(/,/g, "") })}
-                    placeholder={t("Example: 3000000")}
-                    placeholderTextColor={themeColor3.bgColor(0.5)}
-                    keyboardType="number-pad"
-                    editable={!reportConfirmed}
-                  />
-                </View>}
+                {user?.apple_check == 1
+                  ? null
+                  :
+                  <View style={styles.inputGroup}>
+                    <Text style={NewStyles.text}>{t("Minimum price (Toman)")}</Text>
+                    <TextInput
+                      style={styles.textInput}
+                      value={productReport.min_price?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                      onChangeText={(text) => setProductReport({ ...productReport, min_price: text?.replace(/,/g, "") })}
+                      placeholder={t("Example: 3000000")}
+                      placeholderTextColor={themeColor3.bgColor(0.5)}
+                      keyboardType="number-pad"
+                      editable={!reportConfirmed}
+                    />
+                  </View>}
 
                 <View style={styles.inputGroup}>
                   <Text style={NewStyles.text}>{t("Product password")}</Text>
@@ -1754,20 +1756,20 @@ export default function OrderDetailScreen({ route, navigation }) {
                       />
                     </View>
 
-                 {user?.apple_check == 1 
-  ? null 
-  :     <View style={styles.inputGroup}>
-                      <Text style={NewStyles.text}>{t("Estimated cost (Toman)")}</Text>
-                      <TextInput
-                        style={styles.textInput}
-                        value={loopInfo.loop_cost_estimate?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                        onChangeText={(text) => setLoopInfo({ ...loopInfo, loop_cost_estimate: text?.replace(/,/g, "") })}
-                        placeholder={t("Example: 2500000")}
-                        placeholderTextColor={themeColor3.bgColor(0.5)}
-                        keyboardType="number-pad"
-                        editable={!data?.user_accept_date}
-                      />
-                    </View>}
+                    {user?.apple_check == 1
+                      ? null
+                      : <View style={styles.inputGroup}>
+                        <Text style={NewStyles.text}>{t("Estimated cost (Toman)")}</Text>
+                        <TextInput
+                          style={styles.textInput}
+                          value={loopInfo.loop_cost_estimate?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                          onChangeText={(text) => setLoopInfo({ ...loopInfo, loop_cost_estimate: text?.replace(/,/g, "") })}
+                          placeholder={t("Example: 2500000")}
+                          placeholderTextColor={themeColor3.bgColor(0.5)}
+                          keyboardType="number-pad"
+                          editable={!data?.user_accept_date}
+                        />
+                      </View>}
 
                     <View style={styles.inputGroup}>
                       <Text style={NewStyles.text}>{t("Loop description")}</Text>
@@ -1798,32 +1800,32 @@ export default function OrderDetailScreen({ route, navigation }) {
               </View>
             )}
 
-       {user?.apple_check == 1 
-  ? null 
-  :       <AccordionHeader
-              title={t("Parts / Costs / Start")}
-              isActive={isPricesActive}
-              isOpen={showPrices}
-              onPress={async () => {
-                if (!isPricesActive) {
-                  showToastOrAlert(t("First, the device must be sent to Loop and the user must confirm."));
-                  return;
-                }
+            {user?.apple_check == 1
+              ? null
+              : <AccordionHeader
+                title={t("Parts / Costs / Start")}
+                isActive={isPricesActive}
+                isOpen={showPrices}
+                onPress={async () => {
+                  if (!isPricesActive) {
+                    showToastOrAlert(t("First, the device must be sent to Loop and the user must confirm."));
+                    return;
+                  }
 
-                setShowPrices(!showPrices);
-              }}
-            />}
+                  setShowPrices(!showPrices);
+                }}
+              />}
 
             {showPrices && isPricesActive && (
               <View style={[styles.contentSection, { gap: 15, paddingVertical: 15 }]}>
-                {user?.apple_check == 1 
-  ? null 
-  :  <View style={[NewStyles.row, { gap: 10, paddingHorizontal: 15 }]}>
-                  <Ionicons name="pricetag-outline" size={24} color={themeColor0.bgColor(1)} />
-                  <Text style={[NewStyles.text, { flex: 1 }]}>
-                    {t("In this section, you can specify the required costs and parts.")}
-                  </Text>
-                </View>}
+                {user?.apple_check == 1
+                  ? null
+                  : <View style={[NewStyles.row, { gap: 10, paddingHorizontal: 15 }]}>
+                    <Ionicons name="pricetag-outline" size={24} color={themeColor0.bgColor(1)} />
+                    <Text style={[NewStyles.text, { flex: 1 }]}>
+                      {t("In this section, you can specify the required costs and parts.")}
+                    </Text>
+                  </View>}
 
                 {/* دکمه شروع تعمیر */}
                 {data?.started_at ? (
@@ -1976,11 +1978,11 @@ export default function OrderDetailScreen({ route, navigation }) {
                       size={24}
                       color={(data?.payment_status == "1" || data?.payment_status === 1) ? themeColor7.bgColor(1) : themeColor3.bgColor(1)}
                     />
-                   {user?.apple_check == 1 
-  ? null 
-  :   <Text style={[NewStyles.title4, { color: (data?.payment_status == "1" || data?.payment_status === 1) ? themeColor7.bgColor(1) : themeColor3.bgColor(1) }]}>
-                      {(data?.payment_status == "1" || data?.payment_status === 1) ? t("User has paid") : t("User has not paid yet")}
-                    </Text>}
+                    {user?.apple_check == 1
+                      ? null
+                      : <Text style={[NewStyles.title4, { color: (data?.payment_status == "1" || data?.payment_status === 1) ? themeColor7.bgColor(1) : themeColor3.bgColor(1) }]}>
+                        {(data?.payment_status == "1" || data?.payment_status === 1) ? t("User has paid") : t("User has not paid yet")}
+                      </Text>}
                   </View>
                 </View>
 

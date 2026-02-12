@@ -23,6 +23,7 @@ import NewStyles from '../styles/NewStyles';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { createStyles } from '../styles/NewStyles';
+import { mainUri } from '../services/URL';
 const FooterContext = createContext();
 
 export const useFooter = () => {
@@ -48,6 +49,7 @@ export const FooterProvider = ({ children }) => {
 
   const dispatch = useDispatch();
   const userToken = useSelector((state) => state.auth.token);
+  const userData = useSelector((state) => state.user?.data?.data?.technician);
 
   const showFooter = () => setIsFooterVisible(true);
   const hideFooter = () => setIsFooterVisible(false);
@@ -55,11 +57,12 @@ export const FooterProvider = ({ children }) => {
 
   // Menu items based on authentication state
   const menuItemsLoggedIn = [
-    { id: '1', title: t('Organizations'), screen: 'OrganizationsListScreen' },
+    { id: '1', title: t('Organizations'), screen: 'OrganizationsListScreen', apple_check: userData?.apple_check },
     { id: '2', title: t('Home'), screen: 'FolderScreen' },
-    { id: '3', title: t('Warranty / Guarantee'), screen: 'WarrantyScreen' },
-    { id: '4', title: t('Learn More'), screen: 'LearnMoreScreen' },
-    { id: '5', title: t('About Us'), screen: 'AboutScreen' },
+    { id: '3', title: t('Delete Account'), screen: null, action: ()=> Linking.openURL(`${mainUri}/delete-account-request`) },
+    { id: '4', title: t('Warranty / Guarantee'), screen: 'WarrantyScreen', apple_check: userData?.apple_check },
+    { id: '5', title: t('Learn More'), screen: 'LearnMoreScreen', apple_check: userData?.apple_check },
+    { id: '6', title: t('About Us'), screen: 'AboutScreen', apple_check: userData?.apple_check },
   ];
 
   const menuItemsLoggedOut = [
@@ -70,7 +73,7 @@ export const FooterProvider = ({ children }) => {
     { id: '5', title: t('About Us'), screen: 'AboutScreen' },
   ];
 
-  const menuItems = userToken ? menuItemsLoggedIn : menuItemsLoggedOut;
+  const menuItems = userToken ? menuItemsLoggedIn?.filter(item => !item.apple_check || item.apple_check != 1) : menuItemsLoggedOut;
 
   // Handle logout
   const handleLogoutClick = () => {
@@ -177,7 +180,13 @@ export const FooterProvider = ({ children }) => {
   const renderItem = ({ item }) => (
     <TouchableOpacity
       style={styles.item}
-      onPress={() => handleMenuItemPress(item.screen)}
+      onPress={() => {
+        if(item?.screen){
+          handleMenuItemPress(item.screen);
+        }else{
+          item?.action()
+        }
+      }}
     >
       <Text style={[NewStyles.text10, styles.title]}>
         {item.title}

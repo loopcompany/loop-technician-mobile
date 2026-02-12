@@ -60,7 +60,7 @@ export default function SignIn({ navigation }) {
     licence_date: '',
     vehicle_type: '',
     home_postal_code: '',
-    city: 'تهران',
+    city: 'Los Angeles',
     region: '5',
     home_address: '',
     other_referral_code: '',
@@ -1287,7 +1287,7 @@ export default function SignIn({ navigation }) {
 
 
   return (
-    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'off' }}>
+    <SafeAreaView style={NewStyles.container} edges={{ top: 'additive', bottom: 'additive' }}>
       <ImageBackground
         source={Platform.OS === 'web' ? require('../../assets/webbackground.jpg') : require('../../assets/background2.jpg')}
         style={styles.background}

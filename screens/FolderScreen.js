@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 export default function FolderScreen({ navigation }) {
   const { t } = useTranslation();
   const [unseenCount, setUnseenCount] = useState(0);
+  const userData = useSelector(state => state.user?.data?.data?.technician);
 
   const computeUnseenFromOrders = (orders = []) => {
     if (!Array.isArray(orders)) return 0;
@@ -50,7 +51,7 @@ export default function FolderScreen({ navigation }) {
       fetchUnseenCount();
     }, [])
   );
-  
+
   const folders = [
     {
       id: 1,
@@ -70,12 +71,14 @@ export default function FolderScreen({ navigation }) {
     {
       id: 4,
       title: t("Financial report"),
-      screen: 'FinancialReportScreen'
+      screen: 'FinancialReportScreen',
+      apple_check: userData?.apple_check
     },
     {
       id: 5,
       title: t("My performance"),
-      screen: 'PerformanceScreen'
+      screen: 'PerformanceScreen',
+      apple_check: userData?.apple_check
     },
     {
       id: 6,
@@ -144,11 +147,11 @@ export default function FolderScreen({ navigation }) {
     },
   ];
   return (
-    <SafeAreaView edges={{top:'off', bottom:'off'}} style={NewStyles.container}>
+    <SafeAreaView edges={{ top: 'off', bottom: 'off' }} style={NewStyles.container}>
       <ImageBackground
         source={Platform.OS === 'web' ? require("../assets/webbackground.jpg") : require("../assets/background2.jpg")}
         style={NewStyles.container}
-        
+
       >
         <CustomStatusBar />
         <View style={{ flex: 1 }}>
@@ -158,7 +161,7 @@ export default function FolderScreen({ navigation }) {
           </View>
           <ScrollView contentContainerStyle={styles.folderList}>
             <View style={styles.folderContainer}>
-              {folders.map((item, index) => (
+              {folders?.filter(item => !item.apple_check || item.apple_check != 1).map((item, index) => (
                 <View key={item.id} style={styles.folderWrapper}>
                   <Folder
                     title={item?.title}

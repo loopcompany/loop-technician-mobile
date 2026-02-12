@@ -25,7 +25,7 @@ import { useSelector } from 'react-redux';
 const { width } = Dimensions.get('window');
 
 export default function IndexScreen({ navigation }) {
-  const user = useSelector((state) => state?.user?.data?.technician);
+  const user = useSelector((state) => state?.user?.data?.data?.technician);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedYear, setSelectedYear] = useState(null); // شروع با null

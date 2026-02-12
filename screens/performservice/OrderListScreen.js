@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -16,9 +16,10 @@ import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor10, themeColor3, themeColor4, themeColor5 } from '../../theme/Color';
 import { getTechnicianOrders } from '../../services/Api';
-import { showToastOrAlert ,formatDateTime, formatPrice } from '../../helpers/Common';
+import { showToastOrAlert, formatDateTime, formatPrice } from '../../helpers/Common';
 import BlankScreen from '../../components/BlankScreen';
 import Button from '../../components/Button';
+import { useSelector } from 'react-redux';
 
 export default function OrderListScreen({ navigation }) {
   const { t, i18n } = useTranslation();
@@ -26,7 +27,7 @@ export default function OrderListScreen({ navigation }) {
     () => createStyles(i18n.language),
     [i18n.language]
   );
-    const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
+  const styles = useMemo(() => createLocalStyles(NewStyles), [NewStyles]);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -116,6 +117,7 @@ export default function OrderListScreen({ navigation }) {
     }
     return order.pakar_price || 0;
   };
+  const user = useSelector((state) => state?.user?.data?.data?.technician);
 
   const renderOrderCard = (order) => (
     <View key={order.id} style={[styles.orderCard, NewStyles.shadow, NewStyles.border10]}>
@@ -182,27 +184,27 @@ export default function OrderListScreen({ navigation }) {
       <View style={styles.divider} />
 
       {/* قیمت نهایی */}
-      <View style={styles.cardSection}>
+      {user?.apple_check != 1 && <View style={styles.cardSection}>
         <View style={[NewStyles.row]}>
           <Text style={NewStyles.text10}>{t("Final price:")}{' '}</Text>
           <Text style={NewStyles.text7}>{formatPrice(getFinalPrice(order))}</Text>
         </View>
-      </View>
+      </View>}
 
       {/* خط جداکننده */}
       <View style={styles.divider} />
 
       {/* هزینه اضافی */}
-      <View style={styles.cardSection}>
+      {user?.apple_check != 1 && <View style={styles.cardSection}>
         <View style={[NewStyles.row]}>
           <Text style={NewStyles.text10}>{t("Extra cost:")}{' '}</Text>
           <Text style={NewStyles.text7}>{formatPrice(order.extra_price)}</Text>
         </View>
-      </View>
+      </View>}
 
       {/* دکمه جزئیات */}
-      
-      <Button title={t("View Details")} onPress={() => navigation.navigate('OrderDetailScreen', { orderId: order.id })}/>
+
+      <Button title={t("View Details")} onPress={() => navigation.navigate('OrderDetailScreen', { orderId: order.id })} />
     </View>
   );
 
@@ -294,36 +296,36 @@ export default function OrderListScreen({ navigation }) {
           onPressLeft={() => navigation.navigate('FolderScreen')}
           onPressRight={() => navigation.navigate('UserInfoScreen')}
         />
-          {/* فیلترها */}
-          {renderFilters()}
+        {/* فیلترها */}
+        {renderFilters()}
 
-          {/* لیست سفارشات */}
-          {loading ? (
-            <View style={styles.centerContainer}>
-              <ActivityIndicator size="large" color={themeColor4.bgColor(1)} />
-              <Text style={NewStyles.text4}>{t("Loading...")}</Text>
-            </View>
-          ) : (
-            <FlatList
-              data={orders}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={({ item }) => renderOrderCard(item)}
-              contentContainerStyle={[styles.container, orders.length === 0 && { flex: 1 }]}
-              ListEmptyComponent={() => {
-                return (
-                  <BlankScreen title={t("No service found")} />
-                )
-              }}
-              ListFooterComponent={renderFooter}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={onRefresh}
+        {/* لیست سفارشات */}
+        {loading ? (
+          <View style={styles.centerContainer}>
+            <ActivityIndicator size="large" color={themeColor4.bgColor(1)} />
+            <Text style={NewStyles.text4}>{t("Loading...")}</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={orders}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => renderOrderCard(item)}
+            contentContainerStyle={[styles.container, orders.length === 0 && { flex: 1 }]}
+            ListEmptyComponent={() => {
+              return (
+                <BlankScreen title={t("No service found")} />
+              )
+            }}
+            ListFooterComponent={renderFooter}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
 
-                />
-              }
-            />
-          )}
+              />
+            }
+          />
+        )}
       </LinearGradient>
     </SafeAreaView>
   );
@@ -333,14 +335,14 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
   background: { flex: 1 },
   container: {
     padding: 15,
-    gap:15
+    gap: 15
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
- 
+
 
   // فیلترها
   filterContainer: {
@@ -361,7 +363,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
   filterButtonActive: {
     backgroundColor: themeColor4.bgColor(1),
   },
- 
+
 
   // کارت سفارش
   orderCard: {
@@ -382,8 +384,8 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 15,
   },
- 
- 
+
+
   // Pagination
   paginationContainer: {
     paddingVertical: 20,

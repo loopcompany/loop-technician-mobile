@@ -1,10 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { uri } from '../services/URL';
+import i18n from 'i18next';
 
 export const fetchCart = createAsyncThunk('items/fetchCart', async (token) => {
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
     return await axios
-        .get(`${uri}/fetchCart`, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` } })
+        .get(`${uri}/fetchCart`, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}`, 'Accept-Language': lang } })
         .then(response => response?.data)
         .catch(error => { console.log(error); })
 })

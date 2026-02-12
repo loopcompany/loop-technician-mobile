@@ -3,7 +3,8 @@ import { Platform } from 'react-native';
 import { uri as BASE_URL, Technician_Orders, Technician_DeliveryReports } from './URL';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_ENDPOINTS } from './ApiEndpoints';
-
+import i18n from 'i18next';
+const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 // Create axios instance with base configuration
 const api = axios.create({
   baseURL: BASE_URL,
@@ -11,6 +12,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
+    'Accept-Language': lang
   },
 });
 
@@ -389,6 +391,7 @@ export const testExpertisesEndpoint = async () => {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
+        'Accept-Language': lang
       },
       timeout: 10000,
     });
@@ -510,6 +513,7 @@ export const registerTechnician = async (formData, resumeFile = null) => {
     const response = await api.post('/technician/register', multipartData, {
       headers: {
         'Content-Type': 'multipart/form-data',
+        'Accept-Language': lang
       },
       timeout: 60000, // 60 seconds for file upload
     });
@@ -906,6 +910,7 @@ export const updatePersonalInfo = async (data, profilePhoto = null) => {
       const response = await api.post('/technician/profile/personal-info', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          'Accept-Language': lang
         },
         timeout: 60000,
       });
@@ -924,6 +929,7 @@ export const updatePersonalInfo = async (data, profilePhoto = null) => {
       const response = await api.put('/technician/profile/personal-info', editableData, {
         headers: {
           'Content-Type': 'application/json',
+          'Accept-Language': lang
         },
       });
 
@@ -947,6 +953,7 @@ export const updateVehicleInfo = async (data) => {
     const response = await api.put('/technician/profile/vehicle-info', data, {
       headers: {
         'Content-Type': 'application/json',
+        'Accept-Language': lang
       },
     });
 
@@ -969,6 +976,7 @@ export const updateBankInfo = async (data) => {
     const response = await api.put('/technician/profile/bank-info', data, {
       headers: {
         'Content-Type': 'application/json',
+        'Accept-Language': lang
       },
     });
 
@@ -991,6 +999,7 @@ export const changePassword = async (data) => {
     const response = await api.patch('/technician/profile/password', data, {
       headers: {
         'Content-Type': 'application/json',
+        'Accept-Language': lang
       },
     });
 
@@ -1944,6 +1953,7 @@ export const uploadArchiveImages = async (images) => {
     const response = await api.post('/technician/archive-images', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
+        'Accept-Language': lang
       },
       timeout: 60000, // 60 ثانیه برای آپلود
     });

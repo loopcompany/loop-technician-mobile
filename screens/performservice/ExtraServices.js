@@ -16,6 +16,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ScreenHeaders from '../../components/ScreenHeaders';
 import { fetchOrderExtras } from '../../slices/orderExtrasSlice';
+import i18n from 'i18next';
 
 export default function ExtraServices({ route, navigation }) {
 
@@ -27,7 +28,7 @@ export default function ExtraServices({ route, navigation }) {
     const [loading, setLoading] = useState(false);
     const token = useSelector((state) => state?.auth?.token);
     const extraServices = useSelector(state => state.extraServices);
-    console.log('Extra Services:', JSON.stringify(extraServices?.items, null, 2));
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
     useEffect(() => {
         dispatch(fetchExtraServices({ categoryId, orderId, token }));
     }, []);
@@ -52,7 +53,8 @@ export default function ExtraServices({ route, navigation }) {
             }, {
                 headers: {
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'Accept-Language': lang
                 }
             });
 

@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import moment from "moment";
 import { toJalaali } from 'jalaali-js';
 var jalaali = require("jalaali-js");
+import i18n from "i18next";
 
 const { width: deviceWidth, height: deviceHeight } = Dimensions.get("window");
 
@@ -277,33 +278,33 @@ export const showAlert = (title, message, buttons = [], t) => {
       // For confirmation dialogs with buttons
       const confirmMessage = title ? `${title}\n\n${message}` : message;
       const confirmed = window.confirm(confirmMessage);
-      
+
       if (confirmed) {
         // Find and execute the positive/destructive button
-        const positiveButton = buttons.find(btn => 
-          btn.style === 'destructive' || 
+        const positiveButton = buttons.find(btn =>
+          btn.style === 'destructive' ||
           btn.style === 'default' ||
-          btn.text?.includes('بله') || 
-          btn.text?.includes('تایید') || 
+          btn.text?.includes('بله') ||
+          btn.text?.includes('تایید') ||
           btn.text?.includes('خروج') ||
           btn.text?.includes('حذف') ||
           btn.text?.includes('ارسال') ||
           btn.text?.includes('ذخیره') ||
           btn.text?.includes('OK')
         ) || buttons[buttons.length - 1]; // Default to last button
-        
+
         if (positiveButton && positiveButton.onPress) {
           positiveButton.onPress();
         }
       } else {
         // Find and execute the cancel button
-        const cancelButton = buttons.find(btn => 
-          btn.style === 'cancel' || 
-          btn.text?.includes('انصراف') || 
+        const cancelButton = buttons.find(btn =>
+          btn.style === 'cancel' ||
+          btn.text?.includes('انصراف') ||
           btn.text?.includes('خیر') ||
           btn.text?.includes('Cancel')
         );
-        
+
         if (cancelButton && cancelButton.onPress) {
           cancelButton.onPress();
         }
@@ -432,15 +433,18 @@ export const formatJalaaliDate = (isoDate) => {
   return `${jy}/${jm}/${jd} - ${hours}:${minutes}`;
 };
 
-export const formatDate = (isoDate) => {
+export const formatDate = (isoDate, fa = i18n.language === 'fa') => {
   if (!isoDate) return '';
-  
+  if (!fa) {
+    return isoDate.replace('T', ' ').split(' ')[0];
+  }
+
   // ✅ اگر تاریخ قبلاً شمسی است (YYYY/MM/DD یا YYYY/M/D)، همان را برگردان
   if (/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(isoDate)) {
     console.log('📅 formatDate - تاریخ از قبل شمسی است:', isoDate);
     return isoDate;
   }
-  
+
   // تبدیل تاریخ میلادی به شمسی
   const date = new Date(isoDate);
   if (isNaN(date.getTime())) return '';
@@ -448,9 +452,12 @@ export const formatDate = (isoDate) => {
   return `${jy}/${jm}/${jd}`;
 };
 
-export const formatDateTime = (isoDate) => {
+export const formatDateTime = (isoDate, fa = i18n.language === 'fa') => {
   if (!isoDate) return '';
-  
+  if (!fa) {
+    return isoDate.replace('T', ' ').split('.')[0];
+  }
+
   // اگر فرمت string ساده باشه (بدون timezone)، باید به درستی parse بشه
   let date;
   if (typeof isoDate === 'string' && isoDate.includes(' ') && !isoDate.includes('T') && !isoDate.includes('Z')) {
@@ -460,10 +467,10 @@ export const formatDateTime = (isoDate) => {
   } else {
     date = new Date(isoDate);
   }
-  
+
   if (isNaN(date.getTime())) return '';
   const { jy, jm, jd } = jalaali.toJalaali(date.getFullYear(), date.getMonth() + 1, date.getDate());
-  
+
   // گرفتن ساعت و دقیقه
   const hours = date.getHours().toString().padStart(2, '0');
   const minutes = date.getMinutes().toString().padStart(2, '0');
@@ -507,8 +514,8 @@ export const getOrderStatusColor = (status) => {
   };
   return colorMap[status] || '#9E9E9E';
 };
- const RTL_LANGS = new Set(['fa', 'ar', 'he', 'ur', 'ps', 'ckb']);
-export const langIsRTL =(lang) => (lang || '').toLowerCase().split('-')[0] && RTL_LANGS.has((lang || '').toLowerCase().split('-')[0]);
+const RTL_LANGS = new Set(['fa', 'ar', 'he', 'ur', 'ps', 'ckb']);
+export const langIsRTL = (lang) => (lang || '').toLowerCase().split('-')[0] && RTL_LANGS.has((lang || '').toLowerCase().split('-')[0]);
 
 export const calculateDaysDifference = (targetDate) => {
   const now = dayjs();

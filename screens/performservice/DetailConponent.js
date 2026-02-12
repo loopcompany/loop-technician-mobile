@@ -1,5 +1,5 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useMemo,useEffect } from 'react'
+import { SectionList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import React, { useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import MapView, { Marker } from 'react-native-maps'
 import NewStyles from '../../styles/NewStyles'
@@ -10,10 +10,10 @@ import { imageUri, mainUri } from '../../services/URL'
 import { createStyles } from '../../styles/NewStyles';
 import { useSelector } from 'react-redux';
 const DetailConponent = ({ data, renderRow, }) => {
-    const user = useSelector((state) => state?.user?.data?.technician);
-useEffect(() => {
-  console.log("USER CHANGED:", user);
-}, [user]);
+    const user = useSelector((state) => state?.user?.data?.data?.technician);
+    useEffect(() => {
+        console.log("USER CHANGED:", user);
+    }, [user]);
     const { t, i18n } = useTranslation();
     const NewStyles = useMemo(
         () => createStyles(i18n.language),
@@ -103,7 +103,7 @@ useEffect(() => {
 
                     {data?.status == 1 && renderRow(t("Order Status"), data?.started_at ? t("In progress") : data?.arrived_at ? t("Technician arrived at order location") : data?.set_off_at ? t("Technician is on the way") : t("Active"), NewStyles.text, NewStyles.text7)}
 
-                    {user?.apple_check == 1 ? null : (
+                    {user?.apple_check != 1 && (
                         <>
                             {renderRow(
                                 (Number(data?.is_fixed) == 1) ? t("Loop Fixed Amount") : t("Loop Base Amount"),
