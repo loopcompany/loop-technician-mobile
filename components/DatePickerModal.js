@@ -36,7 +36,7 @@ const DatePickerModal = React.memo(function DatePickerModal({
 
     // محاسبه تاریخ جاری به صورت شمسی
     const currentDate = useMemo(() =>
-        getFormatedDate(new Date(date.getTime()), 'jYYYY/jMM/jDD'),
+        getFormatedDate(new Date(date.getTime()), 'YYYY/MM/DD'),
         [date]);
 
     // اگر maximumDate پاس نشده، از تاریخ امروز استفاده کن
@@ -83,7 +83,7 @@ const DatePickerModal = React.memo(function DatePickerModal({
                             <View style={styles.calendarContainer}>
                                 <DatePicker
                                     mode='calendar'
-                                    isGregorian={false}
+                                    isGregorian={true}
                                     options={DATE_PICKER_OPTIONS}
                                     style={styles.calendar}
                                     selected={birthDate}

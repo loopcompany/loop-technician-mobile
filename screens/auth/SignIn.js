@@ -587,7 +587,7 @@ export default function SignIn({ navigation }) {
           </View>
 
           {/* شماره شناسنامه */}
-          <View style={styles.inputRow}>
+          {/* <View style={styles.inputRow}>
             <Text style={[NewStyles.text10]}>{t("Birth certificate number")} <Text style={styles.required}>*</Text> :</Text>
             <TextInput
               style={[
@@ -602,7 +602,7 @@ export default function SignIn({ navigation }) {
               placeholderTextColor={PLACEHOLDER_COLOR}
             />
             <FieldError field="serial_number" />
-          </View>
+          </View> */}
 
           {/* وضعیت تأهل */}
           <View style={styles.inputRow}>
