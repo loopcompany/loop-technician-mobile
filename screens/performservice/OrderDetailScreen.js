@@ -60,7 +60,7 @@ export default function OrderDetailScreen({ route, navigation }) {
   const oneYearLaterJalali = useMemo(() => {
     const oneYearLater = new Date();
     oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
-    return getFormatedDate(oneYearLater, 'jYYYY/jMM/jDD');
+    return getFormatedDate(oneYearLater, 'YYYY/MM/DD');
   }, []);
   // State برای مرحله بررسی/جایگزینی زمانی
   const [datePickerModal, setDatePickerModal] = useState(false);

@@ -17,7 +17,7 @@ import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor4, themeColor6, themeColor7, themeColor8, themeColor11 } from '../theme/Color';
 import { getManpowerRequests, getManpowerRequestById } from '../services/Api';
 import { useFocusEffect } from '@react-navigation/native';
-import { formatDateTime, showAlert } from '../helpers/Common';
+import { formatDate, formatDateTime, showAlert } from '../helpers/Common';
 import { useTranslation } from 'react-i18next';
 import { createStyles } from '../styles/NewStyles';
 export default function ManpowerRequestsListScreen({ navigation }) {
@@ -140,11 +140,7 @@ export default function ManpowerRequestsListScreen({ navigation }) {
 
         <View style={styles.footer}>
           <Text style={styles.date}>
-            {new Date(item.created_at).toLocaleDateString('fa-IR', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })}
+            {formatDate(item.created_at)}
           </Text>
           <View style={styles.viewDetailsButton}>
             <Text style={styles.viewDetailsText}>{t("Details")}</Text>

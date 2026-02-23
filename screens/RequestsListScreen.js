@@ -132,7 +132,7 @@ export default function RequestsListScreen({ navigation }) {
                     <View style={styles.dateContainer}>
                         <Ionicons name="calendar-outline" size={14} color={themeColor10.bgColor(0.7)} />
                         <Text style={[NewStyles.text4, styles.dateText]}>
-                            {formatDateTime(item.created_at)}
+                            {formatDate(item.created_at)}
                         </Text>
                     </View>
 
@@ -216,7 +216,7 @@ export default function RequestsListScreen({ navigation }) {
                                             <Text style={[NewStyles.text, styles.labelText]}>{t("Submitted at:")}</Text>
                                         </View>
                                         <Text style={[NewStyles.text4, styles.detailValue]}>
-                                            {formatDateTime(selectedRequest.created_at)}
+                                            {formatDate(selectedRequest.created_at)}
                                         </Text>
                                     </View>
 
@@ -227,7 +227,7 @@ export default function RequestsListScreen({ navigation }) {
                                                 <Text style={[NewStyles.text, styles.labelText]}>{t("Last updated:")}</Text>
                                             </View>
                                             <Text style={[NewStyles.text4, styles.detailValue]}>
-                                                {formatDateTime(selectedRequest.updated_at)}
+                                                {formatDate(selectedRequest.updated_at)}
                                             </Text>
                                         </View>
                                     )}

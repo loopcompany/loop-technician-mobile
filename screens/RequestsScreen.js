@@ -34,14 +34,14 @@ export default function RequestsScreen({ navigation }) {
   const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
   // محاسبه تاریخ امروز به صورت شمسی
   const todayJalali = useMemo(() =>
-    getFormatedDate(new Date(), 'jYYYY/jMM/jDD'),
+    getFormatedDate(new Date(), 'YYYY/MM/DD'),
     []);
 
   // محاسبه تاریخ یک سال بعد به صورت شمسی
   const oneYearLaterJalali = useMemo(() => {
     const oneYearLater = new Date();
     oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
-    return getFormatedDate(oneYearLater, 'jYYYY/jMM/jDD');
+    return getFormatedDate(oneYearLater, 'YYYY/MM/DD');
   }, []);
 
   // مرخصی states

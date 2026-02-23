@@ -10,6 +10,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getFormatedDate } from 'react-native-modern-datepicker';
 import { createStyles } from '../../styles/NewStyles';
+import jalaali from 'jalaali-js';
 import {
   registerTechnician,
   getExpertises,
@@ -40,6 +41,31 @@ const FORM_BG_FULL = themeColor4.bgColor(1);
 const FORM_BORDER_03 = themeColor4.bgColor(0.3);
 const UPLOAD_BUTTON_BG = themeColor2.bgColor(1);
 const PLACEHOLDER_COLOR = themeColor10.bgColor(0.7);
+
+const normalizeGregorianDate = (dateString) => {
+  if (!dateString) return '';
+  const safeDate = dateString.slice(0, 10);
+  const parts = safeDate.split('/');
+  if (parts.length !== 3) return safeDate;
+
+  const [yearText, monthText, dayText] = parts;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+  if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
+    return safeDate;
+  }
+
+  if (year <= 1700) {
+    const gregorian = jalaali.toGregorian(year, month, day);
+    const gYear = gregorian.gy;
+    const gMonth = String(gregorian.gm).padStart(2, '0');
+    const gDay = String(gregorian.gd).padStart(2, '0');
+    return `${gYear}/${gMonth}/${gDay}`;
+  }
+
+  return safeDate;
+};
 
 export default function SignIn({ navigation }) {
   const [formData, setFormData] = useState({
@@ -79,6 +105,14 @@ export default function SignIn({ navigation }) {
     [i18n.language]
   );
   const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
+  const displayBirthDate = useMemo(
+    () => normalizeGregorianDate(formData.birth_date),
+    [formData.birth_date]
+  );
+  const displayLicenceDate = useMemo(
+    () => normalizeGregorianDate(formData.licence_date),
+    [formData.licence_date]
+  );
   // Available expertises from API
   const [expertises, setExpertises] = useState([]);
   const [selectedExpertise, setSelectedExpertise] = useState('');
@@ -96,21 +130,21 @@ export default function SignIn({ navigation }) {
 
   // محاسبه تاریخ امروز به صورت شمسی (یک بار)
   const todayDate = useMemo(() => {
-    return getFormatedDate(new Date(), 'jYYYY/jMM/jDD');
+    return getFormatedDate(new Date(), 'YYYY/MM/DD');
   }, []);
 
   // محاسبه حداکثر تاریخ تولد (18 سال پیش) برای حداقل سن 18 سال
   const maxBirthDate = useMemo(() => {
     const date18YearsAgo = new Date();
     date18YearsAgo.setFullYear(date18YearsAgo.getFullYear() - 18);
-    return getFormatedDate(date18YearsAgo, 'jYYYY/jMM/jDD');
+    return getFormatedDate(date18YearsAgo, 'YYYY/MM/DD');
   }, []);
 
   // محاسبه تاریخ 10 سال آینده برای گواهینامه (یک بار)
   const tenYearsLater = useMemo(() => {
     const futureDate = new Date();
     futureDate.setFullYear(futureDate.getFullYear() + 10);
-    return getFormatedDate(futureDate, 'jYYYY/jMM/jDD');
+    return getFormatedDate(futureDate, 'YYYY/MM/DD');
   }, []);
 
   // Load expertises when component mounts
@@ -544,7 +578,7 @@ export default function SignIn({ navigation }) {
               onPress={() => setBirthDateModal(true)}
             >
               <Text style={[NewStyles.text10, formData.birth_date ? styles.dateTextFull : styles.dateTextHalf]}>
-                {formData.birth_date || t("Select birth date")}
+                {displayBirthDate || t("Select birth date")}
               </Text>
             </TouchableOpacity>
             <FieldError field="birth_date" />
@@ -745,7 +779,7 @@ export default function SignIn({ navigation }) {
               onPress={() => setLicenceDateModal(true)}
             >
               <Text style={[NewStyles.text10, formData.licence_date ? styles.dateTextFull : styles.dateTextHalf]}>
-                {formData.licence_date || t("Select expiry date")}
+                {displayLicenceDate || t("Select expiry date")}
               </Text>
             </TouchableOpacity>
             <FieldError field="licence_date" />
@@ -1303,7 +1337,7 @@ export default function SignIn({ navigation }) {
         datePickerModal={birthDateModal}
         setDatePickerModal={setBirthDateModal}
         birthDate={formData.birth_date}
-        setBirthDate={(date) => updateField('birth_date', date)}
+        setBirthDate={(date) => updateField('birth_date', normalizeGregorianDate(date))}
         maximumDate={maxBirthDate}
         isCurrentDate={maxBirthDate}
       />
@@ -1313,7 +1347,7 @@ export default function SignIn({ navigation }) {
         datePickerModal={licenceDateModal}
         setDatePickerModal={setLicenceDateModal}
         birthDate={formData.licence_date}
-        setBirthDate={(date) => updateField('licence_date', date)}
+        setBirthDate={(date) => updateField('licence_date', normalizeGregorianDate(date))}
         minimumDate={todayDate}
         maximumDate={tenYearsLater}
         isCurrentDate={todayDate}

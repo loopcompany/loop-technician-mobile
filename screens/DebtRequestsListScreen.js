@@ -115,13 +115,15 @@ export default function DebtRequestsListScreen({ navigation }) {
         <View style={styles.cardHeader}>
           <View style={styles.headerRight}>
             <Text style={[NewStyles.text, styles.requestId]}>{t("Request #{{id}}", { id: item.id })}</Text>
+          </View>
+          <View style={styles.badgesContainer}>
             <View style={[styles.typeBadge, { backgroundColor: typeBadge.color }]}>
               <Ionicons name="cash-outline" size={14} color="#fff" />
               <Text style={styles.badgeText}>{typeBadge.text}</Text>
             </View>
-          </View>
-          <View style={[styles.statusBadge, { backgroundColor: statusBadge.color }]}>
-            <Text style={styles.statusText}>{statusBadge.text}</Text>
+            <View style={[styles.statusBadge, { backgroundColor: statusBadge.color }]}>
+              <Text style={styles.statusText}>{statusBadge.text}</Text>
+            </View>
           </View>
         </View>
 
@@ -358,8 +360,10 @@ const createLocalStyles = (NewStyles) =>StyleSheet.create({
     marginBottom: 12,
   },
   headerRight: {
-    ...NewStyles.row,
-    gap: 10,
+    flex: 1,
+  },
+  badgesContainer: {
+    gap: 8,
   },
   requestId: {
     ...NewStyles.title,

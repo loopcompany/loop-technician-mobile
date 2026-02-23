@@ -42,14 +42,14 @@ export default function PerformanceScreen({ navigation }) {
 
   // محاسبه تاریخ امروز به صورت شمسی
   const todayJalali = useMemo(() =>
-    getFormatedDate(new Date(), 'jYYYY/jMM/jDD'),
+    getFormatedDate(new Date(), 'YYYY/MM/DD'),
     []);
 
   // محاسبه تاریخ 3 سال قبل به صورت شمسی
   const threeYearsAgoJalali = useMemo(() => {
     const threeYearsAgo = new Date();
     threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 3);
-    return getFormatedDate(threeYearsAgo, 'jYYYY/jMM/jDD');
+    return getFormatedDate(threeYearsAgo, 'YYYY/MM/DD');
   }, []);
 
   const fetchTransactions = async (isRefresh = false) => {

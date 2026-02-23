@@ -61,7 +61,8 @@ export default function FolderScreen({ navigation }) {
     {
       id: 2,
       title: t("Index"),
-      screen: 'IndexScreen'
+      screen: 'IndexScreen',
+       apple_check: userData?.apple_check
     },
     {
       id: 3,
@@ -103,7 +104,8 @@ export default function FolderScreen({ navigation }) {
     {
       id: 9,
       title: t("Privacy"),
-      screen: 'PrivacyScreen'
+      screen: 'PrivacyScreen',
+       apple_check: userData?.apple_check
     },
     {
       id: 10,
@@ -133,7 +135,8 @@ export default function FolderScreen({ navigation }) {
     {
       id: 15,
       title: t("Rate List"),
-      screen: 'RateCategory'
+      screen: 'RateCategory',
+       apple_check: userData?.apple_check
     },
     {
       id: 16,

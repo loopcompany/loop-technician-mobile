@@ -196,11 +196,11 @@ export default function VehicleInfoScreen({ navigation }) {
     }
   };
 
-  const getTodayDate = () => getFormatedDate(new Date(), 'jYYYY/jMM/jDD');
+  const getTodayDate = () => getFormatedDate(new Date(), 'YYYY/MM/DD');
   const getTenYearsLater = () => {
     const futureDate = new Date();
     futureDate.setFullYear(futureDate.getFullYear() + 10);
-    return getFormatedDate(futureDate, 'jYYYY/jMM/jDD');
+    return getFormatedDate(futureDate, 'YYYY/MM/DD');
   };
 
   const handleSave = async () => {

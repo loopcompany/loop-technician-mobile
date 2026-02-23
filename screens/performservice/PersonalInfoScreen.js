@@ -299,19 +299,19 @@ export default function PersonalInfoScreen({ navigation }) {
     // 18 سال پیش
     const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
     // تبدیل به فرمت شمسی
-    return getFormatedDate(maxDate, 'jYYYY/jMM/jDD');
+    return getFormatedDate(maxDate, 'YYYY/MM/DD');
   };
 
   // محاسبه تاریخ امروز به صورت شمسی
   const getTodayDate = () => {
-    return getFormatedDate(new Date(), 'jYYYY/jMM/jDD');
+    return getFormatedDate(new Date(), 'YYYY/MM/DD');
   };
 
   // محاسبه تاریخ 10 سال آینده برای گواهینامه
   const getTenYearsLater = () => {
     const futureDate = new Date();
     futureDate.setFullYear(futureDate.getFullYear() + 10);
-    return getFormatedDate(futureDate, 'jYYYY/jMM/jDD');
+    return getFormatedDate(futureDate, 'YYYY/MM/DD');
   };
 
   // Handler for birth date selection
