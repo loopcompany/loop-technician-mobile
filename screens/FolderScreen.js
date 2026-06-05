@@ -152,7 +152,7 @@ export default function FolderScreen({ navigation }) {
   return (
     <SafeAreaView edges={{ top: 'off', bottom: 'off' }} style={NewStyles.container}>
       <ImageBackground
-        source={Platform.OS === 'web' ? require("../assets/webbackground.jpg") : require("../assets/background2.jpg")}
+        source={Platform.OS === 'web' ? require("../assets/loopbackground.webp") : require("../assets/moon.jpg")}
         style={NewStyles.container}
 
       >

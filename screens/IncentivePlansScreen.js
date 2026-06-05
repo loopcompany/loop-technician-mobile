@@ -65,9 +65,9 @@ export default function IncentivePlansScreen({ navigation }) {
   // رنگ بر اساس وضعیت
   const getStatusColor = (status) => {
     switch (status) {
-      case 0: return themeColor7.bgColor(1); // فعال - سبز
-      case 1: return themeColor11.bgColor(1); // استفاده شده - نارنجی
-      case 2: return themeColor6.bgColor(1); // منقضی - قرمز
+      case 'Active': return themeColor7.bgColor(1); // فعال - سبز
+      case 'Used': return themeColor11.bgColor(1); // استفاده شده - نارنجی
+      case 'Expired': return themeColor6.bgColor(1); // منقضی - قرمز
       default: return themeColor10.bgColor(0.5);
     }
   };
@@ -75,9 +75,9 @@ export default function IncentivePlansScreen({ navigation }) {
   // آیکون بر اساس وضعیت
   const getStatusIcon = (status) => {
     switch (status) {
-      case 0: return 'checkmark-circle'; // فعال
-      case 1: return 'checkmark-done-circle'; // استفاده شده
-      case 2: return 'close-circle'; // منقضی
+      case 'Active': return 'checkmark-circle'; // فعال
+      case 'Used': return 'checkmark-done-circle'; // استفاده شده
+      case 'Expired': return 'close-circle'; // منقضی
       default: return 'help-circle';
     }
   };
@@ -86,9 +86,9 @@ export default function IncentivePlansScreen({ navigation }) {
   const renderPlanItem = ({ item }) => (
     <View style={styles.planCard}>
       <View style={styles.planHeader}>
-        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
-          <Ionicons name={getStatusIcon(item.status)} size={18} color="#fff" />
-          <Text style={[NewStyles.title4, styles.statusText]}>{item.status_label}</Text>
+        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status_label) }]}>
+          <Ionicons name={getStatusIcon(item.status_label)} size={18} color="#fff" />
+          <Text style={[NewStyles.title4, styles.statusText]}>{t(item.status_label)}</Text>
         </View>
         <Text style={[NewStyles.text10, styles.planId]}>#{item.id}</Text>
       </View>

@@ -1,4 +1,4 @@
-import React, { useState, useCallback,useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -29,7 +29,7 @@ export default function FeedbackSuggestionScreen({ navigation }) {
     () => createStyles(i18n.language),
     [i18n.language]
   );
-    const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
+  const styles = useMemo(() => createLocalStyles(NewStyles), [NewStyles]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -222,12 +222,13 @@ export default function FeedbackSuggestionScreen({ navigation }) {
               </TouchableOpacity>
 
               {/* باکس بازخورد برای هر دسته */}
-              <View style={styles.feedbackBox}>
+              <View style={[styles.feedbackBox, { gap: 5 }]}>
+                <Text style={NewStyles.text1}>{t("Feedback")}</Text>
                 <TextInput
                   style={styles.feedbackInput}
                   multiline={true}
                   numberOfLines={3}
-                  placeholder={t("Feedback:")}
+                  placeholder={t("Feedback")}
                   placeholderTextColor={themeColor3.bgColor(1)}
                   value={feedbacks[category.id]}
                   onChangeText={(text) => handleTextChange(category.id, text)}
@@ -274,7 +275,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
   submittedText: {
     fontSize: 16,
     textAlign: 'center',
-    marginTop: 10, 
+    marginTop: 10,
   },
   container: {
     paddingHorizontal: 20,
@@ -286,8 +287,8 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
   categoryContainer: {
     width: '100%',
     marginVertical: 5,
-    maxWidth:800,
-    alignSelf:'center'
+    maxWidth: 800,
+    alignSelf: 'center'
   },
   categoryButton: {
     width: '100%',

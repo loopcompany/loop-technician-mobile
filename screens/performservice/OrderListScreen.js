@@ -119,94 +119,106 @@ export default function OrderListScreen({ navigation }) {
   };
   const user = useSelector((state) => state?.user?.data?.data?.technician);
 
-  const renderOrderCard = (order) => (
-    <View key={order.id} style={[styles.orderCard, NewStyles.shadow, NewStyles.border10]}>
-      {/* شماره سفارش */}
-      <View style={styles.cardSection}>
-        <Text style={NewStyles.title}>{t("Order #{{id}}", { id: order.id })}</Text>
-      </View>
+  const renderOrderCard = (order) => {
 
-      <View style={styles.divider} />
 
-      <View style={styles.cardSection}>
-        <Text style={NewStyles.text10}>
-          {order.customer?.name || ''} {order.customer?.last_name || ''}
-        </Text>
-        <Text style={NewStyles.text10}>{order.customer?.phone || '-'}</Text>
-      </View>
+    return (
+      <View key={order.id} style={[styles.orderCard, NewStyles.shadow, NewStyles.border10]}>
+        <View style={styles.cardSection}>
+          <Text style={NewStyles.title}>{t("Order #{{id}}", { id: order.id })}</Text>
+        </View>
 
-      {/* خط جداکننده */}
-      <View style={styles.divider} />
+        <View style={styles.divider} />
 
-      {/* آدرس */}
-      <View style={styles.cardSection}>
-        <Text style={NewStyles.text10}>
-          {order.address?.city || ''}{order.address?.city && order.address?.region ? ', ' : ''}
-          {order.address?.region ? t("Region {{region}}", { region: order.address.region }) : ''}
-          {(order.address?.city || order.address?.region) && order.address?.address ? ' - ' : ''}
-          {order.address?.address || t("Unknown address")}
-        </Text>
-      </View>
+        <View style={styles.cardSection}>
+          <Text style={NewStyles.text10}>
+            {order.customer?.name || ''} {order.customer?.last_name || ''}
+          </Text>
+          <Text style={NewStyles.text10}>{order.customer?.phone || '-'}</Text>
+        </View>
 
-      {/* خط جداکننده */}
-      <View style={styles.divider} />
+        {/* خط جداکننده */}
+        <View style={styles.divider} />
 
-      {/* دسته‌بندی */}
-      <View style={styles.cardSection}>
-        <Text style={NewStyles.text10}>{order.category?.title || order.category?.name || t("Unknown category")}</Text>
-      </View>
+        {/* آدرس */}
+        <View style={styles.cardSection}>
+          <Text style={NewStyles.text10}>
+            {order.address?.city || ''}{order.address?.city && order.address?.region ? ', ' : ''}
+            {order.address?.region ? t("Region {{region}}", { region: order.address.region }) : ''}
+            {(order.address?.city || order.address?.region) && order.address?.address ? ' - ' : ''}
+            {order.address?.address || t("Unknown address")}
+          </Text>
+        </View>
 
-      {/* خط جداکننده */}
-      <View style={styles.divider} />
+        {/* خط جداکننده */}
+        <View style={styles.divider} />
 
-      {/* وضعیت */}
-      <View style={styles.cardSection}>
-        <View style={[NewStyles.row]}>
-          <Text style={NewStyles.text10}>{t("Status:")}{' '}</Text>
-          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(order.status) }]}>
-            <Text style={NewStyles.text4}>{getStatusLabel(order.status)}</Text>
+        {/* دسته‌بندی */}
+        <View style={styles.cardSection}>
+          <Text style={NewStyles.text10}>{order.category?.title || order.category?.name || t("Unknown category")}</Text>
+        </View>
+
+        {/* خط جداکننده */}
+        <View style={styles.divider} />
+
+        {/* وضعیت */}
+        <View style={styles.cardSection}>
+          <View style={[NewStyles.row]}>
+            <Text style={NewStyles.text10}>{t("Status")}: </Text>
+            <View style={[styles.statusBadge, { backgroundColor: getStatusColor(order.status) }]}>
+              <Text style={NewStyles.text4}>{getStatusLabel(order.status)}</Text>
+            </View>
+          </View>
+
+        </View>
+        {order.status == 4 && <View style={styles.divider} />}
+        {order.status == 4 && <View style={styles.cardSection}>
+          <View style={[]}>
+            <Text style={NewStyles.text10}>{t("Cancel reason")}: </Text>
+            <View style={[styles.statusBadge]}>
+              <Text style={NewStyles.text10}>{(order.technician_cancel_reason)}</Text>
+            </View>
+          </View>
+        </View>}
+        {/* خط جداکننده */}
+        <View style={styles.divider} />
+
+        {/* ارسال به لوپ */}
+        <View style={styles.cardSection}>
+          <View style={[NewStyles.row]}>
+            <Text style={NewStyles.text10}>{t("Sent to Loop:")}{' '}</Text>
+            <Text style={NewStyles.text10}>{formatSendToLoop(order.send_to_loop)}</Text>
           </View>
         </View>
-      </View>
 
-      {/* خط جداکننده */}
-      <View style={styles.divider} />
+        {/* خط جداکننده */}
+        <View style={styles.divider} />
 
-      {/* ارسال به لوپ */}
-      <View style={styles.cardSection}>
-        <View style={[NewStyles.row]}>
-          <Text style={NewStyles.text10}>{t("Sent to Loop:")}{' '}</Text>
-          <Text style={NewStyles.text10}>{formatSendToLoop(order.send_to_loop)}</Text>
-        </View>
-      </View>
-
-      {/* خط جداکننده */}
-      <View style={styles.divider} />
-
-      {/* قیمت نهایی */}
-      {user?.apple_check != 1 && <View style={styles.cardSection}>
+        {/* قیمت نهایی */}
+        {/* {user?.apple_check != 1 && <View style={styles.cardSection}>
         <View style={[NewStyles.row]}>
           <Text style={NewStyles.text10}>{t("Final price:")}{' '}</Text>
           <Text style={NewStyles.text7}>{formatPrice(getFinalPrice(order))}</Text>
         </View>
-      </View>}
+      </View>} */}
 
-      {/* خط جداکننده */}
-      <View style={styles.divider} />
+        {/* خط جداکننده */}
+        {/* <View style={styles.divider} /> */}
 
-      {/* هزینه اضافی */}
-      {user?.apple_check != 1 && <View style={styles.cardSection}>
+        {/* هزینه اضافی */}
+        {/* {user?.apple_check != 1 && <View style={styles.cardSection}>
         <View style={[NewStyles.row]}>
           <Text style={NewStyles.text10}>{t("Extra cost:")}{' '}</Text>
           <Text style={NewStyles.text7}>{formatPrice(order.extra_price)}</Text>
         </View>
-      </View>}
+      </View>} */}
 
-      {/* دکمه جزئیات */}
+        {/* دکمه جزئیات */}
 
-      <Button title={t("View Details")} onPress={() => navigation.navigate('OrderDetailScreen', { orderId: order.id })} />
-    </View>
-  );
+        <Button title={t("View Details")} onPress={() => navigation.navigate('OrderDetailScreen', { orderId: order.id })} />
+      </View>
+    )
+  };
 
   const renderFilters = () => {
     const filters = [

@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   RefreshControl,
   Modal,
   ScrollView,
+  SafeAreaView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -31,7 +32,7 @@ export default function DebtRequestsListScreen({ navigation }) {
     () => createStyles(i18n.language),
     [i18n.language]
   );
-  const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
+  const styles = useMemo(() => createLocalStyles(NewStyles), [NewStyles]);
   useEffect(() => {
     fetchRequests();
   }, []);
@@ -40,7 +41,7 @@ export default function DebtRequestsListScreen({ navigation }) {
     try {
       setLoading(true);
       const response = await getDebtRequests();
-      
+
       if (response.success) {
         setRequests(response.data);
       } else {
@@ -81,10 +82,10 @@ export default function DebtRequestsListScreen({ navigation }) {
   const handleViewDetails = async (requestId) => {
     setModalVisible(true);
     setLoadingDetail(true);
-    
+
     try {
       const response = await getDebtRequestById(requestId);
-      
+
       if (response.success) {
         setSelectedRequest(response.data);
       } else {
@@ -139,7 +140,7 @@ export default function DebtRequestsListScreen({ navigation }) {
         {item.type === 'free' && item.month && (
           <View style={styles.infoRow}>
             <Ionicons name="calendar-outline" size={16} color={themeColor10.bgColor(0.8)} />
-            <Text style={[NewStyles.text4, styles.infoText]}>
+            <Text style={[NewStyles.text, styles.infoText]}>
               {t("Duration")}: {item.month} {t("Month")}
             </Text>
           </View>
@@ -149,7 +150,16 @@ export default function DebtRequestsListScreen({ navigation }) {
         <Text style={[NewStyles.text4, styles.description]} numberOfLines={2}>
           {item.description}
         </Text>
-
+        {item?.response &&
+          <>
+            <Text style={NewStyles.text}>
+              {t("Admin descriptions")}
+            </Text>
+            <Text style={[NewStyles.text4, styles.description]} numberOfLines={3}>
+              {item?.response}
+            </Text>
+          </>
+        }
         {/* Footer */}
         <View style={styles.cardFooter}>
           <Text style={[NewStyles.text4, styles.dateText]}>
@@ -173,7 +183,7 @@ export default function DebtRequestsListScreen({ navigation }) {
       <Text style={[NewStyles.title, styles.emptyText]}>
         {t("No loan requests have been submitted.")}
       </Text>
-     
+
     </View>
   );
 
@@ -184,28 +194,29 @@ export default function DebtRequestsListScreen({ navigation }) {
       visible={modalVisible}
       onRequestClose={() => setModalVisible(false)}
     >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          {loadingDetail ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
-              <Text style={[NewStyles.text, { marginTop: 15 }]}>{t("Loading...")}</Text>
-            </View>
-          ) : selectedRequest ? (
-            <>
-              {/* Header */}
-              <View style={styles.modalHeader}>
-                <Text style={[NewStyles.title, styles.modalTitle]}>{t("Request details")}</Text>
-                <TouchableOpacity
-                  style={styles.closeButton}
-                  onPress={() => setModalVisible(false)}
-                >
-                  <Ionicons name="close" size={24} color={themeColor10.bgColor(1)} />
-                </TouchableOpacity>
+      <SafeAreaView edges={{ top: 'additive', bottom: 'additive' }} style={styles.modalOverlay}>
+        <ScrollView style={styles.modalBody} contentContainerStyle={styles.modalContent} showsVerticalScrollIndicator={false}>
+          <View>
+            {loadingDetail ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
+                <Text style={[NewStyles.text, { marginTop: 15 }]}>{t("Loading...")}</Text>
               </View>
+            ) : selectedRequest ? (
+              <>
+                {/* Header */}
+                <View style={styles.modalHeader}>
+                  <Text style={[NewStyles.title, styles.modalTitle]}>{t("Request details")}</Text>
+                  <TouchableOpacity
+                    style={styles.closeButton}
+                    onPress={() => setModalVisible(false)}
+                  >
+                    <Ionicons name="close" size={24} color={themeColor10.bgColor(1)} />
+                  </TouchableOpacity>
+                </View>
 
-              {/* Body */}
-              <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
+                {/* Body */}
+
                 {/* Type */}
                 <View style={styles.detailRow}>
                   <Text style={[NewStyles.text4, styles.detailLabel]}>{t("Request type:")}</Text>
@@ -281,19 +292,29 @@ export default function DebtRequestsListScreen({ navigation }) {
                     </View>
                   </View>
                 )}
-              <TouchableOpacity
-                style={styles.closeModalButton}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={[NewStyles.title4]}>{t("Close")}</Text>
-              </TouchableOpacity>
-              </ScrollView>
+                {
+                  selectedRequest?.response && <View style={styles.descriptionSection}>
+                    <Text style={[NewStyles.text4, styles.sectionTitle]}>{t("Admin descriptions")}:</Text>
+                    <View style={styles.descriptionBox}>
+                      <Text style={[NewStyles.text10, styles.descriptionText]}>
+                        {selectedRequest.response}
+                      </Text>
+                    </View>
+                  </View>
+                }
+                <TouchableOpacity
+                  style={styles.closeModalButton}
+                  onPress={() => setModalVisible(false)}
+                >
+                  <Text style={[NewStyles.title4]}>{t("Close")}</Text>
+                </TouchableOpacity>
 
-              {/* Footer */}
-            </>
-          ) : null}
-        </View>
-      </View>
+                {/* Footer */}
+              </>
+            ) : null}
+          </View>
+        </ScrollView>
+      </SafeAreaView>
     </Modal>
   );
 
@@ -305,7 +326,7 @@ export default function DebtRequestsListScreen({ navigation }) {
       style={styles.background}
     >
       <ScreenHeaders
-        title={t("Loan/facilities requests")} 
+        title={t("Loan/facilities requests")}
       />
 
       {loading ? (
@@ -335,7 +356,7 @@ export default function DebtRequestsListScreen({ navigation }) {
   );
 }
 
-const createLocalStyles = (NewStyles) =>StyleSheet.create({
+const createLocalStyles = (NewStyles) => StyleSheet.create({
   background: {
     flex: 1,
   },
@@ -455,15 +476,18 @@ const createLocalStyles = (NewStyles) =>StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: themeColor10.bgColor(0.6),
-    ...NewStyles.center,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 20,
   },
   modalContent: {
-    backgroundColor: themeColor4.bgColor(1),
+    backgroundColor: '#fff',
     borderRadius: 20,
     width: '100%',
     // maxHeight: '80%',
+    ...NewStyles.shadow,
+    padding: 10
   },
   modalHeader: {
     ...NewStyles.rowWrapper,
@@ -478,7 +502,7 @@ const createLocalStyles = (NewStyles) =>StyleSheet.create({
     padding: 5,
   },
   modalBody: {
-    padding: 20,
+    width: '100%'
   },
   detailRow: {
     ...NewStyles.rowWrapper,

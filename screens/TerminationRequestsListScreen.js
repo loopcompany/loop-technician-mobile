@@ -1,4 +1,4 @@
-import React, { useState, useCallback,useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   RefreshControl,
   Modal,
   ScrollView,
+  SafeAreaView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -32,7 +33,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
     () => createStyles(i18n.language),
     [i18n.language]
   );
-  const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
+  const styles = useMemo(() => createLocalStyles(NewStyles), [NewStyles]);
   const fetchRequests = async (isRefresh = false) => {
     try {
       if (!isRefresh) setLoading(true);
@@ -121,7 +122,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
         activeOpacity={0.7}
       >
         <View style={styles.header}>
-          <Text style={[NewStyles.title10,styles.id]}>#{item.id}</Text>
+          <Text style={[NewStyles.title10, styles.id]}>#{item.id}</Text>
           <View style={[styles.badge, { backgroundColor: statusBadge.color }]}>
             <Ionicons name={statusBadge.icon} size={16} color="#fff" style={{ marginLeft: 4 }} />
             <Text style={styles.badgeText}>{statusBadge.text}</Text>
@@ -134,13 +135,23 @@ export default function TerminationRequestsListScreen({ navigation }) {
         </View>
 
         <View style={styles.dateInfo}>
-          <Text style={styles.dateLabel}>{t("From Date:")} {item.start_date}</Text>
+          <Text style={[styles.dateLabel]}>{t("From Date:")} {item.start_date}</Text>
           {item.end_date && <Text style={styles.dateLabel}>{t("To Date:")} {item.end_date}</Text>}
         </View>
 
-        <Text style={[NewStyles.text10,styles.description]} numberOfLines={2}>
+        <Text style={[NewStyles.text10, styles.description]} numberOfLines={2}>
           {item.description}
         </Text>
+        {item?.response &&
+          <>
+            <Text style={NewStyles.text}>
+              {t("Admin descriptions")}
+            </Text>
+            <Text style={[NewStyles.text4, styles.description]} numberOfLines={3}>
+              {item?.response}
+            </Text>
+          </>
+        }
 
         <View style={styles.footer}>
           <Text style={styles.date}>
@@ -175,116 +186,129 @@ export default function TerminationRequestsListScreen({ navigation }) {
         animationType="fade"
         onRequestClose={closeModal}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            {loadingDetail ? (
-              <View style={styles.modalLoading}>
-                <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
-                <Text style={styles.loadingText}>{t("Loading...")}</Text>
-              </View>
-            ) : (
-              <>
-                <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>
-                    {t("Request details #{{id}}", { id: selectedRequest.id })}
-                  </Text>
-                  <TouchableOpacity
-                    onPress={closeModal}
-                    style={styles.closeButton}
-                  >
-                    <Ionicons name="close" size={28} color={themeColor10.bgColor(0.8)} />
-                  </TouchableOpacity>
+        <SafeAreaView edges={{ top: 'additive', bottom: 'additive' }} style={styles.modalOverlay}>
+          <ScrollView style={styles.modalBody} contentContainerStyle={styles.modalContent} showsVerticalScrollIndicator={false}>
+            <View>
+              {loadingDetail ? (
+                <View style={styles.modalLoading}>
+                  <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
+                  <Text style={styles.loadingText}>{t("Loading...")}</Text>
                 </View>
-
-                <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
-                  <View style={styles.detailRow}>
-                    <View style={styles.detailLabel}>
-                      <Ionicons name={getTypeIcon(selectedRequest.type)} size={18} color={themeColor0.bgColor(1)} />
-                      <Text style={styles.labelText}>{t("Request type:")}</Text>
-                    </View>
-                    <Text style={styles.detailValue}>
-                      {getTypeLabel(selectedRequest.type)}
+              ) : (
+                <>
+                  <View style={styles.modalHeader}>
+                    <Text style={styles.modalTitle}>
+                      {t("Request details #{{id}}", { id: selectedRequest.id })}
                     </Text>
+                    <TouchableOpacity
+                      onPress={closeModal}
+                      style={styles.closeButton}
+                    >
+                      <Ionicons name="close" size={28} color={themeColor10.bgColor(0.8)} />
+                    </TouchableOpacity>
                   </View>
 
-                  <View style={styles.detailRow}>
-                    <View style={styles.detailLabel}>
-                      <Ionicons name="information-circle" size={18} color={themeColor0.bgColor(1)} />
-                      <Text style={styles.labelText}>{t("Status:")}</Text>
-                    </View>
-                    <View style={[styles.statusBadgeLarge, { backgroundColor: statusBadge.color }]}>
-                      <Ionicons name={statusBadge.icon} size={18} color="#fff" />
-                      <Text style={[styles.badgeText, { fontSize: 14 }]}>{statusBadge.text}</Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.detailRow}>
-                    <View style={styles.detailLabel}>
-                      <Ionicons name="calendar" size={18} color={themeColor0.bgColor(1)} />
-                      <Text style={styles.labelText}>{t("Start date")}:</Text>
-                    </View>
-                    <Text style={styles.detailValue}>
-                      {selectedRequest.start_date}
-                    </Text>
-                  </View>
-
-                  {selectedRequest.end_date && (
+                  <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
                     <View style={styles.detailRow}>
                       <View style={styles.detailLabel}>
-                        <Ionicons name="calendar-outline" size={18} color={themeColor0.bgColor(1)} />
-                        <Text style={styles.labelText}>{t("End Date")}:</Text>
+                        <Ionicons name={getTypeIcon(selectedRequest.type)} size={18} color={themeColor0.bgColor(1)} />
+                        <Text style={styles.labelText}>{t("Request type:")}</Text>
                       </View>
                       <Text style={styles.detailValue}>
-                        {selectedRequest.end_date}
+                        {getTypeLabel(selectedRequest.type)}
                       </Text>
                     </View>
-                  )}
 
-                  <View style={styles.detailRow}>
-                    <View style={styles.detailLabel}>
-                      <Ionicons name="time" size={18} color={themeColor0.bgColor(1)} />
-                      <Text style={styles.labelText}>{t("Submitted at:")}</Text>
-                    </View>
-                    <Text style={styles.detailValue}>
-                      {formatDateTime(selectedRequest.created_at)}
-                    </Text>
-                  </View>
-
-                  {selectedRequest.updated_at && selectedRequest.updated_at !== selectedRequest.created_at && (
                     <View style={styles.detailRow}>
                       <View style={styles.detailLabel}>
-                        <Ionicons name="sync" size={18} color={themeColor0.bgColor(1)} />
-                        <Text style={styles.labelText}>{t("Last updated:")}</Text>
+                        <Ionicons name="information-circle" size={18} color={themeColor0.bgColor(1)} />
+                        <Text style={styles.labelText}>{t("Status:")}</Text>
+                      </View>
+                      <View style={[styles.statusBadgeLarge, { backgroundColor: statusBadge.color }]}>
+                        <Ionicons name={statusBadge.icon} size={18} color="#fff" />
+                        <Text style={[styles.badgeText, { fontSize: 14 }]}>{statusBadge.text}</Text>
+                      </View>
+                    </View>
+
+                    <View style={styles.detailRow}>
+                      <View style={styles.detailLabel}>
+                        <Ionicons name="calendar" size={18} color={themeColor0.bgColor(1)} />
+                        <Text style={styles.labelText}>{t("Start date")}:</Text>
                       </View>
                       <Text style={styles.detailValue}>
-                        {formatDateTime(selectedRequest.updated_at)}
+                        {selectedRequest.start_date}
                       </Text>
                     </View>
-                  )}
 
-                  <View style={styles.descriptionSection}>
-                    <View style={styles.detailLabel}>
-                      <Ionicons name="document-text" size={18} color={themeColor0.bgColor(1)} />
-                      <Text style={styles.labelText}>{t("Description")}:</Text>
-                    </View>
-                    <View style={styles.descriptionBox}>
-                      <Text style={styles.descriptionText}>
-                        {selectedRequest.description}
+                    {selectedRequest.end_date && (
+                      <View style={styles.detailRow}>
+                        <View style={styles.detailLabel}>
+                          <Ionicons name="calendar-outline" size={18} color={themeColor0.bgColor(1)} />
+                          <Text style={styles.labelText}>{t("End Date")}:</Text>
+                        </View>
+                        <Text style={styles.detailValue}>
+                          {selectedRequest.end_date}
+                        </Text>
+                      </View>
+                    )}
+
+                    <View style={styles.detailRow}>
+                      <View style={styles.detailLabel}>
+                        <Ionicons name="time" size={18} color={themeColor0.bgColor(1)} />
+                        <Text style={styles.labelText}>{t("Submitted at:")}</Text>
+                      </View>
+                      <Text style={styles.detailValue}>
+                        {formatDateTime(selectedRequest.created_at)}
                       </Text>
                     </View>
-                  </View>
-                </ScrollView>
 
-                <TouchableOpacity
-                  style={styles.modalCloseButton}
-                  onPress={closeModal}
-                >
-                  <Text style={styles.modalCloseButtonText}>{t("Close")}</Text>
-                </TouchableOpacity>
-              </>
-            )}
-          </View>
-        </View>
+                    {selectedRequest.updated_at && selectedRequest.updated_at !== selectedRequest.created_at && (
+                      <View style={styles.detailRow}>
+                        <View style={styles.detailLabel}>
+                          <Ionicons name="sync" size={18} color={themeColor0.bgColor(1)} />
+                          <Text style={styles.labelText}>{t("Last updated:")}</Text>
+                        </View>
+                        <Text style={styles.detailValue}>
+                          {formatDateTime(selectedRequest.updated_at)}
+                        </Text>
+                      </View>
+                    )}
+
+                    <View style={styles.descriptionSection}>
+                      <View style={styles.detailLabel}>
+                        <Ionicons name="document-text" size={18} color={themeColor0.bgColor(1)} />
+                        <Text style={styles.labelText}>{t("Description")}:</Text>
+                      </View>
+                      <View style={styles.descriptionBox}>
+                        <Text style={styles.descriptionText}>
+                          {selectedRequest.description}
+                        </Text>
+                      </View>
+                    </View>
+                    {selectedRequest.response && <View style={styles.descriptionSection}>
+                      <View style={styles.detailLabel}>
+                        <Ionicons name="document-text" size={18} color={themeColor0.bgColor(1)} />
+                        <Text style={styles.labelText}>{t("Admin descriptions")}:</Text>
+                      </View>
+                      <View style={styles.descriptionBox}>
+                        <Text style={styles.descriptionText}>
+                          {selectedRequest.response}
+                        </Text>
+                      </View>
+                    </View>}
+                  </ScrollView>
+
+                  <TouchableOpacity
+                    style={styles.modalCloseButton}
+                    onPress={closeModal}
+                  >
+                    <Text style={styles.modalCloseButtonText}>{t("Close")}</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          </ScrollView>
+        </SafeAreaView>
       </Modal>
     );
   };
@@ -342,7 +366,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
     </LinearGradient>
   );
 }
-const createLocalStyles = (NewStyles) =>  StyleSheet.create({
+const createLocalStyles = (NewStyles) => StyleSheet.create({
   background: {
     flex: 1,
   },
@@ -380,7 +404,7 @@ const createLocalStyles = (NewStyles) =>  StyleSheet.create({
     borderBottomColor: themeColor10.bgColor(0.1),
   },
   id: {
-    fontSize: 14, 
+    fontSize: 14,
     color: themeColor10.bgColor(0.6),
   },
   badge: {
@@ -477,11 +501,12 @@ const createLocalStyles = (NewStyles) =>  StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    backgroundColor: themeColor4.bgColor(1),
+    backgroundColor: '#fff',
     borderRadius: 20,
     width: '100%',
-    maxHeight: '80%',
+    // maxHeight: '80%',
     ...NewStyles.shadow,
+    padding: 10
   },
   modalLoading: {
     padding: 40,
@@ -506,8 +531,7 @@ const createLocalStyles = (NewStyles) =>  StyleSheet.create({
     padding: 5,
   },
   modalBody: {
-    padding: 20,
-    maxHeight: 400,
+    width: '100%'
   },
   detailRow: {
     flexDirection: 'row-reverse',

@@ -454,7 +454,6 @@ export const getExpertises = async () => {
  */
 export const registerTechnician = async (formData, resumeFile = null) => {
   try {
-    console.log('🚀 Registering technician...');
 
     // Create multipart form data
     const multipartData = new FormData();
@@ -473,37 +472,24 @@ export const registerTechnician = async (formData, resumeFile = null) => {
 
     // Add resume file if provided
     if (resumeFile) {
-      console.log('📎 اضافه کردن فایل رزومه:', {
-        uri: resumeFile.uri,
-        name: resumeFile.name,
-        type: resumeFile.mimeType || resumeFile.type
-      });
-
       // Platform-specific file handling
       if (typeof resumeFile.uri === 'string' && resumeFile.uri.startsWith('data:')) {
-        // 🌐 Web: Convert base64 data URL to Blob
-        console.log('🌐 تبدیل base64 به Blob برای Web');
         const base64Data = resumeFile.uri.split(',')[1];
         const mimeType = resumeFile.type || 'application/octet-stream';
         const blob = base64ToBlob(base64Data, mimeType);
         multipartData.append('resume', blob, resumeFile.name || 'resume.pdf');
         console.log('✅ فایل رزومه به صورت Blob اضافه شد');
       } else {
-        // 📱 Native: Use file URI
-        console.log('📱 اضافه کردن فایل به صورت Native');
         multipartData.append('resume', {
           uri: resumeFile.uri,
           name: resumeFile.name || 'resume.pdf',
           type: resumeFile.mimeType || resumeFile.type || 'application/pdf',
         });
-        console.log('✅ فایل رزومه به FormData اضافه شد');
       }
     } else {
       console.log('⚠️ هیچ فایل رزومه‌ای انتخاب نشده');
     }
 
-    // Log FormData contents for debugging
-    console.log('📋 محتویات FormData:');
     for (const [key, value] of formData.entries()) {
       if (key !== 'password') {
         console.log(`  ${key}:`, typeof value === 'object' ? 'file' : value);
@@ -518,10 +504,8 @@ export const registerTechnician = async (formData, resumeFile = null) => {
       timeout: 60000, // 60 seconds for file upload
     });
 
-    console.log('✅ Registration successful:', response.data);
     return handleResponse(response);
   } catch (error) {
-    console.log('❌ Registration failed:', error);
     return handleError(error);
   }
 };
@@ -1168,6 +1152,14 @@ export const getOrderReportByOrderId = async (orderId) => {
 export const sendOrderToLoop = async (orderId) => {
   try {
     const response = await api.post(`/technician/orders/${orderId}/send-to-loop`);
+    return handleResponse(response);
+  } catch (error) {
+    return handleError(error);
+  }
+};
+export const doneInPlace = async (orderId, data) => {
+  try {
+    const response = await api.post(`/technician/orders/${orderId}/done-in-place`, data);
     return handleResponse(response);
   } catch (error) {
     return handleError(error);

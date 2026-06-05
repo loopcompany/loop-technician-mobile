@@ -1,4 +1,4 @@
-import React, { useState, useCallback,useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   RefreshControl,
   Modal,
   ScrollView,
+  SafeAreaView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -27,12 +28,12 @@ export default function TransferRequestsListScreen({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
- const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const NewStyles = useMemo(
     () => createStyles(i18n.language),
     [i18n.language]
   );
-  const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
+  const styles = useMemo(() => createLocalStyles(NewStyles), [NewStyles]);
   const fetchRequests = async (isRefresh = false) => {
     try {
       if (!isRefresh) setLoading(true);
@@ -137,7 +138,16 @@ export default function TransferRequestsListScreen({ navigation }) {
         <Text style={styles.description} numberOfLines={2}>
           {item.description}
         </Text>
-
+        {item?.response &&
+          <>
+            <Text style={NewStyles.text}>
+              {t("Admin descriptions")}
+            </Text>
+            <Text style={[NewStyles.text4, styles.description]} numberOfLines={3}>
+              {item?.response}
+            </Text>
+          </>
+        }
         <View style={styles.footer}>
           <Text style={styles.date}>
             {formatDateTime(item.created_at)}
@@ -154,8 +164,8 @@ export default function TransferRequestsListScreen({ navigation }) {
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
       <Ionicons name="swap-horizontal-outline" size={80} color={themeColor4.bgColor(1)} />
-      <Text style={[NewStyles.text4,styles.emptyText]}>{t("No requests have been submitted.")}</Text>
-      <Text style={[NewStyles.text4,styles.emptySubText]}>{t("Your transfer/position requests will appear here.")}</Text>
+      <Text style={[NewStyles.text4, styles.emptyText]}>{t("No requests have been submitted.")}</Text>
+      <Text style={[NewStyles.text4, styles.emptySubText]}>{t("Your transfer/position requests will appear here.")}</Text>
 
     </View>
   );
@@ -172,28 +182,29 @@ export default function TransferRequestsListScreen({ navigation }) {
         animationType="fade"
         onRequestClose={closeModal}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            {loadingDetail ? (
-              <View style={styles.modalLoading}>
-                <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
-                <Text style={styles.loadingText}>{t("Loading...")}</Text>
-              </View>
-            ) : (
-              <>
-                <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>
-                    {t("Request details #{{id}}", { id: selectedRequest.id })}
-                  </Text>
-                  <TouchableOpacity
-                    onPress={closeModal}
-                    style={styles.closeButton}
-                  >
-                    <Ionicons name="close" size={28} color={themeColor10.bgColor(0.8)} />
-                  </TouchableOpacity>
+        <SafeAreaView edges={{ top: 'additive', bottom: 'additive' }} style={styles.modalOverlay}>
+          <ScrollView style={styles.modalBody} contentContainerStyle={styles.modalContent} showsVerticalScrollIndicator={false}>
+            <View >
+              {loadingDetail ? (
+                <View style={styles.modalLoading}>
+                  <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
+                  <Text style={styles.loadingText}>{t("Loading...")}</Text>
                 </View>
+              ) : (
+                <>
+                  <View style={styles.modalHeader}>
+                    <Text style={styles.modalTitle}>
+                      {t("Request details #{{id}}", { id: selectedRequest.id })}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={closeModal}
+                      style={styles.closeButton}
+                    >
+                      <Ionicons name="close" size={28} color={themeColor10.bgColor(0.8)} />
+                    </TouchableOpacity>
+                  </View>
 
-                <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
+
                   <View style={styles.detailRow}>
                     <View style={styles.detailLabel}>
                       <Ionicons name={getTypeIcon(selectedRequest.type)} size={18} color={themeColor0.bgColor(1)} />
@@ -248,18 +259,32 @@ export default function TransferRequestsListScreen({ navigation }) {
                       </Text>
                     </View>
                   </View>
-                </ScrollView>
+                  {selectedRequest.response &&
+                    <View style={styles.descriptionSection}>
+                      <View style={styles.detailLabel}>
+                        <Ionicons name="document-text" size={18} color={themeColor0.bgColor(1)} />
+                        <Text style={styles.labelText}>{t("Description")}:</Text>
+                      </View>
+                      <View style={styles.descriptionBox}>
+                        <Text style={styles.descriptionText}>
+                          {selectedRequest.response}
+                        </Text>
+                      </View>
+                    </View>
+                  }
 
-                <TouchableOpacity
-                  style={styles.modalCloseButton}
-                  onPress={closeModal}
-                >
-                  <Text style={styles.modalCloseButtonText}>{t("Close")}</Text>
-                </TouchableOpacity>
-              </>
-            )}
-          </View>
-        </View>
+
+                  <TouchableOpacity
+                    style={styles.modalCloseButton}
+                    onPress={closeModal}
+                  >
+                    <Text style={styles.modalCloseButtonText}>{t("Close")}</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          </ScrollView>
+        </SafeAreaView>
       </Modal>
     );
   };
@@ -318,7 +343,7 @@ export default function TransferRequestsListScreen({ navigation }) {
   );
 }
 
-const createLocalStyles = (NewStyles) =>StyleSheet.create({
+const createLocalStyles = (NewStyles) => StyleSheet.create({
   background: {
     flex: 1,
   },
@@ -437,10 +462,12 @@ const createLocalStyles = (NewStyles) =>StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    backgroundColor: themeColor4.bgColor(1),
+    backgroundColor: '#fff',
     borderRadius: 20,
     width: '100%',
+    // maxHeight: '80%',
     ...NewStyles.shadow,
+    padding: 10
   },
   modalLoading: {
     padding: 40,
@@ -462,8 +489,7 @@ const createLocalStyles = (NewStyles) =>StyleSheet.create({
     padding: 5,
   },
   modalBody: {
-    padding: 20,
-    maxHeight: 400,
+    width: '100%'
   },
   detailRow: {
     ...NewStyles.rowWrapper,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback,useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     View,
     Text,
@@ -16,9 +16,10 @@ import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor10, themeColor11, themeColor2, themeColor3, themeColor4, themeColor6, themeColor7, themeColor8 } from '../theme/Color';
 import { getEducationRequests, getEducationRequestById } from '../services/Api';
-import { formatDate, formatDateTime , showAlert} from '../helpers/Common';
+import { formatDate, formatDateTime, showAlert } from '../helpers/Common';
 import { useTranslation } from 'react-i18next';
 import { createStyles } from '../styles/NewStyles';
+import { SafeAreaView } from 'react-native-safe-area-context';
 export default function RequestsListScreen({ navigation }) {
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -26,12 +27,12 @@ export default function RequestsListScreen({ navigation }) {
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedRequest, setSelectedRequest] = useState(null);
     const [loadingDetail, setLoadingDetail] = useState(false);
-  const { t, i18n } = useTranslation();
-  const NewStyles = useMemo(
-    () => createStyles(i18n.language),
-    [i18n.language]
-  );
-  const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
+    const { t, i18n } = useTranslation();
+    const NewStyles = useMemo(
+        () => createStyles(i18n.language),
+        [i18n.language]
+    );
+    const styles = useMemo(() => createLocalStyles(NewStyles), [NewStyles]);
     useEffect(() => {
         fetchRequests();
     }, []);
@@ -75,7 +76,7 @@ export default function RequestsListScreen({ navigation }) {
         }
     };
 
-    
+
 
     const handleViewDetails = async (item) => {
         try {
@@ -104,7 +105,6 @@ export default function RequestsListScreen({ navigation }) {
 
     const renderItem = ({ item }) => {
         const statusBadge = getStatusBadge(item.status);
-
         return (
             <TouchableOpacity
                 style={styles.requestCard}
@@ -127,6 +127,17 @@ export default function RequestsListScreen({ navigation }) {
                 <Text style={[NewStyles.text4, styles.requestDescription]} numberOfLines={3}>
                     {item.description}
                 </Text>
+                {item?.response &&
+                    <>
+                        <Text style={NewStyles.text}>
+                            {t("Admin descriptions")}
+                        </Text>
+                        <Text style={[NewStyles.text4, styles.requestDescription]} numberOfLines={3}>
+                            {item?.response}
+                        </Text>
+                    </>
+                }
+
 
                 <View style={styles.cardFooter}>
                     <View style={styles.dateContainer}>
@@ -157,7 +168,7 @@ export default function RequestsListScreen({ navigation }) {
 
     const renderDetailModal = () => {
         if (!selectedRequest) return null;
-        
+
         const statusBadge = getStatusBadge(selectedRequest.status);
 
         return (
@@ -167,28 +178,29 @@ export default function RequestsListScreen({ navigation }) {
                 animationType="fade"
                 onRequestClose={closeModal}
             >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        {loadingDetail ? (
-                            <View style={styles.modalLoading}>
-                                <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
-                                <Text style={[NewStyles.text4, { marginTop: 10 }]}>{t("Loading...")}</Text>
-                            </View>
-                        ) : (
-                            <>
-                                <View style={styles.modalHeader}>
-                                    <Text style={[NewStyles.title, styles.modalTitle]}>
-                                        {t("Request details #{{id}}", { id: selectedRequest.id })}
-                                    </Text>
-                                    <TouchableOpacity 
-                                        onPress={closeModal}
-                                        style={styles.closeButton}
-                                    >
-                                        <Ionicons name="close" size={28} color={themeColor10.bgColor(0.8)} />
-                                    </TouchableOpacity>
+                <SafeAreaView edges={{ top: 'additive', bottom: 'additive' }} style={styles.modalOverlay}>
+                    <ScrollView style={styles.modalBody} contentContainerStyle={styles.modalContent} showsVerticalScrollIndicator={false}>
+                        <View  >
+                            {loadingDetail ? (
+                                <View style={styles.modalLoading}>
+                                    <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
+                                    <Text style={[NewStyles.text4, { marginTop: 10 }]}>{t("Loading...")}</Text>
                                 </View>
+                            ) : (
+                                <>
+                                    <View style={styles.modalHeader}>
+                                        <Text style={[NewStyles.title, styles.modalTitle]}>
+                                            {t("Request details #{{id}}", { id: selectedRequest.id })}
+                                        </Text>
+                                        <TouchableOpacity
+                                            onPress={closeModal}
+                                            style={styles.closeButton}
+                                        >
+                                            <Ionicons name="close" size={28} color={themeColor10.bgColor(0.8)} />
+                                        </TouchableOpacity>
+                                    </View>
 
-                                <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
+
                                     <View style={styles.detailRow}>
                                         <View style={styles.detailLabel}>
                                             <Ionicons name="bookmarks" size={18} color={themeColor0.bgColor(1)} />
@@ -243,18 +255,29 @@ export default function RequestsListScreen({ navigation }) {
                                             </Text>
                                         </View>
                                     </View>
-                                </ScrollView>
+                                    {selectedRequest?.response && <View style={styles.descriptionSection}>
+                                        <View style={styles.detailLabel}>
+                                            <Ionicons name="document-text" size={18} color={themeColor0.bgColor(1)} />
+                                            <Text style={[NewStyles.text, styles.labelText]}>{t("Admin descriptions")}:</Text>
+                                        </View>
+                                        <View style={styles.descriptionBox}>
+                                            <Text style={[NewStyles.text4, styles.descriptionText]}>
+                                                {selectedRequest.response}
+                                            </Text>
+                                        </View>
+                                    </View>}
 
-                                <TouchableOpacity 
-                                    style={styles.modalCloseButton}
-                                    onPress={closeModal}
-                                >
-                                    <Text style={[NewStyles.title4, { fontSize: 16 }]}>{t("Close")}</Text>
-                                </TouchableOpacity>
-                            </>
-                        )}
-                    </View>
-                </View>
+                                    <TouchableOpacity
+                                        style={styles.modalCloseButton}
+                                        onPress={closeModal}
+                                    >
+                                        <Text style={[NewStyles.title4, { fontSize: 16 }]}>{t("Close")}</Text>
+                                    </TouchableOpacity>
+                                </>
+                            )}
+                        </View>
+                    </ScrollView>
+                </SafeAreaView>
             </Modal>
         );
     };
@@ -298,7 +321,7 @@ export default function RequestsListScreen({ navigation }) {
     );
 }
 
-const createLocalStyles = (NewStyles) =>  StyleSheet.create({
+const createLocalStyles = (NewStyles) => StyleSheet.create({
     background: {
         flex: 1,
     },
@@ -372,7 +395,7 @@ const createLocalStyles = (NewStyles) =>  StyleSheet.create({
         paddingTop: 10,
     },
     dateContainer: {
-       ...NewStyles.row,
+        ...NewStyles.row,
         alignItems: 'center',
         gap: 5,
     },
@@ -396,7 +419,7 @@ const createLocalStyles = (NewStyles) =>  StyleSheet.create({
         paddingVertical: 60,
     },
     emptyText: {
-        fontSize: 16, 
+        fontSize: 16,
         marginTop: 15,
         marginBottom: 20,
     },
@@ -416,7 +439,7 @@ const createLocalStyles = (NewStyles) =>  StyleSheet.create({
         flex: 1,
         backgroundColor: 'rgba(0,0,0,0.6)',
         justifyContent: 'center',
-        alignItems: 'center',
+        alignItems: 'center', 
         padding: 20,
     },
     modalContent: {
@@ -425,6 +448,7 @@ const createLocalStyles = (NewStyles) =>  StyleSheet.create({
         width: '100%',
         // maxHeight: '80%',
         ...NewStyles.shadow,
+        padding:10
     },
     modalLoading: {
         padding: 40,
@@ -445,8 +469,8 @@ const createLocalStyles = (NewStyles) =>  StyleSheet.create({
     closeButton: {
         padding: 5,
     },
-    modalBody: {
-        padding: 20,
+    modalBody: { 
+        width:'100%'
         // maxHeight: 400,
     },
     detailRow: {
@@ -469,7 +493,7 @@ const createLocalStyles = (NewStyles) =>  StyleSheet.create({
         flex: 1,
         fontSize: 14,
         color: themeColor10.bgColor(0.8),
-        textAlign:'left'
+        textAlign: 'left'
     },
     statusBadgeLarge: {
         ...NewStyles.row,

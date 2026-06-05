@@ -87,6 +87,7 @@ import TrainingRegistrationScreen from './screens/TrainingRegistrationScreen';
 import OrganizationsListScreen from './screens/OrganizationsListScreen';
 import OrganizationOrdersScreen from './screens/OrganizationOrdersScreen';
 import RateCategory from './screens/RateCategory';
+import LimitAccessScreen from "./screens/auth/LimitAccessScreen";
 
 I18nManager.forceRTL(false);
 
@@ -108,8 +109,8 @@ i18n
       en: { translation: en },
       fa: { translation: fa },
     },
-    lng: 'en',
-    fallbackLng: 'en',
+    lng: 'fa',
+    fallbackLng: 'fa',
     interpolation: {
       escapeValue: false,
     },
@@ -299,6 +300,7 @@ const AppNavigator = () => {
             <Stack.Screen component={TrainingRegistrationScreen} name="TrainingRegistrationScreen" options={{ headerShown: false }} />
             <Stack.Screen component={OrganizationsListScreen} name="OrganizationsListScreen" options={{ headerShown: false }} />
             <Stack.Screen component={OrganizationOrdersScreen} name="OrganizationOrdersScreen" options={{ headerShown: false }} />
+            <Stack.Screen component={LimitAccessScreen} name="LimitAccessScreen" options={{ headerShown: false }} />
           </Stack.Navigator>
 
           <FooterComponent />
@@ -312,6 +314,8 @@ const App = () => {
   const [loaded, error] = useFonts({
     'VazirBold': require("./assets/fonts/Vazirmatn-Bold.ttf"),
     'VazirLight': require("./assets/fonts/Vazirmatn-Light.ttf"),
+    'VazirBoldFD': require("./assets/fonts/Vazir-Bold-FD.ttf"),
+    'VazirLightFD': require("./assets/fonts/Vazir-Light-FD.ttf"),
   });
 
   const [isReady, setIsReady] = useState(false);

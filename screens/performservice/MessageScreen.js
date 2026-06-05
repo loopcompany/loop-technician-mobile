@@ -1,4 +1,4 @@
-import React, { useState, useCallback,useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -27,7 +27,7 @@ export default function MessageScreen({ navigation }) {
     () => createStyles(i18n.language),
     [i18n.language]
   );
-    const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
+  const styles = useMemo(() => createLocalStyles(NewStyles), [NewStyles]);
   const [messageText, setMessageText] = useState('');
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -211,48 +211,50 @@ export default function MessageScreen({ navigation }) {
                   <Text style={styles.emptyText}>{t("No messages received yet")}</Text>
                 </View>
               ) : (
-                messages.map((msg) => (
-                  <View
-                    key={msg.id}
-                    style={[
-                      styles.messageItem,
-                      msg.is_mine ? styles.myMessage : styles.adminMessage
-                    ]}
-                  >
-                    <View style={styles.messageHeader}>
-                      <View style={styles.roleContainer}>
-                        <Ionicons
-                          name={msg.is_mine ? "person" : "shield-checkmark"}
-                          size={16}
-                          color={msg.is_mine ? themeColor10.bgColor(1) : themeColor0.bgColor(1)}
-                        />
-                        <Text style={[
-                          styles.roleText,
-                          { color: msg.is_mine ? themeColor10.bgColor(1) : themeColor0.bgColor(1) }
-                        ]}>
-                          {msg.role_label}
-                        </Text>
-                      </View>
-                      <View style={styles.dateContainer}>
-                        <Text style={styles.dateText}>{formatDateTime(msg.created_at)}</Text>
-                        {/* نمایش تیک فقط برای پیام‌های خود تکنسین */}
-                        {msg.is_mine && (
+                messages.map((msg) => { 
+                  return (
+                    <View
+                      key={msg.id}
+                      style={[
+                        styles.messageItem,
+                        msg.is_mine ? styles.myMessage : styles.adminMessage
+                      ]}
+                    >
+                      <View style={styles.messageHeader}>
+                        <View style={styles.roleContainer}>
                           <Ionicons
-                            name={msg.is_read ? "checkmark-done" : "checkmark"}
+                            name={msg.is_mine ? "person" : "shield-checkmark"}
                             size={16}
-                            color={msg.is_read ? themeColor7.bgColor(1) : themeColor10.bgColor(0.5)}
+                            color={msg.is_mine ? themeColor10.bgColor(1) : themeColor0.bgColor(1)}
                           />
-                        )}
+                          <Text style={[
+                            styles.roleText,
+                            { color: msg.is_mine ? themeColor10.bgColor(1) : themeColor0.bgColor(1) }
+                          ]}>
+                            {t(msg.role_label)}
+                          </Text>
+                        </View>
+                        <View style={styles.dateContainer}>
+                          <Text style={styles.dateText}>{formatDateTime(msg.created_at)}</Text>
+                          {/* نمایش تیک فقط برای پیام‌های خود تکنسین */}
+                          {msg.is_mine && (
+                            <Ionicons
+                              name={msg.is_read ? "checkmark-done" : "checkmark"}
+                              size={16}
+                              color={msg.is_read ? themeColor7.bgColor(1) : themeColor10.bgColor(0.5)}
+                            />
+                          )}
+                        </View>
                       </View>
+                      <Text style={styles.messageContent}>{msg.message}</Text>
+                      {!msg.is_read && !msg.is_mine && (
+                        <View style={styles.unreadBadge}>
+                          <Text style={styles.unreadText}>{t("New")}</Text>
+                        </View>
+                      )}
                     </View>
-                    <Text style={styles.messageContent}>{msg.message}</Text>
-                    {!msg.is_read && !msg.is_mine && (
-                      <View style={styles.unreadBadge}>
-                        <Text style={styles.unreadText}>{t("New")}</Text>
-                      </View>
-                    )}
-                  </View>
-                ))
+                  )
+                })
               )}
             </View>
           )}

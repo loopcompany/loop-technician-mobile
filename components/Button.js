@@ -23,7 +23,7 @@ export default function Button({ onPress, title, style, loading, disabled, textS
       {loading && (
         <ActivityIndicator size={"small"} color={LOADING_COLOR} />
       )}
-      {!loading && <Text style={[NewStyles.title1,textStyle]}>{title}</Text>}
+      {!loading && <Text style={[NewStyles.title1,textStyle]}> {title} </Text>}
     </TouchableOpacity>
   );
 }

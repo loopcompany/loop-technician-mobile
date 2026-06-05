@@ -87,6 +87,7 @@ export default function VehicleInfoScreen({ navigation }) {
     ? (vehicleTypeLabels[vehicleData.vehicleType] || vehicleData.vehicleType)
     : t('Not Specified');
 
+
   useEffect(() => {
     const loadUserData = async () => {
       let plateLeft = '';
@@ -108,6 +109,8 @@ export default function VehicleInfoScreen({ navigation }) {
             plateProvince = carMatch[4];
           }
         } else if (userData.vehicle_type === 'موتور سیکلت') {
+          console.log(plate);
+          
           const motorMatch = plate.match(/^(\d{3})-(\d{5})$/);
           if (motorMatch) {
             motorPlate = motorMatch[1];
@@ -298,7 +301,7 @@ export default function VehicleInfoScreen({ navigation }) {
               {vehicleData.vehicleType === 'موتور سیکلت' && (
                 <View style={styles.plateSection}>
                   <Text style={styles.label}>{t('Motorcycle plate:')}</Text>
-                  <View style={styles.plateRow}>
+                  {/* <View style={styles.plateRow}>
                     <TextInput
                       style={[styles.input, styles.plateInput]}
                       value={vehicleData.motorPlate}
@@ -321,7 +324,7 @@ export default function VehicleInfoScreen({ navigation }) {
                       maxLength={5}
                       editable={!saving}
                     />
-                  </View>
+                  </View> */}
 
                   <View style={styles.platePreviewWrap}>
                     {/* ✅ styles پاس داده شد */}
@@ -333,7 +336,7 @@ export default function VehicleInfoScreen({ navigation }) {
               {vehicleData.vehicleType === 'خودرو' && (
                 <View style={styles.plateSection}>
                   <Text style={styles.label}>{t('Car plate:')}</Text>
-                  <View style={styles.plateRow}>
+                  {/* <View style={styles.plateRow}>
                     <TextInput
                       style={[styles.input, styles.plateInput]}
                       value={vehicleData.carPlateLeft}
@@ -372,7 +375,7 @@ export default function VehicleInfoScreen({ navigation }) {
                       maxLength={2}
                       editable={!saving}
                     />
-                  </View>
+                  </View> */}
 
                   <View style={styles.platePreviewWrap}>
                     {/* ✅ styles پاس داده شد */}
@@ -390,9 +393,10 @@ export default function VehicleInfoScreen({ navigation }) {
               {(vehicleData.vehicleType === 'موتور سیکلت' || vehicleData.vehicleType === 'خودرو') && (
                 <>
                   <View style={styles.inputRow}>
-                    <Text style={styles.label}>{t('Model:')}</Text>
+                    <Text style={styles.label}>{t('Model')}</Text>
                     <TextInput
                       style={styles.input}
+                      placeholderTextColor={themeColor3.bgColor(1)}
                       value={vehicleData.carModel}
                       onChangeText={(value) => updateField('carModel', value)}
                       placeholder={t('Example: Pride 131')}
@@ -401,10 +405,11 @@ export default function VehicleInfoScreen({ navigation }) {
                   </View>
 
                   <View style={styles.inputRow}>
-                    <Text style={styles.label}>{t('Color:')}</Text>
+                    <Text style={styles.label}>{t('Color')}</Text>
                     <TextInput
                       style={styles.input}
                       value={vehicleData.carColor}
+                      placeholderTextColor={themeColor3.bgColor(1)}
                       onChangeText={(value) => updateField('carColor', value)}
                       placeholder={t('Example: White')}
                       editable={!saving}
@@ -415,6 +420,8 @@ export default function VehicleInfoScreen({ navigation }) {
                     <Text style={styles.label}>{t('Manufacturing year:')}</Text>
                     <TextInput
                       style={styles.input}
+                      placeholderTextColor={themeColor3.bgColor(1)}
+                      placeholder={t('Manufacturing year:')}
                       value={vehicleData.manufacturingYear}
                       onChangeText={(value) => updateField('manufacturingYear', value)}
                       editable={!saving}
@@ -425,6 +432,8 @@ export default function VehicleInfoScreen({ navigation }) {
                     <Text style={styles.label}>{t('Fuel type:')}</Text>
                     <TextInput
                       style={styles.input}
+                      placeholderTextColor={themeColor3.bgColor(1)}
+                      placeholder={t('Fuel type:')}
                       value={vehicleData.softwareType}
                       onChangeText={(value) => updateField('softwareType', value)}
                       editable={!saving}
@@ -436,6 +445,8 @@ export default function VehicleInfoScreen({ navigation }) {
                     <TextInput
                       style={styles.input}
                       value={vehicleData.vinNumber}
+                      placeholderTextColor={themeColor3.bgColor(1)}
+                      placeholder={t('Vehicle identification number (VIN):')}
                       onChangeText={(value) => updateField('vinNumber', value)}
                       maxLength={17}
                       editable={!saving}
@@ -446,6 +457,8 @@ export default function VehicleInfoScreen({ navigation }) {
                     <Text style={styles.label}>{t('Third-party insurance unique code:')}</Text>
                     <TextInput
                       style={styles.input}
+                      placeholderTextColor={themeColor3.bgColor(1)}
+                      placeholder={t('Third-party insurance unique code:')}
                       value={vehicleData.insuranceExpiryCode}
                       onChangeText={(value) => updateField('insuranceExpiryCode', value)}
                       editable={!saving}
@@ -519,9 +532,10 @@ export default function VehicleInfoScreen({ navigation }) {
 // ✅ styles از بیرون میاد
 function PlatePreview({ styles, left = '', right = '', letter = 'ب', province = '11' }) {
   const { t } = useTranslation();
+console.log(left);
 
   const toPersian = (s) => {
-    const map = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+    const map = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
     return String(s || '')
       .split('')
       .map(ch => (ch >= '0' && ch <= '9' ? map[ch.charCodeAt(0) - 48] : ch))
@@ -568,7 +582,7 @@ function PlatePreview({ styles, left = '', right = '', letter = 'ب', province =
 // ✅ styles از بیرون میاد
 function PlatePreviewMotorcycle({ styles, left = '', right = '' }) {
   const toPersian = (s) => {
-    const map = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+    const map = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
     return String(s || '')
       .split('')
       .map(ch => (ch >= '0' && ch <= '9' ? map[ch.charCodeAt(0) - 48] : ch))
@@ -589,8 +603,8 @@ function PlatePreviewMotorcycle({ styles, left = '', right = '' }) {
         <Text style={styles.flagText}>I.R.{"\n"}IRAN</Text>
       </View>
       <View style={styles.motorInner}>
-        <Text style={styles.motorTop}>{toPersian(leftText)}</Text>
-        <Text style={styles.motorBottom}>{toPersian(rightText)}</Text>
+        <Text style={[styles.motorTop, { lineHeight: 40 }]}>{toPersian(leftText)}</Text>
+        <Text style={[styles.motorBottom, { lineHeight: 40 }]}>{toPersian(rightText)}</Text>
       </View>
     </View>
   );
@@ -709,7 +723,6 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 12,
   },
   plateFlagStrip: {
     width: 34,
@@ -765,6 +778,8 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     borderLeftColor: themeColor10.bgColor(1),
     alignItems: 'center',
     justifyContent: 'center',
+    borderTopRightRadius:8,
+    borderBottomRightRadius:8,
   },
   plateCityTop: {
     ...NewStyles.title10,
@@ -801,7 +816,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     paddingVertical: 6,
   },
   motorTop: { fontSize: 36, fontWeight: '900' },
-  motorBottom: { fontSize: 46, fontWeight: '900', marginTop: 6 },
+  motorBottom: { fontSize: 46, fontWeight: '900'},
   dateText: {
     ...NewStyles.text10,
     fontSize: 14,

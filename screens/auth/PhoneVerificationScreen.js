@@ -178,7 +178,7 @@ export default function PhoneVerificationScreen({ navigation, route }) {
   return (
     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
       <ImageBackground
-        source={Platform.OS === 'web' ? require('../../assets/webbackground.jpg') : require('../../assets/background2.jpg')}
+        source={Platform.OS === 'web' ? require('../../assets/loopbackground.webp') : require('../../assets/moon.jpg')}
 
         style={styles.background}
       >

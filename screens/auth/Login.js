@@ -153,7 +153,12 @@ export default function Login() {
     setIsLoading(true);
     try {
       const result = await loginTechnician(referralCode.trim(), password.trim());
-
+      // console.log(result?.error_code);
+      if(result?.error_code == 'ACCOUNT_DISABLED'){
+        navigation.navigate('LimitAccessScreen', {message: result?.message});
+        return;
+      }
+      
       if (result.success && result.data?.token) {
 
         // Save token first
@@ -203,10 +208,10 @@ export default function Login() {
         createNewCaptcha();
       }
     } catch (error) {
-
+ 
+      
       // Build detailed error message
       let errorMessage = `${t("Error logging in")}\n\n`;
-
       if (error.response) {
         // Server responded with error
         errorMessage += `${t("Status")}: ${error.response.status}\n`;
@@ -248,7 +253,7 @@ export default function Login() {
 
   return (
     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'off' }}>
-      <ImageBackground source={Platform.OS === 'web' ? require('../../assets/webbackground.jpg') : require('../../assets/background2.jpg')} style={styles.background} resizeMode='cover' >
+      <ImageBackground source={Platform.OS === 'web' ? require('../../assets/loopbackground.webp') : require('../../assets/moon.jpg')} style={styles.background} resizeMode='cover' >
         <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
 
           <ScrollView>
@@ -259,6 +264,7 @@ export default function Login() {
               </View>
               <View style={styles.formContainer}>
                 <View style={styles.inputContainer}>
+                  <Text style={NewStyles.title1}>{t("Personnel code")}</Text>
                   <TextInput
                     style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
                     value={referralCode}
@@ -272,6 +278,8 @@ export default function Login() {
                   />
                 </View>
                 <View style={styles.inputContainer}>
+                  <Text style={NewStyles.title1}>{t("Password")}</Text>
+
                   <View style={styles.passwordContainer}>
                     <TouchableOpacity
                       style={styles.eyeIcon}
@@ -363,8 +371,7 @@ export default function Login() {
                   ) : (
                     <Button
                       title={t("Login")}
-                      onPress={() => {
-                        console.log('🔘 دکمه ورود کلیک شد');
+                      onPress={() => { 
                         handleLogin();
                       }}
                       style={styles.loginButtonCustom}
@@ -402,6 +409,7 @@ const styles = StyleSheet.create({
   background: {
     flex: 1,
     backgroundColor: themeColor0.bgColor(1),
+    width:'100%'
   },
   spaceContainer: {
     flex: 1,
@@ -430,6 +438,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     width: '100%',
     marginBottom: 15,
+    gap:5
   },
   inputLabel: {
     fontSize: 16,
@@ -563,7 +572,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   bottomSubtitle: {
-    ...NewStyles.title10,
+    ...NewStyles.title4,
     fontSize: 14,
     marginBottom: 5,
   },

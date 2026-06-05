@@ -85,7 +85,7 @@ export default function LoginScreen({ navigation, route }) {
     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'off' }}>
       <CustomStatusBar />
       <ImageBackground
-        source={require("../../assets/background2.jpg")}
+        source={require("../../assets/moon.jpg")}
         style={NewStyles.container}
       >
         <ScrollView

@@ -31,17 +31,17 @@ export default function RequestsScreen({ navigation }) {
     () => createStyles(i18n.language),
     [i18n.language]
   );
-  const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
+  const styles = useMemo(() => createLocalStyles(NewStyles), [NewStyles]);
   // محاسبه تاریخ امروز به صورت شمسی
   const todayJalali = useMemo(() =>
-    getFormatedDate(new Date(), 'YYYY/MM/DD'),
+    getFormatedDate(new Date(), 'jYYYY/jMM/jDD'),
     []);
 
   // محاسبه تاریخ یک سال بعد به صورت شمسی
   const oneYearLaterJalali = useMemo(() => {
     const oneYearLater = new Date();
     oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
-    return getFormatedDate(oneYearLater, 'YYYY/MM/DD');
+    return getFormatedDate(oneYearLater, 'jYYYY/jMM/jDD');
   }, []);
 
   // مرخصی states
@@ -78,7 +78,7 @@ export default function RequestsScreen({ navigation }) {
   const [showToDatePicker, setShowToDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [datePickerMode, setDatePickerMode] = useState('from'); // 'from' or 'to'
-
+  const [showGuide, setShowGuide] = useState({})
   const menuItems = [
     {
       id: 1,
@@ -93,7 +93,8 @@ export default function RequestsScreen({ navigation }) {
     {
       id: 3,
       title: t("Facilities / Interest-free Loan"),
-      type: 'loan'
+      type: 'loan',
+      guide: t("Guide: It is possible to apply for interest-free facilities and loans after 24 months from the date of starting activity in Loop.")
     },
     {
       id: 4,
@@ -119,6 +120,12 @@ export default function RequestsScreen({ navigation }) {
 
   const toggleItem = (itemId) => {
     setExpandedItems(prev => ({
+      ...prev,
+      [itemId]: !prev[itemId]
+    }));
+  };
+  const toggleGuideItem = (itemId) => {
+    setShowGuide(prev => ({
       ...prev,
       [itemId]: !prev[itemId]
     }));
@@ -849,7 +856,7 @@ export default function RequestsScreen({ navigation }) {
           </View>
 
           <View style={styles.monthRow}>
-            <View style={[{backgroundColor: themeColor4.bgColor(1), paddingHorizontal:5, paddingVertical:8}, NewStyles.border5]}>
+            <View style={[{ backgroundColor: themeColor4.bgColor(1), paddingHorizontal: 5, paddingVertical: 8 }, NewStyles.border5]}>
               <Text style={NewStyles.text10}>{t("Repayment duration:")}</Text>
             </View>
             <TextInput
@@ -1318,14 +1325,36 @@ export default function RequestsScreen({ navigation }) {
                 style={styles.menuButton}
                 onPress={() => toggleItem(item.id)}
               >
-                <Text style={[NewStyles.title4, { textAlign: 'center', flex: 1 }]}>
-                  {item.title}
-                </Text>
+                <View style={[{ width: '100%' }, NewStyles.row]}>
+                  {
+                    item?.guide &&
+                    <TouchableOpacity onPress={() => {
+                      toggleGuideItem(item?.id)
+                    }} style={{ padding: 10 }}>
+                      <Ionicons
+                        name={'help-circle'}
+                        size={24}
+                        color={themeColor1.bgColor(1)}
+                      />
+                    </TouchableOpacity>
+                  }
+                  <Text style={[NewStyles.title4, { textAlign: 'center', flex: 1 }]}>
+                    {item.title}
+                  </Text>
+                </View>
                 <View style={styles.arrow}>
-                  <Ionicons name={expandedItems[item.id] ? 'chevron-up' : 'chevron-down'} color={themeColor10.bgColor(1)} size={20} />
+                  <Ionicons name={expandedItems[item.id] ? 'chevron-up' : 'chevron-down'} color={themeColor1.bgColor(1)} size={20} />
                 </View>
               </TouchableOpacity>
 
+
+              {showGuide[item.id] &&
+                <View style={[{backgroundColor: themeColor1.bgColor(1), padding:5, marginTop:10}, NewStyles.border10]}>
+                  <Text style={[NewStyles.text10, {textAlign:'center'}]}>
+                    {item?.guide}
+                  </Text>
+                </View>
+              }
               {expandedItems[item.id] && renderContent(item.type)}
             </View>
           ))}
@@ -1379,7 +1408,7 @@ export default function RequestsScreen({ navigation }) {
   );
 }
 
-const createLocalStyles = (NewStyles) =>  StyleSheet.create({
+const createLocalStyles = (NewStyles) => StyleSheet.create({
   background: {
     flex: 1
   },
@@ -1392,12 +1421,9 @@ const createLocalStyles = (NewStyles) =>  StyleSheet.create({
     marginVertical: 5,
   },
   menuButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: themeColor0.bgColor(1),
     borderRadius: 10,
-    padding: 15,
-    flexDirection: 'row-reverse',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    ...NewStyles.center
   },
   menuButtonText: {
     color: '#fff',
@@ -1407,10 +1433,6 @@ const createLocalStyles = (NewStyles) =>  StyleSheet.create({
     flex: 1,
   },
   arrow: {
-    backgroundColor: '#FFEB3B',
-    borderRadius: 15,
-    width: 30,
-    height: 30,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1522,7 +1544,7 @@ const createLocalStyles = (NewStyles) =>  StyleSheet.create({
     textAlign: 'center',
   },
   loanRow: {
-   ...NewStyles.row,
+    ...NewStyles.row,
     alignItems: 'center',
     marginVertical: 8,
   },
@@ -1566,7 +1588,7 @@ const createLocalStyles = (NewStyles) =>  StyleSheet.create({
     backgroundColor: themeColor4.bgColor(0.9),
     borderRadius: 6,
     padding: 8,
-    flex: 1, 
+    flex: 1,
     textAlign: 'center',
     marginHorizontal: 5,
   },

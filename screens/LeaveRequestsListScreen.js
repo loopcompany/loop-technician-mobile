@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback,useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     View,
     Text,
@@ -9,6 +9,7 @@ import {
     RefreshControl,
     Modal,
     ScrollView,
+    SafeAreaView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,12 +21,12 @@ import { getLeaveRequests, getLeaveRequestById } from '../services/Api';
 import { formatDate, formatDateTime, showAlert } from '../helpers/Common';
 import { createStyles } from '../styles/NewStyles';
 export default function LeaveRequestsListScreen({ navigation }) {
-  const { t, i18n } = useTranslation();
-  const NewStyles = useMemo(
-    () => createStyles(i18n.language),
-    [i18n.language]
-  );
-      const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
+    const { t, i18n } = useTranslation();
+    const NewStyles = useMemo(
+        () => createStyles(i18n.language),
+        [i18n.language]
+    );
+    const styles = useMemo(() => createLocalStyles(NewStyles), [NewStyles]);
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -166,7 +167,16 @@ export default function LeaveRequestsListScreen({ navigation }) {
                 <Text style={[NewStyles.text4, styles.requestDescription]} numberOfLines={2}>
                     {item.description}
                 </Text>
-
+                {item?.response &&
+                    <>
+                        <Text style={NewStyles.text}>
+                            {t("Admin descriptions")}
+                        </Text>
+                        <Text style={[NewStyles.text4, styles.requestDescription]} numberOfLines={3}>
+                            {item?.response}
+                        </Text>
+                    </>
+                }
                 <View style={styles.cardFooter}>
                     <View style={styles.dateContainer}>
                         <Ionicons name="calendar-outline" size={14} color={themeColor10.bgColor(0.7)} />
@@ -201,35 +211,35 @@ export default function LeaveRequestsListScreen({ navigation }) {
         const typeBadge = getTypeBadge(selectedRequest.type);
 
         return (
-            <Modal
-            ScrollView
+            <Modal 
                 visible={modalVisible}
                 transparent={true}
                 animationType="fade"
                 onRequestClose={closeModal}
             >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        {loadingDetail ? (
-                            <View style={styles.modalLoading}>
-                                <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
-                                <Text style={[NewStyles.text4, { marginTop: 10 }]}>{t("Loading...")}</Text>
-                            </View>
-                        ) : (
-                            <>
-                                <View style={styles.modalHeader}>
-                                    <Text style={[NewStyles.title, styles.modalTitle]}>
-                                        {t("Request details #{{id}}", { id: selectedRequest.id })}
-                                    </Text>
-                                    <TouchableOpacity
-                                        onPress={closeModal}
-                                        style={styles.closeButton}
-                                    >
-                                        <Ionicons name="close" size={28} color={themeColor10.bgColor(0.8)} />
-                                    </TouchableOpacity>
-                                </View>
+                <SafeAreaView edges={{ top: 'additive', bottom: 'additive' }} style={styles.modalOverlay}>
+                    <ScrollView style={styles.modalBody} contentContainerStyle={styles.modalContent}>
 
-                                <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
+                        <View >
+                            {loadingDetail ? (
+                                <View style={styles.modalLoading}>
+                                    <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
+                                    <Text style={[NewStyles.text4, { marginTop: 10 }]}>{t("Loading...")}</Text>
+                                </View>
+                            ) : (
+                                <>
+                                    <View style={styles.modalHeader}>
+                                        <Text style={[NewStyles.title, styles.modalTitle]}>
+                                            {t("Request details #{{id}}", { id: selectedRequest.id })}
+                                        </Text>
+                                        <TouchableOpacity
+                                            onPress={closeModal}
+                                            style={styles.closeButton}
+                                        >
+                                            <Ionicons name="close" size={28} color={themeColor10.bgColor(0.8)} />
+                                        </TouchableOpacity>
+                                    </View>
+
                                     <View style={styles.detailRow}>
                                         <View style={styles.detailLabel}>
                                             <Ionicons name="albums" size={18} color={themeColor0.bgColor(1)} />
@@ -319,18 +329,29 @@ export default function LeaveRequestsListScreen({ navigation }) {
                                             <Text style={[NewStyles.text10, styles.descriptionText]}>{selectedRequest.description} </Text>
                                         </View>
                                     </View>
+                                    {selectedRequest?.response && <View style={styles.descriptionSection}>
+                                        <View style={styles.detailLabel}>
+                                            <Ionicons name="document-text" size={18} color={themeColor0.bgColor(1)} />
+                                            <Text style={[NewStyles.text, styles.labelText]}>{t("Admin descriptions")}:</Text>
+                                        </View>
+                                        <View style={styles.descriptionBox}>
+                                            <Text style={[NewStyles.text10, styles.descriptionText]}>
+                                                {selectedRequest.response}
+                                            </Text>
+                                        </View>
+                                    </View>}
                                     <TouchableOpacity
                                         style={styles.modalCloseButton}
                                         onPress={closeModal}
                                     >
                                         <Text style={[NewStyles.title4, { fontSize: 16 }]}>{t("Close")}</Text>
                                     </TouchableOpacity>
-                                </ScrollView>
 
-                            </>
-                        )}
-                    </View>
-                </View>
+                                </>
+                            )}
+                        </View>
+                    </ScrollView>
+                </SafeAreaView>
             </Modal>
         );
     };
@@ -418,7 +439,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
         gap: 4,
     },
     statusBadge: {
-         ...NewStyles.row,
+        ...NewStyles.row,
         alignItems: 'center',
         paddingHorizontal: 10,
         paddingVertical: 5,
@@ -484,7 +505,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
         backgroundColor: themeColor0.bgColor(1),
         borderRadius: 10,
         padding: 15,
-      ...NewStyles.row,
+        ...NewStyles.row,
         alignItems: 'center',
     },
     addButtonText: {
@@ -497,15 +518,16 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.6)',
         justifyContent: 'center',
         alignItems: 'center',
-        // padding: 20,
+        padding: 20,
     },
     modalContent: {
-  width: '90%',
-  maxHeight: '80%',     // ✅ خیلی مهم: محدود کردن ارتفاع
-  backgroundColor: '#fff',
-  borderRadius: 12,
-  overflow: 'hidden',   // ✅ برای اینکه گوشه‌ها با اسکرول خراب نشه
-},
+        backgroundColor: '#fff',
+        borderRadius: 20,
+        width: '100%',
+        // maxHeight: '80%',
+        ...NewStyles.shadow,
+        padding: 10
+    },
     modalLoading: {
         padding: 40,
         alignItems: 'center',
@@ -526,7 +548,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
         padding: 5,
     },
     modalBody: {
-        padding: 20,
+        width: '100%'
         // maxHeight: 400,
     },
     detailRow: {

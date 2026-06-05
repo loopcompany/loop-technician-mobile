@@ -1,14 +1,15 @@
-import { SectionList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Linking, SectionList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import MapView, { Marker } from 'react-native-maps'
 import NewStyles from '../../styles/NewStyles'
 import { Ionicons } from '@expo/vector-icons'
-import { themeColor0, themeColor3, themeColor4, themeColor5, themeColor6, themeColor7 } from '../../theme/Color'
-import { formatDate, formatDateTime, formatPrice } from '../../helpers/Common'
+import { themeColor0, themeColor1, themeColor10, themeColor3, themeColor4, themeColor5, themeColor6, themeColor7 } from '../../theme/Color'
+import { formatDate, formatDateTime, formatPrice, langIsRTL } from '../../helpers/Common'
 import { imageUri, mainUri } from '../../services/URL'
 import { createStyles } from '../../styles/NewStyles';
 import { useSelector } from 'react-redux';
+import { FlatList } from 'react-native'
 const DetailConponent = ({ data, renderRow, }) => {
     const user = useSelector((state) => state?.user?.data?.data?.technician);
     useEffect(() => {
@@ -62,7 +63,8 @@ const DetailConponent = ({ data, renderRow, }) => {
 
     const totalPrice = calculateTotalWithoutDiscount();
     const totalDiscountedPrice = calculateTotalPrice();
-
+    let is_package = 0 
+    
     return (
         <View>
             <View style={styles.card}>
@@ -128,7 +130,11 @@ const DetailConponent = ({ data, renderRow, }) => {
                                 )}
 
                             {data?.status > 0 &&
-                                renderRow(t("Payable amount"), `${formatPrice(totalDiscountedPrice)}${t(" Toman")}`)}
+                                renderRow(t("Payable amount"), `${formatPrice(totalDiscountedPrice > 800000 ? totalDiscountedPrice : (totalDiscountedPrice + 200000))}${t(" Toman")}`)}
+                            {
+                                (data?.status > 0 && totalDiscountedPrice < 800000) &&
+                                renderRow(t("Travel and tuition fees"), `${formatPrice(200000)}${t(" Toman")}`)
+                            }
                         </>
                     )}
 
@@ -303,20 +309,23 @@ const DetailConponent = ({ data, renderRow, }) => {
                         showsVerticalScrollIndicator={false}
                         sections={data?.order_details || []}
                         keyExtractor={(item, index) => item?.id + index}
-                        renderSectionHeader={({ section }) => (
-                            <View style={styles.sectionHeader}>
-                                <View style={[NewStyles.row, { gap: 5 }]}>
-                                    <Ionicons name={section?.icon_name || 'list'} size={24} color={themeColor0.bgColor(1)} />
-                                    <Text style={[NewStyles.title, { flex: 1 }]}>{section?.title}</Text>
+                        renderSectionHeader={({ section }) => {
+                            is_package = section?.is_package;
+                            return (
+                                <View style={styles.sectionHeader}>
+                                    <View style={[NewStyles.row, { gap: 5 }]}>
+                                        <Ionicons name={section?.icon_name || 'list'} size={24} color={themeColor0.bgColor(1)} />
+                                        <Text style={[NewStyles.title, { flex: 1 }]}>{section?.title}</Text>
+                                    </View>
                                 </View>
-                            </View>
-                        )}
+                            )
+                        }}
                         SectionSeparatorComponent={() => <View style={{ paddingVertical: 5 }} />}
                         renderItem={({ item }) => (
-                            <View style={styles.detailItem}>
-                                <View style={NewStyles.rowWrapper}>
+                            <View style={[styles.detailItem, is_package == 1 && styles.package]}>
+                                <View style={[is_package == 0 && NewStyles.rowWrapper]}>
                                     <View style={[NewStyles.rowWrapper, { justifyContent: 'flex-end', flex: 2, gap: 5 }]}>
-                                        <Ionicons name="ellipse" size={10} color={themeColor0.bgColor(0.5)} />
+                                        {is_package == 0 && <Ionicons name="ellipse" size={10} color={themeColor0.bgColor(0.5)} />}
                                         {item?.type == 'input' ? (
                                             <Text style={[NewStyles.text10, { flex: 1 }]}>{item?.field_detail?.second_title}</Text>
                                         ) : (
@@ -355,6 +364,24 @@ const DetailConponent = ({ data, renderRow, }) => {
             {data?.image_path &&
                 <Image style={[{ height: 250, margin: '5%', maxWidth: 400, resizeMode: 'contain', width: '90%', alignSelf: 'center' }, NewStyles.border10]} source={{ uri: `${imageUri}/${data?.image_path}` }} />
             }
+            {data?.order_galleries?.length > 0 && <View>
+                <FlatList
+                    data={data?.order_galleries}
+                    inverted={langIsRTL(i18n?.language)}
+                    horizontal={true}
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ paddingHorizontal: '5%', gap: 10, paddingVertical: 10 }}
+                    renderItem={({ item }) => {
+                        return (
+                            <TouchableOpacity style={{}} onPress={() => {
+                                Linking.openURL(`${imageUri}/${item?.image_path}`)
+                            }}>
+                                <Image source={{ uri: `${imageUri}/${item?.image_path}` }} style={[{ height: 120, width: 120, }, NewStyles.border10]} />
+                            </TouchableOpacity>
+                        )
+                    }}
+                />
+            </View>}
 
             {/* Technician Description */}
             {data?.technician_des && (
@@ -523,5 +550,20 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
         color: '#fff',
         fontSize: 14,
         fontWeight: 'bold',
+    },
+    package: {
+        backgroundColor: themeColor1.bgColor(1),
+        padding: 15,
+        borderRadius: 30,
+        borderWidth: 1,
+        borderColor: themeColor10.bgColor(1)
+    },
+    valueContainer: {
+        borderWidth: 1,
+        borderColor: themeColor0.bgColor(1),
+        height: 40,
+        width: 40,
+        ...NewStyles.border5,
+        ...NewStyles.center
     },
 });

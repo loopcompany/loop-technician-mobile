@@ -61,9 +61,7 @@ export default function SignInScreen({ navigation }) {
   const handleSendCode = async () => {
     if (!validateInputs()) return;
 
-    setLoading(true);
-    console.log('🔄 ارسال درخواست بازیابی رمز...');
-
+    setLoading(true); 
     try {
       const result = await requestPasswordReset({
         referral_code: referralCode.trim(),
@@ -71,8 +69,7 @@ export default function SignInScreen({ navigation }) {
         melicode: nationalId.trim(),
         email: email.trim(),
       });
-
-      console.log('📦 نتیجه درخواست:', result);
+ 
 
       if (result.success) {
         showAlert(
@@ -95,8 +92,7 @@ export default function SignInScreen({ navigation }) {
       } else {
         showAlert(t("Error"), result.message || t("There was a problem sending the code."));
       }
-    } catch (error) {
-      console.log('❌ خطا در ارسال درخواست:', error);
+    } catch (error) { 
       showAlert(t("Error"), t("There was an error connecting to the server."));
     } finally {
       setLoading(false);
@@ -108,7 +104,7 @@ export default function SignInScreen({ navigation }) {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
 
         <ImageBackground
-              source={Platform.OS === 'web' ? require("../../assets/webbackground.jpg") : require("../../assets/background2.jpg")}
+              source={Platform.OS === 'web' ? require("../../assets/loopbackground.webp") : require("../../assets/moon.jpg")}
               style={styles.background}
             >
           <ScrollView
@@ -124,6 +120,7 @@ export default function SignInScreen({ navigation }) {
             </View>
 
             <View style={[{ flex: 1, width: '100%', gap: 10 , maxWidth:800}, NewStyles.center]}>
+              <Text></Text>
               <TextInput
                 style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
                 placeholder={t("Please enter personnel code.")}

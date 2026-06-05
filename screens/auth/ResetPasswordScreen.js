@@ -247,7 +247,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'off' }}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <ImageBackground
-          source={Platform.OS === 'web' ? require("../../assets/webbackground.jpg") : require("../../assets/background2.jpg")}
+          source={Platform.OS === 'web' ? require("../../assets/loopbackground.webp") : require("../../assets/moon.jpg")}
           style={styles.background}
         >
           <ScrollView

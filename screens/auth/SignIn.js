@@ -19,7 +19,7 @@ import {
   testExpertisesEndpoint
 } from '../../services/Api';
 import { validateTechnicianRegistration } from '../../utils/validation';
-import { showAlert } from '../../helpers/Common';
+import { showAlert, showToastOrAlert } from '../../helpers/Common';
 import { useTranslation } from "react-i18next";
 
 // Pre-calculate colors outside component to prevent re-renders
@@ -43,28 +43,29 @@ const UPLOAD_BUTTON_BG = themeColor2.bgColor(1);
 const PLACEHOLDER_COLOR = themeColor10.bgColor(0.7);
 
 const normalizeGregorianDate = (dateString) => {
-  if (!dateString) return '';
-  const safeDate = dateString.slice(0, 10);
-  const parts = safeDate.split('/');
-  if (parts.length !== 3) return safeDate;
+  // if (!dateString) return '';
+  // const safeDate = dateString.slice(0, 10);
+  // const parts = safeDate.split('/');
+  // if (parts.length !== 3) return safeDate;
 
-  const [yearText, monthText, dayText] = parts;
-  const year = Number(yearText);
-  const month = Number(monthText);
-  const day = Number(dayText);
-  if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
-    return safeDate;
-  }
+  // const [yearText, monthText, dayText] = parts;
+  // const year = Number(yearText);
+  // const month = Number(monthText);
+  // const day = Number(dayText);
+  // if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
+  //   return safeDate;
+  // }
 
-  if (year <= 1700) {
-    const gregorian = jalaali.toGregorian(year, month, day);
-    const gYear = gregorian.gy;
-    const gMonth = String(gregorian.gm).padStart(2, '0');
-    const gDay = String(gregorian.gd).padStart(2, '0');
-    return `${gYear}/${gMonth}/${gDay}`;
-  }
+  // if (year <= 1700) {
+  //   const gregorian = jalaali.toGregorian(year, month, day);
+  //   const gYear = gregorian.gy;
+  //   const gMonth = String(gregorian.gm).padStart(2, '0');
+  //   const gDay = String(gregorian.gd).padStart(2, '0');
+  //   return `${gYear}/${gMonth}/${gDay}`;
+  // }
 
-  return safeDate;
+  // return safeDate;
+  return dateString
 };
 
 export default function SignIn({ navigation }) {
@@ -80,14 +81,16 @@ export default function SignIn({ navigation }) {
     marital_status: 'متأهل',
     military_status: 'پایان خدمت',
     education_status: '',
+    education_field: '',
     telephone: '',
     mobile: '',
     email: '',
-    licence_date: '',
+    certificate_expiry_date: '',
+    certificate_issue_date: '',
     vehicle_type: '',
     home_postal_code: '',
     city: 'Los Angeles',
-    region: '5',
+    region: '',
     home_address: '',
     other_referral_code: '',
     // Computer skills fields
@@ -104,14 +107,18 @@ export default function SignIn({ navigation }) {
     () => createStyles(i18n.language),
     [i18n.language]
   );
-  const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
+  const styles = useMemo(() => createLocalStyles(NewStyles), [NewStyles]);
   const displayBirthDate = useMemo(
     () => normalizeGregorianDate(formData.birth_date),
     [formData.birth_date]
   );
   const displayLicenceDate = useMemo(
-    () => normalizeGregorianDate(formData.licence_date),
-    [formData.licence_date]
+    () => normalizeGregorianDate(formData.certificate_expiry_date),
+    [formData.certificate_expiry_date]
+  );
+  const displayCertificateIssueDate = useMemo(
+    () => normalizeGregorianDate(formData.certificate_issue_date),
+    [formData.certificate_issue_date]
   );
   // Available expertises from API
   const [expertises, setExpertises] = useState([]);
@@ -127,24 +134,25 @@ export default function SignIn({ navigation }) {
   // Date picker modals
   const [birthDateModal, setBirthDateModal] = useState(false);
   const [licenceDateModal, setLicenceDateModal] = useState(false);
+  const [certificateIssueDateModal, setCertificateIssueDateModal] = useState(false);
 
   // محاسبه تاریخ امروز به صورت شمسی (یک بار)
   const todayDate = useMemo(() => {
-    return getFormatedDate(new Date(), 'YYYY/MM/DD');
+    return getFormatedDate(new Date(), 'jYYYY/jMM/jDD');
   }, []);
 
   // محاسبه حداکثر تاریخ تولد (18 سال پیش) برای حداقل سن 18 سال
   const maxBirthDate = useMemo(() => {
     const date18YearsAgo = new Date();
     date18YearsAgo.setFullYear(date18YearsAgo.getFullYear() - 18);
-    return getFormatedDate(date18YearsAgo, 'YYYY/MM/DD');
+    return getFormatedDate(date18YearsAgo, 'jYYYY/jMM/jDD');
   }, []);
 
   // محاسبه تاریخ 10 سال آینده برای گواهینامه (یک بار)
   const tenYearsLater = useMemo(() => {
     const futureDate = new Date();
     futureDate.setFullYear(futureDate.getFullYear() + 10);
-    return getFormatedDate(futureDate, 'YYYY/MM/DD');
+    return getFormatedDate(futureDate, 'jYYYY/jMM/jDD');
   }, []);
 
   // Load expertises when component mounts
@@ -216,64 +224,60 @@ export default function SignIn({ navigation }) {
 
   // Validate referral code
   const handleValidateReferralCode = async () => {
-    if (!formData.other_referral_code) {
-      showAlert(t("Error"), t("Please enter the referral code first."));
-      return;
-    }
+    // if (!formData.other_referral_code) {
+    //   showAlert(t("Error"), t("Please enter the referral code first."));
+    //   return;
+    // }
 
     try {
-      const result = await validateReferralCode(formData.other_referral_code);
-      if (result.success) {
-        showAlert(t("Success"), result.data?.message || result.message || t("Referral code is valid."));
+      const result = await validateReferralCode(formData.other_referral_code); 
+      
+      if (result?.data?.is_valid) {
+        return true;
+        // showAlert(t("Success"), result.data?.message || result.message || t("Referral code is valid."));
       } else {
-        let errorMessage = result.message || t("Referral code is invalid.");
+        let errorMessage = result?.data?.message || t("Referral code is invalid.");
 
-        if (result.errors) {
-          const errorList = Object.values(result.errors).flat();
-          errorMessage += '\n\n' + errorList.join('\n');
-        }
-
-        showAlert(t("Error"), errorMessage);
+        // if (result.errors) {
+        //   const errorList = Object.values(result.errors).flat();
+        //   errorMessage += '\n\n' + errorList.join('\n');
+        // }
+        showToastOrAlert(errorMessage)
+        return false
       }
     } catch (error) {
-      console.log('Error validating referral code:', error);
+      // console.log('Error validating referral code:', error);
 
-      let errorMessage = `${t("Error validating referral code")}\n\n`;
+      let errorMessage = `${t("Error validating referral code")}`;
 
-      if (error.response) {
-        errorMessage += `${t("Status")}: ${error.response.status}\n`;
-        if (error.response.data?.message) {
-          errorMessage += `${t("Message:")} ${error.response.data.message}`;
-        }
-      } else if (error.request) {
-        errorMessage += t("Server did not respond. Please check your internet connection.");
-      } else {
-        errorMessage += `${t("Error message:")} ${error.message}`;
-      }
+      // if (error.response) {
+      //   errorMessage += `${t("Status")}: ${error.response.status}\n`;
+      //   if (error.response.data?.message) {
+      //     errorMessage += `${t("Message:")} ${error.response.data.message}`;
+      //   }
+      // } else if (error.request) {
+      //   errorMessage += t("Server did not respond. Please check your internet connection.");
+      // } else {
+      //   errorMessage += `${t("Error message:")} ${error.message}`;
+      // }
 
-      showAlert(t("Error"), errorMessage);
+      // showAlert(t("Error"), errorMessage);
+      showToastOrAlert(errorMessage)
+      return false
     }
   };
 
   // Form validation با نمایش دقیق خطاها
   const validateForm = () => {
     try {
-      console.log('🔍 Validating form data:', formData);
-      console.log('🔍 Calling validateTechnicianRegistration...');
-      
-      const validation = validateTechnicianRegistration(formData);
-      
-      console.log('📊 Validation completed successfully!');
-      console.log('📊 Validation result object:', validation);
-      console.log('📊 validation.isValid:', validation.isValid);
-      console.log('📊 validation type:', typeof validation);
+
+      const validation = validateTechnicianRegistration(formData, currentPage);
+
 
       if (!validation.isValid) {
-        console.log('❌ Validation errors:', validation.errors);
-      
         // ذخیره خطاها برای نمایش در فیلدها
         setFieldErrors(validation.errors);
-        
+
         // نمایش پیام کلی بدون جزئیات (چون خطاها زیر فیلدها نمایش داده می‌شوند)
         showAlert(
           t("Form validation error"),
@@ -282,16 +286,11 @@ export default function SignIn({ navigation }) {
         );
         return false;
       }
-
-      console.log('✅ Form validation passed');
       setFieldErrors({}); // پاک کردن خطاها
       return true;
-    
+
     } catch (error) {
-      console.log('💥 EXCEPTION in validateForm:', error);
-      console.log('💥 Error message:', error.message);
-      console.log('💥 Error stack:', error.stack);
-      
+
       showAlert(
         t("System error"),
         `${t("Unexpected validation error:")}\n${error.message}`,
@@ -303,77 +302,38 @@ export default function SignIn({ navigation }) {
 
   // Handle form submission
   const handleSubmit = async () => {
-    console.log('🚀 handleSubmit called');
-    
+
     const validationResult = validateForm();
-    console.log('✅ validateForm returned:', validationResult);
-    
+
     if (!validationResult) {
-      console.log('❌ Validation failed, stopping submission');
       return;
     }
-    
-    console.log('✅ Validation passed, proceeding with submission');
 
     try {
-      console.log('📤 Setting submitting state to true');
       setSubmitting(true);
-
-      // Create FormData for multipart submission
-      console.log('📋 Creating FormData object');
       const apiFormData = new FormData();
-
-      // Add all text fields
-      console.log('📝 Adding form fields to FormData');
       Object.keys(formData).forEach(key => {
         if (key === 'expertise_ids' && Array.isArray(formData[key])) {
-          // Skip expertise_ids, will be handled separately
           return;
         }
         if (key === 'resume') {
-          // Skip resume file, will be handled separately
           return;
         }
         if (formData[key] !== '' && formData[key] !== null && formData[key] !== undefined) {
           apiFormData.append(key, formData[key]);
-          console.log(`  ✓ Added ${key}: ${key === 'password' ? '[HIDDEN]' : formData[key]}`);
         }
       });
-
-      // Use phone as main phone field (API expects 'phone' for login)
       if (formData.mobile) {
         apiFormData.append('phone', formData.mobile);
-        console.log('  ✓ Added phone from mobile:', formData.mobile);
       }
-
-      // Add expertise IDs as array
       if (formData.expertise_ids && formData.expertise_ids.length > 0) {
-        console.log('  ✓ Adding expertise_ids:', formData.expertise_ids);
         formData.expertise_ids.forEach(id => {
           apiFormData.append('expertise_ids[]', id);
         });
       }
-
-      console.log('📋 FormData preparation complete, submitting registration data...');
-
-      if (resumeFile) {
-        console.log('📎 فایل رزومه برای ارسال:', {
-          name: resumeFile.name,
-          uri: resumeFile.uri,
-          type: resumeFile.mimeType || resumeFile.type,
-          size: resumeFile.size
-        });
-      } else {
-        console.log('⚠️ بدون فایل رزومه');
-      }
-
-      // Submit registration with resume file
-      console.log('🌐 Calling registerTechnician API...');
       const result = await registerTechnician(apiFormData, resumeFile);
-      console.log('📦 API response received:', result);
 
       if (result.success) {
-        console.log('✅ Registration successful!');
         showAlert(
           t("Success"),
           result.message || t("Your information was successfully registered."),
@@ -391,9 +351,6 @@ export default function SignIn({ navigation }) {
           ]
         );
       } else {
-        console.log('❌ Registration failed:', result);
-
-        // Build detailed error message
         let errorMessage = '';
 
         if (result.errors && typeof result.errors === 'object') {
@@ -418,26 +375,16 @@ export default function SignIn({ navigation }) {
         );
       }
     } catch (error) {
-      console.log('❌ Registration exception caught:', error);
-      console.log('❌ Error details:', {
-        message: error.message,
-        response: error.response,
-        request: error.request,
-        stack: error.stack
-      });
-
       // Build detailed error message
       let errorMessage = `${t("Error communicating with server")}\n\n`;
 
       if (error.response) {
         // Server responded with error
         errorMessage += `${t("Status")}: ${error.response.status}\n`;
-
         if (error.response.data) {
           if (error.response.data.message) {
             errorMessage += `${t("Message:")} ${error.response.data.message}\n`;
           }
-
           if (error.response.data.errors) {
             errorMessage += `\n${t("Error details:")}\n`;
             const errorList = Object.entries(error.response.data.errors).map(([field, messages]) => {
@@ -462,7 +409,6 @@ export default function SignIn({ navigation }) {
         { cancelable: true }
       );
     } finally {
-      console.log('🔚 handleSubmit finally block - resetting submitting state');
       setSubmitting(false);
     }
   };
@@ -472,7 +418,7 @@ export default function SignIn({ navigation }) {
       ...prev,
       [field]: value
     }));
-    
+
     // پاک کردن خطای فیلد هنگام تغییر
     if (fieldErrors[field]) {
       setFieldErrors(prev => {
@@ -506,11 +452,11 @@ export default function SignIn({ navigation }) {
 
           {/* نام و نام خانوادگی */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>{t("Full Name")} <Text style={styles.required}>*</Text> :</Text>
+            <Text style={[NewStyles.text10]}>{t("First name and last name")} <Text style={styles.required}>*</Text> :</Text>
             <TextInput
               style={[
-                NewStyles.textInput, 
-                NewStyles.text10, 
+                NewStyles.textInput,
+                NewStyles.text10,
                 NewStyles.border10,
                 fieldErrors.name && styles.inputError
               ]}
@@ -521,36 +467,13 @@ export default function SignIn({ navigation }) {
             />
             <FieldError field="name" />
           </View>
-          
-          <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>{t("Primary phone number")} <Text style={styles.required}>*</Text> :</Text>
-            <View style={styles.phoneContainer}>
-              <TextInput
-                style={[
-                  NewStyles.textInput, 
-                  NewStyles.text10, 
-                  NewStyles.border10, 
-                  styles.phoneInput,
-                  fieldErrors.phone && styles.inputError
-                ]}
-                value={formData.phone}
-                onChangeText={(value) => updateField('phone', value)}
-                placeholder="09123456789"
-                placeholderTextColor={PLACEHOLDER_COLOR}
-                keyboardType="phone-pad"
-                maxLength={11}
-              />
-            </View>
-            <FieldError field="phone" />
-          </View>
-
           {/* شماره ملی */}
           <View style={styles.inputRow}>
             <Text style={[NewStyles.text10]}>{t("National ID number")} <Text style={styles.required}>*</Text> :</Text>
             <TextInput
               style={[
-                NewStyles.textInput, 
-                NewStyles.text10, 
+                NewStyles.textInput,
+                NewStyles.text10,
                 NewStyles.border10,
                 fieldErrors.melicode && styles.inputError
               ]}
@@ -564,14 +487,17 @@ export default function SignIn({ navigation }) {
             <FieldError field="melicode" />
           </View>
 
+
+
+
           {/* متولد */}
           <View style={styles.inputRow}>
             <Text style={[NewStyles.text10]}>{t("Birth date (Jalali)")} <Text style={styles.required}>*</Text> :</Text>
             <TouchableOpacity
               style={[
-                NewStyles.textInput, 
-                NewStyles.text10, 
-                NewStyles.border10, 
+                NewStyles.textInput,
+                NewStyles.text10,
+                NewStyles.border10,
                 styles.datePickerTouchable,
                 fieldErrors.birth_date && styles.inputError
               ]}
@@ -589,8 +515,8 @@ export default function SignIn({ navigation }) {
             <Text style={[NewStyles.text10]}>{t("Father's name")} <Text style={styles.required}>*</Text> :</Text>
             <TextInput
               style={[
-                NewStyles.textInput, 
-                NewStyles.text10, 
+                NewStyles.textInput,
+                NewStyles.text10,
                 NewStyles.border10,
                 fieldErrors.father_name && styles.inputError
               ]}
@@ -607,8 +533,8 @@ export default function SignIn({ navigation }) {
             <Text style={[NewStyles.text10]}>{t("Place of issue")} <Text style={styles.required}>*</Text> :</Text>
             <TextInput
               style={[
-                NewStyles.textInput, 
-                NewStyles.text10, 
+                NewStyles.textInput,
+                NewStyles.text10,
                 NewStyles.border10,
                 fieldErrors.issued_from && styles.inputError
               ]}
@@ -621,12 +547,12 @@ export default function SignIn({ navigation }) {
           </View>
 
           {/* شماره شناسنامه */}
-          {/* <View style={styles.inputRow}>
+          <View style={styles.inputRow}>
             <Text style={[NewStyles.text10]}>{t("Birth certificate number")} <Text style={styles.required}>*</Text> :</Text>
             <TextInput
               style={[
-                NewStyles.textInput, 
-                NewStyles.text10, 
+                NewStyles.textInput,
+                NewStyles.text10,
                 NewStyles.border10,
                 fieldErrors.serial_number && styles.inputError
               ]}
@@ -636,14 +562,14 @@ export default function SignIn({ navigation }) {
               placeholderTextColor={PLACEHOLDER_COLOR}
             />
             <FieldError field="serial_number" />
-          </View> */}
+          </View>
 
           {/* وضعیت تأهل */}
           <View style={styles.inputRow}>
             <Text style={[NewStyles.text10]}>{t("Marital status")} <Text style={styles.required}>*</Text> :</Text>
             <View style={[
-              NewStyles.textInput, 
-              NewStyles.border10, 
+              NewStyles.textInput,
+              NewStyles.border10,
               styles.pickerContainer,
               fieldErrors.marital_status && styles.inputError
             ]}>
@@ -663,8 +589,8 @@ export default function SignIn({ navigation }) {
           <View style={styles.inputRow}>
             <Text style={[NewStyles.text10]}>{t("Military status")} <Text style={styles.required}>*</Text> :</Text>
             <View style={[
-              NewStyles.textInput, 
-              NewStyles.border10, 
+              NewStyles.textInput,
+              NewStyles.border10,
               styles.pickerContainer,
               fieldErrors.military_status && styles.inputError
             ]}>
@@ -686,8 +612,8 @@ export default function SignIn({ navigation }) {
             <Text style={[NewStyles.text10]}>{t("Education status")} <Text style={styles.required}>*</Text> :</Text>
             <TextInput
               style={[
-                NewStyles.textInput, 
-                NewStyles.text10, 
+                NewStyles.textInput,
+                NewStyles.text10,
                 NewStyles.border10,
                 fieldErrors.education_status && styles.inputError
               ]}
@@ -698,16 +624,33 @@ export default function SignIn({ navigation }) {
             />
             <FieldError field="education_status" />
           </View>
+          <View style={styles.inputRow}>
+            <Text style={[NewStyles.text10]}>{t("Education field")} <Text style={styles.required}>*</Text> :</Text>
+            <TextInput
+              style={[
+                NewStyles.textInput,
+                NewStyles.text10,
+                NewStyles.border10,
+                fieldErrors.education_field && styles.inputError
+              ]}
+              value={formData.education_field}
+              onChangeText={(value) => updateField('education_field', value)}
+              placeholder=""
+              placeholderTextColor={PLACEHOLDER_COLOR}
+            />
+            <FieldError field="education_field" />
+          </View>
 
           {/* شماره تلفن ثابت */}
           <View style={styles.inputRow}>
             <Text style={[NewStyles.text10]}>{t("Landline number (021, 8 digits)")} <Text style={styles.required}>*</Text> :</Text>
-            <View style={styles.phoneContainer}>
+            <View style={[styles.phoneContainer, {backgroundColor: themeColor4.bgColor(1)}, NewStyles.border10]}>
+
               <TextInput
                 style={[
-                  NewStyles.textInput, 
-                  NewStyles.text10, 
-                  NewStyles.border10, 
+                  NewStyles.textInput,
+                  NewStyles.text10,
+                  NewStyles.border10,
                   styles.phoneInput,
                   fieldErrors.telephone && styles.inputError
                 ]}
@@ -716,20 +659,43 @@ export default function SignIn({ navigation }) {
                 placeholder=""
                 placeholderTextColor={PLACEHOLDER_COLOR}
                 keyboardType="phone-pad"
+                maxLength={8}
               />
+              <Text style={[NewStyles.text10, {paddingHorizontal:10}]}>021</Text>
+
             </View>
             <FieldError field="telephone" />
           </View>
-
-          {/* شماره تلفن همراه */}
           <View style={styles.inputRow}>
             <Text style={[NewStyles.text10]}>{t("Mobile number (11 digits)")} <Text style={styles.required}>*</Text> :</Text>
             <View style={styles.phoneContainer}>
               <TextInput
                 style={[
-                  NewStyles.textInput, 
-                  NewStyles.text10, 
-                  NewStyles.border10, 
+                  NewStyles.textInput,
+                  NewStyles.text10,
+                  NewStyles.border10,
+                  styles.phoneInput,
+                  fieldErrors.phone && styles.inputError
+                ]}
+                value={formData.phone}
+                onChangeText={(value) => updateField('phone', value)}
+                placeholder="09123456789"
+                placeholderTextColor={PLACEHOLDER_COLOR}
+                keyboardType="phone-pad"
+                maxLength={11}
+              />
+            </View>
+            <FieldError field="phone" />
+          </View>
+          {/* شماره تلفن همراه */}
+          <View style={styles.inputRow}>
+            <Text style={[NewStyles.text10]}>{t("Second mobile number (optional)")} :</Text>
+            <View style={styles.phoneContainer}>
+              <TextInput
+                style={[
+                  NewStyles.textInput,
+                  NewStyles.text10,
+                  NewStyles.border10,
                   styles.phoneInput,
                   fieldErrors.mobile && styles.inputError
                 ]}
@@ -749,8 +715,8 @@ export default function SignIn({ navigation }) {
             <Text style={[NewStyles.text10]}>{t("Email Address")} <Text style={styles.required}>*</Text> :</Text>
             <TextInput
               style={[
-                NewStyles.textInput, 
-                NewStyles.text10, 
+                NewStyles.textInput,
+                NewStyles.text10,
                 NewStyles.border10,
                 fieldErrors.email && styles.inputError
               ]}
@@ -762,32 +728,67 @@ export default function SignIn({ navigation }) {
             />
             <FieldError field="email" />
           </View>
+          <View style={styles.inputRow}>
+            <Text style={[NewStyles.text10]}>{t("License number")} :</Text>
+            <TextInput
+              style={[
+                NewStyles.textInput,
+                NewStyles.text10,
+                NewStyles.border10,
+                fieldErrors.certificate_number && styles.inputError
+              ]}
+              value={formData.certificate_number}
+              onChangeText={(value) => updateField('certificate_number', value)}
+              placeholder="123456789"
+              placeholderTextColor={PLACEHOLDER_COLOR}
+              keyboardType="number-pad"
+            />
+            <FieldError field="certificate_number" />
+          </View>
 
-          
+
 
           {/* تاریخ اعتبار گواهینامه */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>{t("License expiry date (Jalali)")} <Text style={styles.required}>*</Text> :</Text>
+            <Text style={[NewStyles.text10]}>{t("License expiry date (Jalali)")} :</Text>
             <TouchableOpacity
               style={[
-                NewStyles.textInput, 
-                NewStyles.text10, 
-                NewStyles.border10, 
+                NewStyles.textInput,
+                NewStyles.text10,
+                NewStyles.border10,
                 styles.datePickerTouchable,
-                fieldErrors.licence_date && styles.inputError
+                fieldErrors.certificate_expiry_date && styles.inputError
               ]}
               onPress={() => setLicenceDateModal(true)}
             >
-              <Text style={[NewStyles.text10, formData.licence_date ? styles.dateTextFull : styles.dateTextHalf]}>
+              <Text style={[NewStyles.text10, formData.certificate_expiry_date ? styles.dateTextFull : styles.dateTextHalf]}>
                 {displayLicenceDate || t("Select expiry date")}
               </Text>
             </TouchableOpacity>
-            <FieldError field="licence_date" />
+            <FieldError field="certificate_expiry_date" />
+          </View>
+          <View style={styles.inputRow}>
+            <Text style={[NewStyles.text10]}>{t("License issue date")} :</Text>
+            <TouchableOpacity
+              style={[
+                NewStyles.textInput,
+                NewStyles.text10,
+                NewStyles.border10,
+                styles.datePickerTouchable,
+                fieldErrors.certificate_issue_date && styles.inputError
+              ]}
+              onPress={() => setCertificateIssueDateModal(true)}
+            >
+              <Text style={[NewStyles.text10, formData.certificate_issue_date ? styles.dateTextFull : styles.dateTextHalf]}>
+                {displayCertificateIssueDate || t('License issue date: 1400/05/15')}
+              </Text>
+            </TouchableOpacity>
+            <FieldError field="certificate_issue_date" />
           </View>
 
           {/* نوع وسیله نقلیه */}
           <View style={styles.inputRow}>
-            <Text style={[NewStyles.text10]}>{t("Vehicle type")} <Text style={styles.required}>*</Text> :</Text>
+            <Text style={[NewStyles.text10]}>{t("Vehicle type")} :</Text>
             <View style={[NewStyles.textInput, NewStyles.border10, styles.pickerContainer, fieldErrors.vehicle_type && styles.inputError]}>
               <Picker
                 selectedValue={formData.vehicle_type}
@@ -821,17 +822,7 @@ export default function SignIn({ navigation }) {
 
           {/* شهر + منطقه */}
           <View style={styles.cityRow}>
-            <View style={styles.cityContainer}>
-              <Text style={[NewStyles.text10]}>{t("City")} <Text style={styles.required}>*</Text> :</Text>
-              <TextInput
-                style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, fieldErrors.city && styles.inputError]}
-                value={formData.city}
-                onChangeText={(value) => updateField('city', value)}
-                placeholder={t("Tehran")}
-                placeholderTextColor={PLACEHOLDER_COLOR}
-              />
-              <FieldError field="city" />
-            </View>
+
             <View style={styles.regionContainer}>
               <Text style={[NewStyles.text10]}>{t("Region")} <Text style={styles.required}>*</Text> :</Text>
               <TextInput
@@ -839,10 +830,22 @@ export default function SignIn({ navigation }) {
                 value={formData.region}
                 keyboardType='number-pad'
                 onChangeText={(value) => updateField('region', value)}
-                placeholder="5"
                 placeholderTextColor={PLACEHOLDER_COLOR}
               />
               <FieldError field="region" />
+            </View>
+
+            <View style={styles.cityContainer}>
+              <Text style={[NewStyles.text10]}>{t("City")} <Text style={styles.required}>*</Text> :</Text>
+              <TextInput
+                style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, fieldErrors.city && styles.inputError]}
+                value={t(formData.city)}
+                onChangeText={(value) => updateField('city', value)}
+                placeholder={t("Tehran")}
+                editable={false}
+                placeholderTextColor={PLACEHOLDER_COLOR}
+              />
+              <FieldError field="city" />
             </View>
           </View>
 
@@ -872,12 +875,7 @@ export default function SignIn({ navigation }) {
                 placeholder=""
                 placeholderTextColor={PLACEHOLDER_COLOR}
               />
-              <TouchableOpacity
-                style={styles.validateButton}
-                onPress={handleValidateReferralCode}
-              >
-                <Text style={[NewStyles.text10]}>{t("Verify")}</Text>
-              </TouchableOpacity>
+
             </View>
           </View>
 
@@ -885,103 +883,30 @@ export default function SignIn({ navigation }) {
 
         {/* Navigation Button */}
         <TouchableOpacity
-          style={styles.nextButton}
-          onPress={() => {
-            // بررسی فیلدهای صفحه اول با اعتبارسنجی کامل
-            const errors = {};
-            
-            // نام و نام خانوادگی - الزامی
-            if (!formData.name || formData.name.trim().length === 0) {
-              errors.name = t("Full name is required.");
-            } else if (formData.name.trim().length < 1) {
-              errors.name = t("Full name must be at least 2 characters.");
-            }
-            
-            // شماره ملی - الزامی و باید معتبر باشد
-            if (!formData.melicode || formData.melicode.trim().length === 0) {
-              errors.melicode = t("National ID number is required.");
-            } else if (formData.melicode.length !== 10) {
-              errors.melicode = t("National ID must be 10 digits.");
-            } else {
-              // بررسی معتبر بودن کد ملی
-              const allSame = formData.melicode.split('').every(digit => digit === formData.melicode[0]);
-              if (allSame) {
-                errors.melicode = t("National ID is invalid.");
-              } else {
-                // بررسی رقم کنترل
-                const checkDigit = parseInt(formData.melicode.charAt(9));
-                let sum = 0;
-                for (let i = 0; i < 9; i++) {
-                  sum += parseInt(formData.melicode.charAt(i)) * (10 - i);
-                }
-                const remainder = sum % 11;
-                const expectedCheckDigit = remainder < 2 ? remainder : 11 - remainder;
-                if (checkDigit !== expectedCheckDigit) {
-                  errors.melicode = t("National ID is invalid.");
-                }
-              }
-            }
-            
-            // شماره تلفن اصلی - الزامی
-            if (!formData.phone || formData.phone.trim().length === 0) {
-              errors.phone = t("Primary phone number is required.");
-            } else {
-              const phoneRegex = /^09[0-9]{9}$/;
-              if (!phoneRegex.test(formData.phone)) {
-                errors.phone = t("Phone number format is invalid (09xxxxxxxxx).");
-              }
-            }
-            
-            // شماره تلفن همراه - الزامی
-            if (!formData.mobile || formData.mobile.trim().length === 0) {
-              errors.mobile = t("Mobile number is required.");
-            } else {
-              const mobileRegex = /^09[0-9]{9}$/;
-              if (!mobileRegex.test(formData.mobile)) {
-                errors.mobile = t("Mobile number format is invalid (09xxxxxxxxx).");
-              }
-            }
-            
-            // تاریخ تولد - الزامی
-            if (!formData.birth_date || formData.birth_date.trim().length === 0) {
-              errors.birth_date = t("Please select your birth date.");
-            }
-            
-            // آدرس ایمیل - الزامی
-            if (!formData.email || formData.email.trim().length === 0) {
-              errors.email = t("Email address is required.");
-            } else {
-              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-              if (!emailRegex.test(formData.email)) {
-                errors.email = t("Email format is invalid.");
-              }
-            }
-            
-            // تاریخ اعتبار گواهینامه - الزامی
-            if (!formData.licence_date || formData.licence_date.trim().length === 0) {
-              errors.licence_date = t("Please select the license expiry date.");
-            }
-            
-            // اگر خطا وجود دارد، نمایش بده و از رفتن به مرحله بعدی جلوگیری کن
-            if (Object.keys(errors).length > 0) {
-              // ذخیره خطاها برای نمایش در فیلدها
-              setFieldErrors(errors);
+          style={[styles.nextButton, NewStyles.center]}
+          onPress={async () => {
+            if (formData?.other_referral_code) {
+              const code_check = await handleValidateReferralCode()
+              console.log(code_check,'sss');
               
-              // نمایش پیام کلی (خطاها زیر فیلدها نمایش داده می‌شوند)
-              showAlert(
-                t("Form information error"),
-                t("Please complete the fields marked in red."),
-                [{ text: t("Ok"), style: 'cancel' }]
-              );
-              return;
+              if (!code_check) {
+                return;
+              }
             }
-            
-            // پاک کردن خطاها و رفتن به مرحله بعدی
-            setFieldErrors({});
-            setCurrentPage('computer');
+
+            const { isValid, errors } = validateTechnicianRegistration(formData, currentPage);
+
+            if (!isValid) {
+
+              setFieldErrors(errors);
+              return;
+            } else {
+              setFieldErrors({});
+              setCurrentPage('computer');
+            }
           }}
         >
-          <Text style={[NewStyles.text10]}>{t("Next - Computer skills")}</Text>
+          <Text style={[NewStyles.text10, {textAlign:'center', width:'100%'}]}>{t("Next - Computer skills")}</Text>
         </TouchableOpacity>
 
       </ScrollView>
@@ -1005,8 +930,8 @@ export default function SignIn({ navigation }) {
           <Text style={[NewStyles.text10]}>{t("Idea / Creativity")} : <Text style={styles.required}>*</Text></Text>
           <TextInput
             style={[
-              NewStyles.textInput, 
-              NewStyles.text10, 
+              NewStyles.textInput,
+              NewStyles.text10,
               NewStyles.border10,
               fieldErrors.idea && styles.inputError
             ]}
@@ -1025,8 +950,8 @@ export default function SignIn({ navigation }) {
           <Text style={[NewStyles.text10]}>{t("Proficiency / Skills (Software)")} : <Text style={styles.required}>*</Text></Text>
           <TextInput
             style={[
-              NewStyles.textInput, 
-              NewStyles.text10, 
+              NewStyles.textInput,
+              NewStyles.text10,
               NewStyles.border10,
               fieldErrors.software_skill && styles.inputError
             ]}
@@ -1045,8 +970,8 @@ export default function SignIn({ navigation }) {
           <Text style={[NewStyles.text10]}>{t("Proficiency / Skills (Hardware)")} : <Text style={styles.required}>*</Text></Text>
           <TextInput
             style={[
-              NewStyles.textInput, 
-              NewStyles.text10, 
+              NewStyles.textInput,
+              NewStyles.text10,
               NewStyles.border10,
               fieldErrors.hardware_skill && styles.inputError
             ]}
@@ -1065,8 +990,8 @@ export default function SignIn({ navigation }) {
           <Text style={[NewStyles.text10]}>{t("Weakness / Blind spot (Software)")} : <Text style={styles.required}>*</Text></Text>
           <TextInput
             style={[
-              NewStyles.textInput, 
-              NewStyles.text10, 
+              NewStyles.textInput,
+              NewStyles.text10,
               NewStyles.border10,
               fieldErrors.software_weakness && styles.inputError
             ]}
@@ -1085,8 +1010,8 @@ export default function SignIn({ navigation }) {
           <Text style={[NewStyles.text10]}>{t("Weakness / Blind spots (Hardware)")} : <Text style={styles.required}>*</Text></Text>
           <TextInput
             style={[
-              NewStyles.textInput, 
-              NewStyles.text10, 
+              NewStyles.textInput,
+              NewStyles.text10,
               NewStyles.border10,
               fieldErrors.hardware_weakness && styles.inputError
             ]}
@@ -1136,13 +1061,13 @@ export default function SignIn({ navigation }) {
         {expertises.length === 0 && (
           <Text style={[NewStyles.text10]}>{t("Fetching expertises list...")}</Text>
         )}
-        
+
         <FieldError field="expertise_ids" />
       </View>
 
       {/* بارگذاری رزومه */}
       <View style={styles.resumeSection}>
-        <Text style={[NewStyles.title10]}>{t("Upload resume (optional)")}</Text>
+        <Text style={[NewStyles.title10]}>{t("Upload resume")} <Text style={NewStyles.title6}>*</Text></Text>
         <Text style={[NewStyles.text10]}>
           {t("You can upload your resume / additional information, signed with the subject (Cooperation / Activity in Loop).")}
         </Text>
@@ -1164,6 +1089,8 @@ export default function SignIn({ navigation }) {
             </TouchableOpacity>
           )}
         </View>
+
+        <FieldError field="resume" />
       </View>
 
       {/* Submit Button */}
@@ -1201,18 +1128,18 @@ export default function SignIn({ navigation }) {
         input.type = 'file';
         input.accept = '.pdf,.doc,.docx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
         input.style.display = 'none';
-        
+
         input.onchange = (e) => {
           const file = e.target.files[0];
-          
+
           if (!file) {
             resolve({ canceled: true });
             return;
           }
-          
+
           // Read file as base64 for upload
           const reader = new FileReader();
-          
+
           reader.onload = (event) => {
             resolve({
               canceled: false,
@@ -1222,26 +1149,26 @@ export default function SignIn({ navigation }) {
               size: file.size,
             });
           };
-          
+
           reader.onerror = (error) => {
             reject(new Error(t("Error reading file")));
           };
-          
+
           reader.readAsDataURL(file);
-          
+
           // Cleanup
           document.body.removeChild(input);
         };
-        
+
         input.oncancel = () => {
           resolve({ canceled: true });
           document.body.removeChild(input);
         };
-        
+
         // Trigger file picker
         document.body.appendChild(input);
         input.click();
-        
+
       } catch (error) {
         reject(error);
       }
@@ -1252,7 +1179,7 @@ export default function SignIn({ navigation }) {
   const pickDocument = async () => {
     try {
       let result;
-      
+
       // 🌐 Platform-specific file picker
       if (Platform.OS === 'web') {
         console.log('🌐 استفاده از انتخابگر فایل Web');
@@ -1290,9 +1217,8 @@ export default function SignIn({ navigation }) {
           type: file.mimeType || file.type || 'application/octet-stream',
           size: file.size
         };
+        updateField('resume', file?.uri); // Store file info in form data for validation
       }
-
-      console.log('✅ فایل انتخاب شد:', fileInfo);
 
       // Validate file size (max 5MB)
       if (fileInfo.size > 5 * 1024 * 1024) {
@@ -1323,14 +1249,14 @@ export default function SignIn({ navigation }) {
   return (
     <SafeAreaView style={NewStyles.container} edges={{ top: 'additive', bottom: 'additive' }}>
       <ImageBackground
-        source={Platform.OS === 'web' ? require('../../assets/webbackground.jpg') : require('../../assets/background2.jpg')}
+        source={Platform.OS === 'web' ? require('../../assets/loopbackground.webp') : require('../../assets/moon.jpg')}
         style={styles.background}
       >
         <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
           {currentPage === 'personal' ? renderPersonalInfoPage() : renderComputerSkillsPage()}
         </KeyboardAvoidingView>
       </ImageBackground>
- 
+
       {/* Date Picker Modals */}
       {/* تاریخ تولد: حداکثر 18 سال پیش (حداقل سن 18 سال) */}
       <DatePickerModal
@@ -1338,18 +1264,27 @@ export default function SignIn({ navigation }) {
         setDatePickerModal={setBirthDateModal}
         birthDate={formData.birth_date}
         setBirthDate={(date) => updateField('birth_date', normalizeGregorianDate(date))}
-        maximumDate={maxBirthDate}
-        isCurrentDate={maxBirthDate}
+        maximumDate={'1386/12/29'}
+        isCurrentDate={'1386/12/29'}
+        minimumDate={'1364/01/01'}
       />
 
       {/* تاریخ اعتبار گواهینامه: حداقل امروز، حداکثر 10 سال بعد */}
       <DatePickerModal
         datePickerModal={licenceDateModal}
         setDatePickerModal={setLicenceDateModal}
-        birthDate={formData.licence_date}
-        setBirthDate={(date) => updateField('licence_date', normalizeGregorianDate(date))}
+        birthDate={formData.certificate_expiry_date}
+        setBirthDate={(date) => updateField('certificate_expiry_date', normalizeGregorianDate(date))}
         minimumDate={todayDate}
         maximumDate={tenYearsLater}
+        isCurrentDate={todayDate}
+      />
+      <DatePickerModal
+        datePickerModal={certificateIssueDateModal}
+        setDatePickerModal={setCertificateIssueDateModal}
+        birthDate={formData.certificate_issue_date}
+        setBirthDate={(date) => updateField('certificate_issue_date', normalizeGregorianDate(date))}
+        maximumDate={todayDate}
         isCurrentDate={todayDate}
       />
     </SafeAreaView>
@@ -1365,7 +1300,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     paddingVertical: 20,
     alignItems: 'center',
     gap: 15,
-    width:'90%',
+    width: '90%',
     maxWidth: 800,
     alignSelf: 'center',
   },
@@ -1431,8 +1366,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     color: TEXT_COLOR_FULL,
   },
   phoneContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    ...NewStyles.row,
     gap: 5,
   },
   phonePrefix: {
@@ -1468,10 +1402,10 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
   },
   nextButton: {
     backgroundColor: BUTTON_BG_COLOR,
-    paddingVertical: 15,
-    paddingHorizontal: 30,
+    paddingVertical: 15, 
     borderRadius: 10,
     marginTop: 20,
+    width:'100%'
   },
   nextButtonText: {
     color: BUTTON_TEXT_COLOR,
@@ -1619,12 +1553,10 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
   },
   debugButtonText: {
     color: BUTTON_TEXT_COLOR,
-    fontSize: 12,
-    fontWeight: 'bold',
+    fontSize: 12, 
   },
   phoneContainerAlt: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    ...NewStyles.row,
     borderWidth: 1,
     borderColor: FORM_BORDER_03,
     borderRadius: 8,
@@ -1634,8 +1566,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
   phonePrefixAlt: {
     fontSize: 14,
     color: TEXT_COLOR_07,
-    marginRight: 8,
-    fontWeight: 'bold',
+    marginRight: 8, 
   },
   phoneInputAlt: {
     flex: 1,

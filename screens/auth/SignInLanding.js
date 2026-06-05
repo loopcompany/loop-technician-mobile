@@ -9,7 +9,7 @@ export default function SignInLanding({ navigation }) {
   const { t } = useTranslation();
   return (
     <ImageBackground
-      source={Platform.OS === 'web' ? require("../../assets/webbackground.jpg") : require("../../assets/background2.jpg")}
+      source={Platform.OS === 'web' ? require("../../assets/loopbackground.webp") : require("../../assets/moon.jpg")}
       style={styles.background}
       
       resizeMode="cover"
@@ -44,6 +44,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    width:'100%'
   },
   container: {
     alignItems: "center",

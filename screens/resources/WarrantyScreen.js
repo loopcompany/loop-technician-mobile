@@ -1,14 +1,13 @@
-import React, { useState, useEffect,useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, FlatList, ImageBackground, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import NewStyles from '../../styles/NewStyles';
 import ScreenHeaders from '../../components/ScreenHeaders';
 import { useTranslation } from 'react-i18next';
 
-import { themeColor0, themeColor1, themeColor4, themeColor10 } from '../../theme/Color';
+import { themeColor0, themeColor1, themeColor4, themeColor10, themeColor14 } from '../../theme/Color';
 import { infoAPI } from '../../services/Api';
-import { showToastOrAlert } from '../../helpers/Common';
+import { cleanText, showToastOrAlert } from '../../helpers/Common';
 import BlankScreen from '../../components/BlankScreen';
 import { RefreshControl } from 'react-native';
 import Loader from '../../components/Loader';
@@ -19,7 +18,7 @@ export default function WarrantyScreen() {
     () => createStyles(i18n.language),
     [i18n.language]
   );
-    const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
+  const styles = useMemo(() => createLocalStyles(NewStyles), [NewStyles]);
   const [warranties, setWarranties] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -62,22 +61,36 @@ export default function WarrantyScreen() {
     const isExpanded = expandedItems[item.id];
 
     return (
-      <View key={item.id} style={styles.warrantyItem}>
+      <View key={item.id} style={styles.termItem}>
         <TouchableOpacity
-          style={styles.warrantyHeader}
+          style={[styles.termHeader, NewStyles.center, NewStyles.border10]}
           onPress={() => toggleExpanded(item.id)}
         >
+          <Text style={styles.termTitle}>{item.title}</Text>
           <Ionicons
-            name={isExpanded ? "chevron-up" : "chevron-down"}
+            name={"chevron-down"}
             size={20}
-            color={themeColor4.bgColor(1)}
+            color={themeColor1.bgColor(1)}
           />
-          <Text style={styles.warrantyTitle}>{item.title}</Text>
         </TouchableOpacity>
 
-        {isExpanded && (
-          <View style={styles.warrantyContent}>
-            <Text style={styles.warrantyDescription}>{item.description}</Text>
+        {(isExpanded) && (
+          <View style={styles.termContent}>
+            {item.description &&
+              <View style={{ backgroundColor: themeColor1.bgColor(1), padding: 10 }}>
+                <Text style={[styles.termDescription,]}>{cleanText(item.description)}</Text>
+              </View>
+            }
+
+            <View style={{ backgroundColor: themeColor4.bgColor(1), marginTop: 10, borderColor: themeColor14.bgColor(1), borderWidth: 3 }}>
+
+              {item?.warranties?.map((warranty, index) => (
+                <View key={warranty.id} style={[{ paddingVertical: 10 }, index < item?.warranties?.length - 1 ? { borderBottomColor: themeColor14.bgColor(1), borderBottomWidth: 3, } : null]}>
+                  <Text style={[NewStyles.title10, { textAlign: 'center' }]}>{warranty.title}</Text>
+                </View>
+              ))}
+            </View>
+
           </View>
         )}
       </View>
@@ -90,25 +103,45 @@ export default function WarrantyScreen() {
   }
   return (
     <SafeAreaView edges={{ top: 'off', bottom: 'off' }} style={NewStyles.container}>
-      <ScreenHeaders title={t('Warranty / Guarantee')} />
-      <FlatList
-        data={warranties}
-        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={() => { setIsRefreshing(true) }} />}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.warrantiesContainer}
-        renderItem={renderTermItem}
-        ListEmptyComponent={() => {
-          return (
-            <BlankScreen />
-          )
-        }}
+      <ImageBackground cachePolicy={'memory-disk'} source={Platform.OS === 'web' ? require('../../assets/loopbackground.webp') : require("../../assets/moon.jpg")} style={[NewStyles.container, { backgroundColor: '#020305' }, NewStyles.center]} imageStyle={{ opacity: 0.8, }} contentPosition={'center'} contentFit={"cover"}>
 
-      />
+        <ScreenHeaders title={t('Warranty / Guarantee')} />
+        <FlatList
+          data={warranties}
+          refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={() => { setIsRefreshing(true) }} />}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.warrantiesContainer}
+          renderItem={renderTermItem}
+          ListEmptyComponent={() => {
+            return (
+              <BlankScreen />
+            )
+          }}
+
+        />
+      </ImageBackground>
     </SafeAreaView>
   );
 }
 
 const createLocalStyles = (NewStyles) => StyleSheet.create({
+  termItem: {
+    backgroundColor: themeColor4.bgColor(0),
+    borderRadius: 10,
+    marginBottom: 10,
+    gap: 10
+  },
+  termContent: {
+    backgroundColor: themeColor4.bgColor(0),
+
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+  },
+  termDescription: {
+    fontSize: 14,
+    ...NewStyles.text10,
+    marginBottom: 10,
+  },
   container: {
     flex: 1,
     backgroundColor: '#e0f0ff',
@@ -260,5 +293,14 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontFamily: 'VazirBold',
+  },
+  termHeader: {
+    padding: 5,
+    backgroundColor: themeColor0.bgColor(1),
+  },
+  termTitle: {
+    flex: 1,
+    fontSize: 16,
+    ...NewStyles.title4,
   },
 });

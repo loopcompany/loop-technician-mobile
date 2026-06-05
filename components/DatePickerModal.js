@@ -28,7 +28,8 @@ const DatePickerModal = React.memo(function DatePickerModal({
     setBirthDate,
     isCurrentDate,
     minimumDate = null, // تاریخ حداقل (اختیاری)
-    maximumDate = null  // تاریخ حداکثر (اختیاری)
+    maximumDate = null,  // تاریخ حداکثر (اختیاری)
+    isGregorian = false
 }) {
     const { t } = useTranslation();
 
@@ -36,7 +37,7 @@ const DatePickerModal = React.memo(function DatePickerModal({
 
     // محاسبه تاریخ جاری به صورت شمسی
     const currentDate = useMemo(() =>
-        getFormatedDate(new Date(date.getTime()), 'YYYY/MM/DD'),
+        isGregorian ? getFormatedDate(new Date(date.getTime()), 'YYYY/MM/DD') : getFormatedDate(new Date(date.getTime()), 'jYYYY/jMM/jDD'),
         [date]);
 
     // اگر maximumDate پاس نشده، از تاریخ امروز استفاده کن
@@ -77,31 +78,31 @@ const DatePickerModal = React.memo(function DatePickerModal({
     return (
         <Modal animationType='fade' transparent={true} visible={datePickerModal} onRequestClose={handleRequestClose}>
             {/* <TouchableWithoutFeedback onPress={() => { setDatePickerModal(false) }}> */}
-                <View style={[styles.wrapper, NewStyles.center]}>
-                    <TouchableWithoutFeedback onPress={() => { }}>
-                        <View style={styles.modalView}>
-                            <View style={styles.calendarContainer}>
-                                <DatePicker
-                                    mode='calendar'
-                                    isGregorian={true}
-                                    options={DATE_PICKER_OPTIONS}
-                                    style={styles.calendar}
-                                    selected={birthDate}
-                                    current={isCurrentDate ? isCurrentDate : currentDate}
-                                    minimumDate={minDate}
-                                    maximumDate={maxDate}
-                                    onDateChange={handleDateChange}
-                                    onMonthYearChange={handleMonthYearChange}
-                                    onSelectedChange={handleSelectedChange}
-                                />
-                            </View>
-
-                            {/* دکمه بستن */}
-
-                            <Button title={t("Confirm")} onPress={handleConfirm} />
+            <View style={[styles.wrapper, NewStyles.center]}>
+                <TouchableWithoutFeedback onPress={() => { }}>
+                    <View style={styles.modalView}>
+                        <View style={styles.calendarContainer}>
+                            <DatePicker
+                                mode='calendar'
+                                isGregorian={isGregorian}
+                                options={DATE_PICKER_OPTIONS}
+                                style={styles.calendar}
+                                selected={birthDate}
+                                current={isCurrentDate ? isCurrentDate : currentDate}
+                                minimumDate={minDate}
+                                maximumDate={maxDate}
+                                onDateChange={handleDateChange}
+                                onMonthYearChange={handleMonthYearChange}
+                                onSelectedChange={handleSelectedChange}
+                            />
                         </View>
-                    </TouchableWithoutFeedback>
-                </View>
+
+                        {/* دکمه بستن */}
+
+                        <Button title={t("Confirm")} onPress={handleConfirm} />
+                    </View>
+                </TouchableWithoutFeedback>
+            </View>
             {/* </TouchableWithoutFeedback> */}
         </Modal>
     )
@@ -134,7 +135,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         padding: 15,
         alignItems: 'center',
-        maxWidth:400
+        maxWidth: 400
     },
     calendarContainer: {
         width: '100%',

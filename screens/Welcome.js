@@ -60,7 +60,7 @@ export default function Welcome({ navigation }) {
   if (isChecking) {
     return (
       <ImageBackground
-        source={Platform.OS === 'web' ? require("../assets/webbackground.jpg") : require("../assets/background2.jpg")}
+        source={Platform.OS === 'web' ? require("../assets/loopbackground.webp") : require("../assets/moon.jpg")}
         style={NewStyles.container}
       >
         <View style={{ flex: 1, backgroundColor: themeColor0.bgColor(0.25), justifyContent: 'center', alignItems: 'center' }}>
@@ -78,7 +78,7 @@ export default function Welcome({ navigation }) {
 
   return (
     <ImageBackground
-      source={Platform.OS === 'web' ? require("../assets/webbackground.jpg") : require("../assets/background2.jpg")}
+      source={Platform.OS === 'web' ? require("../assets/loopbackground.webp") : require("../assets/moon.jpg")}
       style={NewStyles.container}
     >
       <TouchableWithoutFeedback

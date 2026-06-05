@@ -896,7 +896,7 @@
   "Personnel code": "Personnel code",
   "Personnel code (not editable)": "Personnel code (not editable)",
   "Referrer personnel code": "Referrer personnel code",
-  "Referrer code (not editable)": "Referrer code (not editable)",
+  "Referrer code": "Referrer code",
   "Save changes": "Save changes",
   "Please select an image file only.": "Please select an image file only.",
   "Image size must not exceed 5 MB.": "Image size must not exceed 5 MB.",
@@ -1186,7 +1186,7 @@
   "Your feedback was submitted successfully": "Your feedback was submitted successfully",
   "Something went wrong while submitting your feedback": "Something went wrong while submitting your feedback",
   "Thank you for your cooperation": "Thank you for your cooperation",
-  "Feedback:": "Feedback:",
+  "Feedback": "Feedback:",
   "Submit feedback": "Submit feedback",
   "Please enter the note text": "Please enter the note text",
   "The note cannot be longer than {{max}} characters": "The note cannot be longer than {{max}} characters",
@@ -1496,5 +1496,6 @@
   "Submitted on:": "Submitted on:",
   "Description:": "Description:",
   "No leave requests have been submitted.": "No leave requests have been submitted.",
-  "No orders found for this organization": "No orders found for this organization"
+  "No orders found for this organization": "No orders found for this organization",
+  "First name and last name": "First name and last name"
 }
