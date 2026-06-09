@@ -18,7 +18,7 @@ import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor4, themeColor6, themeColor7, themeColor8, themeColor11 } from '../theme/Color';
 import { getTerminationRequests, getTerminationRequestById } from '../services/Api';
 import { useFocusEffect } from '@react-navigation/native';
-import { formatDateTime, showAlert } from '../helpers/Common';
+import { formatDateTime, langIsRTL, showAlert } from '../helpers/Common';
 import { useTranslation } from 'react-i18next';
 import { createStyles } from '../styles/NewStyles';
 export default function TerminationRequestsListScreen({ navigation }) {
@@ -159,7 +159,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
           </Text>
           <View style={styles.viewDetailsButton}>
             <Text style={styles.viewDetailsText}>{t("View Details")}</Text>
-            <Ionicons name="chevron-back" size={16} color={themeColor0.bgColor(1)} />
+            <Ionicons name={langIsRTL(i18n.language) ? "chevron-back" : "chevron-forward"} size={16} color={themeColor0.bgColor(1)} />
           </View>
         </View>
       </TouchableOpacity>
@@ -369,6 +369,7 @@ export default function TerminationRequestsListScreen({ navigation }) {
 const createLocalStyles = (NewStyles) => StyleSheet.create({
   background: {
     flex: 1,
+    paddingBottom: 120
   },
   loadingContainer: {
     flex: 1,

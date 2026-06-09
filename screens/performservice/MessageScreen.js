@@ -20,6 +20,7 @@ import { themeColor0, themeColor1, themeColor3, themeColor4, themeColor7, themeC
 import CustomStatusBar from '../../components/CustomStatusBar';
 import { getTicketsList, sendTicketMessage } from '../../services/Api';
 import { formatDate, formatDateTime, showAlert } from '../../helpers/Common';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function MessageScreen({ navigation }) {
   const { t, i18n } = useTranslation();
@@ -53,7 +54,7 @@ export default function MessageScreen({ navigation }) {
       }
     } catch (error) {
       console.log('خطا در دریافت پیام‌ها:', error);
-      showAlert(t("Error"), t("Error fetching messages"));
+      // showAlert(t("Error"), t("Error fetching messages"));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -104,12 +105,9 @@ export default function MessageScreen({ navigation }) {
 
 
   return (
-    <LinearGradient
-      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.background}
-    >
+    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'off' }}>
+
+
       <CustomStatusBar />
       <ScreenHeaders
         title={t("Message")}
@@ -211,7 +209,7 @@ export default function MessageScreen({ navigation }) {
                   <Text style={styles.emptyText}>{t("No messages received yet")}</Text>
                 </View>
               ) : (
-                messages.map((msg) => { 
+                messages.map((msg) => {
                   return (
                     <View
                       key={msg.id}
@@ -261,7 +259,7 @@ export default function MessageScreen({ navigation }) {
         </ScrollView>
       )}
 
-    </LinearGradient>
+    </SafeAreaView>
   );
 }
 
@@ -276,7 +274,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
   container: {
     paddingHorizontal: 20,
     paddingVertical: 10,
-    paddingBottom: 100,
+    paddingBottom: 130,
     gap: 15,
   },
   mainButton: {

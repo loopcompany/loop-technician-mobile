@@ -18,7 +18,7 @@ import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor10, themeColor11, themeColor2, themeColor3, themeColor4, themeColor6, themeColor7, themeColor8 } from '../theme/Color';
 import { getLeaveRequests, getLeaveRequestById } from '../services/Api';
-import { formatDate, formatDateTime, showAlert } from '../helpers/Common';
+import { formatDate, formatDateTime, langIsRTL, showAlert } from '../helpers/Common';
 import { createStyles } from '../styles/NewStyles';
 export default function LeaveRequestsListScreen({ navigation }) {
     const { t, i18n } = useTranslation();
@@ -190,7 +190,7 @@ export default function LeaveRequestsListScreen({ navigation }) {
                         onPress={() => handleViewDetails(item)}
                     >
                         <Text style={[NewStyles.text]}>{t("Details")}</Text>
-                        <Ionicons name="chevron-back" size={16} color={themeColor0.bgColor(1)} />
+                        <Ionicons name={langIsRTL(i18n.language) ? "chevron-back" : "chevron-forward"} size={16} color={themeColor0.bgColor(1)} />
                     </TouchableOpacity>
                 </View>
             </TouchableOpacity>
@@ -211,7 +211,7 @@ export default function LeaveRequestsListScreen({ navigation }) {
         const typeBadge = getTypeBadge(selectedRequest.type);
 
         return (
-            <Modal 
+            <Modal
                 visible={modalVisible}
                 transparent={true}
                 animationType="fade"
@@ -398,6 +398,7 @@ export default function LeaveRequestsListScreen({ navigation }) {
 const createLocalStyles = (NewStyles) => StyleSheet.create({
     background: {
         flex: 1,
+        paddingBottom: 120
     },
     loadingContainer: {
         flex: 1,

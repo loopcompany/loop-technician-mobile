@@ -34,8 +34,8 @@ export default function Welcome({ navigation }) {
     try {
       const userToken = await AsyncStorage.getItem('userToken');
       if (userToken) {
-        const result = await validateToken(); 
-        const isValid = result.success === true; 
+        const result = await validateToken();
+        const isValid = result.success === true;
         if (isValid) {
           dispatch(setToken(userToken));
           dispatch(fetchUser(userToken))
@@ -56,6 +56,14 @@ export default function Welcome({ navigation }) {
       setIsChecking(false);
     }
   }
+  const navigateToMainApp = () => {
+    setTimeout(() => {
+      navigation.replace('SignInLanding');
+    }, 4000);
+  };
+  useEffect(() => {
+    navigateToMainApp()
+  }, [])
 
   if (isChecking) {
     return (
@@ -82,9 +90,7 @@ export default function Welcome({ navigation }) {
       style={NewStyles.container}
     >
       <TouchableWithoutFeedback
-        onPress={() => {
-          navigation.navigate("SignInLanding");
-        }}
+        
       >
         <View style={{ flex: 1, backgroundColor: themeColor0.bgColor(0.25) }}>
           <View style={[{ flex: 1 }, NewStyles.center]}>

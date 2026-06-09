@@ -12,7 +12,6 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ScreenHeaders from '../../components/ScreenHeaders';
-import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor3, themeColor10, themeColor2, themeColor8, themeColor4, themeColor7 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import { useSelector, useDispatch } from 'react-redux';
@@ -130,12 +129,7 @@ export default function FinancialInfoScreen({ navigation }) {
   return (
     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'off' }}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-        <LinearGradient
-          colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.background}
-        >
+      
           <CustomStatusBar />
           <ScreenHeaders
             title={t('Account / Privacy')}
@@ -197,7 +191,7 @@ export default function FinancialInfoScreen({ navigation }) {
 
           </ScrollView>
 
-        </LinearGradient>
+         
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

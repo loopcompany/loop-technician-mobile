@@ -19,9 +19,10 @@ import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor3, themeColor4, themeColor7, themeColor10, themeColor8, themeColor2 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
-import { faDigitsToEn, formatPrice, getCurrentJalaliYear, showAlert } from '../../helpers/Common';
+import { faDigitsToEn, formatPrice, getCurrentJalaliYear, langIsRTL, showAlert } from '../../helpers/Common';
 import { getYearlyIncomeChart } from '../../services/Api';
 import { useSelector } from 'react-redux';
+import { SafeAreaView } from 'react-native-safe-area-context';
 const { width } = Dimensions.get('window');
 
 export default function IndexScreen({ navigation }) {
@@ -30,7 +31,7 @@ export default function IndexScreen({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedYear, setSelectedYear] = useState(null); // شروع با null
   const [chartData, setChartData] = useState([]);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [yearlyData, setYearlyData] = useState({
     year: 1404,
     yearly_summary: {
@@ -208,162 +209,166 @@ export default function IndexScreen({ navigation }) {
   }
 
   return (
-    <LinearGradient
-      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.background}
-    >
-      <CustomStatusBar />
-      <ScreenHeaders
-        title={t('Index')}
-      />
+    <SafeAreaView style={{ flex: 1 }} edges={{ top: 'off', bottom: 'additive' }}>
 
-      <ScrollView
-        contentContainerStyle={styles.container}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
+      <LinearGradient
+        colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.background}
       >
+        <CustomStatusBar />
+        <ScreenHeaders
+          title={t('Index')}
+        />
 
-        {/* هدر گزارش عملکرد */}
-        <View style={[styles.headerCard, { backgroundColor: themeColor0.bgColor(0.9) }]}>
-          <Ionicons name="bar-chart" size={28} color="#fff" />
-          <Text style={[NewStyles.title, styles.headerTitle]}>{t('Performance report')}</Text>
-        </View>
+        <ScrollView
+          contentContainerStyle={styles.container}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
 
-        {/* انتخاب سال */}
-        <View style={styles.yearSelector}>
-          <TouchableOpacity
-            style={styles.yearButton}
-            onPress={() => handleYearChange('next')}
-          >
-            <Ionicons name="chevron-forward" size={20} color={themeColor0.bgColor(1)} />
-          </TouchableOpacity>
-
-          <View style={styles.yearDisplay}>
-            <Ionicons name="calendar" size={20} color={themeColor0.bgColor(1)} />
-            <Text style={[NewStyles.title, styles.yearText]}>
-              {t('Year')} {selectedYear || yearlyData.year}
-            </Text>
+          {/* هدر گزارش عملکرد */}
+          <View style={[styles.headerCard, { backgroundColor: themeColor0.bgColor(0.9) }]}>
+            <Ionicons name="bar-chart" size={28} color="#fff" />
+            <Text style={[NewStyles.title, styles.headerTitle]}>{t('Performance report')}</Text>
           </View>
 
-          <TouchableOpacity
-            style={styles.yearButton}
-            onPress={() => handleYearChange('prev')}
-          >
-            <Ionicons name="chevron-back" size={20} color={themeColor0.bgColor(1)} />
-          </TouchableOpacity>
-        </View>
+          {/* انتخاب سال */}
+          <View style={styles.yearSelector}>
+            <TouchableOpacity
+              style={styles.yearButton}
+              onPress={() => handleYearChange('next')}
+            >
+              <Ionicons name="chevron-forward" size={20} color={themeColor0.bgColor(1)} />
+            </TouchableOpacity>
 
-        {/* خلاصه سالانه */}
-          {user?.apple_check == 1 
-  ? null 
-  :
-        <View style={styles.summaryContainer}>
-          <View style={styles.summaryCard}>
-            <Ionicons name="trending-up" size={24} color={themeColor7.bgColor(1)} />
-            <Text style={[NewStyles.text4, styles.summaryLabel]}>{t('Total income')}</Text>
-            <Text style={[NewStyles.title, styles.summaryValue]}>
-              {formatPrice(yearlyData.yearly_summary.total_income)}
-            </Text>
+            <View style={styles.yearDisplay}>
+              <Ionicons name="calendar" size={20} color={themeColor0.bgColor(1)} />
+              <Text style={[NewStyles.title, styles.yearText]}>
+                {t('Year')} {selectedYear || yearlyData.year}
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              style={styles.yearButton}
+              onPress={() => handleYearChange('prev')}
+            >
+              <Ionicons name={langIsRTL(i18n.language) ? "chevron-back" : "chevron-forward"} size={20} color={themeColor0.bgColor(1)} />
+            </TouchableOpacity>
           </View>
 
-          <View style={styles.summaryCard}>
-            <Ionicons name="cash" size={24} color={themeColor0.bgColor(1)} />
-            <Text style={[NewStyles.text4, styles.summaryLabel]}>{t('Net income')}</Text>
-            <Text style={[NewStyles.title, styles.summaryValue]}>
-              {formatPrice(yearlyData.yearly_summary.net_income)}
-            </Text>
+          {/* خلاصه سالانه */}
+          {user?.apple_check == 1
+            ? null
+            :
+            <View style={styles.summaryContainer}>
+              <View style={styles.summaryCard}>
+                <Ionicons name="trending-up" size={24} color={themeColor7.bgColor(1)} />
+                <Text style={[NewStyles.text4, styles.summaryLabel]}>{t('Total income')}</Text>
+                <Text style={[NewStyles.title, styles.summaryValue]}>
+                  {formatPrice(yearlyData.yearly_summary.total_income)}
+                </Text>
+              </View>
+
+              <View style={styles.summaryCard}>
+                <Ionicons name="cash" size={24} color={themeColor0.bgColor(1)} />
+                <Text style={[NewStyles.text4, styles.summaryLabel]}>{t('Net income')}</Text>
+                <Text style={[NewStyles.title, styles.summaryValue]}>
+                  {formatPrice(yearlyData.yearly_summary.net_income)}
+                </Text>
+              </View>
+
+              <View style={styles.summaryCard}>
+                <Ionicons name="card" size={24} color={themeColor1.bgColor(1)} />
+                <Text style={[NewStyles.text4, styles.summaryLabel]}>{t('Settlements')}</Text>
+                <Text style={[NewStyles.title, styles.summaryValue]}>
+                  {formatPrice(yearlyData.yearly_summary.total_settlements)}
+                </Text>
+              </View>
+            </View>}
+
+          {/* نمودار میله‌ای */}
+          <View style={styles.chartContainer}>
+            <View style={styles.chartHeader}>
+              <Text style={[NewStyles.title, styles.chartTitle]}>{t('Monthly income chart')}</Text>
+              <Text style={[NewStyles.text4, styles.chartSubtitle]}>
+                {t('(Million Tomans)')}
+              </Text>
+              <View style={styles.chartHint}>
+                <Ionicons name="information-circle" size={16} color={themeColor7.bgColor(0.7)} />
+                <Text style={[NewStyles.text4, styles.chartHintText]}>
+                  {t('Tap a bar to view details')}
+                </Text>
+              </View>
+            </View>
+
+            {chartData.length > 0 ? (
+              <View style={styles.chartWrapper}>
+                <BarChart
+                  data={chartData}
+                  barWidth={18}
+                  spacing={8}
+                  roundedTop
+                  roundedBottom
+                  hideRules={false}
+                  rulesType="solid"
+                  rulesColor={themeColor10.bgColor(0.15)}
+                  rulesThickness={1}
+                  showVerticalLines
+                  verticalLinesColor={themeColor10.bgColor(0.1)}
+                  xAxisThickness={1}
+                  yAxisThickness={1}
+                  yAxisTextStyle={{ fontSize: 8, color: themeColor10.bgColor(0.7) }}
+                  xAxisLabelTextStyle={{ fontSize: 8, color: themeColor10.bgColor(0.7), textAlign: 'center' }}
+                  noOfSections={5}
+                  maxValue={Math.max(...chartData.map(d => d.value)) * 1.2}
+                  height={180}
+                  width={width - 100}
+                  yAxisColor={themeColor10.bgColor(0.3)}
+                  xAxisColor={themeColor10.bgColor(0.3)}
+                  isAnimated
+                  animationDuration={800}
+                  onPress={(item) => handleBarPress(item)}
+                  showGradient
+                  gradientColor={themeColor0.bgColor(0.3)}
+                  yAxisLabelWidth={30}
+                  initialSpacing={5}
+                  endSpacing={5}
+                />
+              </View>
+            ) : (
+              <View style={styles.emptyChart}>
+                <Ionicons name="bar-chart-outline" size={60} color={themeColor10.bgColor(0.3)} />
+                <Text style={[NewStyles.text4, styles.emptyText]}>
+                  {t('No records to display!')}
+                </Text>
+              </View>
+            )}
           </View>
 
-          <View style={styles.summaryCard}>
-            <Ionicons name="card" size={24} color={themeColor1.bgColor(1)} />
-            <Text style={[NewStyles.text4, styles.summaryLabel]}>{t('Settlements')}</Text>
-            <Text style={[NewStyles.title, styles.summaryValue]}>
-              {formatPrice(yearlyData.yearly_summary.total_settlements)}
-            </Text>
-          </View>
-        </View>}
-
-        {/* نمودار میله‌ای */}
-        <View style={styles.chartContainer}>
-          <View style={styles.chartHeader}>
-            <Text style={[NewStyles.title, styles.chartTitle]}>{t('Monthly income chart')}</Text>
-            <Text style={[NewStyles.text4, styles.chartSubtitle]}>
-              {t('(Million Tomans)')}
-            </Text>
-            <View style={styles.chartHint}>
-              <Ionicons name="information-circle" size={16} color={themeColor7.bgColor(0.7)} />
-              <Text style={[NewStyles.text4, styles.chartHintText]}>
-                {t('Tap a bar to view details')}
+          {/* موجودی فعلی */}
+          <View style={styles.walletCard}>
+            <Ionicons name="wallet" size={28} color={themeColor7.bgColor(1)} />
+            <View style={styles.walletInfo}>
+              <Text style={[NewStyles.text4, styles.walletLabel]}>{t('Wallet balance')}</Text>
+              <Text style={[NewStyles.title, styles.walletValue]}>
+                {formatPrice(yearlyData.current_wallet)} {t('Tomans')}
               </Text>
             </View>
           </View>
 
-          {chartData.length > 0 ? (
-            <View style={styles.chartWrapper}>
-              <BarChart
-                data={chartData}
-                barWidth={18}
-                spacing={8}
-                roundedTop
-                roundedBottom
-                hideRules={false}
-                rulesType="solid"
-                rulesColor={themeColor10.bgColor(0.15)}
-                rulesThickness={1}
-                showVerticalLines
-                verticalLinesColor={themeColor10.bgColor(0.1)}
-                xAxisThickness={1}
-                yAxisThickness={1}
-                yAxisTextStyle={{ fontSize: 8, color: themeColor10.bgColor(0.7) }}
-                xAxisLabelTextStyle={{ fontSize: 8, color: themeColor10.bgColor(0.7), textAlign: 'center' }}
-                noOfSections={5}
-                maxValue={Math.max(...chartData.map(d => d.value)) * 1.2}
-                height={180}
-                width={width - 100}
-                yAxisColor={themeColor10.bgColor(0.3)}
-                xAxisColor={themeColor10.bgColor(0.3)}
-                isAnimated
-                animationDuration={800}
-                onPress={(item) => handleBarPress(item)}
-                showGradient
-                gradientColor={themeColor0.bgColor(0.3)}
-                yAxisLabelWidth={30}
-                initialSpacing={5}
-                endSpacing={5}
-              />
-            </View>
-          ) : (
-            <View style={styles.emptyChart}>
-              <Ionicons name="bar-chart-outline" size={60} color={themeColor10.bgColor(0.3)} />
-              <Text style={[NewStyles.text4, styles.emptyText]}>
-                {t('No records to display!')}
-              </Text>
-            </View>
-          )}
-        </View>
-
-        {/* موجودی فعلی */}
-        <View style={styles.walletCard}>
-          <Ionicons name="wallet" size={28} color={themeColor7.bgColor(1)} />
-          <View style={styles.walletInfo}>
-            <Text style={[NewStyles.text4, styles.walletLabel]}>{t('Wallet balance')}</Text>
-            <Text style={[NewStyles.title, styles.walletValue]}>
-              {formatPrice(yearlyData.current_wallet)} {t('Tomans')}
-            </Text>
-          </View>
-        </View>
-
-      </ScrollView>
-    </LinearGradient>
+        </ScrollView>
+      </LinearGradient>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   background: {
     flex: 1,
+    paddingBottom: 120
   },
   loadingContainer: {
     flex: 1,

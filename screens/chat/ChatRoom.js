@@ -1,22 +1,23 @@
 import { View, TextInput, Pressable, ImageBackground, Platform, KeyboardAvoidingView, Text, ActivityIndicator } from 'react-native'
-import React, { useCallback, useEffect, useState,useMemo } from 'react'
+import React, { useCallback, useEffect, useState, useMemo } from 'react'
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { showToastOrAlert } from '../../helpers/Common';
-import NewStyles from '../../styles/NewStyles';
-import { themeColor0, themeColor10, themeColor3, themeColor4, themeColor5, themeColor6 } from '../../theme/Color';
+import { themeColor0, themeColor1, themeColor10, themeColor3, themeColor4, themeColor5, themeColor6 } from '../../theme/Color';
 import MessagesList from './MessagesList';
 import { getTechnicianChatMessages, sendTechnicianMessage, markTechnicianMessagesAsRead } from '../../services/Api';
 import { createStyles } from '../../styles/NewStyles';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import ScreenHeaders from '../../components/ScreenHeaders';
 export default function ChatRoom({ route }) {
 
-   const { t, i18n } = useTranslation();
-   const NewStyles = useMemo(
-     () => createStyles(i18n.language),
-     [i18n.language]
-   );
+    const { t, i18n } = useTranslation();
+    const NewStyles = useMemo(
+        () => createStyles(i18n.language),
+        [i18n.language]
+    );
     //  const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
     const userId = route?.params?.userId;
     const userName = route?.params?.userName;
@@ -41,14 +42,14 @@ export default function ChatRoom({ route }) {
                 setIsChatOpen(response?.data?.is_chat_open);
             } else {
                 setData([]);
-                showToastOrAlert(response?.data?.message || t('Error fetching messages'));
+                // showToastOrAlert(response?.data?.message || t('Error fetching messages'));
             }
 
             // علامت‌گذاری به عنوان خوانده شده
             await markTechnicianMessagesAsRead(userId);
         } catch (error) {
-            const message = error?.response ? t('An unexpected error occurred!') : t('Network error!');
-            showToastOrAlert(message);
+            // const message = error?.response ? t('An unexpected error occurred!') : t('Network error!');
+            // showToastOrAlert(message);
         } finally {
             setRefreshing(false);
         }
@@ -103,16 +104,15 @@ export default function ChatRoom({ route }) {
     // const insets = useSafeAreaInsets();
 
     return (
-        <View style={[NewStyles.container, {
-            // marginTop: insets.top,
-            // marginBottom: insets.bottom * 3,
-        }]}>
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'padding'} keyboardVerticalOffset={Platform.OS == 'ios' ? 90 : undefined} style={{ flex: 1 }} >
+        <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={[NewStyles.container]}>
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'padding'} keyboardVerticalOffset={0} style={{ flex: 1, }} >
                 {/* <ImageBackground source={require('../../assets/images/card/1.avif')} resizeMode='cover' blurRadius={20} style={{ justifyContent: 'space-between', flex: 1, overflow: 'visible' }}> */}
+                <ScreenHeaders title={t('Message to user')} />
+
                 <MessagesList messeges={data} refreshing={refreshing} onRefresh={() => { fetchData() }} />
                 {isChatOpen ?
-                    <View style={NewStyles.shadow}>
-                        <View style={[NewStyles.rowWrapper, { backgroundColor: themeColor3.bgColor(0.1), paddingRight: 10 }]}>
+                    <View style={[{ paddingBottom: Platform.OS === 'web' ? 100 : 70, borderTopColor: themeColor1.bgColor(1), borderTopWidth: 1, }]}>
+                        <View style={[NewStyles.rowWrapper, { paddingRight: 10, }]}>
                             <View style={[NewStyles.rowWrapper, { paddingVertical: 5 }]}>
                                 <Pressable style={[{ padding: 10, aspectRatio: 1, backgroundColor: themeColor0.bgColor(1), marginHorizontal: 2 }, NewStyles.center, NewStyles.border100]}
                                     disabled={loading}
@@ -129,7 +129,7 @@ export default function ChatRoom({ route }) {
                         </View>
                     </View>
                     :
-                    <View style={NewStyles.shadow}>
+                    <View style={[NewStyles.shadow, { paddingBottom: Platform.OS === 'web' ? 100 : 70 }]}>
                         <View style={[NewStyles.rowWrapper, { backgroundColor: themeColor3.bgColor(0.1), paddingRight: 10 }]}>
                             <View style={[NewStyles.rowWrapper, { paddingVertical: 5 }]}>
                                 <View style={[{ padding: 10, aspectRatio: 1, backgroundColor: themeColor6.bgColor(1), marginHorizontal: 2 }, NewStyles.center, NewStyles.border100]}>
@@ -142,6 +142,6 @@ export default function ChatRoom({ route }) {
                 }
                 {/* </ImageBackground> */}
             </KeyboardAvoidingView>
-        </View>
+        </SafeAreaView>
     )
 }

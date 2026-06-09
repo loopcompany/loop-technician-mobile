@@ -110,7 +110,7 @@ export default function VehicleInfoScreen({ navigation }) {
           }
         } else if (userData.vehicle_type === 'موتور سیکلت') {
           console.log(plate);
-          
+
           const motorMatch = plate.match(/^(\d{3})-(\d{5})$/);
           if (motorMatch) {
             motorPlate = motorMatch[1];
@@ -265,43 +265,38 @@ export default function VehicleInfoScreen({ navigation }) {
   return (
     <SafeAreaView style={baseStyles.container} edges={{ top: 'off', bottom: 'off' }}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-        <LinearGradient
-          colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.background}
-        >
-          <CustomStatusBar />
-          <ScreenHeaders title={t('Account / Privacy')} />
 
-          <ScrollView contentContainerStyle={styles.container}>
-            <TouchableOpacity style={[styles.mainButton, { backgroundColor: themeColor0.bgColor(0.8) }]}>
-              <Text style={styles.buttonText}>{t('Vehicle Information')}</Text>
-            </TouchableOpacity>
+        <CustomStatusBar />
+        <ScreenHeaders title={t('Account / Privacy')} />
 
-            <TouchableOpacity
-              style={styles.vehicleTypeBox}
-              onPress={() => setShowVehicleTypeModal(true)}
-              disabled={saving}
-            >
-              <Text style={styles.vehicleTypeLabel}>
-                {t('Vehicle type: {{type}}', { type: vehicleTypeLabel })}
-              </Text>
-            </TouchableOpacity>
+        <ScrollView contentContainerStyle={styles.container}>
+          <TouchableOpacity style={[styles.mainButton, { backgroundColor: themeColor0.bgColor(0.8) }]}>
+            <Text style={styles.buttonText}>{t('Vehicle Information')}</Text>
+          </TouchableOpacity>
 
-            <View style={styles.formContainer}>
-              {(vehicleData.vehicleType === 'دوچرخه' || vehicleData.vehicleType === 'پیاده') && (
-                <View style={styles.infoBox}>
-                  <Text style={styles.infoText}>
-                    {t('For {{type}}, no specific information is required.', { type: vehicleTypeLabel })}
-                  </Text>
-                </View>
-              )}
+          <TouchableOpacity
+            style={styles.vehicleTypeBox}
+            onPress={() => setShowVehicleTypeModal(true)}
+            disabled={saving}
+          >
+            <Text style={styles.vehicleTypeLabel}>
+              {t('Vehicle type: {{type}}', { type: vehicleTypeLabel })}
+            </Text>
+          </TouchableOpacity>
 
-              {vehicleData.vehicleType === 'موتور سیکلت' && (
-                <View style={styles.plateSection}>
-                  <Text style={styles.label}>{t('Motorcycle plate:')}</Text>
-                  {/* <View style={styles.plateRow}>
+          <View style={styles.formContainer}>
+            {(vehicleData.vehicleType === 'دوچرخه' || vehicleData.vehicleType === 'پیاده') && (
+              <View style={styles.infoBox}>
+                <Text style={styles.infoText}>
+                  {t('For {{type}}, no specific information is required.', { type: vehicleTypeLabel })}
+                </Text>
+              </View>
+            )}
+
+            {vehicleData.vehicleType === 'موتور سیکلت' && (
+              <View style={styles.plateSection}>
+                <Text style={styles.label}>{t('Motorcycle plate:')}</Text>
+                {/* <View style={styles.plateRow}>
                     <TextInput
                       style={[styles.input, styles.plateInput]}
                       value={vehicleData.motorPlate}
@@ -326,17 +321,17 @@ export default function VehicleInfoScreen({ navigation }) {
                     />
                   </View> */}
 
-                  <View style={styles.platePreviewWrap}>
-                    {/* ✅ styles پاس داده شد */}
-                    <PlatePreviewMotorcycle styles={styles} left={vehicleData.motorPlate} right={vehicleData.bodyPlate} />
-                  </View>
+                <View style={styles.platePreviewWrap}>
+                  {/* ✅ styles پاس داده شد */}
+                  <PlatePreviewMotorcycle styles={styles} left={vehicleData.motorPlate} right={vehicleData.bodyPlate} />
                 </View>
-              )}
+              </View>
+            )}
 
-              {vehicleData.vehicleType === 'خودرو' && (
-                <View style={styles.plateSection}>
-                  <Text style={styles.label}>{t('Car plate:')}</Text>
-                  {/* <View style={styles.plateRow}>
+            {vehicleData.vehicleType === 'خودرو' && (
+              <View style={styles.plateSection}>
+                <Text style={styles.label}>{t('Car plate:')}</Text>
+                {/* <View style={styles.plateRow}>
                     <TextInput
                       style={[styles.input, styles.plateInput]}
                       value={vehicleData.carPlateLeft}
@@ -377,113 +372,113 @@ export default function VehicleInfoScreen({ navigation }) {
                     />
                   </View> */}
 
-                  <View style={styles.platePreviewWrap}>
-                    {/* ✅ styles پاس داده شد */}
-                    <PlatePreview
-                      styles={styles}
-                      left={vehicleData.carPlateLeft}
-                      right={vehicleData.carPlateRight}
-                      letter={vehicleData.carPlateLetter}
-                      province={vehicleData.carPlateProvince}
-                    />
-                  </View>
+                <View style={styles.platePreviewWrap}>
+                  {/* ✅ styles پاس داده شد */}
+                  <PlatePreview
+                    styles={styles}
+                    left={vehicleData.carPlateLeft}
+                    right={vehicleData.carPlateRight}
+                    letter={vehicleData.carPlateLetter}
+                    province={vehicleData.carPlateProvince}
+                  />
                 </View>
-              )}
+              </View>
+            )}
 
-              {(vehicleData.vehicleType === 'موتور سیکلت' || vehicleData.vehicleType === 'خودرو') && (
-                <>
-                  <View style={styles.inputRow}>
-                    <Text style={styles.label}>{t('Model')}</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholderTextColor={themeColor3.bgColor(1)}
-                      value={vehicleData.carModel}
-                      onChangeText={(value) => updateField('carModel', value)}
-                      placeholder={t('Example: Pride 131')}
-                      editable={!saving}
-                    />
-                  </View>
+            {(vehicleData.vehicleType === 'موتور سیکلت' || vehicleData.vehicleType === 'خودرو') && (
+              <>
+                <View style={styles.inputRow}>
+                  <Text style={styles.label}>{t('Model')}</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholderTextColor={themeColor3.bgColor(1)}
+                    value={vehicleData.carModel}
+                    onChangeText={(value) => updateField('carModel', value)}
+                    placeholder={t('Example: Pride 131')}
+                    editable={!saving}
+                  />
+                </View>
 
-                  <View style={styles.inputRow}>
-                    <Text style={styles.label}>{t('Color')}</Text>
-                    <TextInput
-                      style={styles.input}
-                      value={vehicleData.carColor}
-                      placeholderTextColor={themeColor3.bgColor(1)}
-                      onChangeText={(value) => updateField('carColor', value)}
-                      placeholder={t('Example: White')}
-                      editable={!saving}
-                    />
-                  </View>
+                <View style={styles.inputRow}>
+                  <Text style={styles.label}>{t('Color')}</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={vehicleData.carColor}
+                    placeholderTextColor={themeColor3.bgColor(1)}
+                    onChangeText={(value) => updateField('carColor', value)}
+                    placeholder={t('Example: White')}
+                    editable={!saving}
+                  />
+                </View>
 
-                  <View style={styles.inputRow}>
-                    <Text style={styles.label}>{t('Manufacturing year:')}</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholderTextColor={themeColor3.bgColor(1)}
-                      placeholder={t('Manufacturing year:')}
-                      value={vehicleData.manufacturingYear}
-                      onChangeText={(value) => updateField('manufacturingYear', value)}
-                      editable={!saving}
-                    />
-                  </View>
+                <View style={styles.inputRow}>
+                  <Text style={styles.label}>{t('Manufacturing year:')}</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholderTextColor={themeColor3.bgColor(1)}
+                    placeholder={t('Manufacturing year:')}
+                    value={vehicleData.manufacturingYear}
+                    onChangeText={(value) => updateField('manufacturingYear', value)}
+                    editable={!saving}
+                  />
+                </View>
 
-                  <View style={styles.inputRow}>
-                    <Text style={styles.label}>{t('Fuel type:')}</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholderTextColor={themeColor3.bgColor(1)}
-                      placeholder={t('Fuel type:')}
-                      value={vehicleData.softwareType}
-                      onChangeText={(value) => updateField('softwareType', value)}
-                      editable={!saving}
-                    />
-                  </View>
+                <View style={styles.inputRow}>
+                  <Text style={styles.label}>{t('Fuel type:')}</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholderTextColor={themeColor3.bgColor(1)}
+                    placeholder={t('Fuel type:')}
+                    value={vehicleData.softwareType}
+                    onChangeText={(value) => updateField('softwareType', value)}
+                    editable={!saving}
+                  />
+                </View>
 
-                  <View style={styles.inputRow}>
-                    <Text style={styles.label}>{t('Vehicle identification number (VIN):')}</Text>
-                    <TextInput
-                      style={styles.input}
-                      value={vehicleData.vinNumber}
-                      placeholderTextColor={themeColor3.bgColor(1)}
-                      placeholder={t('Vehicle identification number (VIN):')}
-                      onChangeText={(value) => updateField('vinNumber', value)}
-                      maxLength={17}
-                      editable={!saving}
-                    />
-                  </View>
+                <View style={styles.inputRow}>
+                  <Text style={styles.label}>{t('Vehicle identification number (VIN):')}</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={vehicleData.vinNumber}
+                    placeholderTextColor={themeColor3.bgColor(1)}
+                    placeholder={t('Vehicle identification number (VIN):')}
+                    onChangeText={(value) => updateField('vinNumber', value)}
+                    maxLength={17}
+                    editable={!saving}
+                  />
+                </View>
 
-                  <View style={styles.inputRow}>
-                    <Text style={styles.label}>{t('Third-party insurance unique code:')}</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholderTextColor={themeColor3.bgColor(1)}
-                      placeholder={t('Third-party insurance unique code:')}
-                      value={vehicleData.insuranceExpiryCode}
-                      onChangeText={(value) => updateField('insuranceExpiryCode', value)}
-                      editable={!saving}
-                    />
-                  </View>
+                <View style={styles.inputRow}>
+                  <Text style={styles.label}>{t('Third-party insurance unique code:')}</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholderTextColor={themeColor3.bgColor(1)}
+                    placeholder={t('Third-party insurance unique code:')}
+                    value={vehicleData.insuranceExpiryCode}
+                    onChangeText={(value) => updateField('insuranceExpiryCode', value)}
+                    editable={!saving}
+                  />
+                </View>
 
-                  <View style={styles.inputRow}>
-                    <Text style={styles.label}>{t('Third-party insurance expiry date:')}</Text>
-                    <TouchableOpacity
-                      style={styles.input}
-                      onPress={() => !saving && setShowInsuranceDatePicker(true)}
-                      disabled={saving}
-                    >
-                      <Text style={[styles.dateText, !vehicleData.insuranceExpiryDate && styles.placeholderText]}>
-                        {vehicleData.insuranceExpiryDate || t('Select date (e.g., 1405/05/15)')}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                </>
-              )}
-            </View>
+                <View style={styles.inputRow}>
+                  <Text style={styles.label}>{t('Third-party insurance expiry date:')}</Text>
+                  <TouchableOpacity
+                    style={styles.input}
+                    onPress={() => !saving && setShowInsuranceDatePicker(true)}
+                    disabled={saving}
+                  >
+                    <Text style={[styles.dateText, !vehicleData.insuranceExpiryDate && styles.placeholderText]}>
+                      {vehicleData.insuranceExpiryDate || t('Select date (e.g., 1405/05/15)')}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
 
-            <Button title={t('Save information')} onPress={handleSave} loading={saving} />
-          </ScrollView>
-        </LinearGradient>
+          <Button title={t('Save information')} onPress={handleSave} loading={saving} />
+        </ScrollView>
+
       </KeyboardAvoidingView>
 
       <Modal
@@ -532,7 +527,7 @@ export default function VehicleInfoScreen({ navigation }) {
 // ✅ styles از بیرون میاد
 function PlatePreview({ styles, left = '', right = '', letter = 'ب', province = '11' }) {
   const { t } = useTranslation();
-console.log(left);
+  console.log(left);
 
   const toPersian = (s) => {
     const map = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
@@ -617,6 +612,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     paddingVertical: 10,
     alignItems: 'center',
     gap: 15,
+    paddingBottom: 120
   },
   mainButton: {
     width: '100%',
@@ -778,8 +774,8 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     borderLeftColor: themeColor10.bgColor(1),
     alignItems: 'center',
     justifyContent: 'center',
-    borderTopRightRadius:8,
-    borderBottomRightRadius:8,
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 8,
   },
   plateCityTop: {
     ...NewStyles.title10,
@@ -816,7 +812,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     paddingVertical: 6,
   },
   motorTop: { fontSize: 36, fontWeight: '900' },
-  motorBottom: { fontSize: 46, fontWeight: '900'},
+  motorBottom: { fontSize: 46, fontWeight: '900' },
   dateText: {
     ...NewStyles.text10,
     fontSize: 14,

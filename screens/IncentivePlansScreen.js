@@ -1,4 +1,4 @@
-import React, { useState, useCallback,useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor2, themeColor8, themeColor4, themeColor10, themeColor7, themeColor6, themeColor11 } from '../theme/Color';
 import { getIncentivePlans } from '../services/Api';
 import { formatDate, formatDateTime, showAlert } from '../helpers/Common';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function IncentivePlansScreen({ navigation }) {
   const [plans, setPlans] = useState([]);
@@ -29,7 +30,7 @@ export default function IncentivePlansScreen({ navigation }) {
     () => createStyles(i18n.language),
     [i18n.language]
   );
-  const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
+  const styles = useMemo(() => createLocalStyles(NewStyles), [NewStyles]);
   // دریافت لیست طرح‌ها
   const fetchPlans = async (isRefresh = false) => {
     try {
@@ -156,12 +157,9 @@ export default function IncentivePlansScreen({ navigation }) {
   }
 
   return (
-    <LinearGradient
-      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.background}
-    >
+    <SafeAreaView style={{ flex: 1 }} edges={{ top: 'off', bottom: 'additive' }}>
+
+
       <ScreenHeaders
         title={t('Promotional Plans')}
       />
@@ -183,13 +181,14 @@ export default function IncentivePlansScreen({ navigation }) {
           />
         }
       />
-    </LinearGradient>
+    </SafeAreaView>
   );
 }
 
 const createLocalStyles = (NewStyles) => StyleSheet.create({
   background: {
-    flex: 1
+    flex: 1,
+    paddingBottom: 120
   },
   loadingContainer: {
     flex: 1,
@@ -203,7 +202,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
   },
   container: {
     padding: 15,
-    paddingBottom: 100,
+    paddingBottom: 120,
     flexGrow: 1,
   },
   headerContainer: {

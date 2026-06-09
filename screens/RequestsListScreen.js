@@ -16,7 +16,7 @@ import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor10, themeColor11, themeColor2, themeColor3, themeColor4, themeColor6, themeColor7, themeColor8 } from '../theme/Color';
 import { getEducationRequests, getEducationRequestById } from '../services/Api';
-import { formatDate, formatDateTime, showAlert } from '../helpers/Common';
+import { formatDate, formatDateTime, langIsRTL, showAlert } from '../helpers/Common';
 import { useTranslation } from 'react-i18next';
 import { createStyles } from '../styles/NewStyles';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -152,7 +152,7 @@ export default function RequestsListScreen({ navigation }) {
                         onPress={() => handleViewDetails(item)}
                     >
                         <Text style={[NewStyles.text]}>{t("Details")}</Text>
-                        <Ionicons name="chevron-back" size={16} color={themeColor0.bgColor(1)} />
+                        <Ionicons name={langIsRTL(i18n.language) ? "chevron-back" : "chevron-forward"} size={16} color={themeColor0.bgColor(1)} />
                     </TouchableOpacity>
                 </View>
             </TouchableOpacity>
@@ -324,6 +324,7 @@ export default function RequestsListScreen({ navigation }) {
 const createLocalStyles = (NewStyles) => StyleSheet.create({
     background: {
         flex: 1,
+        paddingBottom: 120
     },
     loadingContainer: {
         flex: 1,
@@ -439,7 +440,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
         flex: 1,
         backgroundColor: 'rgba(0,0,0,0.6)',
         justifyContent: 'center',
-        alignItems: 'center', 
+        alignItems: 'center',
         padding: 20,
     },
     modalContent: {
@@ -448,7 +449,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
         width: '100%',
         // maxHeight: '80%',
         ...NewStyles.shadow,
-        padding:10
+        padding: 10
     },
     modalLoading: {
         padding: 40,
@@ -469,8 +470,8 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     closeButton: {
         padding: 5,
     },
-    modalBody: { 
-        width:'100%'
+    modalBody: {
+        width: '100%'
         // maxHeight: 400,
     },
     detailRow: {

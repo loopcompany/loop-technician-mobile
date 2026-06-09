@@ -179,6 +179,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
   },
   warrantiesContainer: {
     padding: 15,
+    paddingBottom:130
   },
   warrantyItem: {
     backgroundColor: '#fff',

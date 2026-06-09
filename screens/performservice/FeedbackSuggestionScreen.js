@@ -16,12 +16,12 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from "react-i18next";
 import { createStyles } from '../../styles/NewStyles';
 import ScreenHeaders from '../../components/ScreenHeaders';
-import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor3, themeColor10, themeColor8, themeColor2, themeColor4, themeColor6, themeColor7 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import { checkPollStatus, submitPoll } from '../../services/Api';
 import { showAlert } from '../../helpers/Common';
 import Button from '../../components/Button';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function FeedbackSuggestionScreen({ navigation }) {
   const { t, i18n } = useTranslation();
@@ -193,68 +193,72 @@ export default function FeedbackSuggestionScreen({ navigation }) {
   }
 
   return (
-    <LinearGradient
-      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.background}
-    >
-      <CustomStatusBar />
-      <ScreenHeaders
-        title={t("Feedback / Suggestions")}
-      />
+    <SafeAreaView style={NewStyles.container} edges={{top:'off', bottom:'additive'}}>
 
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={'padding'}>
-        <ScrollView
-          contentContainerStyle={styles.container}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
+      <LinearGradient
+        colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.background}
+      >
+        <CustomStatusBar />
+        <ScreenHeaders
+          title={t("Feedback / Suggestions")}
+        />
 
-          {/* دکمه‌های دسته‌بندی */}
-          {categories.map((category) => (
-            <View key={category.id} style={styles.categoryContainer}>
-              <TouchableOpacity
-                style={[styles.categoryButton, { backgroundColor: themeColor0.bgColor(0.8) }]}
-                disabled={submitting}
-              >
-                <Text style={styles.categoryButtonText}>{category.title}</Text>
-              </TouchableOpacity>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={'padding'}>
+          <ScrollView
+            contentContainerStyle={styles.container}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
 
-              {/* باکس بازخورد برای هر دسته */}
-              <View style={[styles.feedbackBox, { gap: 5 }]}>
-                <Text style={NewStyles.text1}>{t("Feedback")}</Text>
-                <TextInput
-                  style={styles.feedbackInput}
-                  multiline={true}
-                  numberOfLines={3}
-                  placeholder={t("Feedback")}
-                  placeholderTextColor={themeColor3.bgColor(1)}
-                  value={feedbacks[category.id]}
-                  onChangeText={(text) => handleTextChange(category.id, text)}
-                  textAlignVertical="top"
-                  maxLength={category.maxLength}
-                  editable={!submitting}
-                />
+            {/* دکمه‌های دسته‌بندی */}
+            {categories.map((category) => (
+              <View key={category.id} style={styles.categoryContainer}>
+                <TouchableOpacity
+                  style={[styles.categoryButton, { backgroundColor: themeColor0.bgColor(0.8) }]}
+                  disabled={submitting}
+                >
+                  <Text style={styles.categoryButtonText}>{category.title}</Text>
+                </TouchableOpacity>
+
+                {/* باکس بازخورد برای هر دسته */}
+                <View style={[styles.feedbackBox, { gap: 5 }]}>
+                  <Text style={NewStyles.text1}>{t("Feedback")}</Text>
+                  <TextInput
+                    style={styles.feedbackInput}
+                    multiline={true}
+                    numberOfLines={3}
+                    placeholder={t("Feedback")}
+                    placeholderTextColor={themeColor3.bgColor(1)}
+                    value={feedbacks[category.id]}
+                    onChangeText={(text) => handleTextChange(category.id, text)}
+                    textAlignVertical="top"
+                    maxLength={category.maxLength}
+                    editable={!submitting}
+                  />
+                </View>
               </View>
-            </View>
-          ))}
+            ))}
 
-          <Button
-            title={t("Submit feedback")}
-            onPress={handleSubmit}
-            loading={submitting}
-          />
+            <Button
+              title={t("Submit feedback")}
+              onPress={handleSubmit}
+              loading={submitting}
+            />
 
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </LinearGradient>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </LinearGradient>
+    </SafeAreaView>
   );
 }
 
 const createLocalStyles = (NewStyles) => StyleSheet.create({
   background: {
     flex: 1,
+    paddingBottom:50
   },
   loadingContainer: {
     flex: 1,
@@ -308,8 +312,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     ...NewStyles.textInput,
     ...NewStyles.text10,
     ...NewStyles.border10,
-    fontSize: 14,
-    textAlign: 'right',
+    fontSize: 14, 
     minHeight: 80,
   },
   submitButton: {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,12 +14,12 @@ import { RefreshControl } from 'react-native';
 import Loader from '../../components/Loader';
 
 export default function LearnMoreScreen() {
-    const { t, i18n } = useTranslation();
-    const NewStyles = useMemo(
-      () => createStyles(i18n.language),
-      [i18n.language]
-    );
-      const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
+  const { t, i18n } = useTranslation();
+  const NewStyles = useMemo(
+    () => createStyles(i18n.language),
+    [i18n.language]
+  );
+  const styles = useMemo(() => createLocalStyles(NewStyles), [NewStyles]);
   const [faqs, setFaqs] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -146,6 +146,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
   },
   faqsContainer: {
     padding: 15,
+    paddingBottom: 130
   },
   faqItem: {
     backgroundColor: '#fff',
@@ -159,7 +160,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     shadowRadius: 2,
   },
   faqHeader: {
-   ...NewStyles.row,
+    ...NewStyles.row,
     alignItems: 'center',
     padding: 15,
     borderBottomWidth: 1,
@@ -170,7 +171,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     fontSize: 16,
     fontFamily: 'VazirBold',
     color: '#333',
-      ...NewStyles.text10,
+    ...NewStyles.text10,
     marginRight: 10,
   },
   faqContent: {
@@ -181,7 +182,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     fontSize: 14,
     fontFamily: 'VazirLight',
     color: '#666',
-      ...NewStyles.text10,
+    ...NewStyles.text10,
     lineHeight: 22,
     marginBottom: 10,
   },

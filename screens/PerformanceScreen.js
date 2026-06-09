@@ -27,7 +27,7 @@ export default function PerformanceScreen({ navigation }) {
     () => createStyles(i18n.language),
     [i18n.language]
   );
-    const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
+  const styles = useMemo(() => createLocalStyles(NewStyles), [NewStyles]);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -42,14 +42,14 @@ export default function PerformanceScreen({ navigation }) {
 
   // محاسبه تاریخ امروز به صورت شمسی
   const todayJalali = useMemo(() =>
-    getFormatedDate(new Date(), 'YYYY/MM/DD'),
+    getFormatedDate(new Date(), 'jYYYY/jMM/jDD'),
     []);
 
   // محاسبه تاریخ 3 سال قبل به صورت شمسی
   const threeYearsAgoJalali = useMemo(() => {
     const threeYearsAgo = new Date();
     threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 3);
-    return getFormatedDate(threeYearsAgo, 'YYYY/MM/DD');
+    return getFormatedDate(threeYearsAgo, 'jYYYY/jMM/jDD');
   }, []);
 
   const fetchTransactions = async (isRefresh = false) => {
@@ -332,7 +332,8 @@ export default function PerformanceScreen({ navigation }) {
 
 const createLocalStyles = (NewStyles) => StyleSheet.create({
   background: {
-    flex: 1
+    flex: 1,
+    paddingBottom: 120
   },
   loadingContainer: {
     flex: 1,

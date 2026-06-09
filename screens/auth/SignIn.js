@@ -80,7 +80,7 @@ export default function SignIn({ navigation }) {
     serial_number: '',
     marital_status: 'متأهل',
     military_status: 'پایان خدمت',
-    education_status: '',
+    education_status: 'دیپلم',
     education_field: '',
     telephone: '',
     mobile: '',
@@ -230,8 +230,8 @@ export default function SignIn({ navigation }) {
     // }
 
     try {
-      const result = await validateReferralCode(formData.other_referral_code); 
-      
+      const result = await validateReferralCode(formData.other_referral_code);
+
       if (result?.data?.is_valid) {
         return true;
         // showAlert(t("Success"), result.data?.message || result.message || t("Referral code is valid."));
@@ -324,7 +324,7 @@ export default function SignIn({ navigation }) {
         }
       });
       if (formData.mobile) {
-        apiFormData.append('phone', formData.mobile);
+        apiFormData.append('mobile', formData.mobile);
       }
       if (formData.expertise_ids && formData.expertise_ids.length > 0) {
         formData.expertise_ids.forEach(id => {
@@ -610,18 +610,18 @@ export default function SignIn({ navigation }) {
           {/* وضعیت تحصیلات */}
           <View style={styles.inputRow}>
             <Text style={[NewStyles.text10]}>{t("Education status")} <Text style={styles.required}>*</Text> :</Text>
-            <TextInput
-              style={[
-                NewStyles.textInput,
-                NewStyles.text10,
-                NewStyles.border10,
-                fieldErrors.education_status && styles.inputError
-              ]}
-              value={formData.education_status}
-              onChangeText={(value) => updateField('education_status', value)}
-              placeholder=""
-              placeholderTextColor={PLACEHOLDER_COLOR}
-            />
+             
+            <Picker
+              selectedValue={formData.education_status}
+              onValueChange={(value) => updateField('education_status', value)}
+              style={styles.picker}
+            >
+              <Picker.Item label={t("Diploma")} value="دیپلم" />
+              <Picker.Item label={t("Post graduate")} value="فوق دیپلم" />
+              <Picker.Item label={t("Bachelor's degree")} value="لیسانس" />
+              <Picker.Item label={t("Master's degree")} value="فوق لیسانس" />
+              <Picker.Item label={t("Ph.D")} value="دکتری" />
+            </Picker>
             <FieldError field="education_status" />
           </View>
           <View style={styles.inputRow}>
@@ -644,7 +644,7 @@ export default function SignIn({ navigation }) {
           {/* شماره تلفن ثابت */}
           <View style={styles.inputRow}>
             <Text style={[NewStyles.text10]}>{t("Landline number (021, 8 digits)")} <Text style={styles.required}>*</Text> :</Text>
-            <View style={[styles.phoneContainer, {backgroundColor: themeColor4.bgColor(1)}, NewStyles.border10]}>
+            <View style={[styles.phoneContainer, { backgroundColor: themeColor4.bgColor(1) }, NewStyles.border10]}>
 
               <TextInput
                 style={[
@@ -661,7 +661,7 @@ export default function SignIn({ navigation }) {
                 keyboardType="phone-pad"
                 maxLength={8}
               />
-              <Text style={[NewStyles.text10, {paddingHorizontal:10}]}>021</Text>
+              <Text style={[NewStyles.text10, { paddingHorizontal: 10 }]}>021</Text>
 
             </View>
             <FieldError field="telephone" />
@@ -887,8 +887,8 @@ export default function SignIn({ navigation }) {
           onPress={async () => {
             if (formData?.other_referral_code) {
               const code_check = await handleValidateReferralCode()
-              console.log(code_check,'sss');
-              
+              console.log(code_check, 'sss');
+
               if (!code_check) {
                 return;
               }
@@ -906,7 +906,7 @@ export default function SignIn({ navigation }) {
             }
           }}
         >
-          <Text style={[NewStyles.text10, {textAlign:'center', width:'100%'}]}>{t("Next - Computer skills")}</Text>
+          <Text style={[NewStyles.text10, { textAlign: 'center', width: '100%' }]}>{t("Next - Computer skills")}</Text>
         </TouchableOpacity>
 
       </ScrollView>
@@ -1208,6 +1208,7 @@ export default function SignIn({ navigation }) {
           type: result.type || 'application/octet-stream',
           size: result.size,
         };
+        updateField('resume', result.uri);
       } else {
         // Expo DocumentPicker returns different structure based on version
         const file = result.assets ? result.assets[0] : result;
@@ -1229,6 +1230,8 @@ export default function SignIn({ navigation }) {
         return;
       }
 
+      console.log("fileInfo:", fileInfo);
+      
       setResumeFile(fileInfo);
       showAlert(t("Success"), t("File \"{{name}}\" selected", { name: fileInfo.name }));
 
@@ -1294,6 +1297,7 @@ export default function SignIn({ navigation }) {
 const createLocalStyles = (NewStyles) => StyleSheet.create({
   background: {
     flex: 1,
+    width:'100%'
   },
   container: {
     paddingHorizontal: 20,
@@ -1402,10 +1406,10 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
   },
   nextButton: {
     backgroundColor: BUTTON_BG_COLOR,
-    paddingVertical: 15, 
+    paddingVertical: 15,
     borderRadius: 10,
     marginTop: 20,
-    width:'100%'
+    width: '100%'
   },
   nextButtonText: {
     color: BUTTON_TEXT_COLOR,
@@ -1553,7 +1557,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
   },
   debugButtonText: {
     color: BUTTON_TEXT_COLOR,
-    fontSize: 12, 
+    fontSize: 12,
   },
   phoneContainerAlt: {
     ...NewStyles.row,
@@ -1566,7 +1570,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
   phonePrefixAlt: {
     fontSize: 14,
     color: TEXT_COLOR_07,
-    marginRight: 8, 
+    marginRight: 8,
   },
   phoneInputAlt: {
     flex: 1,

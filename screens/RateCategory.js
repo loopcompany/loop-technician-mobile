@@ -1,5 +1,5 @@
 // RateListScreen.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,6 @@ import {
   Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import NewStyles from '../styles/NewStyles';
 import ScreenHeaders from '../components/ScreenHeaders';
 import Footer from './Footer';
 import { formatJalaaliDate } from '../helpers/Common';
@@ -20,14 +19,22 @@ import { RefreshControl } from 'react-native';
 import letterRatesCategoryAPI from '../services/LetterRatesService';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
+import { createStyles } from '../styles/NewStyles';
+import Loader from './../components/Loader';
 
 
 
 export default function RateCategory() {
   const [rates, setRates] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const NewStyles = useMemo(
+    () => createStyles(i18n.language),
+    [i18n.language]
+  );
+  const styles = useMemo(() => createLocalStyles(NewStyles), [NewStyles]);
   useEffect(() => {
     fetchLetterRates();
   }, [refreshing]);
@@ -45,26 +52,33 @@ export default function RateCategory() {
       console.log('Error fetching letter rates:', error);
     } finally {
       setRefreshing(false);
+      setLoading(false)
     }
   };
 
   const renderItem = ({ item }) => (
-    <Pressable onPress={() => { navigation.navigate('RateListScreen', {id: item?.id, title: item?.title}) }} style={[styles.rateRow, NewStyles.center]}>
+    <Pressable onPress={() => { navigation.navigate('RateListScreen', { id: item?.id, title: item?.title }) }} style={[styles.rateRow, NewStyles.center]}>
       <Text style={[NewStyles.title10, { fontSize: 14 }]}>{item.title}</Text>
     </Pressable>
   );
 
+  if(loading){
+    return(
+      <Loader/>
+    )
+  }
+
   return (
     <SafeAreaView edges={{ top: 'off', bottom: 'off' }} style={NewStyles.container}>
       <ScreenHeaders title={t('Rate List')} />
-      <ScrollView showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true) }} />}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true) }} />}>
 
         <View style={[{ flex: 1 }]}>
           <View style={styles.titleContainer}>
-              <Text style={NewStyles.title4}>
-                {t('Loop Rate List')} {formatJalaaliDate(new Date())?.slice(0, 4)}
-              </Text>
-            </View>
+            <Text style={NewStyles.title4}>
+              {t('Loop Rate List')} {formatJalaaliDate(new Date())?.slice(0, 4)}
+            </Text>
+          </View>
           <View style={{ flex: 1 }}>
 
             <FlatList
@@ -84,7 +98,7 @@ export default function RateCategory() {
   );
 }
 
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) => StyleSheet.create({
   container: {
     paddingHorizontal: 20,
     paddingVertical: 10

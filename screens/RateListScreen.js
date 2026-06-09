@@ -1,5 +1,5 @@
 // RateListScreen.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,6 @@ import {
   FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import NewStyles from '../styles/NewStyles';
 import ScreenHeaders from '../components/ScreenHeaders';
 import Footer from './Footer';
 import { formatJalaaliDate } from '../helpers/Common';
@@ -18,6 +17,8 @@ import { themeColor0, themeColor4 } from '../theme/Color';
 import letterRatesAPI from '../services/LetterRatesApi';
 import { RefreshControl } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { createStyles } from '../styles/NewStyles';
+import Loader from '../components/Loader';
 
 
 
@@ -28,7 +29,13 @@ export default function RateListScreen({ route }) {
   const [unionRates, setUnionRates] = useState([]);
   const [loopRates, setLoopRates] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
-  const { t } = useTranslation();
+  const [loading, setLoading] = useState(true);
+  const { t, i18n } = useTranslation();
+  const NewStyles = useMemo(
+    () => createStyles(i18n.language),
+    [i18n.language]
+  );
+  const styles = useMemo(() => createLocalStyles(NewStyles), [NewStyles]);
   useEffect(() => {
     fetchLetterRates();
   }, [refreshing]);
@@ -41,6 +48,7 @@ export default function RateListScreen({ route }) {
       console.log('Error fetching letter rates:', error);
     } finally {
       setRefreshing(false);
+      setLoading(false)
     }
   };
 
@@ -51,10 +59,16 @@ export default function RateListScreen({ route }) {
     </View>
   );
 
+  if (loading) {
+    return (
+      <Loader />
+    )
+  }
+
   return (
     <SafeAreaView edges={{ top: 'off', bottom: 'off' }} style={NewStyles.container}>
       <ScreenHeaders title={t('Rate List')} />
-      <ScrollView showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true) }} />}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true) }} />}>
 
         <View style={[NewStyles.row, { flex: 1 }]}>
           <View style={{ flex: 1 }}>
@@ -78,7 +92,7 @@ export default function RateListScreen({ route }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) => StyleSheet.create({
   container: {
     paddingHorizontal: 20,
   },

@@ -219,7 +219,8 @@ export default function DeliveryReceiptScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   background: {
-    flex: 1
+    flex: 1,
+    paddingBottom: 120
   },
   container: {
     padding: 20,

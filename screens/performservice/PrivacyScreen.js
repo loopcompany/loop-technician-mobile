@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,15 +8,20 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import ScreenHeaders from '../../components/ScreenHeaders';
-import NewStyles from '../../styles/NewStyles';
+import ScreenHeaders from '../../components/ScreenHeaders'; 
 import { themeColor0, themeColor1, themeColor3, themeColor10, themeColor2, themeColor8 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import { useTranslation } from 'react-i18next';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { createStyles } from '../../styles/NewStyles';
 
-export default function PrivacyScreen({ navigation }) {
-  const { t } = useTranslation();
-
+export default function PrivacyScreen({ navigation }) { 
+  const { t, i18n } = useTranslation();
+  const NewStyles = useMemo(
+    () => createStyles(i18n.language),
+    [i18n.language]
+  );
+  const styles = useMemo(() => createLocalStyles(NewStyles), [NewStyles]);
   const privacyOptions = [
     {
       id: 1,
@@ -36,17 +41,11 @@ export default function PrivacyScreen({ navigation }) {
   ];
 
   return (
-    <LinearGradient
-      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.background}
-    >
+    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'off' }}>
       <CustomStatusBar />
       <ScreenHeaders
         title={t('Privacy')}
       />
-
       <ScrollView contentContainerStyle={styles.container}>
 
         {/* لیست گزینه‌های حریم خصوصی */}
@@ -61,13 +60,11 @@ export default function PrivacyScreen({ navigation }) {
         ))}
 
       </ScrollView>
-
-
-    </LinearGradient>
+    </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
+const createLocalStyles = (NewStyles) => StyleSheet.create({
   background: {
     flex: 1,
   },

@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -14,8 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { createStyles } from '../../styles/NewStyles';
-import ScreenHeaders from '../../components/ScreenHeaders';
-import NewStyles from '../../styles/NewStyles';
+import ScreenHeaders from '../../components/ScreenHeaders'; 
 import {
   themeColor0,
   themeColor1,
@@ -34,14 +33,15 @@ import {
   replyToAdminReportViolation
 } from '../../services/Api';
 import { showToastOrAlert, formatDateTime } from '../../helpers/Common';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function LoopReportScreen({ navigation }) {
-const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const NewStyles = useMemo(
     () => createStyles(i18n.language),
     [i18n.language]
   );
-    const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
+  const styles = useMemo(() => createLocalStyles(NewStyles), [NewStyles]);
   const token = useSelector((state) => state.auth.token);
 
   // State management
@@ -215,12 +215,8 @@ const { t, i18n } = useTranslation();
   );
 
   return (
-    <LinearGradient
-      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.background}
-    >
+    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'off' }}>
+
       <CustomStatusBar />
       <ScreenHeaders
         title={t("Violation reports")}
@@ -336,17 +332,18 @@ const { t, i18n } = useTranslation();
           </View>
         </View>
       </Modal>
-    </LinearGradient>
+    </SafeAreaView>
   );
 }
 
-const createLocalStyles = (NewStyles) =>  StyleSheet.create({
+const createLocalStyles = (NewStyles) => StyleSheet.create({
   background: {
     flex: 1,
   },
   container: {
     paddingHorizontal: 20,
     paddingVertical: 10,
+    paddingBottom:130,
     gap: 15,
   },
   centerContainer: {
@@ -386,7 +383,7 @@ const createLocalStyles = (NewStyles) =>  StyleSheet.create({
     ...NewStyles.center,
   },
   emptyText: {
-    ...NewStyles.text4,
+    ...NewStyles.text,
     fontSize: 16,
     textAlign: 'center',
   },
@@ -487,9 +484,8 @@ const createLocalStyles = (NewStyles) =>  StyleSheet.create({
     ...NewStyles.shadow
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
+    ...NewStyles.title10,
+    fontSize: 18, 
     marginBottom: 10,
     textAlign: 'center',
   },
@@ -500,14 +496,14 @@ const createLocalStyles = (NewStyles) =>  StyleSheet.create({
     textAlign: 'center',
   },
   replyInput: {
+    ...NewStyles.text10,
     borderWidth: 1,
     borderColor: themeColor3.bgColor(0.5),
     borderRadius: 8,
     padding: 12,
     fontSize: 14,
     minHeight: 120,
-    maxHeight: 200,
-    textAlign: 'right',
+    maxHeight: 200, 
     backgroundColor: themeColor3.bgColor(0.1),
   },
   charCount: {

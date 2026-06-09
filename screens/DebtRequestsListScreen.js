@@ -17,7 +17,7 @@ import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor4, themeColor8 } from '../theme/Color';
 import { getDebtRequests, getDebtRequestById } from '../services/Api';
-import { formatDate, showAlert } from '../helpers/Common';
+import { formatDate, langIsRTL, showAlert } from '../helpers/Common';
 import { useTranslation } from 'react-i18next';
 import { createStyles } from '../styles/NewStyles';
 export default function DebtRequestsListScreen({ navigation }) {
@@ -170,7 +170,7 @@ export default function DebtRequestsListScreen({ navigation }) {
             onPress={() => handleViewDetails(item.id)}
           >
             <Text style={styles.detailButtonText}>{t("Details")}</Text>
-            <Ionicons name="chevron-back" size={16} color={themeColor0.bgColor(1)} />
+            <Ionicons name={langIsRTL(i18n.language) ? "chevron-back" : "chevron-forward"} size={16} color={themeColor0.bgColor(1)} />
           </TouchableOpacity>
         </View>
       </View>
@@ -359,6 +359,7 @@ export default function DebtRequestsListScreen({ navigation }) {
 const createLocalStyles = (NewStyles) => StyleSheet.create({
   background: {
     flex: 1,
+    paddingBottom: 120
   },
   loadingContainer: {
     flex: 1,

@@ -19,7 +19,6 @@ import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createStyles } from '../../styles/NewStyles';
 import ScreenHeaders from '../../components/ScreenHeaders';
-import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor3, themeColor4, themeColor7, themeColor8 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import DatePickerModal from '../../components/DatePickerModal';
@@ -434,131 +433,126 @@ export default function PersonalInfoScreen({ navigation }) {
   return (
     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'off' }}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-        <LinearGradient
-          colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.background}
-        >
-          <CustomStatusBar />
-          <ScreenHeaders
-            title={t('Account / Privacy')}
-          />
 
-          <ScrollView contentContainerStyle={styles.container} refreshControl={<RefreshControl refreshing={user?.loading} onRefresh={() => {
-            dispatch(fetchUser(userToken))
-          }} />}>
+        <CustomStatusBar />
+        <ScreenHeaders
+          title={t('Account / Privacy')}
+        />
 
-            {/* big blue header similar to screenshot */}
-            <View style={styles.bigHeader}>
-              <Text style={styles.bigHeaderText}>{t('Personal Information')}</Text>
-            </View>
+        <ScrollView contentContainerStyle={styles.container} refreshControl={<RefreshControl refreshing={user?.loading} onRefresh={() => {
+          dispatch(fetchUser(userToken))
+        }} />}>
 
-            {/* account/name area with avatar */}
-            <View style={styles.accountBox}>
-              {/* <View style={styles.accountText}>
+          {/* big blue header similar to screenshot */}
+          <View style={styles.bigHeader}>
+            <Text style={styles.bigHeaderText}>{t('Personal Information')}</Text>
+          </View>
+
+          {/* account/name area with avatar */}
+          <View style={styles.accountBox}>
+            {/* <View style={styles.accountText}>
                 <TouchableOpacity onPress={pickImage} style={styles.changePhotoButton}>
                   <Text style={styles.changePhotoText}>{t('Change profile photo')}</Text>
                 </TouchableOpacity>
               </View> */}
-              <View>
-                {(selectedPhotoUrl || profilePhotoUrl) ? (
-                  <Image
-                    source={{ uri: selectedPhotoUrl || profilePhotoUrl }}
-                    style={styles.avatar}
-                    onError={(error) => {
-                      console.log('❌ خطا در بارگذاری عکس:', error.nativeEvent?.error);
-                      setSelectedPhotoUrl(null);
-                      setProfilePhotoUrl(null);
-                    }}
-                  />
-                ) : (
-                  <View style={styles.avatar}>
-                    <Image source={require('../../assets/technician.png')}
-                      style={styles.avatar} />
-                  </View>
-                )}
-              </View>
-              <View style={{ alignItems: 'flex-end' }}>
-                <Text style={NewStyles.title4}>{personalData.name}</Text>
-                <Text style={NewStyles.title4}>{userData.phone}</Text>
-              </View>
+            <View>
+              {(selectedPhotoUrl || profilePhotoUrl) ? (
+                <Image
+                  source={{ uri: selectedPhotoUrl || profilePhotoUrl }}
+                  style={styles.avatar}
+                  onError={(error) => {
+                    console.log('❌ خطا در بارگذاری عکس:', error.nativeEvent?.error);
+                    setSelectedPhotoUrl(null);
+                    setProfilePhotoUrl(null);
+                  }}
+                />
+              ) : (
+                <View style={styles.avatar}>
+                  <Image source={require('../../assets/technician.png')}
+                    style={styles.avatar} />
+                </View>
+              )}
+            </View>
+            <View style={{ alignItems: 'flex-end' }}>
+              <Text style={NewStyles.title}>{personalData.name}</Text>
+              <Text style={NewStyles.title}>{userData.phone}</Text>
+            </View>
+
+          </View>
+
+          {/* form fields as boxed rows */}
+          <View style={styles.formContainer}>
+            <View style={styles.boxedRow}>
+              <Text style={styles.fieldKey}>{t('National ID number')}:</Text>
+              <TextInput
+                style={[styles.boxedInput]}
+                value={personalData.melicode}
+                placeholder={t('National ID: 10 digits (not editable)')}
+                placeholderTextColor={themeColor3.bgColor(1)}
+                keyboardType="number-pad"
+                maxLength={10}
+                verticalAlign={'middle'}
+                textAlignVertical={'center'}
+                editable={false}
+              />
+            </View>
+            <View style={styles.boxedRow}>
+              <Text style={styles.fieldKey}>{t('Birth date (Jalali)')}:</Text>
+              <TextInput
+                style={[styles.boxedInput]}
+                value={personalData.birth_date}
+                placeholder={t('Date of birth: day / month / year (e.g., 1370/05/15)')}
+                placeholderTextColor={themeColor3.bgColor(1)}
+                keyboardType="number-pad"
+                maxLength={10}
+                verticalAlign={'middle'}
+                textAlignVertical={'center'}
+                editable={false}
+              />
 
             </View>
 
-            {/* form fields as boxed rows */}
-            <View style={styles.formContainer}>
-              <View style={styles.boxedRow}>
-                <Text style={styles.fieldKey}>{t('National ID number')}:</Text>
-                <TextInput
-                  style={[styles.boxedInput]}
-                  value={personalData.melicode}
-                  placeholder={t('National ID: 10 digits (not editable)')}
-                  placeholderTextColor={themeColor3.bgColor(1)}
-                  keyboardType="number-pad"
-                  maxLength={10}
-                  verticalAlign={'middle'}
-                  textAlignVertical={'center'}
-                  editable={false}
-                />
-              </View>
-              <View style={styles.boxedRow}>
-                <Text style={styles.fieldKey}>{t('Birth date (Jalali)')}:</Text>
-                <TextInput
-                  style={[styles.boxedInput]}
-                  value={personalData.birth_date}
-                  placeholder={t('Date of birth: day / month / year (e.g., 1370/05/15)')}
-                  placeholderTextColor={themeColor3.bgColor(1)}
-                  keyboardType="number-pad"
-                  maxLength={10}
-                  verticalAlign={'middle'}
-                  textAlignVertical={'center'}
-                  editable={false}
-                />
-
-              </View>
 
 
+            <View style={styles.boxedRow}>
+              <Text style={styles.fieldKey}>{t("Father's name")}:</Text>
+              <TextInput
+                style={[styles.boxedInput]}
+                value={personalData.father_name}
+                placeholder={t("Father's name (not editable)")}
+                placeholderTextColor={themeColor3.bgColor(1)}
+                editable={false}
+              />
+            </View>
 
-              <View style={styles.boxedRow}>
-                <Text style={styles.fieldKey}>{t("Father's name")}:</Text>
-                <TextInput
-                  style={[styles.boxedInput]}
-                  value={personalData.father_name}
-                  placeholder={t("Father's name (not editable)")}
-                  placeholderTextColor={themeColor3.bgColor(1)}
-                  editable={false}
-                />
-              </View>
+            <View style={styles.boxedRow}>
+              <Text style={styles.fieldKey}>{t('Issued from')}:</Text>
+              <TextInput
+                style={styles.boxedInput}
+                value={personalData.issued_from}
+                onChangeText={(value) => updateField('issued_from', value)}
+                placeholder={t('Birth certificate issue place')}
+                placeholderTextColor={themeColor3.bgColor(1)}
+                editable={false}
+              />
+            </View>
 
-              <View style={styles.boxedRow}>
-                <Text style={styles.fieldKey}>{t('Issued from')}:</Text>
-                <TextInput
-                  style={styles.boxedInput}
-                  value={personalData.issued_from}
-                  onChangeText={(value) => updateField('issued_from', value)}
-                  placeholder={t('Birth certificate issue place')}
-                  placeholderTextColor={themeColor3.bgColor(1)}
-                  editable={false}
-                />
-              </View>
+            <View style={styles.boxedRow}>
+              <Text style={styles.fieldKey}>{t('Birth certificate number')}:</Text>
+              <TextInput
+                style={styles.boxedInput}
+                value={personalData.serial_number}
+                onChangeText={(value) => updateField('serial_number', value)}
+                placeholder={t('Birth certificate number')}
+                placeholderTextColor={themeColor3.bgColor(1)}
+                keyboardType="number-pad"
+                editable={false}
+              />
+            </View>
 
-              <View style={styles.boxedRow}>
-                <Text style={styles.fieldKey}>{t('Birth certificate number')}:</Text>
-                <TextInput
-                  style={styles.boxedInput}
-                  value={personalData.serial_number}
-                  onChangeText={(value) => updateField('serial_number', value)}
-                  placeholder={t('Birth certificate number')}
-                  placeholderTextColor={themeColor3.bgColor(1)}
-                  keyboardType="number-pad"
-                  editable={false}
-                />
-              </View>
-
-              <View style={styles.boxedRow}>
-                <Text style={styles.fieldKey}>{t('Marital status')}:</Text>
-                {/* <View style={[styles.boxedInput, { paddingVertical: 0 }]}>
+            <View style={styles.boxedRow}>
+              <Text style={styles.fieldKey}>{t('Marital status')}:</Text>
+              {/* <View style={[styles.boxedInput, { paddingVertical: 0 }]}>
                   <Picker
                     selectedValue={personalData.marital_status || 'متأهل'}
                     onValueChange={(value) => updateField('marital_status', value)}
@@ -569,202 +563,199 @@ export default function PersonalInfoScreen({ navigation }) {
                     <Picker.Item label={t('Single')} value="مجرد" />
                   </Picker>
                 </View> */}
-                <TextInput
-                  style={styles.boxedInput}
-                  value={personalData.marital_status == 'متأهل' ? t('Married') : t('Single')}
-                  onChangeText={(value) => updateField('serial_number', value)}
-                  placeholder={t('Birth certificate number')}
-                  placeholderTextColor={themeColor3.bgColor(1)}
-                  keyboardType="number-pad"
-                  editable={false}
-                />
-              </View>
+              <TextInput
+                style={styles.boxedInput}
+                value={personalData.marital_status == 'متأهل' ? t('Married') : t('Single')}
+                onChangeText={(value) => updateField('serial_number', value)}
+                placeholder={t('Birth certificate number')}
+                placeholderTextColor={themeColor3.bgColor(1)}
+                keyboardType="number-pad"
+                editable={false}
+              />
+            </View>
 
-              <View style={styles.boxedRow}>
-                <Text style={styles.fieldKey}>{t('Education level')}:</Text>
-                <TextInput
-                  style={styles.boxedInput}
-                  value={personalData.education_status}
-                  onChangeText={(value) => updateField('education_status', value)}
-                  placeholder={t("Diploma / Bachelor's / Master's")}
-                  placeholderTextColor={themeColor3.bgColor(1)}
-                  editable={false}
-                />
-              </View>
-              <View style={styles.boxedRow}>
-                <Text style={styles.fieldKey}>{t('Landline')}:</Text>
-                <TextInput
-                  style={styles.boxedInput}
-                  value={personalData.telephone}
-                  onChangeText={(value) => updateField('telephone', value)}
-                  placeholder={t('Landline number: 02112345678')}
-                  placeholderTextColor={themeColor3.bgColor(1)}
-                  keyboardType="phone-pad"
-                  editable={false}
-                />
-              </View>
-              <View style={styles.boxedRow}>
-                <Text style={styles.fieldKey}>{t('Email')}:</Text>
-                <TextInput
-                  style={styles.boxedInput}
-                  value={personalData.email}
-                  onChangeText={(value) => updateField('email', value)}
-                  placeholder={t('Email address:')}
-                  placeholderTextColor={themeColor3.bgColor(1)}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  editable={false}
-                />
-              </View>
-              <View style={styles.boxedRow}>
-                <Text style={styles.fieldKey}>{t('License number')}:</Text>
-                <TextInput
-                  style={styles.boxedInput}
-                  value={personalData.certificate_number}
-                  onChangeText={(value) => updateField('certificate_number', value)}
-                  placeholder={t('License number')}
-                  placeholderTextColor={themeColor3.bgColor(1)}
-                  editable={false}
-                />
-              </View>
-              <View style={styles.boxedRow}>
-                <Text style={styles.fieldKey}>{t('License expiry date')}:</Text>
-                <TextInput
-                  style={styles.boxedInput}
-                  value={personalData.licence_date}
-                  onChangeText={(value) => updateField('licence_date', value)}
-                  placeholder={t('License expiry date')}
-                  placeholderTextColor={themeColor3.bgColor(1)}
-                  editable={false}
-                />
-              </View>
-              <View style={styles.boxedRow}>
-                <Text style={styles.fieldKey}>{t('License issue date')}:</Text>
-                <TextInput
-                  style={styles.boxedInput}
-                  value={personalData.certificate_issue_date}
-                  onChangeText={(value) => updateField('certificate_issue_date', value)}
-                  placeholder={t('License issue date')}
-                  placeholderTextColor={themeColor3.bgColor(1)}
-                  editable={false}
-                />
-              </View>
-              <View>
-                <View style={[NewStyles.row, {gap:10}]}>
-                  <View style={[styles.boxedRow, { flex: 1 }]}>
-                    <Text style={styles.fieldKey}>{t('City')}:</Text>
-                    <TextInput
-                      style={styles.boxedInput}
-                      value={personalData.city}
-                      onChangeText={(value) => updateField('city', value)}
-                      placeholder={t('City of residence')}
-                      placeholderTextColor={themeColor3.bgColor(1)}
-                      editable={false}
-                    />
-                  </View>
-
-                  <View style={[styles.boxedRow, { flex: 1 }]}>
-                    <Text style={styles.fieldKey}>{t('Region')}:</Text>
-                    <TextInput
-                      style={styles.boxedInput}
-                      value={personalData.region}
-                      onChangeText={(value) => updateField('region', value)}
-                      placeholder={t('City region')}
-                      placeholderTextColor={themeColor3.bgColor(1)}
-                      keyboardType="number-pad"
-                      editable={false}
-                    />
-                  </View>
-                </View>
-              </View>
-              <View style={styles.boxedRow}>
-                <Text style={styles.fieldKey}>{t('Postcode')}:</Text>
-                <TextInput
-                  style={styles.boxedInput}
-                  value={personalData.home_postal_code}
-                  onChangeText={(value) => updateField('home_postal_code', value)}
-                  placeholder={t('Home postal code: 10 digits')}
-                  placeholderTextColor={themeColor3.bgColor(1)}
-                  keyboardType="number-pad"
-                  maxLength={10}
-                  editable={false}
-                />
-              </View>
-
-
-              <View style={styles.boxedRow}>
-                <Text style={styles.fieldKey}>{t('Home address')}:</Text>
-                <TextInput
-                  style={[styles.boxedInput, {  height: 'auto' }]}
-                  value={personalData.home_address}
-                  onChangeText={(value) => updateField('home_address', value)}
-                  placeholder={t('Home address:')}
-                  placeholderTextColor={themeColor3.bgColor(1)}
-                  multiline
-                  maxLength={191}
-                  editable={false}
-                />
-              </View>
-
-
-
-              <View style={styles.boxedRow}>
-                <Text style={styles.fieldKey}>{t('Personnel type')}:</Text>
-                <TextInput
-                  style={styles.boxedInput}
-                  value={personalData.technician_type}
-                  onChangeText={(value) => updateField('technician_type', value)}
-                  placeholder={t('Personnel type')}
-                  placeholderTextColor={themeColor3.bgColor(1)}
-                  editable={false}
-
-                />
-              </View>
-
-              <View style={styles.boxedRow}>
-                <Text style={styles.fieldKey}>{t('Personnel code')}:</Text>
-                <TextInput
-                  style={[styles.boxedInput]}
-                  value={personalData.referral_code}
-                  placeholder={t('Personnel code (not editable)')}
-                  placeholderTextColor={themeColor3.bgColor(1)}
-                  editable={false}
-                />
-              </View>
-              <View style={styles.boxedRow}>
-                <Text style={styles.fieldKey}>{t("Activity start date")}:</Text>
-                <TextInput
-                  style={[styles.boxedInput]}
-                  value={formatDate(userData.created_at)}
-                  placeholder={t('"Activity start date"')}
-                  placeholderTextColor={themeColor3.bgColor(1)}
-                  editable={false}
-                />
-              </View>
-
-              { (
-                <View style={styles.boxedRow}>
-                  <Text style={styles.fieldKey}>{t('Referrer personnel code')}:</Text>
+            <View style={styles.boxedRow}>
+              <Text style={styles.fieldKey}>{t('Education level')}:</Text>
+              <TextInput
+                style={styles.boxedInput}
+                value={personalData.education_status}
+                onChangeText={(value) => updateField('education_status', value)}
+                placeholder={t("Diploma / Bachelor's / Master's")}
+                placeholderTextColor={themeColor3.bgColor(1)}
+                editable={false}
+              />
+            </View>
+            <View style={styles.boxedRow}>
+              <Text style={styles.fieldKey}>{t('Landline')}:</Text>
+              <TextInput
+                style={styles.boxedInput}
+                value={personalData.telephone}
+                onChangeText={(value) => updateField('telephone', value)}
+                placeholder={t('Landline number: 02112345678')}
+                placeholderTextColor={themeColor3.bgColor(1)}
+                keyboardType="phone-pad"
+                editable={false}
+              />
+            </View>
+            <View style={styles.boxedRow}>
+              <Text style={styles.fieldKey}>{t('Email')}:</Text>
+              <TextInput
+                style={styles.boxedInput}
+                value={personalData.email}
+                onChangeText={(value) => updateField('email', value)}
+                placeholder={t('Email address:')}
+                placeholderTextColor={themeColor3.bgColor(1)}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                editable={false}
+              />
+            </View>
+            <View style={styles.boxedRow}>
+              <Text style={styles.fieldKey}>{t('License number')}:</Text>
+              <TextInput
+                style={styles.boxedInput}
+                value={personalData.certificate_number}
+                onChangeText={(value) => updateField('certificate_number', value)}
+                placeholder={t('License number')}
+                placeholderTextColor={themeColor3.bgColor(1)}
+                editable={false}
+              />
+            </View>
+            <View style={styles.boxedRow}>
+              <Text style={styles.fieldKey}>{t('License expiry date')}:</Text>
+              <TextInput
+                style={styles.boxedInput}
+                value={personalData.licence_date}
+                onChangeText={(value) => updateField('licence_date', value)}
+                placeholder={t('License expiry date')}
+                placeholderTextColor={themeColor3.bgColor(1)}
+                editable={false}
+              />
+            </View>
+            <View style={styles.boxedRow}>
+              <Text style={styles.fieldKey}>{t('License issue date')}:</Text>
+              <TextInput
+                style={styles.boxedInput}
+                value={personalData.certificate_issue_date}
+                onChangeText={(value) => updateField('certificate_issue_date', value)}
+                placeholder={t('License issue date')}
+                placeholderTextColor={themeColor3.bgColor(1)}
+                editable={false}
+              />
+            </View>
+            <View>
+              <View style={[NewStyles.row, { gap: 10 }]}>
+                <View style={[styles.boxedRow, { flex: 1 }]}>
+                  <Text style={styles.fieldKey}>{t('City')}:</Text>
                   <TextInput
-                    style={[styles.boxedInput]}
-                    value={personalData.other_referral_code}
-                    placeholder={t('Referrer code')}
+                    style={styles.boxedInput}
+                    value={personalData.city}
+                    onChangeText={(value) => updateField('city', value)}
+                    placeholder={t('City of residence')}
                     placeholderTextColor={themeColor3.bgColor(1)}
                     editable={false}
                   />
                 </View>
-              )}
 
-              {/* Save Button */}
-
-              <Button title={t('Save changes')} onPress={handleSave}
-                loading={saving} />
+                <View style={[styles.boxedRow, { flex: 1 }]}>
+                  <Text style={styles.fieldKey}>{t('Region')}:</Text>
+                  <TextInput
+                    style={styles.boxedInput}
+                    value={personalData.region}
+                    onChangeText={(value) => updateField('region', value)}
+                    placeholder={t('City region')}
+                    placeholderTextColor={themeColor3.bgColor(1)}
+                    keyboardType="number-pad"
+                    editable={false}
+                  />
+                </View>
+              </View>
+            </View>
+            <View style={styles.boxedRow}>
+              <Text style={styles.fieldKey}>{t('Postcode')}:</Text>
+              <TextInput
+                style={styles.boxedInput}
+                value={personalData.home_postal_code}
+                onChangeText={(value) => updateField('home_postal_code', value)}
+                placeholder={t('Home postal code: 10 digits')}
+                placeholderTextColor={themeColor3.bgColor(1)}
+                keyboardType="number-pad"
+                maxLength={10}
+                editable={false}
+              />
             </View>
 
-          </ScrollView>
+
+            <View style={styles.boxedRow}>
+              <Text style={styles.fieldKey}>{t('Home address')}:</Text>
+              <TextInput
+                style={[styles.boxedInput, { height: 'auto' }]}
+                value={personalData.home_address}
+                onChangeText={(value) => updateField('home_address', value)}
+                placeholder={t('Home address:')}
+                placeholderTextColor={themeColor3.bgColor(1)}
+                multiline
+                maxLength={191}
+                editable={false}
+              />
+            </View>
 
 
-        </LinearGradient>
+
+            <View style={styles.boxedRow}>
+              <Text style={styles.fieldKey}>{t('Personnel type')}:</Text>
+              <TextInput
+                style={styles.boxedInput}
+                value={personalData.technician_type}
+                onChangeText={(value) => updateField('technician_type', value)}
+                placeholder={t('Personnel type')}
+                placeholderTextColor={themeColor3.bgColor(1)}
+                editable={false}
+
+              />
+            </View>
+
+            <View style={styles.boxedRow}>
+              <Text style={styles.fieldKey}>{t('Personnel code')}:</Text>
+              <TextInput
+                style={[styles.boxedInput]}
+                value={personalData.referral_code}
+                placeholder={t('Personnel code (not editable)')}
+                placeholderTextColor={themeColor3.bgColor(1)}
+                editable={false}
+              />
+            </View>
+            <View style={styles.boxedRow}>
+              <Text style={styles.fieldKey}>{t("Activity start date")}:</Text>
+              <TextInput
+                style={[styles.boxedInput]}
+                value={formatDate(userData.created_at)}
+                placeholder={t('"Activity start date"')}
+                placeholderTextColor={themeColor3.bgColor(1)}
+                editable={false}
+              />
+            </View>
+
+            {(
+              <View style={styles.boxedRow}>
+                <Text style={styles.fieldKey}>{t('Referrer personnel code')}:</Text>
+                <TextInput
+                  style={[styles.boxedInput]}
+                  value={personalData.other_referral_code}
+                  placeholder={t('Referrer code')}
+                  placeholderTextColor={themeColor3.bgColor(1)}
+                  editable={false}
+                />
+              </View>
+            )}
+
+            {/* Save Button */}
+
+            <Button title={t('Save changes')} onPress={handleSave}
+              loading={saving} />
+          </View>
+
+        </ScrollView>
       </KeyboardAvoidingView>
 
       {/* DatePicker Modal for Birth Date */}
@@ -804,12 +795,14 @@ export default function PersonalInfoScreen({ navigation }) {
 const createLocalStyles = (NewStyles) => StyleSheet.create({
   background: {
     flex: 1,
+    paddingBottom: 100
   },
   container: {
     paddingHorizontal: 18,
     paddingVertical: 12,
     alignItems: 'center',
     gap: 12,
+    paddingBottom:120
   },
   bigHeader: {
     width: '100%',
@@ -895,7 +888,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     color: themeColor10.bgColor(1),
     // textAlign: 'right',
     fontSize: 14,
-    // height: 40,
+    height: 45,
     justifyContent: 'center',
     flex: 1,
   },
@@ -938,7 +931,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
   },
   fieldKey: {
     ...NewStyles.text10,
-    fontSize: 12, 
+    fontSize: 12,
   },
 });
 

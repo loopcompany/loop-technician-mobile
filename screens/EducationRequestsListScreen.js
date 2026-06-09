@@ -185,6 +185,7 @@ export default function EducationRequestsListScreen({ navigation }) {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
+    paddingBottom: 120
   },
   container: {
     flex: 1,

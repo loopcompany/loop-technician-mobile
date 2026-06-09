@@ -38,7 +38,7 @@ const ScreenHeaders = ({
 
       {/* Center: Title */}
       <View style={styles.titleContainer}>
-        <Text style={[NewStyles.title]} numberOfLines={1} adjustsFontSizeToFit>{title}</Text>
+        <Text style={[NewStyles.title]} numberOfLines={1} adjustsFontSizeToFit> {title} </Text>
       </View>
 
       {/* Left side: Back button (RTL) */}
@@ -47,7 +47,7 @@ const ScreenHeaders = ({
         style={[styles.iconContainer, { flexDirection: 'row', alignItems: 'center' }]}
       >
         <Image source={require("../assets/back.png")} style={styles.arrow} />
-        <Text style={[NewStyles.title10, styles.titleText]}>{t("Previous")}</Text>
+        <Text style={[NewStyles.title10, styles.titleText]}>{t("Back")}</Text>
       </TouchableOpacity>
     </View>
   );

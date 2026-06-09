@@ -21,7 +21,6 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import ScreenHeaders from '../../components/ScreenHeaders';
-import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor3, themeColor4, themeColor5, themeColor6, themeColor7 } from '../../theme/Color';
 import { getTechnicianOrderById, submitTechnicianDescription, setOffToOrder, arriveToOrder, createOrderReport, updateOrderReport, getOrderReport, getOrderReportByOrderId, sendOrderToLoop, updateLoopInfo, startRepair, createDeliveryReport, updateDeliveryReport, getDeliveryReportByOrderId, verifyDeliveryReportWithCode, resendDeliveryReportCode, endOrder, getTechnicianChatMessages, cancelOrderByTechnician, submitEmergencyHelp, submitTechnicianOpinion, doneInPlace } from '../../services/Api';
 import { showToastOrAlert, formatDate, formatDateTime, formatPrice, showAlert, langIsRTL, handleError } from '../../helpers/Common';
@@ -33,6 +32,79 @@ import jalaali from 'jalaali-js';
 import { getFormatedDate } from 'react-native-modern-datepicker';
 import { createStyles } from '../../styles/NewStyles';
 import ConfirmationModal from './../../components/ConfirmationModal';
+
+const ReviewSectionComponent = ({
+  technicianOpinion,
+  setTechnicianOpinion,
+  data,
+  submittingOpinion,
+  handleSubmitTechnicianOpinion,
+  styles,
+  NewStyles,
+  t,
+}) => {
+  return (
+    <View style={{ marginTop: 20, padding: 15, backgroundColor: themeColor0.bgColor(0.1), borderRadius: 10, borderWidth: 1, borderColor: themeColor0.bgColor(1) }}>
+      <View style={[NewStyles.row, { gap: 10, alignItems: 'center', marginBottom: 10 }]}>
+        <Ionicons name="create-outline" size={24} color={themeColor0.bgColor(1)} />
+        <Text style={[NewStyles.title]}>
+          {t("Technician opinion about this order")}
+        </Text>
+      </View>
+
+      {/* نمایش نظر ثبت شده */}
+      {data?.technician_opinion && (
+        <View style={[styles.infoCard, { backgroundColor: themeColor7.bgColor(0.2), marginBottom: 15 }]}>
+          <View style={[NewStyles.row, { gap: 10, alignItems: 'center' }]}>
+            <Ionicons name="checkmark-circle" size={24} color={themeColor7.bgColor(1)} />
+            <Text style={[NewStyles.title4, { color: themeColor7.bgColor(1) }]}>
+              {t("Your opinion has been submitted")}
+            </Text>
+          </View>
+          <Text style={[NewStyles.text10, { marginTop: 10, textAlign: 'right', lineHeight: 24 }]}>
+            {data.technician_opinion}
+          </Text>
+        </View>
+      )}
+
+      <Text style={[NewStyles.text10, { marginBottom: 10 }]}>
+        {t("Please enter your opinion and details about this order:")}
+      </Text>
+
+      {/* فیلد نظر */}
+      <TextInput
+        style={[styles.textInput, styles.multilineInput]}
+        value={technicianOpinion}
+        onChangeText={setTechnicianOpinion}
+        placeholder={t("Example: The device main board was replaced. The battery was weak and got replaced too. The device was fully tested and has no issues...")}
+        placeholderTextColor={themeColor3.bgColor(0.5)}
+        multiline
+        numberOfLines={6}
+        textAlignVertical="top"
+        maxLength={2000}
+        editable={!data?.technician_opinion}
+      />
+
+      {/* شمارنده کاراکتر */}
+      <Text style={[NewStyles.text10, { textAlign: 'left', marginTop: 5, color: themeColor3.bgColor(1) }]}>
+        {technicianOpinion.length}/2000
+      </Text>
+
+      {/* دکمه ثبت نظر */}
+      {!data?.technician_opinion && (
+        <Button
+          title={t("Submit technician opinion")}
+          onPress={handleSubmitTechnicianOpinion}
+          loading={submittingOpinion}
+          disabled={submittingOpinion || !technicianOpinion.trim()}
+        />
+      )}
+    </View>
+
+  )
+}
+
+
 export default function OrderDetailScreen({ route, navigation }) {
   const user = useSelector((state) => state?.user?.data?.data?.technician);
   const { orderId } = route?.params || {};
@@ -103,7 +175,8 @@ export default function OrderDetailScreen({ route, navigation }) {
   const [sendingToLoop, setSendingToLoop] = useState(false);
   const [doingInPlace, setDoingInPlace] = useState(false);
   const [showDoingInPlace, setShowDoingInPlace] = useState(false);
-  const [doingInPlaceDescriptions, setShowDoingInPlaceDescriptions] = useState(false);
+  const [doingInPlaceDescriptions, setShowDoingInPlaceDescriptions] = useState(data?.technician_in_place_description ?? '');
+
   const [loopInfo, setLoopInfo] = useState({
     duration: '',
     loop_cost_estimate: '',
@@ -613,7 +686,7 @@ export default function OrderDetailScreen({ route, navigation }) {
     }
   };
   const handleDoneInPlace = async () => {
-    if(!doingInPlaceDescriptions){
+    if (!doingInPlaceDescriptions) {
       showToastOrAlert(t("Entering a description and proposed cost is required."))
       return;
     }
@@ -892,7 +965,7 @@ export default function OrderDetailScreen({ route, navigation }) {
 
   const isSendLoopActive = data?.arrived_at && data?.is_technician_verified == 1; // فعال می‌شود وقتی کاربر گزارش را تأیید کند
 
-  const isPricesActive = data?.send_to_loop && data?.user_accept_date;
+  const isPricesActive = (data?.send_to_loop && data?.user_accept_date) || (data?.done_in_place && data.extra_services.length > 0);
 
   const isRtl = langIsRTL(i18n.language);
 
@@ -900,10 +973,10 @@ export default function OrderDetailScreen({ route, navigation }) {
 
   // بارگذاری گزارش محصول در صورت وجود
   React.useEffect(() => {
-    if (data && isProductStatusActive && orderId) {
+    if (data && orderId) {
       loadProductReport();
     }
-  }, [data, isProductStatusActive, orderId]);
+  }, [data, orderId]);
 
   // بارگذاری گزارش تحویل در صورت وجود
   React.useEffect(() => {
@@ -951,67 +1024,7 @@ export default function OrderDetailScreen({ route, navigation }) {
     );
   }
 
-  const ReviewSectionComponent = () => {
-    return (
-      <View style={{ marginTop: 20, padding: 15, backgroundColor: themeColor0.bgColor(0.1), borderRadius: 10, borderWidth: 1, borderColor: themeColor0.bgColor(1) }}>
-        <View style={[NewStyles.row, { gap: 10, alignItems: 'center', marginBottom: 10 }]}>
-          <Ionicons name="create-outline" size={24} color={themeColor0.bgColor(1)} />
-          <Text style={[NewStyles.title]}>
-            {t("Technician opinion about this order")}
-          </Text>
-        </View>
 
-        {/* نمایش نظر ثبت شده */}
-        {data?.technician_opinion && (
-          <View style={[styles.infoCard, { backgroundColor: themeColor7.bgColor(0.2), marginBottom: 15 }]}>
-            <View style={[NewStyles.row, { gap: 10, alignItems: 'center' }]}>
-              <Ionicons name="checkmark-circle" size={24} color={themeColor7.bgColor(1)} />
-              <Text style={[NewStyles.title4, { color: themeColor7.bgColor(1) }]}>
-                {t("Your opinion has been submitted")}
-              </Text>
-            </View>
-            <Text style={[NewStyles.text10, { marginTop: 10, textAlign: 'right', lineHeight: 24 }]}>
-              {data.technician_opinion}
-            </Text>
-          </View>
-        )}
-
-        <Text style={[NewStyles.text10, { marginBottom: 10 }]}>
-          {t("Please enter your opinion and details about this order:")}
-        </Text>
-
-        {/* فیلد نظر */}
-        <TextInput
-          style={[styles.textInput, styles.multilineInput]}
-          value={technicianOpinion}
-          onChangeText={setTechnicianOpinion}
-          placeholder={t("Example: The device main board was replaced. The battery was weak and got replaced too. The device was fully tested and has no issues...")}
-          placeholderTextColor={themeColor3.bgColor(0.5)}
-          multiline
-          numberOfLines={6}
-          textAlignVertical="top"
-          maxLength={2000}
-          editable={!data?.technician_opinion}
-        />
-
-        {/* شمارنده کاراکتر */}
-        <Text style={[NewStyles.text10, { textAlign: 'left', marginTop: 5, color: themeColor3.bgColor(1) }]}>
-          {technicianOpinion.length}/2000
-        </Text>
-
-        {/* دکمه ثبت نظر */}
-        {!data?.technician_opinion && (
-          <Button
-            title={t("Submit technician opinion")}
-            onPress={handleSubmitTechnicianOpinion}
-            loading={submittingOpinion}
-            disabled={submittingOpinion || !technicianOpinion.trim()}
-          />
-        )}
-      </View>
-
-    )
-  }
 
   if (!data) {
     return (
@@ -1036,7 +1049,7 @@ export default function OrderDetailScreen({ route, navigation }) {
 
 
   return (
-    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'off' }}>
+    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
       <LinearGradient
         colors={['#7FDBFF', '#0074D9', '#001f3f']}
         start={{ x: 0, y: 0 }}
@@ -1545,7 +1558,16 @@ export default function OrderDetailScreen({ route, navigation }) {
                           {t("Done at:")} {formatDateTime(data.done_in_place)}
                         </Text>
                       </View>
-                      {data?.finished_at && data?.status == 2 && <ReviewSectionComponent />}
+                      {data?.finished_at && data?.status == 2 && <ReviewSectionComponent
+                        technicianOpinion={technicianOpinion}
+                        setTechnicianOpinion={setTechnicianOpinion}
+                        data={data}
+                        submittingOpinion={submittingOpinion}
+                        handleSubmitTechnicianOpinion={handleSubmitTechnicianOpinion}
+                        styles={styles}
+                        NewStyles={NewStyles}
+                        t={t}
+                      />}
                     </>
                     :
 
@@ -1915,7 +1937,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                         <Text style={NewStyles.text}>{t("Description and suggested cost")}<Text style={NewStyles.text6}>*</Text></Text>
                         <TextInput
                           style={[styles.textInput, { height: 100 }]}
-                          value={doingInPlaceDescriptions}
+                          value={data?.done_in_place ? data?.technician_in_place_description : doingInPlaceDescriptions}
                           verticalAlign='top'
                           textAlignVertical='top'
                           multiline={true}
@@ -1980,12 +2002,12 @@ export default function OrderDetailScreen({ route, navigation }) {
                   </View>
                 ) : (
                   <View style={{ paddingHorizontal: 15 }}>
-                    <Button
+                    {data?.user_accept_date && <Button
                       title={t("Start repair")}
                       onPress={handleStartRepair}
                       loading={startingRepair}
                       disabled={startingRepair}
-                    />
+                    />}
                   </View>
                 )}
 
@@ -2374,7 +2396,17 @@ export default function OrderDetailScreen({ route, navigation }) {
                 {/* بخش نظر تکنسین - فقط برای سفارشات تمام شده (status 2) */}
                 {
                   data?.finished_at && data?.status == 2 &&
-                  <ReviewSectionComponent />
+                  <ReviewSectionComponent
+
+                    technicianOpinion={technicianOpinion}
+                    setTechnicianOpinion={setTechnicianOpinion}
+                    data={data}
+                    submittingOpinion={submittingOpinion}
+                    handleSubmitTechnicianOpinion={handleSubmitTechnicianOpinion}
+                    styles={styles}
+                    NewStyles={NewStyles}
+                    t={t}
+                  />
                 }
               </View>
             )}
@@ -2398,7 +2430,8 @@ export default function OrderDetailScreen({ route, navigation }) {
 const createLocalStyles = (NewStyles) => StyleSheet.create({
   background: { flex: 1 },
   scrollContainer: {
-    paddingVertical: 15,
+    paddingTop: 15,
+    paddingBottom: 100
   },
   centerContainer: {
     flex: 1,
@@ -2586,11 +2619,8 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
   },
   cancelOptionText: {
     flex: 1,
-    textAlign: 'right',
-    color: '#000',
   },
   cancelOptionTextSelected: {
-    fontWeight: 'bold',
     color: themeColor6.bgColor(1),
   },
   cancelButton: {
@@ -2598,9 +2628,8 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     borderRadius: 10,
     padding: 15,
     marginTop: 15,
-    flexDirection: 'row',
+    ...NewStyles.row,
     justifyContent: 'center',
-    alignItems: 'center',
     gap: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },

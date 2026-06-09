@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -16,13 +16,14 @@ import { showToastOrAlert, showAlert } from "../../helpers/Common";
 import Button from "../../components/Button";
 import { useTranslation } from "react-i18next";
 import { createStyles } from '../../styles/NewStyles';
+import { SafeAreaView } from "react-native-safe-area-context";
 export default function AddEditNoteScreen({ route, navigation }) {
   const { t, i18n } = useTranslation();
   const NewStyles = useMemo(
     () => createStyles(i18n.language),
     [i18n.language]
   );
-    const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
+  const styles = useMemo(() => createLocalStyles(NewStyles), [NewStyles]);
   const noteToEdit = route.params?.note;
   const isEditMode = !!noteToEdit;
 
@@ -88,102 +89,104 @@ export default function AddEditNoteScreen({ route, navigation }) {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={NewStyles.container}
-      behavior={'padding'}
-    >
-      <ScreenHeaders
-        title={isEditMode ? t("Edit note") : t("Add note")}
-      />
-
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
+    <SafeAreaView style={NewStyles.container} edges={{top:'off', bottom:'additive'}}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={'padding'}
       >
-        <View style={styles.content}>
-          {/* Info Box */}
-          <View style={styles.infoBox}>
-            <Text style={[NewStyles.text10, { fontSize: 13, lineHeight: 22 }]}>
-              {t("Write your personal notes here. You can record reminders, to-do lists, important information, and anything you need.")}
-            </Text>
-          </View>
-
-          {/* Note Input */}
-          <View style={styles.inputContainer}>
-            <View style={styles.labelRow}>
-              <Text style={[NewStyles.title10, { fontSize: 14 }]}>
-                {t("Note Text")}
-                <Text style={styles.required}> *</Text>
-              </Text>
-            </View>
-
-            <TextInput
-              style={[
-                styles.textArea,
-                NewStyles.border10,
-                charCount > MAX_CHARS && styles.textAreaError
-              ]}
-              placeholder={t("Write your note here...")}
-              placeholderTextColor={themeColor3.bgColor(0.5)}
-              value={noteText}
-              onChangeText={setNoteText}
-              multiline
-              textAlignVertical="top"
-              maxLength={MAX_CHARS}
-            />
-
-            {/* Character Counter */}
-            <View style={styles.counterRow}>
-              <Text
-                style={[
-                  styles.counterText,
-                  charCount > MAX_CHARS && styles.counterError
-                ]}
-              >
-                {charCount} / {MAX_CHARS}
-              </Text>
-              {charCount > MAX_CHARS && (
-                <Text style={styles.errorText}>
-                  {t("Character count exceeds the allowed limit")}
-                </Text>
-              )}
-            </View>
-          </View>
-
-          {/* Tips Box */}
-          <View style={styles.tipsBox}>
-            <Text style={[NewStyles.title10, { fontSize: 13, marginBottom: 8 }]}>
-              {t("💡 Helpful tips:")}
-            </Text>
-            <Text style={[NewStyles.text10, { fontSize: 12, lineHeight: 20 }]}>
-              {t("• To create a list, use a new line")}
-              {'\n'}
-              {t("• You can use emojis 😊")}
-              {'\n'}
-              {t("• Write important notes with clear headings")}
-              {'\n'}
-              {t("• Maximum {{count}} characters allowed", { count: MAX_CHARS.toLocaleString('fa-IR') })}
-            </Text>
-          </View>
-        </View>
-      </ScrollView>
-
-      {/* Save Button */}
-      <View style={styles.footer}>
-        <Button
-          title={isEditMode ? t("Save changes") : t("Save The Note")}
-          onPress={handleSave}
-
-          loading={loading}
-          disabled={loading || !noteText.trim() || charCount > MAX_CHARS}
+        <ScreenHeaders
+          title={isEditMode ? t("Edit note") : t("Add note")}
         />
-      </View>
-    </KeyboardAvoidingView>
+
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.content}>
+            {/* Info Box */}
+            <View style={styles.infoBox}>
+              <Text style={[NewStyles.text10, { fontSize: 13, lineHeight: 22 }]}>
+                {t("Write your personal notes here. You can record reminders, to-do lists, important information, and anything you need.")}
+              </Text>
+            </View>
+
+            {/* Note Input */}
+            <View style={styles.inputContainer}>
+              <View style={styles.labelRow}>
+                <Text style={[NewStyles.title10, { fontSize: 14 }]}>
+                  {t("Note Text")}
+                  <Text style={styles.required}> *</Text>
+                </Text>
+              </View>
+
+              <TextInput
+                style={[
+                  styles.textArea,
+                  NewStyles.border10,
+                  charCount > MAX_CHARS && styles.textAreaError
+                ]}
+                placeholder={t("Write your note here...")}
+                placeholderTextColor={themeColor3.bgColor(0.5)}
+                value={noteText}
+                onChangeText={setNoteText}
+                multiline
+                textAlignVertical="top"
+                maxLength={MAX_CHARS}
+              />
+
+              {/* Character Counter */}
+              <View style={styles.counterRow}>
+                <Text
+                  style={[
+                    styles.counterText,
+                    charCount > MAX_CHARS && styles.counterError
+                  ]}
+                >
+                  {charCount} / {MAX_CHARS}
+                </Text>
+                {charCount > MAX_CHARS && (
+                  <Text style={styles.errorText}>
+                    {t("Character count exceeds the allowed limit")}
+                  </Text>
+                )}
+              </View>
+            </View>
+
+            {/* Tips Box */}
+            <View style={styles.tipsBox}>
+              <Text style={[NewStyles.title10, { fontSize: 13, marginBottom: 8 }]}>
+                {t("💡 Helpful tips:")}
+              </Text>
+              <Text style={[NewStyles.text10, { fontSize: 12, lineHeight: 20 }]}>
+                {t("• To create a list, use a new line")}
+                {'\n'}
+                {t("• You can use emojis 😊")}
+                {'\n'}
+                {t("• Write important notes with clear headings")}
+                {'\n'}
+                {t("• Maximum {{count}} characters allowed", { count: MAX_CHARS.toLocaleString('fa-IR') })}
+              </Text>
+            </View>
+          </View>
+        </ScrollView>
+
+      </KeyboardAvoidingView>
+        {/* Save Button */}
+        <View style={styles.footer}>
+          <Button
+            title={isEditMode ? t("Save changes") : t("Save The Note")}
+            onPress={handleSave}
+
+            loading={loading}
+            disabled={loading || !noteText.trim() || charCount > MAX_CHARS}
+          />
+        </View>
+    </SafeAreaView>
   );
 }
 
-const createLocalStyles = (NewStyles) =>  StyleSheet.create({
+const createLocalStyles = (NewStyles) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: themeColor0.bgColor(1),
@@ -233,7 +236,7 @@ const createLocalStyles = (NewStyles) =>  StyleSheet.create({
     borderWidth: 2,
   },
   counterRow: {
- ...NewStyles.row,
+    ...NewStyles.row,
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 8,
@@ -263,6 +266,7 @@ const createLocalStyles = (NewStyles) =>  StyleSheet.create({
     padding: 16,
     borderTopWidth: 1,
     borderTopColor: themeColor3.bgColor(0.2),
+    paddingBottom:80
   },
 });
 

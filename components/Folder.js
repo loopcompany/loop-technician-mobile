@@ -15,6 +15,7 @@ export default function Folder({
   title,
   style,
   loading,
+  image
 }) {
   return (
     <TouchableOpacity
@@ -27,10 +28,10 @@ export default function Folder({
 
 
       <Image
-        source={require("../assets/folder.png")}
+        source={{uri:`${image}`}}
         style={styles.folderIcon}
       />
-      <Text style={[NewStyles.title4, styles.folderText]}>{title}</Text>
+      <Text style={[NewStyles.title4, styles.folderText]}> {title} </Text>
     </TouchableOpacity>
   );
 }
@@ -38,21 +39,22 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: themeColor10.bgColor(0.2),
     borderRadius: 8,
-    paddingHorizontal: 8,
+    // paddingHorizontal: 8,
     paddingVertical: 8,
     marginVertical: 8,
     marginHorizontal: 8,
-    width: 80,
-    height: 80,
+    width: 100,
+    height: 90,
     alignItems: "center",
     justifyContent: "center",
   },
   folderIcon: {
-    width: 32,
-    height: 32,
+    width: 50,
+    height: 50,
     resizeMode: "contain",
     // marginTop: 5,
     marginBottom: 2,
+    ...NewStyles.border10
   },
   folderText: {
     fontSize: 11,

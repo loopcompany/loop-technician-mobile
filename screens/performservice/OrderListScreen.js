@@ -347,7 +347,8 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
   background: { flex: 1 },
   container: {
     padding: 15,
-    gap: 15
+    gap: 15,
+    paddingBottom:100
   },
   centerContainer: {
     flex: 1,

@@ -20,6 +20,7 @@ import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor4, theme
 import { createEducationRequest, createLeaveRequest, createDebtRequest, createManpowerRequest, createTransferRequest, createTerminationRequest } from '../services/Api';
 import { showAlert } from '../helpers/Common';
 import { useTranslation } from 'react-i18next';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function RequestsScreen({ navigation }) {
   const [section, setSection] = useState('');
@@ -1307,11 +1308,9 @@ export default function RequestsScreen({ navigation }) {
   };
 
   return (
-    <LinearGradient
-      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.background}
+    <SafeAreaView
+       style={NewStyles.container}
+       edges={{top:'off', bottom:'off'}}
     >
       <ScreenHeaders
         title={t("Requests")}
@@ -1404,7 +1403,7 @@ export default function RequestsScreen({ navigation }) {
         selectedTime={leaveHour}
       />
 
-    </LinearGradient>
+    </SafeAreaView>
   );
 }
 
@@ -1414,7 +1413,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
   },
   container: {
     padding: 20,
-    paddingBottom: 100,
+    paddingBottom: 120,
   },
 
   menuItem: {

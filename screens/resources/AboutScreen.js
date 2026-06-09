@@ -146,6 +146,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
   },
   termsContainer: {
     padding: 15,
+    paddingBottom:130
   },
   termItem: {
     backgroundColor: '#fff',

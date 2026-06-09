@@ -292,9 +292,14 @@ export const validateTechnicianRegistration = (formData, step = 'personal') => {
       { key: 'resume', name: 'بارگذاری رزومه' },
     ]
     nextStep.forEach(field => {
-      const validation = validateRequiredText(formData[field.key], field.name);
-      if (!validation.isValid) {
-        errors[field.key] = validation.message;
+      if ((!formData[field.key] || formData[field.key]?.trim()?.length === 0) && field.key == 'resume') {
+        errors[field.key] = 'بارگذاری رزومه الزامی است.';
+      } else if (field.key != 'resume') {
+
+        const validation = validateRequiredText(formData[field.key], field.name);
+        if (!validation.isValid) {
+          errors[field.key] = validation.message;
+        }
       }
     });
   }

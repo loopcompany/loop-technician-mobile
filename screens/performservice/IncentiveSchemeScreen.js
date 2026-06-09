@@ -56,6 +56,7 @@ export default function IncentiveSchemeScreen({ navigation }) {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
+    paddingBottom: 120
   },
   container: {
     paddingHorizontal: 20,

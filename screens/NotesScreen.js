@@ -16,6 +16,7 @@ import { showToastOrAlert , showAlert, formatDateTime} from "../helpers/Common";
 import Button from "../components/Button";
 import { useTranslation } from "react-i18next";
 import { createStyles } from '../styles/NewStyles';
+import { SafeAreaView } from "react-native-safe-area-context";
 export default function NotesScreen({ route, navigation }) {
   const { t, i18n } = useTranslation();
   const NewStyles = useMemo(
@@ -161,7 +162,7 @@ export default function NotesScreen({ route, navigation }) {
   }
 
   return (
-    <View style={NewStyles.container}>
+    <SafeAreaView edges={{top:'off', bottom:'additive'}} style={NewStyles.container}>
       <ScreenHeaders title={t("My Notes")} />
 
       <FlatList
@@ -184,7 +185,7 @@ export default function NotesScreen({ route, navigation }) {
           onPress={handleAddNew}
         />
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -245,6 +246,7 @@ const createLocalStyles = (NewStyles) =>  StyleSheet.create({
     padding: 16,
     borderTopWidth: 1,
     borderTopColor: themeColor3.bgColor(0.2),
+    paddingBottom:80
   },
 });
 

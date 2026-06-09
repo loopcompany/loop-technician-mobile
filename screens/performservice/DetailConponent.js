@@ -1,4 +1,4 @@
-import { Linking, SectionList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Image, Linking, SectionList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import MapView, { Marker } from 'react-native-maps'
@@ -10,6 +10,7 @@ import { imageUri, mainUri } from '../../services/URL'
 import { createStyles } from '../../styles/NewStyles';
 import { useSelector } from 'react-redux';
 import { FlatList } from 'react-native'
+import ShowMapDetailComponent from '../../components/ShowMapDetailComponent'
 const DetailConponent = ({ data, renderRow, }) => {
     const user = useSelector((state) => state?.user?.data?.data?.technician);
     useEffect(() => {
@@ -63,8 +64,8 @@ const DetailConponent = ({ data, renderRow, }) => {
 
     const totalPrice = calculateTotalWithoutDiscount();
     const totalDiscountedPrice = calculateTotalPrice();
-    let is_package = 0 
-    
+    let is_package = 0
+
     return (
         <View>
             <View style={styles.card}>
@@ -250,25 +251,9 @@ const DetailConponent = ({ data, renderRow, }) => {
 
                     {data?.user_address?.latitude && data?.user_address?.longitude && (
                         <View style={{ padding: 15 }}>
-                            <MapView
-                                style={styles.map}
-                                initialRegion={{
-                                    latitude: parseFloat(data?.user_address.latitude),
-                                    longitude: parseFloat(data?.user_address.longitude),
-                                    latitudeDelta: 0.005,
-                                    longitudeDelta: 0.005,
-                                }}
-
-                            >
-                                <Marker
-                                    coordinate={{
-                                        latitude: parseFloat(data?.user_address.latitude),
-                                        longitude: parseFloat(data?.user_address.longitude),
-                                    }}
-                                    title={t("Order location")}
-                                    description={data?.user_address?.address}
-                                />
-                            </MapView>
+                            <ShowMapDetailComponent
+                                data={data}
+                            />
 
                             {/* دکمه باز کردن در نقشه */}
                             <TouchableOpacity
@@ -364,7 +349,8 @@ const DetailConponent = ({ data, renderRow, }) => {
             {data?.image_path &&
                 <Image style={[{ height: 250, margin: '5%', maxWidth: 400, resizeMode: 'contain', width: '90%', alignSelf: 'center' }, NewStyles.border10]} source={{ uri: `${imageUri}/${data?.image_path}` }} />
             }
-            {data?.order_galleries?.length > 0 && <View>
+            {data?.order_galleries?.length > 0 && 
+            <View style={styles.card}>
                 <FlatList
                     data={data?.order_galleries}
                     inverted={langIsRTL(i18n?.language)}

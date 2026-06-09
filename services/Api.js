@@ -633,6 +633,18 @@ export const logoutTechnician = async () => {
     return handleError(error);
   }
 };
+export const atWork = async (token) => {
+  try { 
+    const response = await api.patch('/technician/profile/at-work', {}, {headers:{
+      "Authorization":`Bearer ${token}`
+    }}); 
+ 
+    return handleResponse(response);
+  } catch (error) {
+ 
+    return handleError(error);
+  }
+};
 
 
 export const notesAPI = {
@@ -2297,9 +2309,9 @@ export const sendTicketMessage = async (message) => {
  * Get unread messages count
  * @returns {Promise<Object>} تعداد پیام‌های خوانده نشده
  */
-export const getUnreadTicketsCount = async () => {
+export const getUnreadTicketsCount = async (token) => {
   try {
-    const response = await api.get('/technician/tickets/unread-count');
+    const response = await api.get('/technician/tickets/unread-count', {headers:{"Authorization":`Bearer ${token}`}});
     return handleResponse(response);
   } catch (error) {
     console.log('❌ خطا در دریافت تعداد پیام‌های خوانده نشده:', error.message);

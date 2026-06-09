@@ -302,8 +302,6 @@ const AppNavigator = () => {
             <Stack.Screen component={OrganizationOrdersScreen} name="OrganizationOrdersScreen" options={{ headerShown: false }} />
             <Stack.Screen component={LimitAccessScreen} name="LimitAccessScreen" options={{ headerShown: false }} />
           </Stack.Navigator>
-
-          <FooterComponent />
         </View>
       )}
     </InitialRouteHandler>

@@ -157,7 +157,7 @@ export default function GamePlayScreen({ route, navigation }) {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={NewStyles.container} edges={{top:'off', bottom:'additive'}}>
       <ScreenHeaders
         title={t('Question {{current}} of {{total}}', {
           current: currentQuestionIndex + 1,

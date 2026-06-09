@@ -14,6 +14,7 @@ import NewStyles from '../../styles/NewStyles';
 import { themeColor1, themeColor3, themeColor4, themeColor5 } from '../../theme/Color';
 import { getResultMessage } from './GameData';
 import Button from '../../components/Button';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function GameResultScreen({ route, navigation }) {
   const { t } = useTranslation();
@@ -75,7 +76,7 @@ export default function GameResultScreen({ route, navigation }) {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView edges={{top:'off', bottom:'additive'}} style={styles.container}>
       <ScreenHeaders
         title={t('Game result')}
         onBackPress={handleBackToMenu}
@@ -215,7 +216,7 @@ export default function GameResultScreen({ route, navigation }) {
           </View>
         )}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -229,7 +230,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 30,
+    paddingBottom: 100,
   },
   resultCard: {
     backgroundColor: themeColor4.bgColor(1),
@@ -307,6 +308,7 @@ const styles = StyleSheet.create({
   buttonsContainer: {
     gap: 12,
     marginBottom: 20,
+    ...NewStyles.center
   },
   secondaryButton: {
     backgroundColor: 'transparent',
@@ -315,6 +317,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingVertical: 14,
     alignItems: 'center',
+    maxWidth: 400,
+    width:'100%'
   },
   secondaryButtonText: {
     fontSize: 16,

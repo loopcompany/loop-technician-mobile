@@ -25,6 +25,7 @@ import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor10, themeColor2, themeColor6, themeColor7, themeColor8, themeColor4 } from '../theme/Color';
 import { uploadArchiveImages, getArchiveImages, deleteArchiveImage } from '../services/Api';
 import { showAlert } from '../helpers/Common';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 const imageSize = (width - 60) / 3; // 3 تصویر در هر ردیف با فاصله
@@ -375,11 +376,9 @@ export default function PhotoArchiveScreen({ navigation }) {
   }
 
   return (
-    <LinearGradient
-      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.background}
+    <SafeAreaView
+      edges={{ top: 'off', bottom: 'off' }}
+      style={NewStyles.container}
     >
       <ScreenHeaders
         title={t("Photo Archive")}
@@ -470,13 +469,14 @@ export default function PhotoArchiveScreen({ navigation }) {
           </View>
         </View>
       </Modal>
-    </LinearGradient>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   background: {
-    flex: 1
+    flex: 1,
+    paddingBottom: 120
   },
   loadingContainer: {
     flex: 1,
@@ -490,7 +490,7 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: 15,
-    paddingBottom: 100,
+    paddingBottom: 120,
     flexGrow: 1,
   },
   headerContainer: {

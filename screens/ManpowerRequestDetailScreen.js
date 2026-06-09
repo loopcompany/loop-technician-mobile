@@ -266,6 +266,7 @@ export default function ManpowerRequestDetailScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
+    paddingBottom: 120
   },
   container: {
     flex: 1,

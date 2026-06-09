@@ -273,7 +273,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     },
     listContainer: {
         paddingHorizontal: 20,
-        paddingBottom: 20,
+        paddingBottom: 130,
     },
     organizationCard: {
         backgroundColor: themeColor4.bgColor(1),

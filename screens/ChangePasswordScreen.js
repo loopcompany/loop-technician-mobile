@@ -14,10 +14,11 @@ import { useTranslation } from 'react-i18next';
 import { createStyles } from '../styles/NewStyles';
 import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
-import { themeColor0, themeColor1, themeColor2, themeColor3, themeColor4, themeColor8 } from '../theme/Color';
+import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor3, themeColor4, themeColor8 } from '../theme/Color';
 import { changePassword } from '../services/Api';
 import { showAlert } from '../helpers/Common';
 import Button from '../components/Button';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ChangePasswordScreen({ navigation }) {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -168,11 +169,9 @@ export default function ChangePasswordScreen({ navigation }) {
   };
 
   return (
-    <LinearGradient 
-      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]} 
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.background}
+    <SafeAreaView 
+       style={NewStyles.container}
+       edges={{top:'off', bottom:'off'}}
     >
       <ScreenHeaders 
         title={t('Change Password')} 
@@ -187,7 +186,7 @@ export default function ChangePasswordScreen({ navigation }) {
               value={currentPassword}
               onChangeText={setCurrentPassword}
               placeholder={t('Current password')}
-              placeholderTextColor={themeColor4.bgColor(0.5)}
+              placeholderTextColor={themeColor10.bgColor(0.5)}
               secureTextEntry
               editable={!loading}
             />
@@ -200,7 +199,7 @@ export default function ChangePasswordScreen({ navigation }) {
               value={newPassword}
               onChangeText={setNewPassword}
               placeholder={t('New password')}
-              placeholderTextColor={themeColor4.bgColor(0.5)}
+              placeholderTextColor={themeColor10.bgColor(0.5)}
               secureTextEntry
               editable={!loading}
             />
@@ -216,7 +215,7 @@ export default function ChangePasswordScreen({ navigation }) {
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               placeholder={t('Confirm new password')}
-              placeholderTextColor={themeColor4.bgColor(0.5)}
+              placeholderTextColor={themeColor10.bgColor(0.5)}
               secureTextEntry
               editable={!loading}
             />
@@ -228,7 +227,7 @@ export default function ChangePasswordScreen({ navigation }) {
       </ScrollView>
       
 
-    </LinearGradient>
+    </SafeAreaView>
   );
 }
 
@@ -289,7 +288,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     fontWeight: 'bold',
   },
   passwordHint: {
-    ...NewStyles.text1,
+    ...NewStyles.text10,
     fontSize: 11,
     marginTop: 4,
     // textAlign: 'right',
@@ -299,7 +298,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     // alignItems: 'flex-end',
   },
   inputLabel: {
-    ...NewStyles.text4,
+    ...NewStyles.text,
     fontSize: 14,
     marginBottom: 6,
     // textAlign: 'right',
@@ -307,7 +306,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
   passwordInput: {
     ...NewStyles.text10,
     width: '100%',
-    backgroundColor: themeColor4.bgColor(0.2),
+    backgroundColor: themeColor3.bgColor(0.2),
     borderRadius: 8,
     padding: 12,
     fontSize: 14,

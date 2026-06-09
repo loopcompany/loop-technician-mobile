@@ -1,4 +1,4 @@
-import React, { useState, useCallback ,useMemo} from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -22,6 +22,7 @@ import CustomStatusBar from '../../components/CustomStatusBar';
 import { useSelector } from 'react-redux';
 import { formatPrice, showAlert } from '../../helpers/Common';
 import { validateToken } from '../../services/Api';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function FinancialReportScreen({ navigation }) {
   const user = useSelector(state => state.user.data);
@@ -32,7 +33,7 @@ export default function FinancialReportScreen({ navigation }) {
     () => createStyles(i18n.language),
     [i18n.language]
   );
-    const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
+  const styles = useMemo(() => createLocalStyles(NewStyles), [NewStyles]);
   const [walletData, setWalletData] = useState({
     wallet: 0,
     total_settlements: 0,
@@ -85,7 +86,7 @@ export default function FinancialReportScreen({ navigation }) {
   const handleReportError = () => {
     showAlert(
       t('Error report'),
-      t('How would you like to contact support?'),
+      t('Do you want to contact support?'),
       [
         { text: t('Cancel'), style: 'cancel' },
         {
@@ -136,117 +137,121 @@ export default function FinancialReportScreen({ navigation }) {
   }
 
   return (
-    <LinearGradient
-      colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.background}
-    >
-      <CustomStatusBar />
-      <ScreenHeaders
-        title={t('Financial report')}
-      />
+    <SafeAreaView style={{ flex: 1 }} edges={{ top: 'off', bottom: 'additive' }}>
 
-      <ScrollView
-        contentContainerStyle={styles.container}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
+      <LinearGradient
+        colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.background}
       >
+        <CustomStatusBar />
+        <ScreenHeaders
+          title={t('Financial report')}
+        />
 
-        {/* کارت موجودی کیف پول */}
-        <View style={[styles.card, styles.walletCard]}>
-          <View style={styles.cardHeader}>
-            <Ionicons name="wallet" size={32} color={themeColor7.bgColor(1)} />
-            <Text style={[NewStyles.title, styles.cardTitle]}>{t('Current balance')}</Text>
-          </View>
-          <Text style={[styles.amountLarge, { color: themeColor7.bgColor(1) }]}>
-            {formatPrice(walletData.wallet)} {t('Toman')}
-          </Text>
-          <Text style={[NewStyles.text4, styles.cardSubtitle]}>
-            {t('Available for withdrawal')}
-          </Text>
-        </View>
+        <ScrollView
+          contentContainerStyle={styles.container}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
 
-        {/* کارت مجموع تسویه‌ها */}
-        <View style={[styles.card, styles.settlementsCard]}>
-          <View style={styles.cardHeader}>
-            <Ionicons name="card" size={32} color={themeColor0.bgColor(1)} />
-            <Text style={[NewStyles.title, styles.cardTitle]}>{t('Total settlements')}</Text>
-          </View>
-          <Text style={[styles.amountLarge, { color: themeColor0.bgColor(1) }]}>
-            {formatPrice(walletData.total_settlements)} {t('Toman')}
-          </Text>
-          <Text style={[NewStyles.text4, styles.cardSubtitle]}>
-            {t('Total amount received from the system')}
-          </Text>
-        </View>
-
-        {/* آمار مالی */}
-        <View style={styles.statsContainer}>
-          <Text style={[NewStyles.title, styles.statsTitle]}>
-            {t('Financial information')}
-          </Text>
-
-          <View style={styles.statRow}>
-            <View style={styles.statItem}>
-              <Ionicons name="trending-up" size={28} color={themeColor7.bgColor(1)} />
-              <Text style={[NewStyles.text4, styles.statLabel]}>{t('Total earnings (Toman)')}</Text>
-              <Text style={[NewStyles.title, styles.statValue]}>
-                {formatPrice(getTotalEarnings())}
-              </Text>
+          {/* کارت موجودی کیف پول */}
+          <View style={[styles.card, styles.walletCard]}>
+            <View style={styles.cardHeader}>
+              <Ionicons name="wallet" size={32} color={themeColor7.bgColor(1)} />
+              <Text style={[NewStyles.title, styles.cardTitle]}>{t('Current balance')}</Text>
             </View>
+            <Text style={[styles.amountLarge, { color: themeColor7.bgColor(1) }]}>
+              {formatPrice(walletData.wallet)} {t('Toman')}
+            </Text>
+            <Text style={[NewStyles.text4, styles.cardSubtitle]}>
+              {t('Available for withdrawal')}
+            </Text>
+          </View>
 
-            <View style={styles.statItem}>
-              <Ionicons name="pie-chart" size={28} color={themeColor1.bgColor(1)} />
-              <Text style={[NewStyles.text4, styles.statLabel]}>{t('Settlement percentage')}</Text>
-              <Text style={[NewStyles.title, styles.statValue]}>
-                {getSettlementPercentage()}%
-              </Text>
+          {/* کارت مجموع تسویه‌ها */}
+          <View style={[styles.card, styles.settlementsCard]}>
+            <View style={styles.cardHeader}>
+              <Ionicons name="card" size={32} color={themeColor0.bgColor(1)} />
+              <Text style={[NewStyles.title, styles.cardTitle]}>{t('Total settlements')}</Text>
+            </View>
+            <Text style={[styles.amountLarge, { color: themeColor0.bgColor(1) }]}>
+              {formatPrice(walletData.total_settlements)} {t('Toman')}
+            </Text>
+            <Text style={[NewStyles.text4, styles.cardSubtitle]}>
+              {t('Total amount received from the system')}
+            </Text>
+          </View>
+
+          {/* آمار مالی */}
+          <View style={styles.statsContainer}>
+            <Text style={[NewStyles.title, styles.statsTitle]}>
+              {t('Financial information')}
+            </Text>
+
+            <View style={styles.statRow}>
+              <View style={styles.statItem}>
+                <Ionicons name="trending-up" size={28} color={themeColor7.bgColor(1)} />
+                <Text style={[NewStyles.text4, styles.statLabel]}>{t('Total earnings (Toman)')}</Text>
+                <Text style={[NewStyles.title, styles.statValue]}>
+                  {formatPrice(getTotalEarnings())}
+                </Text>
+              </View>
+
+              <View style={styles.statItem}>
+                <Ionicons name="pie-chart" size={28} color={themeColor1.bgColor(1)} />
+                <Text style={[NewStyles.text4, styles.statLabel]}>{t('Settlement percentage')}</Text>
+                <Text style={[NewStyles.title, styles.statValue]}>
+                  {getSettlementPercentage()}%
+                </Text>
+              </View>
             </View>
           </View>
-        </View>
 
-        {/* راهنما و گزارش خطا */}
-        <View style={styles.infoBox}>
-          <Ionicons name="information-circle" size={24} color={themeColor0.bgColor(1)} />
-          <Text style={[NewStyles.text4, styles.infoText]}>
-            {t('Contact support to request a settlement or report an error')}
-          </Text>
-        </View>
+          {/* راهنما و گزارش خطا */}
+          <View style={styles.infoBox}>
+            <Ionicons name="information-circle" size={24} color={themeColor0.bgColor(1)} />
+            <Text style={[NewStyles.text4, styles.infoText]}>
+              {t('Contact support to request a settlement or report an error')}
+            </Text>
+          </View>
 
-        {/* دکمه‌های اقدام */}
-        <View style={styles.buttonRow}>
-          <TouchableOpacity
-            style={[styles.actionButton, styles.closeButton]}
-            onPress={() => {
-              if (Platform.OS == 'web') {
-                window.history.back()
-              } else {
-                navigation.goBack()
-              }
-            }}
-          >
-            <Ionicons name="close-circle" size={20} color="#fff" />
-            <Text style={[NewStyles.text4, styles.buttonText]}>{t('Close')}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.actionButton, styles.errorButton]}
-            onPress={handleReportError}
-          >
-            <Ionicons name="alert-circle" size={20} color="#fff" />
-            <Text style={[NewStyles.text4, styles.buttonText]}>{t('Error report')}</Text>
-          </TouchableOpacity>
-        </View>
+          {/* دکمه‌های اقدام */}
+          <View style={styles.buttonRow}>
+            <TouchableOpacity
+              style={[styles.actionButton, styles.closeButton]}
+              onPress={() => {
+                if (Platform.OS == 'web') {
+                  window.history.back()
+                } else {
+                  navigation.goBack()
+                }
+              }}
+            >
+              <Ionicons name="close-circle" size={20} color="#fff" />
+              <Text style={[NewStyles.text4, styles.buttonText]}>{t('Close')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.actionButton, styles.errorButton]}
+              onPress={handleReportError}
+            >
+              <Ionicons name="alert-circle" size={20} color="#fff" />
+              <Text style={[NewStyles.text4, styles.buttonText]}>{t('Error report')}</Text>
+            </TouchableOpacity>
+          </View>
 
-      </ScrollView>
-    </LinearGradient>
+        </ScrollView>
+      </LinearGradient>
+    </SafeAreaView>
   );
 }
 
-const createLocalStyles = (NewStyles) =>  StyleSheet.create({
+const createLocalStyles = (NewStyles) => StyleSheet.create({
   background: {
     flex: 1,
+    paddingBottom: 120
   },
   loadingContainer: {
     flex: 1,
