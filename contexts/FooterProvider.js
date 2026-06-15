@@ -162,7 +162,7 @@ const FooterRoot = memo(function FooterRoot({ isVisible }) {
   const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
 
-  const userToken = useSelector((state) => state.auth.token);
+  const userToken = useSelector((state) => state.auth.token); 
   const user = useSelector((state) => state.user?.data?.data?.technician);
   const [loading, setLoading] = useState(false)
 
@@ -221,19 +221,20 @@ const FooterRoot = memo(function FooterRoot({ isVisible }) {
       console.log('Error during logout:', error);
     }
   }, [dispatch]);
-  const handleWorkat = useCallback(async () => {
+  const handleWorkat = useCallback(async () => { 
     try {
       setLoading(true)
 
       await atWork(userToken);
-      dispatch(fetchUser(userToken))
+      
     } catch (error) {
 
       console.log('Error during at work change:', error);
     } finally {
       setLoading(false)
+      dispatch(fetchUser(userToken))
     }
-  }, [dispatch]);
+  }, [dispatch, userToken]);
 
   const handleDeleteAccount = useCallback(() => {
     Linking.openURL(`${mainUri}/delete-account-request`);
@@ -404,8 +405,7 @@ const FooterRoot = memo(function FooterRoot({ isVisible }) {
             </TouchableOpacity>
           </View>
         </SafeAreaView>
-      )}
-
+      )} 
       <FooterMenuModal
         visible={menuVisible}
         menuItems={menuItems}

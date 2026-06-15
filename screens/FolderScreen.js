@@ -5,7 +5,7 @@ import Folder from "../components/Folder";
 import Badge from '../components/Badge';
 import CustomStatusBar from './../components/CustomStatusBar';
 import { formatPrice, handleError, showToastOrAlert } from './../helpers/Common';
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from '@react-navigation/native';
 import { getTechnicianOrders, getUnreadTicketsCount } from '../services/Api';
@@ -16,6 +16,7 @@ import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import Loader from "../components/Loader";
 import { createStyles } from "../styles/NewStyles";
 import { imageUri } from "../services/URL";
+import { fetchUser } from "../slices/userSlice";
 
 export default function FolderScreen({ navigation }) {
   const { t, i18n } = useTranslation();
@@ -52,11 +53,15 @@ export default function FolderScreen({ navigation }) {
     } catch (err) {
     }
   }
-
+  const dispatch = useDispatch()
 
   useFocusEffect(
     useCallback(() => {
       fetchUnseenCount();
+      if (userToken) {
+
+        dispatch(fetchUser(userToken))
+      }
     }, [])
   );
 
@@ -204,7 +209,7 @@ export default function FolderScreen({ navigation }) {
         style={NewStyles.container}
       >
         <CustomStatusBar />
-        <View style={{ flex: 1 }}> 
+        <View style={{ flex: 1 }}>
           <View style={[styles.headerBackground, { marginTop: inssets?.top + 20 }]}>
             <View style={NewStyles.rowWrapper}>
               <View style={[NewStyles.row, { gap: 10 }]}>
@@ -302,10 +307,11 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     flexDirection: 'column',
     flexWrap: 'wrap',
     alignContent: 'flex-start',
-    height: 500, // ارتفاع مشخص برای wrap شدن
+    height: 600, // ارتفاع مشخص برای wrap شدن
   },
   folderWrapper: {
     position: 'relative',
+    // width:100
   },
   folderItem: {
     width: 80,

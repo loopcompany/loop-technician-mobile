@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { createStyles } from '../styles/NewStyles';
 import { themeColor4 } from '../theme/Color';
 
-const NESHAN_API_KEY = 'web.a7d38181a0094e0092a578bcc81b7641';
+const NESHAN_API_KEY = 'web.1152adf3d8884734af16cc9e8f83e649';
 
 const ShowMapDetailComponent = ({ data }) => {
     const { t, i18n } = useTranslation();

@@ -5,7 +5,7 @@ const NESHAN_SDK_JS_URL = 'https://static.neshan.org/sdk/leaflet/1.4.0/leaflet.j
 const NESHAN_SDK_CSS_URL = 'https://static.neshan.org/sdk/leaflet/1.4.0/leaflet.css';
 
 // بهتره از env بگیری
-const NESHAN_API_KEY = 'web.a7d38181a0094e0092a578bcc81b7641';
+const NESHAN_API_KEY = 'web.1152adf3d8884734af16cc9e8f83e649';
 
 const MapView = ({
   initialRegion,

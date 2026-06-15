@@ -89,7 +89,7 @@ export default function SignIn({ navigation }) {
     certificate_issue_date: '',
     vehicle_type: '',
     home_postal_code: '',
-    city: 'Los Angeles',
+    city: 'تهران',
     region: '',
     home_address: '',
     other_referral_code: '',
@@ -343,7 +343,7 @@ export default function SignIn({ navigation }) {
               onPress: () => {
                 // Navigate to phone verification screen
                 navigation.navigate('PhoneVerification', {
-                  phone: formData.mobile || formData.phone,
+                  phone: formData.phone,
                   technicianId: result.data.technician_id
                 });
               }
