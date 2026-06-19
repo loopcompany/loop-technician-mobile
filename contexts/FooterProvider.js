@@ -606,7 +606,7 @@ export const FooterProvider = ({ children }) => {
         dispatch(setLanguage(language));
         i18n.changeLanguage(language);
       } else {
-        i18n.changeLanguage('fa');
+        i18n.changeLanguage('en');
       }
     } catch (error) {
       console.error('Error loading language', error);

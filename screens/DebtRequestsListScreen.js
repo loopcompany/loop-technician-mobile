@@ -17,7 +17,7 @@ import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor4, themeColor8 } from '../theme/Color';
 import { getDebtRequests, getDebtRequestById } from '../services/Api';
-import { formatDate, langIsRTL, showAlert } from '../helpers/Common';
+import { formatDate, formatPrice, langIsRTL, showAlert } from '../helpers/Common';
 import { useTranslation } from 'react-i18next';
 import { createStyles } from '../styles/NewStyles';
 export default function DebtRequestsListScreen({ navigation }) {
@@ -101,10 +101,7 @@ export default function DebtRequestsListScreen({ navigation }) {
     }
   };
 
-  const formatAmount = (amount) => {
-    if (!amount) return '-';
-    return `${new Intl.NumberFormat('fa-IR').format(amount)} ${t("Rial")}`;
-  };
+
 
   const renderItem = ({ item }) => {
     const statusBadge = getStatusBadge(item.status);
@@ -132,7 +129,7 @@ export default function DebtRequestsListScreen({ navigation }) {
         {item.type === 'free' && item.amount && (
           <View style={styles.amountRow}>
             <Ionicons name="wallet-outline" size={18} color={themeColor0.bgColor(1)} />
-            <Text style={[NewStyles.text, styles.amountText]}>{t("Amount")}: {formatAmount(item.amount)}</Text>
+            <Text style={[NewStyles.text, styles.amountText]}>{t("Amount")}: {formatPrice(item.amount)} {t("T")}</Text>
           </View>
         )}
 
@@ -237,7 +234,7 @@ export default function DebtRequestsListScreen({ navigation }) {
                 {selectedRequest.type === 'free' && selectedRequest.amount && (
                   <View style={styles.detailRow}>
                     <Text style={[NewStyles.text4, styles.detailLabel]}>{t("Loan amount:")}</Text>
-                    <Text style={[NewStyles.text, styles.detailValue]}>{formatAmount(selectedRequest.amount)}</Text>
+                    <Text style={[NewStyles.text, styles.detailValue]}>{formatPrice(selectedRequest.amount)} {t("T")}</Text>
                   </View>
                 )}
 
