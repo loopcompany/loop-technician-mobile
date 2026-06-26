@@ -1227,7 +1227,7 @@ export default function OrderDetailScreen({ route, navigation }) {
 
                     {data?.technician_des && (
                       <View style={{ marginTop: 10, padding: 10, backgroundColor: themeColor5.bgColor(1), borderRadius: 8 }}>
-                        <Text style={NewStyles.text2}>{t("Saved description:")}</Text>
+                        <Text style={NewStyles.text2}>{t("Loop Description")}</Text>
                         <Text style={[NewStyles.text10, { marginTop: 5 }]}>{data.technician_des}</Text>
                       </View>
                     )}

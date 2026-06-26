@@ -5,11 +5,13 @@ import NewStyles from "../../styles/NewStyles";
 import { useTranslation } from "react-i18next";
 import TransparentButton from './../../components/TransparentButton';
 import { themeColor0, themeColor1, themeColor4 } from "../../theme/Color";
-import { mainUri } from "../../services/URL";
+import { imageUri, mainUri } from "../../services/URL";
+import { useSelector } from "react-redux";
 
 
 export default function SignInLanding({ navigation }) {
   const { t } = useTranslation();
+  const pdf = useSelector(state=>state.pdf?.data)
   return (
     <ImageBackground
       source={Platform.OS === 'web' ? require("../../assets/loopbackground.webp") : require("../../assets/moon.jpg")}
@@ -39,7 +41,7 @@ export default function SignInLanding({ navigation }) {
       />
 
       <TransparentButton
-        onPress={() => { Linking.openURL(`${mainUri}/assets/guid/tech.pdf`) }}
+        onPress={() => { Linking.openURL(`${imageUri}/${pdf?.tech}`) }}
         customStyle={[{ borderColor: themeColor0.bgColor(1), borderWidth: 1, width: '70%', maxWidth: 400, backgroundColor: themeColor4.bgColor(0.5) }, NewStyles.border10]}
         title={t("Technician Application Guide")}
         customTextStyle={NewStyles.title}

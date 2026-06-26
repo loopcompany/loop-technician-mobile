@@ -195,7 +195,7 @@ const InitialRouteHandler = ({ children }) => {
           if (result.success) {
             dispatch(setToken(savedToken));
             dispatch(fetchUser(savedToken));
-            setInitialRoute('FolderScreen');
+            setInitialRoute('Welcome');
           } else {
             dispatch(removeToken());
             setInitialRoute('Welcome');

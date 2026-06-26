@@ -8,6 +8,8 @@ import newUserSlice from './slices/newUserSlice';
 import extraSlice from './slices/extraSlice';
 import orderExtrasSlice from './slices/orderExtrasSlice';
 import { Platform } from 'react-native';
+import pdfSlice from './slices/pdfDocumentSlice';
+import minPriceSlice from './slices/minPriceSlice';
 const loadState = () => {
   if (Platform.OS !== 'web') {
     return undefined;
@@ -51,6 +53,8 @@ const store = configureStore({
     newUser: newUserSlice,
     extraServices: extraSlice,
     orderExtras: orderExtrasSlice,
+    pdf: pdfSlice,
+    minPrice: minPriceSlice,
   },
   preloadedState
 })

@@ -12,22 +12,41 @@ import {
 import NewStyles from "../styles/NewStyles";
 import { themeColor0, themeColor10 } from "../theme/Color";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setToken } from '../slices/authSlice';
 import { validateToken } from '../services/Api';
 import { fetchContacts } from "../slices/contactSlice";
 import { fetchUser } from "../slices/userSlice";
 import { useTranslation } from "react-i18next";
+import { fetchPdfDocs } from "../slices/pdfDocumentSlice";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
+import { useVideoPlayer, VideoView } from "expo-video";
+import { useEvent } from "expo";
+import { useFooter } from "../contexts/FooterProvider";
 
 export default function Welcome({ navigation }) {
   const [isChecking, setIsChecking] = useState(true);
+  const userData = useSelector(state => state.user);
+
+
+
+  const userToken = useSelector((state) => state.auth.token);
   const dispatch = useDispatch();
   const { t } = useTranslation();
+  const player = useVideoPlayer(require('../assets/video/InShot_20260626_171217014.mp4'), player => {
+    if (Platform.OS === 'web') {
 
+      player.muted = true;
+    }
+    player.play();
+  });
+  const {showFooter ,hideFooter } = useFooter()
   useEffect(() => {
     checkAutoLogin();
     dispatch(fetchContacts());
-
+    dispatch(fetchPdfDocs());
+    hideFooter()
   }, []);
 
   async function checkAutoLogin() {
@@ -36,24 +55,24 @@ export default function Welcome({ navigation }) {
       if (userToken) {
         const result = await validateToken();
         const isValid = result.success === true;
+        console.log("is valid", isValid);
+
         if (isValid) {
           dispatch(setToken(userToken));
           dispatch(fetchUser(userToken))
-          setTimeout(() => {
-            navigation.replace('FolderScreen');
-          }, 1500);
+          // setTimeout(() => {
+          //   navigation.replace('FolderScreen');
+          // }, 1500);
         } else {
           await AsyncStorage.removeItem('userToken');
-          setIsChecking(false);
+
         }
       } else {
-        setIsChecking(false);
       }
     } catch (error) {
       await AsyncStorage.removeItem('userToken');
       await AsyncStorage.removeItem('savedReferralCode');
       await AsyncStorage.removeItem('savedPassword');
-      setIsChecking(false);
     }
   }
   const navigateToMainApp = () => {
@@ -61,26 +80,46 @@ export default function Welcome({ navigation }) {
       navigation.replace('SignInLanding');
     }, 4000);
   };
+
+
   useEffect(() => {
-    navigateToMainApp()
-  }, [])
+    const subscription = player.addListener('playToEnd', () => {
+      setIsChecking(false);
+
+      if (userData?.data && userToken) {
+        console.log("ssss");
+        showFooter()
+
+        navigation.replace('FolderScreen');
+      } else {
+        navigateToMainApp()
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [player, userData, userToken]);
+  const { isPlaying } = useEvent(player, 'playingChange', { isPlaying: player.playing });
+
+  useEffect(() => {
+    if (Platform.OS === 'web' && !isPlaying && player) {
+      player.play();
+
+
+    }
+  }, [player, isPlaying])
+
+
 
   if (isChecking) {
     return (
-      <ImageBackground
-        source={Platform.OS === 'web' ? require("../assets/loopbackground.webp") : require("../assets/moon.jpg")}
-        style={NewStyles.container}
-      >
-        <View style={{ flex: 1, backgroundColor: themeColor0.bgColor(0.25), justifyContent: 'center', alignItems: 'center' }}>
-          <Image
-            source={require("../assets/logo.png")}
-            style={NewStyles.logo}
-            resizeMode="contain"
-          />
-          <ActivityIndicator size="large" color={themeColor10.bgColor(1)} style={{ marginTop: 20 }} />
-          <Text style={[NewStyles.text10, { marginTop: 10 }]}>{t("Checking...")}</Text>
-        </View>
-      </ImageBackground>
+      <SafeAreaView style={NewStyles.container}>
+        <LinearGradient colors={['#1c2833', '#0b0d11', '#0b0d11']} style={{ flex: 1 }}>
+
+          <VideoView style={{ flex: 1 }} nativeControls={false} player={player} contentFit='contain' allowsFullscreen allowsPictureInPicture />
+        </LinearGradient>
+      </SafeAreaView>
     );
   }
 

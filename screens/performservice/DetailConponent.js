@@ -370,22 +370,7 @@ const DetailConponent = ({ data, renderRow, }) => {
             </View>}
 
             {/* Technician Description */}
-            {data?.technician_des && (
-                <View style={styles.card}>
-                    <View style={styles.sectionHeader}>
-                        <View style={[NewStyles.row, { gap: 5 }]}>
-                            <Ionicons name="create-outline" size={24} color={themeColor0.bgColor(1)} />
-                            <Text style={NewStyles.title}>{t("Technician Description")}</Text>
-                        </View>
-                    </View>
-
-                    <View style={styles.descriptionItem}>
-                        <Ionicons name="ellipse" size={10} color={themeColor0.bgColor(0.5)} />
-                        <Text style={[NewStyles.text10, { flex: 1 }]}>{data?.technician_des}</Text>
-                    </View>
-                </View>
-            )}
-
+             
             {/* Loop Description */}
             {data?.loop_description && (
                 <View style={styles.card}>

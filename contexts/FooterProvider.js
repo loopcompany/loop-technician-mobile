@@ -162,7 +162,7 @@ const FooterRoot = memo(function FooterRoot({ isVisible }) {
   const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
 
-  const userToken = useSelector((state) => state.auth.token); 
+  const userToken = useSelector((state) => state.auth.token);
   const user = useSelector((state) => state.user?.data?.data?.technician);
   const [loading, setLoading] = useState(false)
 
@@ -221,12 +221,12 @@ const FooterRoot = memo(function FooterRoot({ isVisible }) {
       console.log('Error during logout:', error);
     }
   }, [dispatch]);
-  const handleWorkat = useCallback(async () => { 
+  const handleWorkat = useCallback(async () => {
     try {
       setLoading(true)
 
       await atWork(userToken);
-      
+
     } catch (error) {
 
       console.log('Error during at work change:', error);
@@ -381,8 +381,8 @@ const FooterRoot = memo(function FooterRoot({ isVisible }) {
               onPress={handleSupportPress}
             >
               <Image
-              source={require('../assets/images/support.png')}
-              style={{height:40, width:60, resizeMode:'contain',}}
+                source={require('../assets/images/support.png')}
+                style={{ height: 40, width: 60, resizeMode: 'contain', }}
               />
             </TouchableOpacity>
             <TouchableOpacity
@@ -405,7 +405,7 @@ const FooterRoot = memo(function FooterRoot({ isVisible }) {
             </TouchableOpacity>
           </View>
         </SafeAreaView>
-      )} 
+      )}
       <FooterMenuModal
         visible={menuVisible}
         menuItems={menuItems}
@@ -533,12 +533,12 @@ const AnimatedFooterLogoButton = React.memo(({ onPress, logoStyle }) => {
       activeOpacity={0.85}
       onPress={handlePress}
       style={{
-        marginVertical: 5, 
+        marginVertical: 5,
       }}
     >
       {/* این View فقط برای رنگ است و JS-driven می‌ماند */}
       <Animated.View
-        style={{ 
+        style={{
           borderRadius: 100,
           overflow: 'hidden',
         }}
@@ -606,7 +606,7 @@ export const FooterProvider = ({ children }) => {
         dispatch(setLanguage(language));
         i18n.changeLanguage(language);
       } else {
-        i18n.changeLanguage('en');
+        i18n.changeLanguage('fa');
       }
     } catch (error) {
       console.error('Error loading language', error);
@@ -705,7 +705,9 @@ const createLocalStyles = (newStyles) =>
     },
 
     footer: {
-      backgroundColor: themeColor0.bgColor(0.2),
+      backgroundColor: 'rgba(100, 180, 240, 0.4)',
+      borderTopWidth: 1.5,
+      borderTopColor: 'rgba(255, 255, 255, 0.5)',
       width: '100%',
       paddingHorizontal: 15,
       position: 'absolute'
@@ -724,8 +726,8 @@ const createLocalStyles = (newStyles) =>
       resizeMode: 'contain',
     },
 
-    supportButton: {  
-      paddingVertical:5,
+    supportButton: {
+      paddingVertical: 5,
     },
 
     phone: {
