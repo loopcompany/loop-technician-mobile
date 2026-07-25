@@ -121,7 +121,6 @@ export default function OrderListScreen({ navigation }) {
 
   const renderOrderCard = (order) => {
 
-
     return (
       <View key={order.id} style={[styles.orderCard, NewStyles.shadow, NewStyles.border10]}>
         <View style={styles.cardSection}>
@@ -146,6 +145,7 @@ export default function OrderListScreen({ navigation }) {
             {order.address?.city || ''}{order.address?.city && order.address?.region ? ', ' : ''}
             {order.address?.region ? t("Region {{region}}", { region: order.address.region }) : ''}
             {(order.address?.city || order.address?.region) && order.address?.address ? ' - ' : ''}
+            {`${t("Number")} ${order?.address?.number} - ${t("Unit")} ${order?.address?.unit} - ${t("Floor")} ${order?.address?.floor} `}
             {order.address?.address || t("Unknown address")}
           </Text>
         </View>
@@ -348,7 +348,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
   container: {
     padding: 15,
     gap: 15,
-    paddingBottom:100
+    paddingBottom: 100
   },
   centerContainer: {
     flex: 1,

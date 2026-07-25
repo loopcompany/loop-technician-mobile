@@ -21,6 +21,7 @@ import {
 import { validateTechnicianRegistration } from '../../utils/validation';
 import { showAlert, showToastOrAlert } from '../../helpers/Common';
 import { useTranslation } from "react-i18next";
+import { Ionicons } from '@expo/vector-icons';
 
 // Pre-calculate colors outside component to prevent re-renders
 const HEADER_BG_COLOR = themeColor0.bgColor(0.8);
@@ -100,7 +101,8 @@ export default function SignIn({ navigation }) {
     software_weakness: '',
     hardware_weakness: '',
     resume: '',
-    expertise_ids: []
+    expertise_ids: [],
+    acceptTerms: false
   });
   const { t, i18n } = useTranslation();
   const NewStyles = useMemo(
@@ -434,7 +436,7 @@ export default function SignIn({ navigation }) {
     if (!fieldErrors[field]) return null;
     return (
       <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>⚠️ {fieldErrors[field]}</Text>
+        <Text style={styles.errorText}>⚠️ {t(fieldErrors[field])}</Text>
       </View>
     );
   };
@@ -585,7 +587,7 @@ export default function SignIn({ navigation }) {
             <FieldError field="marital_status" />
           </View>
 
-          {/* وضعیت سربازی */}
+          {/* وضعیت خدمت */}
           <View style={styles.inputRow}>
             <Text style={[NewStyles.text10]}>{t("Military status")} <Text style={styles.required}>*</Text> :</Text>
             <View style={[
@@ -599,9 +601,12 @@ export default function SignIn({ navigation }) {
                 onValueChange={(value) => updateField('military_status', value)}
                 style={styles.picker}
               >
-                <Picker.Item label={t("Completed service")} value="پایان خدمت" />
-                <Picker.Item label={t("Exempt")} value="معاف" />
-                <Picker.Item label={t("In service")} value="در حال خدمت" />
+                <Picker.Item label={t("Subject to military service")} value="مشمول خدمت" />
+                <Picker.Item label={t("Awaiting Deployment")} value="درانتظار اعزام" />
+                <Picker.Item label={t("No prior service record")} value="فاقد سابقه خدمت" />
+                <Picker.Item label={t("Completion of service")} value="اتمام خدمت" />
+                <Picker.Item label={t("Exempt")} value="معافیت" />
+                <Picker.Item label={t("Currently studying")} value="در حال تحصیل" />
               </Picker>
             </View>
             <FieldError field="military_status" />
@@ -610,7 +615,7 @@ export default function SignIn({ navigation }) {
           {/* وضعیت تحصیلات */}
           <View style={styles.inputRow}>
             <Text style={[NewStyles.text10]}>{t("Education status")} <Text style={styles.required}>*</Text> :</Text>
-             
+
             <Picker
               selectedValue={formData.education_status}
               onValueChange={(value) => updateField('education_status', value)}
@@ -1093,6 +1098,26 @@ export default function SignIn({ navigation }) {
         <FieldError field="resume" />
       </View>
 
+      <View style={{ width: '100%', paddingHorizontal: '5%' }}>
+
+        <View style={[NewStyles.row, {}]}>
+          <TouchableOpacity style={{ padding: 10 }}>
+            <Ionicons
+              name={formData?.acceptTerms ? 'checkbox' : 'square-outline'}
+              size={24}
+              color={themeColor0.bgColor(1)}
+              onPress={() => {
+                updateField('acceptTerms', formData?.acceptTerms ? false : true);
+ 
+              }}
+            />
+          </TouchableOpacity>
+          <Text style={[NewStyles.title4, { flex: 1, padding: 5 }]}> {t("By continuing, I accept Loop's Terms of Use and Privacy Policy.")} </Text>
+        </View>
+        <FieldError field="acceptTerms" />
+      </View>
+
+
       {/* Submit Button */}
       <Button
         title={submitting ? t("Registering...") : t("Sign Up")}
@@ -1231,7 +1256,7 @@ export default function SignIn({ navigation }) {
       }
 
       console.log("fileInfo:", fileInfo);
-      
+
       setResumeFile(fileInfo);
       showAlert(t("Success"), t("File \"{{name}}\" selected", { name: fileInfo.name }));
 
@@ -1297,7 +1322,7 @@ export default function SignIn({ navigation }) {
 const createLocalStyles = (NewStyles) => StyleSheet.create({
   background: {
     flex: 1,
-    width:'100%'
+    width: '100%'
   },
   container: {
     paddingHorizontal: 20,

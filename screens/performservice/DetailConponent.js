@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import MapView, { Marker } from 'react-native-maps'
 import NewStyles from '../../styles/NewStyles'
 import { Ionicons } from '@expo/vector-icons'
-import { themeColor0, themeColor1, themeColor10, themeColor3, themeColor4, themeColor5, themeColor6, themeColor7 } from '../../theme/Color'
+import { themeColor0, themeColor1, themeColor10, themeColor3, themeColor4, themeColor5, themeColor6, themeColor7, themeColor8 } from '../../theme/Color'
 import { formatDate, formatDateTime, formatPrice, langIsRTL } from '../../helpers/Common'
 import { imageUri, mainUri } from '../../services/URL'
 import { createStyles } from '../../styles/NewStyles';
@@ -237,7 +237,7 @@ const DetailConponent = ({ data, renderRow, }) => {
                         <Ionicons name="ellipse" size={10} color={themeColor0.bgColor(0.5)} />
                         <View style={{ flex: 1 }}>
                             <Text style={[NewStyles.text10, { flex: 1 }]}>
-                                {data?.user_address?.city} - {t("Region {{region}}", { region: data?.user_address?.region })} - {data?.user_address?.address}
+                                {data?.user_address?.city} - {t("Region {{region}}", { region: data?.user_address?.region })} - {t("Number")} {data?.user_address?.number} - {t("Unit")} {data?.user_address?.unit} - {t("Floor")} {data?.user_address?.floor} - {data?.user_address?.address}
                             </Text>
                             {data?.user_address?.phone && (
                                 <Text style={[NewStyles.text10, { flex: 1, marginTop: 5 }]}>
@@ -299,7 +299,6 @@ const DetailConponent = ({ data, renderRow, }) => {
                             return (
                                 <View style={styles.sectionHeader}>
                                     <View style={[NewStyles.row, { gap: 5 }]}>
-                                        <Ionicons name={section?.icon_name || 'list'} size={24} color={themeColor0.bgColor(1)} />
                                         <Text style={[NewStyles.title, { flex: 1 }]}>{section?.title}</Text>
                                     </View>
                                 </View>
@@ -321,6 +320,17 @@ const DetailConponent = ({ data, renderRow, }) => {
                                         <Text style={[NewStyles.text10, { flex: 1, textAlign: 'auto' }]}>{item?.value}</Text>
                                     )}
                                 </View>
+                                {(item?.user_descriptions) && (
+                                    <View style={{}}>
+                                        <View style={[NewStyles.row]}>
+                                            <Text style={[NewStyles.text, { flex: 1 }]}>توضیحات </Text>
+                                        </View>
+                                        <View style={[NewStyles.textInput, NewStyles.row, NewStyles.border10, { gap: 5, paddingVertical: 0, backgroundColor: themeColor4.bgColor(1), borderWidth: 2, borderColor: themeColor8.bgColor(1), borderStyle: 'dotted', minHeight: 45 }]}>
+
+                                            <Text style={NewStyles.text10}>{item?.user_descriptions}</Text>
+                                        </View>
+                                    </View>
+                                )}
                                 {(item?.field_detail?.has_counter >= 1 && item?.type == 'input') && (
                                     <Text style={[NewStyles.text10, { flex: 1 }]}>{item?.value}</Text>
                                 )}
@@ -349,28 +359,28 @@ const DetailConponent = ({ data, renderRow, }) => {
             {data?.image_path &&
                 <Image style={[{ height: 250, margin: '5%', maxWidth: 400, resizeMode: 'contain', width: '90%', alignSelf: 'center' }, NewStyles.border10]} source={{ uri: `${imageUri}/${data?.image_path}` }} />
             }
-            {data?.order_galleries?.length > 0 && 
-            <View style={styles.card}>
-                <FlatList
-                    data={data?.order_galleries}
-                    inverted={langIsRTL(i18n?.language)}
-                    horizontal={true}
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{ paddingHorizontal: '5%', gap: 10, paddingVertical: 10 }}
-                    renderItem={({ item }) => {
-                        return (
-                            <TouchableOpacity style={{}} onPress={() => {
-                                Linking.openURL(`${imageUri}/${item?.image_path}`)
-                            }}>
-                                <Image source={{ uri: `${imageUri}/${item?.image_path}` }} style={[{ height: 120, width: 120, }, NewStyles.border10]} />
-                            </TouchableOpacity>
-                        )
-                    }}
-                />
-            </View>}
+            {data?.order_galleries?.length > 0 &&
+                <View style={styles.card}>
+                    <FlatList
+                        data={data?.order_galleries}
+                        inverted={langIsRTL(i18n?.language)}
+                        horizontal={true}
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={{ paddingHorizontal: '5%', gap: 10, paddingVertical: 10 }}
+                        renderItem={({ item }) => {
+                            return (
+                                <TouchableOpacity style={{}} onPress={() => {
+                                    Linking.openURL(`${imageUri}/${item?.image_path}`)
+                                }}>
+                                    <Image source={{ uri: `${imageUri}/${item?.image_path}` }} style={[{ height: 120, width: 120, }, NewStyles.border10]} />
+                                </TouchableOpacity>
+                            )
+                        }}
+                    />
+                </View>}
 
             {/* Technician Description */}
-             
+
             {/* Loop Description */}
             {data?.loop_description && (
                 <View style={styles.card}>

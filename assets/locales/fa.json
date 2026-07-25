@@ -1659,9 +1659,9 @@
   "Birth date (Jalali)": "متولد",
   "Select birth date": "انتخاب تاریخ تولد",
   "Place of issue": "صادره از",
-  "Military status": "وضعیت سربازی",
+  "Military status": "وضعیت خدمت",
   "Completed service": "پایان خدمت",
-  "Exempt": "معاف",
+  "Exempt": "معافیت",
   "In service": "در حال خدمت",
   "Education status": "وضعیت تحصیلات",
   "Landline number (021, 8 digits)": "شماره تلفن ثابت",
@@ -1764,5 +1764,13 @@
   "en": "EN",
   "Your credit": "اعتبار شما",
   "Message to user": "پیام به کاربر",
-  "Technician Application Guide": "راهنمای اپلیکیشن تکنسین"
+  "Technician Application Guide": "راهنمای اپلیکیشن تکنسین",
+  "Floor": "طبقه",
+  "Subject to military service": "مشمول خدمت",
+  "Awaiting Deployment": "درانتظار اعزام",
+  "No prior service record": "فاقد سابقه خدمت",
+  "Completion of service": "اتمام خدمت",
+  "Currently studying": "در حال تحصیل",
+  "By continuing, I accept Loop's Terms of Use and Privacy Policy.": "با ادامه، شرایط استفاده و سیاست حفظ حریم خصوصی Loop را می پذیرم.",
+  "Acceptance of the rules and regulations is mandatory.": "پذیرش قوانین و مقررات الزامی می باشد"
 }

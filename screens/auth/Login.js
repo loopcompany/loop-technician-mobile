@@ -391,6 +391,7 @@ export default function Login() {
                 <TouchableOpacity
                   onPress={() => { navigation.navigate("SignIn") }}
                   disabled={isLoading}
+                  style={{padding:5}}
                 >
                   <Text style={styles.bottomFooter}>{t("Register new personnel")}</Text>
                 </TouchableOpacity>
@@ -577,7 +578,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   bottomFooter: {
-    ...NewStyles.title10,
+    ...NewStyles.title4,
     fontSize: 14,
   },
   loadingContainer: {

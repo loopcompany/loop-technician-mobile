@@ -255,7 +255,7 @@ export const validateTechnicianRegistration = (formData, step = 'personal') => {
   // Required fields validation (همه فیلدها الزامی به جز resume)
   const requiredFields = [
     { key: 'name', name: 'نام و نام خانوادگی' },
-    { key: 'melicode', name: 'کد ملی' },
+    { key: 'melicode', name: 'کد ملی' }, 
     { key: 'birth_date', name: 'تاریخ تولد' },
     { key: 'father_name', name: 'نام پدر' },
     { key: 'issued_from', name: 'محل صدور' },
@@ -336,6 +336,9 @@ export const validateTechnicianRegistration = (formData, step = 'personal') => {
       errors.melicode = meliValidation.message;
     }
   }
+  if(!formData.acceptTerms){
+    errors.acceptTerms = "Acceptance of the rules and regulations is mandatory."
+  }
 
   if (formData.telephone) {
     const telephoneValidation = validateLandlinePhone(formData.telephone);
@@ -383,7 +386,7 @@ export const validateTechnicianRegistration = (formData, step = 'personal') => {
     errors.marital_status = 'وضعیت تأهل نامعتبر است';
   }
 
-  const militaryStatusOptions = ['معاف', 'در حال خدمت', 'پایان خدمت'];
+  const militaryStatusOptions = ['مشمول خدمت', 'درانتظار اعزام', 'فاقد سابقه خدمت', 'اتمام خدمت', 'معافیت', 'در حال تحصیل'];
   if (formData.military_status && !militaryStatusOptions.includes(formData.military_status)) {
     errors.military_status = 'وضعیت نظام وظیفه نامعتبر است';
   }
