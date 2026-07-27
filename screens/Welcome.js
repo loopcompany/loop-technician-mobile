@@ -24,6 +24,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { useEvent } from "expo";
 import { useFooter } from "../contexts/FooterProvider";
+import { getHash } from "react-native-otp-verify";
+import { setHashApp } from "../slices/hashAppSlice";
 
 export default function Welcome({ navigation }) {
   const [isChecking, setIsChecking] = useState(true);
@@ -41,7 +43,7 @@ export default function Welcome({ navigation }) {
     }
     player.play();
   });
-  const {showFooter ,hideFooter } = useFooter()
+  const { showFooter, hideFooter } = useFooter()
   useEffect(() => {
     checkAutoLogin();
     dispatch(fetchContacts());
@@ -100,6 +102,18 @@ export default function Welcome({ navigation }) {
       subscription.remove();
     };
   }, [player, userData, userToken]);
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+
+    getHash()
+      .then(hashes => {
+        dispatch(setHashApp(hashes))
+        console.log('SMS hashes:', hashes);
+      })
+      .catch(error => {
+        console.log('Hash error:', error);
+      });
+  }, []);
   const { isPlaying } = useEvent(player, 'playingChange', { isPlaying: player.playing });
 
   useEffect(() => {

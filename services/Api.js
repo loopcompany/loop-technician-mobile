@@ -758,9 +758,7 @@ export const validateToken = async () => {
  * @param {Object} data - { referral_code, phone, melicode, email }
  */
 export const requestPasswordReset = async (data) => {
-  try {
-    console.log('📧 درخواست ارسال کد بازیابی رمز...');
-    console.log('اطلاعات ارسالی:', data);
+  try { 
 
     const response = await api.post('/technician/forgot-password', data);
     console.log('✅ کد بازیابی ارسال شد:', response.data);

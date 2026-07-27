@@ -22,6 +22,12 @@ import CustomStatusBar from '../../components/CustomStatusBar';
 import Button from '../../components/Button';
 import { verifyPhoneNumber, resendVerificationCode } from '../../services/Api';
 import { formatTime, showAlert } from '../../helpers/Common';
+import {
+  restartOtpRetriever,
+  startOtpRetriever,
+  stopOtpRetriever,
+  subscribeOtp,
+} from './OtpRetriever';
 
 export default function PhoneVerificationScreen({ navigation, route }) {
   const { phone, technicianId } = route.params;
@@ -38,6 +44,22 @@ export default function PhoneVerificationScreen({ navigation, route }) {
     setValue: setVerificationCode,
   });
 
+  useEffect(() => {
+    const unsubscribe = subscribeOtp((otp) => {
+      setVerificationCode(otp);
+      setError('');
+    });
+
+    startOtpRetriever().catch((error) => {
+      console.log('SMS Retriever start error:', error);
+    });
+
+    return () => {
+      unsubscribe();
+      stopOtpRetriever({ clearPending: true });
+    };
+  }, []);
+
   // Timer for resend button
   useEffect(() => {
     if (timer > 0) {
@@ -52,7 +74,7 @@ export default function PhoneVerificationScreen({ navigation, route }) {
 
   // Auto-submit when code is complete
   useEffect(() => {
-    if (verificationCode.length === 6) {
+    if (verificationCode.length === 6 && !loading && !canResend) {
       handleVerifyCode();
     }
   }, [verificationCode]);
@@ -74,6 +96,7 @@ export default function PhoneVerificationScreen({ navigation, route }) {
       const result = await verifyPhoneNumber(phone, verificationCode);
 
       if (result.success) {
+        stopOtpRetriever({ clearPending: true });
         showAlert(
           'موفقیت',
           result.message || 'ثبت نام با موفقیت انجام شد',
@@ -122,8 +145,10 @@ export default function PhoneVerificationScreen({ navigation, route }) {
 
     setLoading(true);
     setError('');
+    setVerificationCode('');
 
     try {
+      await restartOtpRetriever();
       const result = await resendVerificationCode(phone);
 
       if (result.success) {
@@ -132,9 +157,11 @@ export default function PhoneVerificationScreen({ navigation, route }) {
         setCanResend(false);
         setVerificationCode('');
       } else {
+        stopOtpRetriever({ clearPending: true });
         setError(result.message || 'خطا در ارسال مجدد کد');
       }
     } catch (error) {
+      stopOtpRetriever({ clearPending: true });
       console.log('Resend error:', error);
 
       let errorMessage = 'خطا در ارسال مجدد کد';
@@ -216,14 +243,18 @@ export default function PhoneVerificationScreen({ navigation, route }) {
                   ref={ref}
                   {...props}
                   value={verificationCode}
-                  onChangeText={setVerificationCode}
+                  onChangeText={(text) => {
+                    const normalizedCode = String(text || '').replace(/\D/g, '').slice(0, 6);
+                    setVerificationCode(normalizedCode);
+                    if (error) setError('');
+                  }}
                   cellCount={6}
+                  maxLength={6}
                   keyboardType="number-pad"
-                  textContentType="oneTimeCode"
-                  autoComplete={Platform.select({
-                    android: 'sms-otp',
-                    default: 'one-time-code',
-                  })}
+                  inputMode="numeric"
+                  textContentType={Platform.OS === 'ios' ? 'oneTimeCode' : undefined}
+                  autoComplete={Platform.OS === 'android' ? 'sms-otp' : 'one-time-code'}
+                  importantForAutofill={Platform.OS === 'android' ? 'yes' : undefined}
                   renderCell={({ index, symbol, isFocused }) => (
                     <Text
                       key={index}

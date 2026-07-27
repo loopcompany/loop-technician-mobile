@@ -46,7 +46,7 @@ const ScreenHeaders = ({
         onPress={handleBack}
         style={[styles.iconContainer, { flexDirection: 'row', alignItems: 'center' }]}
       >
-        <Image source={require("../assets/back.png")} style={styles.arrow} />
+        <Image source={require("../assets/gif/prev.gif")} style={styles.arrow} />
         <Text style={[NewStyles.title10, styles.titleText]}>{t("Back")}</Text>
       </TouchableOpacity>
     </View>
@@ -73,8 +73,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
   },
   arrow: {
-    width: 24,
-    height: 24,
+    width: 50,
+    height: 50,
     resizeMode: "contain",
   },
   titleContainer: {

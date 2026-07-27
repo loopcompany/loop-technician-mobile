@@ -22,6 +22,11 @@ import { validateTechnicianRegistration } from '../../utils/validation';
 import { showAlert, showToastOrAlert } from '../../helpers/Common';
 import { useTranslation } from "react-i18next";
 import { Ionicons } from '@expo/vector-icons';
+import { useSelector } from 'react-redux';
+import {
+  startOtpRetriever,
+  stopOtpRetriever,
+} from './OtpRetriever';
 
 // Pre-calculate colors outside component to prevent re-renders
 const HEADER_BG_COLOR = themeColor0.bgColor(0.8);
@@ -137,6 +142,7 @@ export default function SignIn({ navigation }) {
   const [birthDateModal, setBirthDateModal] = useState(false);
   const [licenceDateModal, setLicenceDateModal] = useState(false);
   const [certificateIssueDateModal, setCertificateIssueDateModal] = useState(false);
+  const hashApp = useSelector(state => state.hashApp?.hash)
 
   // محاسبه تاریخ امروز به صورت شمسی (یک بار)
   const todayDate = useMemo(() => {
@@ -333,6 +339,14 @@ export default function SignIn({ navigation }) {
           apiFormData.append('expertise_ids[]', id);
         });
       }
+
+      apiFormData.append('hashApp', hashApp?.[0] ?? '');
+
+
+      await startOtpRetriever().catch((error) => {
+        console.log('SMS Retriever start error:', error);
+      });
+
       const result = await registerTechnician(apiFormData, resumeFile);
 
       if (result.success) {
@@ -353,6 +367,7 @@ export default function SignIn({ navigation }) {
           ]
         );
       } else {
+        stopOtpRetriever({ clearPending: true });
         let errorMessage = '';
 
         if (result.errors && typeof result.errors === 'object') {
@@ -377,6 +392,8 @@ export default function SignIn({ navigation }) {
         );
       }
     } catch (error) {
+      stopOtpRetriever({ clearPending: true });
+
       // Build detailed error message
       let errorMessage = `${t("Error communicating with server")}\n\n`;
 
@@ -900,7 +917,7 @@ export default function SignIn({ navigation }) {
             }
 
             const { isValid, errors } = validateTechnicianRegistration(formData, currentPage);
-
+ 
             if (!isValid) {
 
               setFieldErrors(errors);
@@ -1108,7 +1125,7 @@ export default function SignIn({ navigation }) {
               color={themeColor0.bgColor(1)}
               onPress={() => {
                 updateField('acceptTerms', formData?.acceptTerms ? false : true);
- 
+
               }}
             />
           </TouchableOpacity>

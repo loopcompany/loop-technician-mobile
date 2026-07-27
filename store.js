@@ -10,6 +10,9 @@ import orderExtrasSlice from './slices/orderExtrasSlice';
 import { Platform } from 'react-native';
 import pdfSlice from './slices/pdfDocumentSlice';
 import minPriceSlice from './slices/minPriceSlice';
+import hashAppSlice from './slices/hashAppSlice';
+
+
 const loadState = () => {
   if (Platform.OS !== 'web') {
     return undefined;
@@ -55,6 +58,7 @@ const store = configureStore({
     orderExtras: orderExtrasSlice,
     pdf: pdfSlice,
     minPrice: minPriceSlice,
+    hashApp: hashAppSlice,
   },
   preloadedState
 })

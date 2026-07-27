@@ -20,7 +20,7 @@ import { themeColor0, themeColor3, themeColor10, themeColor2, themeColor4, theme
 import { setToken } from "../../slices/authSlice";
 import { setUserData } from "../../slices/userSlice";
 import Button from "../../components/Button";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { verifyResetCode, resetPassword, requestPasswordReset } from "../../services/Api";
 import { loginTechnician } from "../../services/Api";
@@ -28,10 +28,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { showAlert } from "../../helpers/Common";
 import { ImageBackground } from "react-native";
 import { useTranslation } from "react-i18next";
+import {
+  restartOtpRetriever,
+  startOtpRetriever,
+  stopOtpRetriever,
+  subscribeOtp,
+} from './OtpRetriever';
 export default function ResetPasswordScreen({ navigation, route }) {
   const params = route?.params;
   const dispatch = useDispatch();
   const { t } = useTranslation();
+  const hashApp = useSelector(state => state.hashApp?.hash);
 
   // Step 1: Verify Code
   const [step, setStep] = useState(1); // 1: verify code, 2: set new password
@@ -53,6 +60,22 @@ export default function ResetPasswordScreen({ navigation, route }) {
     setValue,
   });
 
+  useEffect(() => {
+    const unsubscribe = subscribeOtp((otp) => {
+      setValue(otp);
+      setError('');
+    });
+
+    startOtpRetriever().catch((error) => {
+      console.log('SMS Retriever start error:', error);
+    });
+
+    return () => {
+      unsubscribe();
+      stopOtpRetriever({ clearPending: true });
+    };
+  }, []);
+
   // Timer for resend button
   useEffect(() => {
     let interval;
@@ -73,15 +96,20 @@ export default function ResetPasswordScreen({ navigation, route }) {
   // Resend code
   const handleResendCode = async () => {
     setLoading(true);
+    setValue('');
+    setError('');
     console.log('🔄 ارسال مجدد کد بازیابی رمز...');
     console.log('پارامترهای دریافت شده:', params);
 
     try {
+      await restartOtpRetriever();
+
       const result = await requestPasswordReset({
         referral_code: params?.referralCode || '',
         phone: params?.phone || '',
         melicode: params?.melicode || '',
         email: params?.email || '',
+        hashApp: hashApp?.[0] ?? '',
       });
 
       console.log('📦 نتیجه ارسال مجدد:', result);
@@ -93,9 +121,11 @@ export default function ResetPasswordScreen({ navigation, route }) {
         setResendTimer(60); // Reset timer
         setCanResend(false);
       } else {
+        stopOtpRetriever({ clearPending: true });
         showAlert(t("Error"), result.message || t("Error resending code"), [], t);
       }
     } catch (error) {
+      stopOtpRetriever({ clearPending: true });
       console.log('❌ خطا در ارسال مجدد کد:', error);
       showAlert(t("Error"), t("Error communicating with server"), [], t);
     } finally {
@@ -122,6 +152,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
       console.log('📦 نتیجه تأیید کد:', result);
 
       if (result.success) {
+        stopOtpRetriever({ clearPending: true });
         setError("");
         console.log('✅ کد تأیید شد، انتقال به مرحله تنظیم رمز جدید');
         setStep(2); // Move to password setting step
@@ -273,16 +304,17 @@ export default function ResetPasswordScreen({ navigation, route }) {
                   {...props}
                   value={value}
                   onChangeText={(text) => {
-                    setValue(text);
+                    const normalizedCode = String(text || '').replace(/\D/g, '').slice(0, 6);
+                    setValue(normalizedCode);
                     setError("");
                   }}
                   cellCount={6}
+                  maxLength={6}
                   keyboardType="number-pad"
-                  textContentType="oneTimeCode"
-                  autoComplete={Platform.select({
-                    android: "sms-otp",
-                    default: "one-time-code",
-                  })}
+                  inputMode="numeric"
+                  textContentType={Platform.OS === 'ios' ? 'oneTimeCode' : undefined}
+                  autoComplete={Platform.OS === 'android' ? 'sms-otp' : 'one-time-code'}
+                  importantForAutofill={Platform.OS === 'android' ? 'yes' : undefined}
                   renderCell={({ index, symbol, isFocused }) => (
                     <Text
                       key={index}

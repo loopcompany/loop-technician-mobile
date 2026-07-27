@@ -336,7 +336,7 @@ export const validateTechnicianRegistration = (formData, step = 'personal') => {
       errors.melicode = meliValidation.message;
     }
   }
-  if(!formData.acceptTerms){
+  if(step == 'computer' && !formData.acceptTerms){
     errors.acceptTerms = "Acceptance of the rules and regulations is mandatory."
   }
 
@@ -385,7 +385,6 @@ export const validateTechnicianRegistration = (formData, step = 'personal') => {
   if (formData.marital_status && !maritalStatusOptions.includes(formData.marital_status)) {
     errors.marital_status = 'وضعیت تأهل نامعتبر است';
   }
-
   const militaryStatusOptions = ['مشمول خدمت', 'درانتظار اعزام', 'فاقد سابقه خدمت', 'اتمام خدمت', 'معافیت', 'در حال تحصیل'];
   if (formData.military_status && !militaryStatusOptions.includes(formData.military_status)) {
     errors.military_status = 'وضعیت نظام وظیفه نامعتبر است';

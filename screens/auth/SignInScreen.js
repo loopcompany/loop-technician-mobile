@@ -19,6 +19,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { showAlert } from "../../helpers/Common";
 import { createStyles } from '../../styles/NewStyles';
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 export default function SignInScreen({ navigation }) {
   // از اینجا
   const { t, i18n } = useTranslation();
@@ -27,7 +28,7 @@ export default function SignInScreen({ navigation }) {
     [i18n.language]
   );
   // تا اینجا
-  
+  const hashApp = useSelector(state=>state.hashApp?.hash)
 
 
   // این خط پایین
@@ -68,6 +69,7 @@ export default function SignInScreen({ navigation }) {
         phone: mobile.trim(),
         melicode: nationalId.trim(),
         email: email.trim(),
+        hashApp: hashApp?.[0] ?? ''
       });
  
 
