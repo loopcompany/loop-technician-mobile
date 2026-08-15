@@ -2,6 +2,9 @@
 
 # dependencies
 node_modules/
+.pnp
+.pnp.js
+.yarn/install-state.gz
 
 # Expo
 .expo/
@@ -17,6 +20,8 @@ expo-env.d.ts
 *.p12
 *.key
 *.mobileprovision
+ios/
+android/
 
 # Metro
 .metro-health-check*
@@ -25,13 +30,34 @@ expo-env.d.ts
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+*.log
 
 # macOS
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
+# Windows
+Thumbs.db
+
+# env files (all - secrets should never be committed)
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
 
 # typescript
 *.tsbuildinfo
+
+# testing / coverage
+coverage/
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# EAS / build artifacts
+*.ipa
+*.apk
+*.aab

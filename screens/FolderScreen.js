@@ -292,7 +292,7 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
   },
   folderList: {
     paddingHorizontal: 15,
-    paddingBottom: 20,
+    paddingBottom: 30,
     paddingTop: 10,
     flexGrow: 1,
   },

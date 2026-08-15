@@ -381,7 +381,7 @@ const FooterRoot = memo(function FooterRoot({ isVisible }) {
               onPress={handleSupportPress}
             >
               <Image
-                source={require('../assets/images/support.png')}
+                source={require('../assets/images/support.webp')}
                 style={{ height: 40, width: 60, resizeMode: 'contain', }}
               />
             </TouchableOpacity>
@@ -717,7 +717,7 @@ const createLocalStyles = (newStyles) =>
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      paddingVertical: 10,
+      // paddingVertical: 10,
     },
 
     footerLogo: {
