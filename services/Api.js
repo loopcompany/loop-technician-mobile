@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 import { uri as BASE_URL, Technician_Orders, Technician_DeliveryReports } from './URL';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_ENDPOINTS } from './ApiEndpoints';
+import { runLogoutTask } from './notifications/logoutTask';
 import i18n from 'i18next';
 const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 // Create axios instance with base configuration
@@ -605,11 +606,26 @@ export const loginTechnician = async (referralCodeOrPhone, password) => {
 };
 
 /**
+ * Detaches this device from the account's push notifications.
+ * Goes through the registry in ./notifications/logoutTask so this file never
+ * has to import the notifications module, which imports this one.
+ */
+const removeDeviceTokenBeforeLogout = async () => {
+  const authToken = await AsyncStorage.getItem('userToken');
+  await runLogoutTask(authToken);
+};
+
+/**
  * Logout technician
  */
 export const logoutTechnician = async () => {
   try {
     console.log('🚪 شروع فرآیند خروج...');
+
+    // Must happen before the logout request revokes the bearer token, otherwise
+    // the device-token deletion comes back 401 and the row is left behind.
+    await removeDeviceTokenBeforeLogout();
+
     const response = await api.post('/technician/logout');
     console.log('✅ پاسخ سرور logout:', response.status, response.data);
 
@@ -2348,6 +2364,58 @@ export const getOrganizationOrders = async (organizationId) => {
     return handleResponse(response);
   } catch (error) {
     console.log('❌ خطا در دریافت سفارشات سازمان:', error.response?.data || error.message);
+    return handleError(error);
+  }
+};
+
+
+// ==================== Push Notification Device Tokens ====================
+
+/**
+ * ثبت توکن دستگاه برای دریافت اعلان‌های Firebase
+ * POST /notifications/device-token
+ *
+ * @param {Object} params
+ * @param {string} params.token - توکن FCM دستگاه
+ * @param {'android'|'ios'|'web'} params.platform - پلتفرم دستگاه
+ * @param {string} [params.deviceId] - شناسه یکتای نصب (اختیاری)
+ * @param {string} [params.appVersion] - نسخه اپلیکیشن (اختیاری)
+ */
+export const registerDeviceToken = async ({ token, platform, deviceId, appVersion }) => {
+  try {
+    const response = await api.post('/notifications/device-token', {
+      token,
+      platform,
+      ...(deviceId ? { device_id: deviceId } : {}),
+      ...(appVersion ? { app_version: appVersion } : {}),
+    });
+    console.log('✅ توکن اعلان ثبت شد:', response.data?.data);
+    return handleResponse(response);
+  } catch (error) {
+    console.log('❌ خطا در ثبت توکن اعلان:', error.response?.data || error.message);
+    return handleError(error);
+  }
+};
+
+/**
+ * حذف توکن دستگاه (هنگام خروج از حساب)
+ * DELETE /notifications/device-token
+ *
+ * @param {Object} params
+ * @param {string} params.token - توکن FCM دستگاه
+ * @param {'android'|'ios'|'web'} params.platform - پلتفرم دستگاه
+ * @param {string} [params.authToken] - توکن احراز هویت (برای حذف پیش از پاک شدن توکن)
+ */
+export const unregisterDeviceToken = async ({ token, platform, authToken }) => {
+  try {
+    const response = await api.delete('/notifications/device-token', {
+      data: { token, platform },
+      ...(authToken ? { headers: { Authorization: `Bearer ${authToken}` } } : {}),
+    });
+    console.log('✅ توکن اعلان حذف شد');
+    return handleResponse(response);
+  } catch (error) {
+    console.log('❌ خطا در حذف توکن اعلان:', error.response?.data || error.message);
     return handleError(error);
   }
 };

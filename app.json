@@ -2,6 +2,7 @@
   "expo": {
     "name": "looptech",
     "slug": "looptech",
+    "owner": "mehrdadtorki",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -42,11 +43,6 @@
     },
     "plugins": [
       "expo-font"
-    ],
-    "extra": {
-      "eas": {
-        "projectId": "8e18e97b-45ff-44cd-bb95-af33726e16ed"
-      }
-    }
+    ]
   }
 }
