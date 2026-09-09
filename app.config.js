@@ -125,6 +125,7 @@ module.exports = ({ config }) => {
     },
 
     plugins: mergePlugins(config.plugins, [
+      './plugins/withNotificationColor',
       '@react-native-firebase/app',
       '@react-native-firebase/messaging',
       [
