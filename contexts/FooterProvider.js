@@ -1,19 +1,29 @@
-import React, { createContext, useCallback, useContext, useMemo, useState, useEffect, memo, useRef, } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Linking, Modal, Pressable, BackHandler, Animated, Touchable, ActivityIndicator, TouchableWithoutFeedback, } from 'react-native';
+import React, { createContext, useCallback, useContext, useMemo, useState, useEffect, memo, } from 'react';
+import { View, Text, StyleSheet, Pressable, FlatList, Image, Linking, Modal, BackHandler, ActivityIndicator, TouchableWithoutFeedback, } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector, shallowEqual } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 
 import { setToken } from '../slices/authSlice';
 import { emptyUser, fetchUser } from '../slices/userSlice';
 import { atWork, logoutTechnician } from '../services/Api';
 import * as NavigationService from '../services/NavigationService';
+import { navigationRef } from '../services/NavigationService';
 import ConfirmationModal from '../components/ConfirmationModal';
-import NewStyles, { createStyles } from '../styles/NewStyles';
 import { mainUri } from '../services/URL';
-import { themeColor0, themeColor4, themeColor6, themeColor13, themeColor7 } from '../theme/Color';
-import { showToastOrAlert } from '../helpers/Common';
+import {
+  colors,
+  themeColor7,
+  themeColor8,
+  themeColor12,
+  themeColor14,
+} from '../theme/Color';
+import { spacing } from '../theme/Spacing';
+import { radius } from '../theme/Radius';
+import { fontSize, getFontFamily } from '../theme/Typography';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setLanguage } from '../slices/languageSlice';
 
@@ -29,26 +39,71 @@ export const useFooter = () => {
   return context;
 };
 
-const FooterMenuItem = memo(function FooterMenuItem({
-  item,
-  styles,
-  newStyles,
-  onPress,
-}) {
+// Compact glass button that lives inside the dock. Windows 7 Aero is only the
+// visual mood here: a soft illumination on hover/press, and a brighter glass
+// fill + blue glow + underline when the item is active.
+function DockButton({ icon, image, label, active, onPress, lang }) {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <Pressable
+      onPress={onPress}
+      onHoverIn={() => setHovered(true)}
+      onHoverOut={() => setHovered(false)}
+      style={({ pressed }) => [
+        styles.dockBtn,
+        (hovered || pressed) && styles.dockBtnHover,
+        active && styles.dockBtnActive,
+      ]}
+    >
+      {active ? <View style={styles.activeGlow} pointerEvents="none" /> : null}
+      {image ? (
+        <Image source={image} style={styles.dockBtnImage} />
+      ) : (
+        <Ionicons
+          name={icon}
+          size={19}
+          color={active ? themeColor14.color : colors.white.bgColor(0.82)}
+        />
+      )}
+      {active ? (
+        <Text
+          style={[styles.dockBtnLabel, { fontFamily: getFontFamily('bold', lang) }]}
+          numberOfLines={1}
+        >
+          {label}
+        </Text>
+      ) : null}
+      {active ? <View style={styles.activeUnderline} pointerEvents="none" /> : null}
+    </Pressable>
+  );
+}
+
+const FooterMenuItem = memo(function FooterMenuItem({ item, lang, onPress }) {
   const handlePress = useCallback(() => {
     onPress(item);
   }, [item, onPress]);
 
   return (
-    <TouchableOpacity style={styles.item} onPress={handlePress}>
-      <Text style={[newStyles.text10, styles.title]}>{item.title}</Text>
-    </TouchableOpacity>
+    <Pressable
+      style={({ pressed, hovered }) => [
+        styles.menuItem,
+        (pressed || hovered) && styles.menuItemHover,
+      ]}
+      onPress={handlePress}
+    >
+      <Text
+        style={[styles.menuItemText, { fontFamily: getFontFamily('bold', lang) }]}
+        numberOfLines={1}
+      >
+        {item.title}
+      </Text>
+      <Ionicons name="chevron-back" size={14} color={colors.white.bgColor(0.35)} />
+    </Pressable>
   );
 });
 
-const FooterMenuModal = memo(function FooterMenuModal({ visible, menuItems, userToken, styles, newStyles, t, onClose, onMenuItemPress, onLogoutClick, atWork, handleWorkat, workAtLoading }) {
-  const insets = useSafeAreaInsets();
-
+const FooterMenuModal = memo(function FooterMenuModal({ visible, menuItems, userToken, lang, t, onClose, onMenuItemPress, onLogoutClick, atWork, handleWorkat, workAtLoading }) {
   useEffect(() => {
     if (!visible) return undefined;
 
@@ -65,92 +120,89 @@ const FooterMenuModal = memo(function FooterMenuModal({ visible, menuItems, user
 
   const renderItem = useCallback(
     ({ item }) => (
-      <FooterMenuItem
-        item={item}
-        styles={styles}
-        newStyles={newStyles}
-        onPress={onMenuItemPress}
-      />
+      <FooterMenuItem item={item} lang={lang} onPress={onMenuItemPress} />
     ),
-    [styles, newStyles, onMenuItemPress]
+    [lang, onMenuItemPress]
   );
 
-  const keyExtractor = useCallback((item) => item.id, []);
+  const keyExtractor = useCallback((item) => item.id.toString(), []);
 
   return (
-    <Modal transparent visible={visible} animationType="fade" statusBarTranslucent onRequestClose={onClose}
+    <Modal
+      transparent
+      visible={visible}
+      animationType="fade"
+      statusBarTranslucent
+      onRequestClose={onClose}
     >
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.menuOverlay}>
+          <TouchableWithoutFeedback>
+            <View style={styles.menuPanel}>
+              <BlurView intensity={100} tint="dark" style={StyleSheet.absoluteFill} />
+              <LinearGradient
+                colors={[colors.white.bgColor(0.12), themeColor12.bgColor(0.22), colors.black.bgColor(0.34)]}
+                locations={[0, 0.5, 1]}
+                style={StyleSheet.absoluteFill}
+              />
+              <LinearGradient
+                colors={[colors.white.bgColor(0.3), colors.white.bgColor(0)]}
+                style={styles.topSheen}
+                pointerEvents="none"
+              />
+              <View style={styles.menuHandle} />
+              <FlatList
+                data={menuItems}
+                keyExtractor={keyExtractor}
+                renderItem={renderItem}
+                contentContainerStyle={styles.list}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+              />
 
-      <View style={styles.modalRoot}  >
-
-
-        <View style={styles.modalBottomLayer}  >
-          <View
-            style={[
-              styles.coverlist,
-              {
-                bottom: 60 + insets.bottom,
-              },
-            ]}
-          >
-            <View style={styles.coverlist2}>
-              <TouchableOpacity style={{ paddingVertical: 10, alignSelf: 'flex-end' }} onPress={() => {
-                onClose()
-              }}>
-                <Ionicons
-                  name={'close'}
-                  size={20}
-                  color={themeColor4.bgColor(1)}
-                />
-
-              </TouchableOpacity>
-              <View style={styles.menuContainer}>
-                <FlatList
-                  data={menuItems}
-                  renderItem={renderItem}
-                  keyExtractor={keyExtractor}
-                  style={styles.list}
-                  contentContainerStyle={styles.listContent}
-                  keyboardShouldPersistTaps="handled"
-                />
-              </View>
-
-              {userToken && (
+              {userToken ? (
                 <View style={styles.bottomButtons}>
-                  <TouchableOpacity
-                    style={styles.exitButton}
+                  <Pressable
+                    style={({ pressed, hovered }) => [
+                      styles.sheetBtn,
+                      (pressed || hovered) && styles.sheetBtnHover,
+                    ]}
                     onPress={onLogoutClick}
                   >
-                    <Ionicons
-                      name="log-out-outline"
-                      size={16}
-                      color={themeColor4.bgColor(1)}
-                    />
-                    <Text style={[newStyles.text4, styles.exitButtonText]}>
+                    <Ionicons name="log-out-outline" size={16} color={themeColor14.color} />
+                    <Text
+                      style={[styles.sheetBtnText, { fontFamily: getFontFamily('bold', lang) }]}
+                    >
                       {t('Logout')}
                     </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={handleWorkat} disabled={workAtLoading} style={[styles.exitButton, atWork == 1 && { backgroundColor: themeColor7.bgColor(1) }]}>
-                    {
-                      workAtLoading ?
-                        <ActivityIndicator
-                          size={'small'}
-                          color={themeColor4.bgColor(1)}
-                        />
-                        :
-                        <Ionicons
-                          name={'power-outline'}
-                          size={16}
-                          color={themeColor4.bgColor(1)}
-                        />}
-                    <Text style={[newStyles.text4, styles.exitButtonText]}>{atWork == 1 ? t('On') : t('Off')}</Text>
-                  </TouchableOpacity>
+                  </Pressable>
+
+                  <Pressable
+                    onPress={handleWorkat}
+                    disabled={workAtLoading}
+                    style={({ pressed, hovered }) => [
+                      styles.sheetBtn,
+                      (pressed || hovered) && styles.sheetBtnHover,
+                      atWork == 1 && styles.sheetBtnOn,
+                    ]}
+                  >
+                    {workAtLoading ? (
+                      <ActivityIndicator size="small" color={themeColor14.color} />
+                    ) : (
+                      <Ionicons name="power-outline" size={16} color={themeColor14.color} />
+                    )}
+                    <Text
+                      style={[styles.sheetBtnText, { fontFamily: getFontFamily('bold', lang) }]}
+                    >
+                      {atWork == 1 ? t('On') : t('Off')}
+                    </Text>
+                  </Pressable>
                 </View>
-              )}
+              ) : null}
             </View>
-          </View>
+          </TouchableWithoutFeedback>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 });
@@ -160,11 +212,12 @@ const FooterRoot = memo(function FooterRoot({ isVisible }) {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const { t, i18n } = useTranslation();
+  const lang = i18n.language;
   const dispatch = useDispatch();
 
   const userToken = useSelector((state) => state.auth.token);
   const user = useSelector((state) => state.user?.data?.data?.technician);
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
   const userData = useSelector(
     (state) => state.user?.data?.data?.technician,
@@ -176,9 +229,48 @@ const FooterRoot = memo(function FooterRoot({ isVisible }) {
     shallowEqual
   );
 
-  const newStyles = useMemo(() => createStyles(i18n.language), [i18n.language]);
+  const insets = useSafeAreaInsets();
 
-  const styles = useMemo(() => createLocalStyles(newStyles), [newStyles]);
+  // System-tray clock — inspired by the Windows 7 taskbar corner clock.
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(timer);
+  }, []);
+  const timeLabel = now.toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+
+  // Active-route tracking. FooterRoot renders outside NavigationContainer, so
+  // the navigation hooks are not available — read the current route off the
+  // shared navigation ref instead.
+  const [currentRoute, setCurrentRoute] = useState(() =>
+    NavigationService.getCurrentRouteName()
+  );
+  useEffect(() => {
+    const sync = () => setCurrentRoute(NavigationService.getCurrentRouteName());
+    let unsubscribe;
+    const attach = () => {
+      if (navigationRef.isReady()) {
+        sync();
+        unsubscribe = navigationRef.addListener('state', sync);
+        return true;
+      }
+      return false;
+    };
+    if (!attach()) {
+      const poll = setInterval(() => {
+        if (attach()) clearInterval(poll);
+      }, 250);
+      return () => {
+        clearInterval(poll);
+        unsubscribe?.();
+      };
+    }
+    return () => unsubscribe?.();
+  }, []);
 
   useEffect(() => {
     if (!userToken) {
@@ -186,18 +278,12 @@ const FooterRoot = memo(function FooterRoot({ isVisible }) {
     }
   }, [userToken]);
 
-  const openMenu = useCallback(() => {
-    setMenuVisible(true);
-  }, []);
-
-  const closeMenu = useCallback(() => {
-    setMenuVisible(false);
-  }, []);
+  const openMenu = useCallback(() => setMenuVisible(true), []);
+  const closeMenu = useCallback(() => setMenuVisible(false), []);
 
   const handleLogoutClick = useCallback(() => {
     setShowLogoutConfirm(true);
   }, []);
-
 
   const handleLogoutConfirmChange = useCallback((value) => {
     setShowLogoutConfirm(value);
@@ -221,18 +307,17 @@ const FooterRoot = memo(function FooterRoot({ isVisible }) {
       console.log('Error during logout:', error);
     }
   }, [dispatch]);
+
   const handleWorkat = useCallback(async () => {
     try {
-      setLoading(true)
+      setLoading(true);
 
       await atWork(userToken);
-
     } catch (error) {
-
       console.log('Error during at work change:', error);
     } finally {
-      setLoading(false)
-      dispatch(fetchUser(userToken))
+      setLoading(false);
+      dispatch(fetchUser(userToken));
     }
   }, [dispatch, userToken]);
 
@@ -343,75 +428,152 @@ const FooterRoot = memo(function FooterRoot({ isVisible }) {
     [closeMenu]
   );
 
-  const handleSupportPress = useCallback(() => {
-    NavigationService.navigate('MessageScreen');
-  }, []);
+  const changeLanguage = useCallback(
+    async (lng) => {
+      await i18n.changeLanguage(lng);
+      await AsyncStorage.setItem('language', lng);
+      dispatch(setLanguage(lng));
+    },
+    [dispatch, i18n]
+  );
 
-  const handleContactPress = useCallback(() => {
-    if (contact?.link) {
-      Linking.openURL(contact.link);
-    }
-  }, [contact?.link]);
+  const toggleLanguage = useCallback(() => {
+    changeLanguage(i18n.language === 'en' ? 'fa' : 'en');
+  }, [changeLanguage, i18n.language]);
 
-  const instets = useSafeAreaInsets()
-  const changeLanguage = async (lng) => {
-    await i18n.changeLanguage(lng);
-    await AsyncStorage.setItem('language', lng);
-    dispatch(setLanguage(lng))
-  };
+  const navItems = useMemo(
+    () => [
+      { key: 'menu', icon: 'grid-outline', label: 'منو', action: 'menu' },
+      { key: 'orders', icon: 'receipt-outline', label: 'سفارش‌ها', screen: 'OrderListScreen' },
+      { key: 'call', icon: 'call-outline', label: 'تماس', action: 'call' },
+      {
+        key: 'support',
+        image: require('../assets/images/support.webp'),
+        label: 'پشتیبانی',
+        action: 'support',
+      },
+      { key: 'account', icon: 'person-outline', label: 'حساب', screen: 'PersonalInfoScreen' },
+    ],
+    []
+  );
+
+  const isActive = useCallback(
+    (item) => {
+      if (item.action === 'menu') return menuVisible;
+      if (item.screen) return item.screen === currentRoute;
+      return false;
+    },
+    [menuVisible, currentRoute]
+  );
+
+  const handleDockPress = useCallback(
+    (item) => {
+      if (item.action === 'menu') {
+        setMenuVisible((v) => !v);
+        return;
+      }
+      if (item.action === 'call') {
+        Linking.openURL('tel:02121164552');
+        return;
+      }
+      if (item.action === 'support') {
+        NavigationService.navigate('MessageScreen');
+        setMenuVisible(false);
+        return;
+      }
+      if (item.screen) {
+        NavigationService.navigate(item.screen);
+        setMenuVisible(false);
+      }
+    },
+    []
+  );
 
   if (!isVisible) return null;
 
   return (
     <>
-      {userToken && (
+      {userToken ? (
         <SafeAreaView
           edges={{ top: 'off', bottom: 'off' }}
-          style={[styles.footer, { bottom: instets?.bottom }]}
+          style={[styles.footerRoot, { bottom: insets?.bottom }]}
+          pointerEvents="box-none"
         >
-          <View style={styles.footerBar}>
-
-            <AnimatedFooterLogoButton
-              onPress={menuVisible ? closeMenu : openMenu}
-              logoStyle={styles.footerLogo}
-            />
-
-            <TouchableOpacity
-              style={styles.supportButton}
-              onPress={handleSupportPress}
-            >
-              <Image
-                source={require('../assets/images/support.webp')}
-                style={{ height: 40, width: 60, resizeMode: 'contain', }}
+          {/* Floating bottom dock with a glassy (Aero) mood — not a pixel
+              rebuild: a dark glass dock with compact icon buttons. */}
+          <View style={styles.dockShadow}>
+            <View style={styles.dock}>
+              <BlurView intensity={100} tint="dark" style={StyleSheet.absoluteFill} />
+              <LinearGradient
+                colors={[colors.white.bgColor(0.14), themeColor12.bgColor(0.16), colors.black.bgColor(0.24)]}
+                locations={[0, 0.5, 1]}
+                style={StyleSheet.absoluteFill}
               />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{ padding: 5 }}
-              onPress={() => {
-                if (i18n.language == 'en') {
-                  changeLanguage('fa');
-                } else {
-                  changeLanguage('en');
-                }
-              }}
-            >
-              <Text style={NewStyles.text4}>{t(i18n.language)}</Text>
-            </TouchableOpacity>
+              <LinearGradient
+                colors={[colors.white.bgColor(0.35), colors.white.bgColor(0)]}
+                style={styles.topSheen}
+                pointerEvents="none"
+              />
+              <View style={styles.topEdge} pointerEvents="none" />
+              <LinearGradient
+                colors={[colors.black.bgColor(0), colors.black.bgColor(0.22)]}
+                style={styles.bottomShade}
+                pointerEvents="none"
+              />
 
-            <TouchableOpacity  >
-              <Text style={[newStyles.text4, styles.phone]}>
-                {user?.referral_code}
-              </Text>
-            </TouchableOpacity>
+              <View style={styles.dockRow}>
+                <View style={styles.navGroup}>
+                  {navItems.map((item) => (
+                    <DockButton
+                      key={item.key}
+                      icon={item.icon}
+                      image={item.image}
+                      label={item.label}
+                      lang={lang}
+                      active={isActive(item)}
+                      onPress={() => handleDockPress(item)}
+                    />
+                  ))}
+                </View>
+
+                <View style={styles.trayDivider} />
+
+                <Pressable style={styles.tray} onPress={toggleLanguage}>
+                  <Ionicons
+                    name="globe-outline"
+                    size={13}
+                    color={colors.white.bgColor(0.7)}
+                  />
+                  <Text
+                    style={[styles.trayText, { fontFamily: getFontFamily('bold', lang) }]}
+                  >
+                    {t(i18n.language)}
+                  </Text>
+                  <Text
+                    style={[styles.trayClock, { fontFamily: getFontFamily('bold', lang) }]}
+                  >
+                    {timeLabel}
+                  </Text>
+                  {user?.referral_code ? (
+                    <Text
+                      style={[styles.trayCode, { fontFamily: getFontFamily('bold', lang) }]}
+                      numberOfLines={1}
+                    >
+                      {user.referral_code}
+                    </Text>
+                  ) : null}
+                </Pressable>
+              </View>
+            </View>
           </View>
         </SafeAreaView>
-      )}
+      ) : null}
+
       <FooterMenuModal
         visible={menuVisible}
         menuItems={menuItems}
         userToken={userToken}
-        styles={styles}
-        newStyles={newStyles}
+        lang={lang}
         t={t}
         onClose={closeMenu}
         onMenuItemPress={handleMenuItemPress}
@@ -432,150 +594,9 @@ const FooterRoot = memo(function FooterRoot({ isVisible }) {
   );
 });
 
-
-
-// Logo Animation
-const AnimatedFooterLogoButton = React.memo(({ onPress, logoStyle }) => {
-  const idleScaleAnim = useRef(new Animated.Value(1)).current;
-  const rotateAnim = useRef(new Animated.Value(0)).current;
-  const pressScaleAnim = useRef(new Animated.Value(1)).current;
-  const colorAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const motionLoop = Animated.loop(
-      Animated.sequence([
-        Animated.parallel([
-          Animated.timing(idleScaleAnim, {
-            toValue: 1.08,
-            duration: 800,
-            useNativeDriver: true,
-          }),
-          Animated.timing(rotateAnim, {
-            toValue: 1,
-            duration: 800,
-            useNativeDriver: true,
-          }),
-        ]),
-        Animated.parallel([
-          Animated.timing(idleScaleAnim, {
-            toValue: 1,
-            duration: 800,
-            useNativeDriver: true,
-          }),
-          Animated.timing(rotateAnim, {
-            toValue: 0,
-            duration: 800,
-            useNativeDriver: true,
-          }),
-        ]),
-      ])
-    );
-
-    const colorLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(colorAnim, {
-          toValue: 1,
-          duration: 800,
-          useNativeDriver: false,
-        }),
-        Animated.timing(colorAnim, {
-          toValue: 0,
-          duration: 800,
-          useNativeDriver: false,
-        }),
-      ])
-    );
-
-    motionLoop.start();
-    colorLoop.start();
-
-    return () => {
-      motionLoop.stop();
-      colorLoop.stop();
-    };
-  }, [idleScaleAnim, rotateAnim, colorAnim]);
-
-  const handlePress = useCallback(() => {
-    pressScaleAnim.stopAnimation();
-
-    Animated.sequence([
-      Animated.timing(pressScaleAnim, {
-        toValue: 0.85,
-        duration: 80,
-        useNativeDriver: true,
-      }),
-      Animated.spring(pressScaleAnim, {
-        toValue: 1,
-        friction: 4,
-        tension: 120,
-        useNativeDriver: true,
-      }),
-    ]).start();
-
-    onPress?.();
-  }, [onPress, pressScaleAnim]);
-
-  const rotate = rotateAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['-3deg', '3deg'],
-  });
-
-  const backgroundColor = colorAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [
-      themeColor4.bgColor(1),
-      themeColor4.bgColor(0.5),
-    ],
-  });
-
-  return (
-    <TouchableOpacity
-      activeOpacity={0.85}
-      onPress={handlePress}
-      style={{
-        marginVertical: 5,
-      }}
-    >
-      {/* این View فقط برای رنگ است و JS-driven می‌ماند */}
-      <Animated.View
-        style={{
-          borderRadius: 100,
-          overflow: 'hidden',
-        }}
-      >
-        {/* این View فقط transform دارد و native-driven است */}
-        <Animated.View
-          style={{
-            transform: [
-              { scale: idleScaleAnim },
-              { rotate },
-            ],
-          }}
-        >
-          {/* این View فقط برای press animation است و native-driven است */}
-          <Animated.View
-            style={{
-              transform: [
-                { scale: pressScaleAnim },
-              ],
-            }}
-          >
-            <Image
-              source={require("../assets/images/start.png")}
-              style={logoStyle}
-            />
-          </Animated.View>
-        </Animated.View>
-      </Animated.View>
-    </TouchableOpacity>
-  );
-});
-
-
-
 export const FooterProvider = ({ children }) => {
   const [isFooterVisible, setIsFooterVisible] = useState(true);
-  const { i18n } = useTranslation()
+  const { i18n } = useTranslation();
   const showFooter = useCallback(() => {
     setIsFooterVisible(true);
   }, []);
@@ -597,9 +618,8 @@ export const FooterProvider = ({ children }) => {
     }),
     [isFooterVisible, showFooter, hideFooter, toggleFooter]
   );
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const loadLanguage = async () => {
-
     try {
       const language = await AsyncStorage.getItem('language');
       if (language) {
@@ -613,9 +633,9 @@ export const FooterProvider = ({ children }) => {
     }
   };
   useEffect(() => {
-    loadLanguage()
-    console.log("Loading lang")
-  }, [])
+    loadLanguage();
+    console.log('Loading lang');
+  }, []);
   return (
     <FooterContext.Provider value={value}>
       {children}
@@ -624,115 +644,224 @@ export const FooterProvider = ({ children }) => {
   );
 };
 
-const createLocalStyles = (newStyles) =>
-  StyleSheet.create({
-    modalRoot: {
-      flex: 1,
-    },
+const styles = StyleSheet.create({
+  // Anchors the dock to the bottom of the screen without blocking touches
+  // outside its own bounds.
+  footerRoot: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
 
-    modalBottomLayer: {
-      ...StyleSheet.absoluteFillObject,
-      justifyContent: 'flex-end',
-    },
+  // Outer view carries the soft floating shadow; inner view clips the glass.
+  dockShadow: {
+    marginHorizontal: spacing.md,
+    marginTop: spacing.sm,
+    marginBottom: spacing.md,
+    borderRadius: radius.lg,
+    backgroundColor: colors.black.bgColor(0.04),
+    shadowColor: colors.black.color,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.28,
+    shadowRadius: 22,
+    elevation: 12,
+  },
+  dock: {
+    borderRadius: radius.lg,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.white.bgColor(0.3),
+  },
+  topSheen: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 40,
+  },
+  topEdge: {
+    position: 'absolute',
+    top: 0,
+    left: spacing.lg,
+    right: spacing.lg,
+    height: 1,
+    backgroundColor: colors.white.bgColor(0.6),
+  },
+  bottomShade: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 22,
+  },
+  dockRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm,
+    minHeight: 58,
+  },
+  navGroup: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  dockBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    minWidth: 40,
+    height: 40,
+    paddingHorizontal: spacing.sm,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.white.bgColor(0),
+    overflow: 'hidden',
+  },
+  dockBtnHover: {
+    backgroundColor: colors.white.bgColor(0.09),
+    borderColor: colors.white.bgColor(0.16),
+  },
+  dockBtnActive: {
+    backgroundColor: themeColor8.bgColor(0.2),
+    borderColor: themeColor8.bgColor(0.55),
+    shadowColor: themeColor8.color,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.9,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  dockBtnImage: {
+    width: 22,
+    height: 22,
+    resizeMode: 'contain',
+  },
+  activeGlow: {
+    position: 'absolute',
+    top: -8,
+    alignSelf: 'center',
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: themeColor8.bgColor(0.28),
+  },
+  activeUnderline: {
+    position: 'absolute',
+    bottom: 3,
+    alignSelf: 'center',
+    width: 16,
+    height: 2,
+    borderRadius: 1,
+    backgroundColor: themeColor14.color,
+  },
+  dockBtnLabel: {
+    color: themeColor14.color,
+    fontSize: fontSize.xs,
+  },
+  trayDivider: {
+    width: 1,
+    height: 22,
+    backgroundColor: colors.white.bgColor(0.16),
+    marginHorizontal: spacing.sm,
+  },
+  tray: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingHorizontal: spacing.xs,
+  },
+  trayText: {
+    color: colors.white.bgColor(0.75),
+    fontSize: fontSize.xs,
+  },
+  trayClock: {
+    color: colors.white.bgColor(1),
+    fontSize: fontSize.sm,
+    letterSpacing: 0.5,
+  },
+  trayCode: {
+    color: colors.white.bgColor(0.6),
+    fontSize: fontSize.xs,
+    maxWidth: 64,
+  },
 
-    overlayTouchable: {
-      ...StyleSheet.absoluteFillObject,
-      backgroundColor: 'transparent',
-      zIndex: 998,
-    },
-
-    coverlist: {
-      position: 'absolute',
-      left: 0,
-      width: '60%',
-      zIndex: 999,
-    },
-
-    coverlist2: {
-      backgroundColor: themeColor0.bgColor(1),
-      marginBottom: 10,
-      width: '100%',
-      paddingHorizontal: 15,
-    },
-
-    menuContainer: {
-      backgroundColor: themeColor4.bgColor(1),
-      marginBottom: 15,
-      overflow: 'hidden',
-    },
-
-    list: {},
-
-    listContent: {
-      paddingVertical: 15,
-      gap: 10,
-    },
-
-    item: {
-      backgroundColor: 'transparent',
-      paddingHorizontal: 20,
-      width: '100%',
-    },
-
-    title: {
-      ...newStyles.text10,
-      fontSize: 16,
-      fontWeight: '600',
-    },
-
-    bottomButtons: {
-      paddingHorizontal: 15,
-      paddingBottom: 15,
-      marginTop: 10,
-      gap: 10,
-      ...NewStyles.rowWrapper,
-    },
-
-    exitButton: {
-      ...newStyles.row,
-      backgroundColor: themeColor6.bgColor(1),
-      paddingVertical: 8,
-      paddingHorizontal: 15,
-      alignItems: 'center',
-      gap: 5,
-      borderRadius: 8,
-    },
-
-    exitButtonText: {
-      color: themeColor4.bgColor(1),
-      fontSize: 14,
-      fontWeight: '600',
-    },
-
-    footer: {
-      backgroundColor: 'rgba(100, 180, 240, 0.4)',
-      borderTopWidth: 1.5,
-      borderTopColor: 'rgba(255, 255, 255, 0.5)',
-      width: '100%',
-      paddingHorizontal: 15,
-      position: 'absolute'
-    },
-
-    footerBar: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      // paddingVertical: 10,
-    },
-
-    footerLogo: {
-      width: 50,
-      height: 50,
-      resizeMode: 'contain',
-    },
-
-    supportButton: {
-      paddingVertical: 5,
-    },
-
-    phone: {
-      color: themeColor4.bgColor(1),
-      fontSize: 14,
-      fontWeight: '600',
-    },
-  });
+  // Bottom-sheet style menu, same dark glass language as the dock.
+  menuOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: colors.black.bgColor(0.3),
+  },
+  menuPanel: {
+    maxHeight: '72%',
+    borderTopLeftRadius: radius.lg,
+    borderTopRightRadius: radius.lg,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.white.bgColor(0.28),
+    paddingBottom: spacing.lg,
+  },
+  menuHandle: {
+    alignSelf: 'center',
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.white.bgColor(0.25),
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  list: {
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+  },
+  menuItem: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingVertical: 12,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.white.bgColor(0.06),
+  },
+  menuItemHover: {
+    backgroundColor: colors.white.bgColor(0.08),
+  },
+  menuItemText: {
+    flex: 1,
+    color: colors.white.bgColor(0.9),
+    fontSize: fontSize.sm,
+    textAlign: 'right',
+  },
+  bottomButtons: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+  },
+  sheetBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    paddingVertical: 10,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.white.bgColor(0.16),
+    backgroundColor: colors.white.bgColor(0.06),
+  },
+  sheetBtnHover: {
+    backgroundColor: colors.white.bgColor(0.12),
+  },
+  sheetBtnOn: {
+    backgroundColor: themeColor7.bgColor(0.35),
+    borderColor: themeColor7.bgColor(0.6),
+  },
+  sheetBtnText: {
+    color: themeColor14.color,
+    fontSize: fontSize.xs,
+  },
+});

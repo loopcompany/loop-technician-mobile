@@ -14,6 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import store from "./store";
 import { FooterProvider, useFooter } from "./contexts/FooterProvider";
+import NotificationsGate from "./components/NotificationsGate";
 import { navigationRef } from "./services/NavigationService";
 import { removeToken, setToken } from "./slices/authSlice";
 import { fetchUser } from "./slices/userSlice";
@@ -351,6 +352,7 @@ const App = () => {
     <I18nextProvider i18n={i18n}>
       <SafeAreaProvider>
         <Provider store={store}>
+          <NotificationsGate />
           <FooterProvider>
             <NavigationContainer
               ref={navigationRef}

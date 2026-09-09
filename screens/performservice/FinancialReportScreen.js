@@ -137,7 +137,7 @@ export default function FinancialReportScreen({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={{ top: 'off', bottom: 'additive' }}>
+    <SafeAreaView style={{ flex: 1 }} edges={{ top: 'off', bottom: 'off' }}>
 
       <LinearGradient
         colors={[themeColor8.bgColor(0.7), themeColor0.bgColor(0.8), themeColor2.bgColor(0.9)]}
@@ -251,7 +251,6 @@ export default function FinancialReportScreen({ navigation }) {
 const createLocalStyles = (NewStyles) => StyleSheet.create({
   background: {
     flex: 1,
-    paddingBottom: 120
   },
   loadingContainer: {
     flex: 1,

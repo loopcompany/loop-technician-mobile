@@ -13,3 +13,10 @@ export function reset(state) {
     navigationRef.reset(state);
   }
 }
+
+export function getCurrentRouteName() {
+  if (navigationRef.isReady()) {
+    return navigationRef.getCurrentRoute()?.name ?? null;
+  }
+  return null;
+}
