@@ -4,7 +4,7 @@ import { useFooter } from "../contexts/FooterProvider";
 import Folder from "../components/Folder";
 import Badge from '../components/Badge';
 import CustomStatusBar from './../components/CustomStatusBar';
-import { formatPrice, handleError, showToastOrAlert } from './../helpers/Common';
+import { formatAmount, handleError, showToastOrAlert } from './../helpers/Common';
 import { useDispatch, useSelector } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from '@react-navigation/native';
@@ -239,10 +239,17 @@ export default function FolderScreen({ navigation }) {
                 )}
                 <FontAwesome name="envelope-o" size={24} color={themeColor0.bgColor(1)} />
               </TouchableOpacity>
-              <View style={[NewStyles.row, { gap: 10 }]}>
+              <TouchableOpacity
+                style={[NewStyles.row, styles.creditButton]}
+                disabled={userData?.apple_check == 1}
+                onPress={() => navigation.navigate('FinancialReportScreen')}
+              >
+                <Ionicons name="wallet-outline" size={18} color={themeColor0.bgColor(1)} />
                 <Text style={[NewStyles.text10]}>{t("Your credit")}:</Text>
-                <Text style={NewStyles.text10}>{formatPrice(Number(userData?.wallet))} {t("T")}</Text>
-              </View>
+                <Text style={[NewStyles.title10, styles.creditAmount, Number(userData?.wallet) < 0 && styles.creditNegative]}>
+                  {formatAmount(userData?.wallet)} {t("T")}
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
           <ScrollView contentContainerStyle={styles.folderList}>
@@ -289,6 +296,19 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     width: 140,
     height: 90,
     resizeMode: "contain",
+  },
+  creditButton: {
+    gap: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    backgroundColor: themeColor0.bgColor(0.08),
+  },
+  creditAmount: {
+    fontSize: 14,
+  },
+  creditNegative: {
+    color: '#D12929',
   },
   folderList: {
     paddingHorizontal: 15,

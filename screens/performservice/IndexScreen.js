@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -19,7 +19,7 @@ import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor3, themeColor4, themeColor7, themeColor10, themeColor8, themeColor2 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
-import { faDigitsToEn, formatPrice, getCurrentJalaliYear, langIsRTL, showAlert } from '../../helpers/Common';
+import { formatAmount, formatPrice, getCurrentJalaliYear, langIsRTL, showAlert } from '../../helpers/Common';
 import { getYearlyIncomeChart } from '../../services/Api';
 import { useSelector } from 'react-redux';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -28,123 +28,104 @@ const { width } = Dimensions.get('window');
 export default function IndexScreen({ navigation }) {
   const user = useSelector((state) => state?.user?.data?.data?.technician);
   const [loading, setLoading] = useState(true);
+  const [chartLoading, setChartLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedYear, setSelectedYear] = useState(null); // شروع با null
+  const [loadError, setLoadError] = useState(false);
+  const currentYear = getCurrentJalaliYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const selectedYearRef = useRef(currentYear);
+  const requestIdRef = useRef(0);
   const [chartData, setChartData] = useState([]);
   const { t, i18n } = useTranslation();
+  const isRTL = langIsRTL(i18n.language);
   const [yearlyData, setYearlyData] = useState({
-    year: 1404,
     yearly_summary: {
       total_income: 0,
       total_settlements: 0,
       net_income: 0,
     },
-    current_wallet: 0,
+    current_wallet: null,
   });
 
   // دریافت داده‌های نمودار
   const fetchChartData = async (year) => {
+    // Only the latest request may update the screen (fast year switching).
+    const requestId = ++requestIdRef.current;
     try {
-      // اطمینان از اینکه year یک عدد معتبر است
-      const currentJalali = getCurrentJalaliYear();
-      const validYear = isNaN(year) || !year ? currentJalali : parseInt(year);
-      console.log('====================================');
-      console.log('currentJalali:', currentJalali);
-      console.log('year:', year);
-      console.log('====================================');
-      const response = await getYearlyIncomeChart(validYear);
+      const response = await getYearlyIncomeChart(year);
+      if (requestId !== requestIdRef.current) return;
 
       if (response.success && response.data) {
-        const { monthly_data, yearly_summary, current_wallet, year: responseYear } = response.data;
+        const { monthly_data, yearly_summary, current_wallet } = response.data;
 
         // تبدیل داده‌ها به فرمت مورد نیاز BarChart
-        const formattedData = monthly_data.map((item, index) => ({
-          value: Number(item.net_income) / 1000000, // تبدیل به میلیون تومان
-          label: item.month_name.substring(0, 3), // سه حرف اول نام ماه
+        const formattedData = (Array.isArray(monthly_data) ? monthly_data : []).map((item, index) => ({
+          value: Math.max(Number(item.net_income) || 0, 0) / 1000000, // تبدیل به میلیون تومان
+          label: String(item.month_name || '').substring(0, 3), // سه حرف اول نام ماه
           frontColor: index % 2 === 0 ? themeColor7.bgColor(1) : themeColor0.bgColor(1),
           spacing: 2,
           labelWidth: 35,
           labelTextStyle: { fontSize: 10 },
           monthName: item.month_name,
-          totalIncome: Number(item.total_income),
-          totalSettlements: Number(item.total_settlements),
-          netIncome: Number(item.net_income),
+          totalIncome: Number(item.total_income) || 0,
+          totalSettlements: Number(item.total_settlements) || 0,
+          netIncome: Number(item.net_income) || 0,
         }));
 
         setChartData(formattedData);
         setYearlyData({
-          year: Number(responseYear),
           yearly_summary: {
             total_income: Number(yearly_summary?.total_income || 0),
             total_settlements: Number(yearly_summary?.total_settlements || 0),
             net_income: Number(yearly_summary?.net_income || 0),
           },
-          current_wallet: Number(current_wallet || 0),
+          current_wallet: current_wallet ?? null,
         });
-        setSelectedYear(Number(responseYear));
+        setLoadError(false);
       } else {
-
-        clearChartData(validYear);
+        setLoadError(true);
       }
     } catch (error) {
-      clearChartData(year);
-
-      showAlert(
-        t('Error'),
-        t('An unexpected error occurred!'),
-        [{ text: t('Ok') }]
-      );
+      if (requestId !== requestIdRef.current) return;
+      setLoadError(true);
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      if (requestId === requestIdRef.current) {
+        setLoading(false);
+        setChartLoading(false);
+        setRefreshing(false);
+      }
     }
-  };
-
-  // Never show sample figures as if they were the technician's real income.
-  const clearChartData = (year) => {
-    setChartData([]);
-    setYearlyData({
-      year: year || getCurrentJalaliYear(),
-      yearly_summary: {
-        total_income: 0,
-        total_settlements: 0,
-        net_income: 0,
-      },
-      current_wallet: 0,
-    });
   };
 
   useFocusEffect(
     useCallback(() => {
-      // بار اول سال جاری رو بفرست
-      const jalaliYear = getCurrentJalaliYear();
-
-      console.log('🗓️ Jalali Year:', jalaliYear);
-
-      setSelectedYear(jalaliYear);
-      fetchChartData(jalaliYear);
+      // Keep the year the user was looking at when coming back to the screen.
+      fetchChartData(selectedYearRef.current);
     }, [])
   );
 
   const onRefresh = () => {
     setRefreshing(true);
-    // اگر selectedYear داریم ازش استفاده کن، وگرنه سال جاری
-    const yearToFetch = selectedYear || yearlyData.year;
-    // اطمینان از معتبر بودن سال
-    const validYear = isNaN(yearToFetch) || !yearToFetch ? 1404 : parseInt(yearToFetch);
-    console.log('🔄 Refreshing with year:', validYear);
-    fetchChartData(validYear);
+    fetchChartData(selectedYearRef.current);
   };
 
-  const handleYearChange = (direction) => {
-    const currentYear = selectedYear || yearlyData.year || 1404;
-    const validCurrentYear = isNaN(currentYear) ? 1404 : parseInt(currentYear);
-    const newYear = direction === 'next' ? validCurrentYear + 1 : validCurrentYear - 1;
-    console.log('📆 Year changed:', validCurrentYear, '->', newYear);
+  const changeYear = (newYear) => {
+    if (newYear > currentYear) return;
+    selectedYearRef.current = newYear;
     setSelectedYear(newYear);
-    setLoading(true);
+    setChartLoading(true);
     fetchChartData(newYear);
   };
+
+  const retry = () => {
+    setChartLoading(true);
+    fetchChartData(selectedYearRef.current);
+  };
+
+  // Bars are drawn with a positive scale; avoid maxValue 0 for an empty year.
+  const chartMax = Math.max(1, ...chartData.map((d) => d.value)) * 1.2;
+  const hasIncome = chartData.some((d) => d.value > 0);
+  const canGoNext = selectedYear < currentYear;
 
   // نمایش جزئیات هر ماه با کلیک روی ستون
   const handleBarPress = (item) => {
@@ -207,30 +188,34 @@ export default function IndexScreen({ navigation }) {
 
           {/* انتخاب سال */}
           <View style={styles.yearSelector}>
+            {/* rowWrapper is row-reverse in RTL: the first child is at the reading start. */}
             <TouchableOpacity
               style={styles.yearButton}
-              onPress={() => handleYearChange('next')}
+              onPress={() => changeYear(selectedYear - 1)}
+              accessibilityLabel={t('Previous year')}
             >
-              <Ionicons name="chevron-forward" size={20} color={themeColor0.bgColor(1)} />
+              <Ionicons name={isRTL ? 'chevron-forward' : 'chevron-back'} size={20} color={themeColor0.bgColor(1)} />
             </TouchableOpacity>
 
             <View style={styles.yearDisplay}>
               <Ionicons name="calendar" size={20} color={themeColor0.bgColor(1)} />
               <Text style={[NewStyles.title, styles.yearText]}>
-                {t('Year')} {selectedYear || yearlyData.year}
+                {t('Year')} {selectedYear}
               </Text>
             </View>
 
             <TouchableOpacity
-              style={styles.yearButton}
-              onPress={() => handleYearChange('prev')}
+              style={[styles.yearButton, !canGoNext && styles.yearButtonDisabled]}
+              onPress={() => changeYear(selectedYear + 1)}
+              disabled={!canGoNext}
+              accessibilityLabel={t('Next year')}
             >
-              <Ionicons name={langIsRTL(i18n.language) ? "chevron-back" : "chevron-forward"} size={20} color={themeColor0.bgColor(1)} />
+              <Ionicons name={isRTL ? 'chevron-back' : 'chevron-forward'} size={20} color={themeColor0.bgColor(1)} />
             </TouchableOpacity>
           </View>
 
           {/* خلاصه سالانه */}
-          {user?.apple_check == 1
+          {user?.apple_check == 1 || loadError
             ? null
             :
             <View style={styles.summaryContainer}>
@@ -274,7 +259,22 @@ export default function IndexScreen({ navigation }) {
               </View>
             </View>
 
-            {chartData.length > 0 ? (
+            {chartLoading ? (
+              <View style={styles.emptyChart}>
+                <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
+              </View>
+            ) : loadError ? (
+              <View style={styles.emptyChart}>
+                <Ionicons name="cloud-offline-outline" size={56} color={themeColor10.bgColor(0.3)} />
+                <Text style={[NewStyles.text4, styles.emptyText]}>
+                  {t('There was a problem fetching information.')}
+                </Text>
+                <TouchableOpacity style={styles.retryButton} onPress={retry}>
+                  <Ionicons name="refresh" size={16} color="#fff" />
+                  <Text style={[NewStyles.title, styles.retryText]}>{t('Try again')}</Text>
+                </TouchableOpacity>
+              </View>
+            ) : hasIncome ? (
               <View style={styles.chartWrapper}>
                 <BarChart
                   data={chartData}
@@ -293,7 +293,7 @@ export default function IndexScreen({ navigation }) {
                   yAxisTextStyle={{ fontSize: 8, color: themeColor10.bgColor(0.7) }}
                   xAxisLabelTextStyle={{ fontSize: 8, color: themeColor10.bgColor(0.7), textAlign: 'center' }}
                   noOfSections={5}
-                  maxValue={Math.max(...chartData.map(d => d.value)) * 1.2}
+                  maxValue={chartMax}
                   height={180}
                   width={width - 100}
                   yAxisColor={themeColor10.bgColor(0.3)}
@@ -319,15 +319,25 @@ export default function IndexScreen({ navigation }) {
           </View>
 
           {/* موجودی فعلی */}
-          <View style={styles.walletCard}>
-            <Ionicons name="wallet" size={28} color={themeColor7.bgColor(1)} />
-            <View style={styles.walletInfo}>
-              <Text style={[NewStyles.text4, styles.walletLabel]}>{t('Wallet balance')}</Text>
-              <Text style={[NewStyles.title, styles.walletValue]}>
-                {formatPrice(yearlyData.current_wallet)} {t('Tomans')}
-              </Text>
-            </View>
-          </View>
+          {!loadError && yearlyData.current_wallet !== null && (
+            <TouchableOpacity
+              style={styles.walletCard}
+              activeOpacity={0.8}
+              disabled={user?.apple_check == 1}
+              onPress={() => navigation.navigate('FinancialReportScreen')}
+            >
+              <Ionicons name="wallet" size={28} color={themeColor7.bgColor(1)} />
+              <View style={styles.walletInfo}>
+                <Text style={[NewStyles.text4, styles.walletLabel]}>{t('Wallet balance')}</Text>
+                <Text style={[NewStyles.title, styles.walletValue]}>
+                  {formatAmount(yearlyData.current_wallet)} {t('Tomans')}
+                </Text>
+              </View>
+              {user?.apple_check != 1 && (
+                <Ionicons name={isRTL ? 'chevron-back' : 'chevron-forward'} size={20} color={themeColor10.bgColor(0.4)} />
+              )}
+            </TouchableOpacity>
+          )}
 
         </ScrollView>
       </LinearGradient>
@@ -375,7 +385,22 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: themeColor4.bgColor(0.5),
+    backgroundColor: themeColor0.bgColor(0.08),
+  },
+  yearButtonDisabled: {
+    opacity: 0.3,
+  },
+  retryButton: {
+    ...NewStyles.row,
+    gap: 6,
+    backgroundColor: themeColor0.bgColor(1),
+    paddingHorizontal: 18,
+    paddingVertical: 9,
+    borderRadius: 10,
+  },
+  retryText: {
+    color: '#fff',
+    fontSize: 13,
   },
   yearDisplay: {
     ...NewStyles.row,

@@ -17,9 +17,10 @@ import { useTranslation } from 'react-i18next';
 import ScreenHeaders from '../components/ScreenHeaders';
 import DatePickerModal from '../components/DatePickerModal';
 import NewStyles from '../styles/NewStyles';
-import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor4, themeColor6, themeColor7, themeColor8, themeColor11 } from '../theme/Color';
+import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor4, themeColor6, themeColor7, themeColor8 } from '../theme/Color';
 import { getTransactions } from '../services/Api';
-import { formatDate, showAlert } from '../helpers/Common';
+import { formatAmount, formatDate, showAlert } from '../helpers/Common';
+import { isDebitTransaction, transactionVisual } from '../helpers/transactions';
 import { createStyles } from '../styles/NewStyles';
 export default function PerformanceScreen({ navigation }) {
   const { t, i18n } = useTranslation();
@@ -77,8 +78,11 @@ export default function PerformanceScreen({ navigation }) {
       const response = await getTransactions(filters);
 
       if (response.success && response.data) {
-        setTransactions(response.data);
+        setTransactions(Array.isArray(response.data) ? response.data : []);
         console.log(`✅ ${response.data.length} تراکنش دریافت شد`);
+      } else {
+        // Don't let a failed request look like "no transactions yet".
+        showAlert(t('Error'), response?.message || t('There was a problem fetching the transactions list.'));
       }
     } catch (error) {
       console.log('❌ خطا در دریافت لیست تراکنش‌ها:', error);
@@ -103,29 +107,6 @@ export default function PerformanceScreen({ navigation }) {
   const clearFilters = () => {
     setFromDateJalali('');
     setToDateJalali('');
-  };
-
-  const getTypeColor = (type) => {
-    switch (type) {
-      case 1: return themeColor7.bgColor(1); // واریز - سبز
-      case 2: return themeColor6.bgColor(1); // برداشت - قرمز
-      case 3: return themeColor11.bgColor(1); // جریمه - نارنجی
-      default: return themeColor10.bgColor(0.5);
-    }
-  };
-
-  const getTypeIcon = (type) => {
-    switch (type) {
-      case 1: return 'arrow-down-circle'; // واریز
-      case 2: return 'arrow-up-circle'; // برداشت
-      case 3: return 'warning'; // جریمه
-      default: return 'help-circle';
-    }
-  };
-
-  const formatPrice = (price) => {
-    const numPrice = parseFloat(price);
-    return new Intl.NumberFormat('fa-IR').format(Math.abs(numPrice));
   };
 
   if (loading) {
@@ -211,21 +192,24 @@ export default function PerformanceScreen({ navigation }) {
     </View>
   );
 
-  const renderTransactionItem = ({ item }) => (
+  const renderTransactionItem = ({ item }) => {
+    const debit = isDebitTransaction(item);
+    const visual = transactionVisual(item);
+    return (
     <View style={styles.transactionCard}>
       <View style={styles.cardHeader}>
         <View style={styles.typeContainer}>
-          <View style={[styles.typeBadge, { backgroundColor: getTypeColor(item.type) }]}>
-            <Ionicons name={getTypeIcon(item.type)} size={18} color="#fff" />
+          <View style={[styles.typeBadge, { backgroundColor: visual.color }]}>
+            <Ionicons name={visual.icon} size={18} color="#fff" />
             <Text style={[NewStyles.title4, styles.typeText]}>{item.type_label}</Text>
           </View>
           <Text style={[NewStyles.text10, styles.transactionId]}>#{item.id}</Text>
         </View>
 
         <Text style={[NewStyles.title, styles.priceText, {
-          color: parseFloat(item.price) >= 0 ? themeColor7.bgColor(1) : themeColor6.bgColor(1)
+          color: debit ? themeColor6.bgColor(1) : themeColor7.bgColor(1)
         }]}>
-          {parseFloat(item.price) >= 0 ? '+' : '-'} {formatPrice(item.price)} {t('Tomans')}
+          {debit ? '−' : '+'} {formatAmount(item.price, { absolute: true })} {t('Tomans')}
         </Text>
       </View>
 
@@ -271,7 +255,8 @@ export default function PerformanceScreen({ navigation }) {
         </View>
       )}
     </View>
-  );
+    );
+  };
 
   return (
     <LinearGradient
@@ -287,7 +272,7 @@ export default function PerformanceScreen({ navigation }) {
       <FlatList
         data={transactions}
         renderItem={renderTransactionItem}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item, index) => String(item.id ?? index)}
         ListHeaderComponent={() => (
           <>
             {renderHeader()}

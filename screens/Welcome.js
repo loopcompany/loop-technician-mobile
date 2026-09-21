@@ -19,7 +19,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { useEvent } from "expo";
-import { useFooter } from "../contexts/FooterProvider";
 import { getHash } from "react-native-otp-verify";
 import { setHashApp } from "../slices/hashAppSlice";
 
@@ -38,13 +37,11 @@ export default function Welcome({ navigation }) {
     }
     player.play();
   });
-  const { showFooter, hideFooter } = useFooter()
 
   // The session itself is restored in App.js; here we only prefetch public data.
   useEffect(() => {
     dispatch(fetchContacts());
     dispatch(fetchPdfDocs());
-    hideFooter()
   }, []);
 
   // Read the latest token when the intro ends, without re-subscribing.
@@ -59,12 +56,11 @@ export default function Welcome({ navigation }) {
     player.pause();
 
     if (tokenRef.current) {
-      showFooter()
       navigation.replace('FolderScreen');
     } else {
       navigation.replace('SignInLanding');
     }
-  }, [navigation, player, showFooter]);
+  }, [navigation, player]);
 
   useEffect(() => {
     const subscription = player.addListener('playToEnd', finishIntro);

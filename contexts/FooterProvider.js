@@ -27,6 +27,9 @@ import { fontSize, getFontFamily } from '../theme/Typography';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setLanguage } from '../slices/languageSlice';
 
+// The intro screen plays full-screen video; the footer never belongs there.
+const HIDDEN_ON_ROUTES = new Set(['Welcome']);
+
 const FooterContext = createContext(null);
 
 export const useFooter = () => {
@@ -489,7 +492,9 @@ const FooterRoot = memo(function FooterRoot({ isVisible }) {
     []
   );
 
-  if (!isVisible) return null;
+  // Derived from the route rather than toggled by screens, so a login that
+  // doesn't pass back through Welcome can't leave the footer stuck hidden.
+  if (!isVisible || !currentRoute || HIDDEN_ON_ROUTES.has(currentRoute)) return null;
 
   return (
     <>

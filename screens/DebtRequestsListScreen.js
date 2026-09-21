@@ -17,7 +17,7 @@ import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor4, themeColor8 } from '../theme/Color';
 import { getDebtRequests, getDebtRequestById } from '../services/Api';
-import { formatDate, formatPrice, langIsRTL, showAlert } from '../helpers/Common';
+import { formatAmount, formatDate, langIsRTL, showAlert } from '../helpers/Common';
 import { useTranslation } from 'react-i18next';
 import { createStyles } from '../styles/NewStyles';
 export default function DebtRequestsListScreen({ navigation }) {
@@ -126,15 +126,15 @@ export default function DebtRequestsListScreen({ navigation }) {
         </View>
 
         {/* Amount (for free type) */}
-        {item.type === 'free' && item.amount && (
+        {item.type === 'free' && !!item.amount && (
           <View style={styles.amountRow}>
             <Ionicons name="wallet-outline" size={18} color={themeColor0.bgColor(1)} />
-            <Text style={[NewStyles.text, styles.amountText]}>{t("Amount")}: {formatPrice(item.amount)} {t("T")}</Text>
+            <Text style={[NewStyles.text, styles.amountText]}>{t("Amount")}: {formatAmount(item.amount)} {t("T")}</Text>
           </View>
         )}
 
         {/* Month (for free type) */}
-        {item.type === 'free' && item.month && (
+        {item.type === 'free' && !!item.month && (
           <View style={styles.infoRow}>
             <Ionicons name="calendar-outline" size={16} color={themeColor10.bgColor(0.8)} />
             <Text style={[NewStyles.text, styles.infoText]}>
@@ -147,7 +147,7 @@ export default function DebtRequestsListScreen({ navigation }) {
         <Text style={[NewStyles.text4, styles.description]} numberOfLines={2}>
           {item.description}
         </Text>
-        {item?.response &&
+        {!!item?.response &&
           <>
             <Text style={NewStyles.text}>
               {t("Admin descriptions")}
@@ -231,10 +231,10 @@ export default function DebtRequestsListScreen({ navigation }) {
                 </View>
 
                 {/* Amount (for free type) */}
-                {selectedRequest.type === 'free' && selectedRequest.amount && (
+                {selectedRequest.type === 'free' && !!selectedRequest.amount && (
                   <View style={styles.detailRow}>
                     <Text style={[NewStyles.text4, styles.detailLabel]}>{t("Loan amount:")}</Text>
-                    <Text style={[NewStyles.text, styles.detailValue]}>{formatPrice(selectedRequest.amount)} {t("T")}</Text>
+                    <Text style={[NewStyles.text, styles.detailValue]}>{formatAmount(selectedRequest.amount)} {t("T")}</Text>
                   </View>
                 )}
 
@@ -247,7 +247,7 @@ export default function DebtRequestsListScreen({ navigation }) {
                 )}
 
                 {/* Month (for free type) */}
-                {selectedRequest.type === 'free' && selectedRequest.month && (
+                {selectedRequest.type === 'free' && !!selectedRequest.month && (
                   <View style={styles.detailRow}>
                     <Text style={[NewStyles.text4, styles.detailLabel]}>{t("Repayment duration:")}</Text>
                     <Text style={[NewStyles.text, styles.detailValue]}>{selectedRequest.month} {t("Month")}</Text>

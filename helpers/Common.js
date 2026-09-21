@@ -372,13 +372,11 @@ export const validateMelicode = (melicode) => {
 export const faDigitsToEn = (str = '') =>
   str.replace(/[۰-۹]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
 
+// jalaali-js instead of Intl: Hermes may not ship the persian calendar and
+// would silently return the Gregorian year.
 export const getCurrentJalaliYear = () => {
-  // با تقویم فارسی (جلالی)
-  const yFa = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
-    year: 'numeric',
-  }).format(new Date());
-
-  return parseInt(faDigitsToEn(yFa), 10);
+  const now = new Date();
+  return toJalaali(now.getFullYear(), now.getMonth() + 1, now.getDate()).jy;
 };
 
 export const validatePhone = (phone) => {
@@ -415,6 +413,22 @@ export const validateEmail = (email) => {
 
 export const formatPrice = (text) =>
   text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+// Parses an API amount ("1500000.00", 1500000, null) into a number, or null
+// when it is missing/invalid so callers never show a made-up 0.
+export const toAmount = (value) => {
+  if (value === null || value === undefined || value === '') return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+};
+
+// Whole-toman amount with thousands separators; "—" when unknown.
+export const formatAmount = (value, { absolute = false } = {}) => {
+  const n = toAmount(value);
+  if (n === null) return '—';
+  const rounded = Math.round(absolute ? Math.abs(n) : n);
+  return formatPrice(rounded);
+};
 
 export const formatJalaaliDate = (isoDate) => {
   const date = new Date(isoDate);
