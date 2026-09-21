@@ -12,7 +12,8 @@ import { getTechnicianOrders, getUnreadTicketsCount } from '../services/Api';
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { themeColor0, themeColor11, themeColor4 } from "../theme/Color";
-import { FontAwesome, Ionicons } from "@expo/vector-icons";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import Loader from "../components/Loader";
 import { createStyles } from "../styles/NewStyles";
 import { imageUri } from "../services/URL";
@@ -59,8 +60,7 @@ export default function FolderScreen({ navigation }) {
     useCallback(() => {
       fetchUnseenCount();
       if (userToken) {
-
-        dispatch(fetchUser(userToken))
+        dispatch(fetchUser())
       }
     }, [])
   );
@@ -193,9 +193,9 @@ export default function FolderScreen({ navigation }) {
   }
 
 
+  // Order count is refreshed by the focus effect above, which also runs on mount.
   useEffect(() => {
     fetchUnreadTicketCounts()
-    fetchUnseenCount();
   }, []);
   if (loading) {
     return (
@@ -314,11 +314,8 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     // width:100
   },
   folderItem: {
-    width: 80,
     alignItems: "center",
     margin: 12,
-    // flexDirection: 'row-reverse',
-    alignItems: "center",
     backgroundColor: "rgba(0,0,0,0.2)",
     borderRadius: 8,
     padding: 10,

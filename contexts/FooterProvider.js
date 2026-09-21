@@ -2,7 +2,7 @@ import React, { createContext, useCallback, useContext, useMemo, useState, useEf
 import { View, Text, StyleSheet, Pressable, FlatList, Image, Linking, Modal, BackHandler, ActivityIndicator, TouchableWithoutFeedback, } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector, shallowEqual } from 'react-redux';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';

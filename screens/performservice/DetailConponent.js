@@ -1,9 +1,9 @@
-import { Image, Linking, SectionList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Image, Linking, Platform, SectionList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import MapView, { Marker } from 'react-native-maps'
 import NewStyles from '../../styles/NewStyles'
-import { Ionicons } from '@expo/vector-icons'
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { themeColor0, themeColor1, themeColor10, themeColor3, themeColor4, themeColor5, themeColor6, themeColor7, themeColor8 } from '../../theme/Color'
 import { formatDate, formatDateTime, formatPrice, langIsRTL } from '../../helpers/Common'
 import { imageUri, mainUri } from '../../services/URL'
@@ -271,7 +271,8 @@ const DetailConponent = ({ data, renderRow, }) => {
                                     const latLng = `${lat},${lng}`;
                                     const url = Platform.select({
                                         ios: `${scheme}${label}@${latLng}`,
-                                        android: `${scheme}${latLng}(${label})`
+                                        android: `${scheme}${latLng}(${label})`,
+                                        default: `https://www.google.com/maps/search/?api=1&query=${latLng}`,
                                     });
 
                                     Linking.openURL(url);

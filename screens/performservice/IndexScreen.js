@@ -12,7 +12,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from '@react-navigation/native';
 import { BarChart } from 'react-native-gifted-charts';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTranslation } from 'react-i18next';
 
 import ScreenHeaders from '../../components/ScreenHeaders';
@@ -84,15 +84,14 @@ export default function IndexScreen({ navigation }) {
         setSelectedYear(Number(responseYear));
       } else {
 
-        // استفاده از داده‌های موقت برای تست UI
-        useMockData();
+        clearChartData(validYear);
       }
     } catch (error) {
-      useMockData();
+      clearChartData(year);
 
       showAlert(
-        t('Notice'),
-        t('Real data is not available right now. Sample data is being shown.'),
+        t('Error'),
+        t('An unexpected error occurred!'),
         [{ text: t('Ok') }]
       );
     } finally {
@@ -101,47 +100,18 @@ export default function IndexScreen({ navigation }) {
     }
   };
 
-  // تابع برای استفاده از داده‌های موقت
-  const useMockData = () => {
-    const mockMonthlyData = [
-      { month_name: 'فروردین', total_income: 7000000, total_settlements: 2000000, net_income: 5000000 },
-      { month_name: 'اردیبهشت', total_income: 6500000, total_settlements: 2000000, net_income: 4500000 },
-      { month_name: 'خرداد', total_income: 8000000, total_settlements: 2000000, net_income: 6000000 },
-      { month_name: 'تیر', total_income: 9000000, total_settlements: 2000000, net_income: 7000000 },
-      { month_name: 'مرداد', total_income: 7500000, total_settlements: 2000000, net_income: 5500000 },
-      { month_name: 'شهریور', total_income: 10000000, total_settlements: 2000000, net_income: 8000000 },
-      { month_name: 'مهر', total_income: 8500000, total_settlements: 2000000, net_income: 6500000 },
-      { month_name: 'آبان', total_income: 9500000, total_settlements: 2000000, net_income: 7500000 },
-      { month_name: 'آذر', total_income: 6000000, total_settlements: 2000000, net_income: 4000000 },
-      { month_name: 'دی', total_income: 5000000, total_settlements: 2000000, net_income: 3000000 },
-      { month_name: 'بهمن', total_income: 7000000, total_settlements: 2000000, net_income: 5000000 },
-      { month_name: 'اسفند', total_income: 8000000, total_settlements: 2000000, net_income: 6000000 },
-    ];
-
-    const formattedData = mockMonthlyData.map((item, index) => ({
-      value: Number(item.net_income) / 1000000,
-      label: item.month_name.substring(0, 3),
-      frontColor: index % 2 === 0 ? themeColor7.bgColor(1) : themeColor0.bgColor(1),
-      spacing: 2,
-      labelWidth: 35,
-      labelTextStyle: { fontSize: 10 },
-      monthName: item.month_name,
-      totalIncome: Number(item.total_income),
-      totalSettlements: Number(item.total_settlements),
-      netIncome: Number(item.net_income),
-    }));
-
-    setChartData(formattedData);
+  // Never show sample figures as if they were the technician's real income.
+  const clearChartData = (year) => {
+    setChartData([]);
     setYearlyData({
-      year: 1404,
+      year: year || getCurrentJalaliYear(),
       yearly_summary: {
-        total_income: 92000000,
-        total_settlements: 24000000,
-        net_income: 68000000,
+        total_income: 0,
+        total_settlements: 0,
+        net_income: 0,
       },
-      current_wallet: 5000000,
+      current_wallet: 0,
     });
-    setSelectedYear(1404);
   };
 
   useFocusEffect(

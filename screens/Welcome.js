@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -11,12 +11,8 @@ import {
 } from "react-native";
 import NewStyles from "../styles/NewStyles";
 import { themeColor0, themeColor10 } from "../theme/Color";
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDispatch, useSelector } from 'react-redux';
-import { setToken } from '../slices/authSlice';
-import { validateToken } from '../services/Api';
 import { fetchContacts } from "../slices/contactSlice";
-import { fetchUser } from "../slices/userSlice";
 import { useTranslation } from "react-i18next";
 import { fetchPdfDocs } from "../slices/pdfDocumentSlice";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -27,88 +23,65 @@ import { useFooter } from "../contexts/FooterProvider";
 import { getHash } from "react-native-otp-verify";
 import { setHashApp } from "../slices/hashAppSlice";
 
+// Intro video is 8s; never keep the user here longer than this if playback
+// fails or never reports its end (e.g. autoplay blocked on web).
+const MAX_INTRO_MS = 10000;
+
 export default function Welcome({ navigation }) {
   const [isChecking, setIsChecking] = useState(true);
-  const userData = useSelector(state => state.user);
-
-
-
   const userToken = useSelector((state) => state.auth.token);
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const player = useVideoPlayer(require('../assets/video/InShot_20260626_171217014.mp4'), player => {
     if (Platform.OS === 'web') {
-
       player.muted = true;
     }
     player.play();
   });
   const { showFooter, hideFooter } = useFooter()
+
+  // The session itself is restored in App.js; here we only prefetch public data.
   useEffect(() => {
-    checkAutoLogin();
     dispatch(fetchContacts());
     dispatch(fetchPdfDocs());
     hideFooter()
   }, []);
 
-  async function checkAutoLogin() {
-    try {
-      const userToken = await AsyncStorage.getItem('userToken');
-      if (userToken) {
-        const result = await validateToken();
-        const isValid = result.success === true;
-        console.log("is valid", isValid);
+  // Read the latest token when the intro ends, without re-subscribing.
+  const tokenRef = useRef(userToken);
+  tokenRef.current = userToken;
+  const finishedRef = useRef(false);
 
-        if (isValid) {
-          dispatch(setToken(userToken));
-          dispatch(fetchUser(userToken))
-          // setTimeout(() => {
-          //   navigation.replace('FolderScreen');
-          // }, 1500);
-        } else {
-          await AsyncStorage.removeItem('userToken');
+  const finishIntro = useCallback(() => {
+    if (finishedRef.current) return;
+    finishedRef.current = true;
+    setIsChecking(false);
+    player.pause();
 
-        }
-      } else {
-      }
-    } catch (error) {
-      await AsyncStorage.removeItem('userToken');
-      await AsyncStorage.removeItem('savedReferralCode');
-      await AsyncStorage.removeItem('savedPassword');
-    }
-  }
-  const navigateToMainApp = () => {
-    setTimeout(() => {
+    if (tokenRef.current) {
+      showFooter()
+      navigation.replace('FolderScreen');
+    } else {
       navigation.replace('SignInLanding');
-    }, 4000);
-  };
-
+    }
+  }, [navigation, player, showFooter]);
 
   useEffect(() => {
-    const subscription = player.addListener('playToEnd', () => {
-      setIsChecking(false);
-
-      if (userData?.data && userToken) {
-        console.log("ssss");
-        showFooter()
-
-        navigation.replace('FolderScreen');
-      } else {
-        navigateToMainApp()
-      }
-    });
+    const subscription = player.addListener('playToEnd', finishIntro);
+    const fallback = setTimeout(finishIntro, MAX_INTRO_MS);
 
     return () => {
       subscription.remove();
+      clearTimeout(fallback);
     };
-  }, [player, userData, userToken]);
+  }, [player, finishIntro]);
+
   useEffect(() => {
     if (Platform.OS !== 'android') return;
 
     getHash()
       .then(hashes => {
         dispatch(setHashApp(hashes))
-        console.log('SMS hashes:', hashes);
       })
       .catch(error => {
         console.log('Hash error:', error);
@@ -117,7 +90,7 @@ export default function Welcome({ navigation }) {
   const { isPlaying } = useEvent(player, 'playingChange', { isPlaying: player.playing });
 
   useEffect(() => {
-    if (Platform.OS === 'web' && !isPlaying && player) {
+    if (Platform.OS === 'web' && !isPlaying && player && !finishedRef.current) {
       player.play();
 
 
@@ -129,10 +102,11 @@ export default function Welcome({ navigation }) {
   if (isChecking) {
     return (
       <SafeAreaView style={NewStyles.container}>
-        <LinearGradient colors={['#1c2833', '#0b0d11', '#0b0d11']} style={{ flex: 1 }}>
-
-          <VideoView style={{ flex: 1 }} nativeControls={false} player={player} contentFit='contain' allowsFullscreen allowsPictureInPicture />
-        </LinearGradient>
+        <TouchableWithoutFeedback onPress={finishIntro}>
+          <LinearGradient colors={['#1c2833', '#0b0d11', '#0b0d11']} style={{ flex: 1 }}>
+            <VideoView style={{ flex: 1 }} nativeControls={false} player={player} contentFit='contain' pointerEvents="none" />
+          </LinearGradient>
+        </TouchableWithoutFeedback>
       </SafeAreaView>
     );
   }

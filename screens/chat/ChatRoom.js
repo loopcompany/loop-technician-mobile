@@ -11,6 +11,7 @@ import { getTechnicianChatMessages, sendTechnicianMessage, markTechnicianMessage
 import { createStyles } from '../../styles/NewStyles';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ScreenHeaders from '../../components/ScreenHeaders';
+import usePolling from '../../hooks/usePolling';
 export default function ChatRoom({ route }) {
 
     const { t, i18n } = useTranslation();
@@ -38,15 +39,17 @@ export default function ChatRoom({ route }) {
 
             // بررسی ساختار response
             if (response?.success) {
-                setData(response?.data?.messages || []);
+                const messages = response?.data?.messages || [];
+                setData(messages);
                 setIsChatOpen(response?.data?.is_chat_open);
+
+                // علامت‌گذاری به عنوان خوانده شده — only when there is something unread
+                if (messages.some(msg => Number(msg?.is_user) === 1 && !Number(msg?.is_read))) {
+                    await markTechnicianMessagesAsRead(userId);
+                }
             } else {
                 setData([]);
-                // showToastOrAlert(response?.data?.message || t('Error fetching messages'));
             }
-
-            // علامت‌گذاری به عنوان خوانده شده
-            await markTechnicianMessagesAsRead(userId);
         } catch (error) {
             // const message = error?.response ? t('An unexpected error occurred!') : t('Network error!');
             // showToastOrAlert(message);
@@ -55,15 +58,8 @@ export default function ChatRoom({ route }) {
         }
     };
 
-    useEffect(() => {
-        if (userId) {
-            fetchData();
-
-            // رفرش خودکار هر 5 ثانیه
-            const interval = setInterval(fetchData, 5000);
-            return () => clearInterval(interval);
-        }
-    }, [userId]);
+    // رفرش خودکار هر 5 ثانیه (فقط وقتی صفحه فعال است)
+    usePolling(fetchData, 5000, Boolean(userId));
 
     const send = async () => {
         if (!message?.trim()) return;

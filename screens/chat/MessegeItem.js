@@ -1,5 +1,5 @@
 import { View, Text } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor3, themeColor7 } from '../../theme/Color';
 

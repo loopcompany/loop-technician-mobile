@@ -117,8 +117,10 @@ const ShowMapDetailComponent = ({ data }) => {
 
                     var marker = L.marker([lat, lng]).addTo(myMap);
 
+                    // JSON.stringify yields a safe JS string literal (quotes,
+                    // backslashes, newlines); escapeHtml keeps the popup inert.
                     marker.bindPopup(
-                        '<b>${escapeHtml(orderLocationTitle)}</b><br />${escapeHtml(address)}'
+                        ${JSON.stringify(`<b>${escapeHtml(orderLocationTitle)}</b><br />${escapeHtml(address)}`)}
                     );
 
                     setTimeout(function() {
@@ -140,6 +142,7 @@ const ShowMapDetailComponent = ({ data }) => {
             <WebView
                 originWhitelist={['*']}
                 source={{ html: mapHtml }}
+                setSupportMultipleWindows={false}
                 style={styles.map}
                 javaScriptEnabled={true}
                 domStorageEnabled={true}

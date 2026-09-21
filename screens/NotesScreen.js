@@ -7,7 +7,7 @@ import {
   FlatList,
   ActivityIndicator,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import ScreenHeaders from "../components/ScreenHeaders";
 import NewStyles from "../styles/NewStyles";
 import { themeColor1, themeColor4, themeColor0, themeColor3 } from "../theme/Color";

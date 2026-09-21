@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { getFormatedDate } from 'react-native-modern-datepicker';
 import { createStyles } from '../styles/NewStyles';
 import ScreenHeaders from '../components/ScreenHeaders';
@@ -1629,17 +1629,6 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     textAlign: 'center',
   },
 
-  submitButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-
-  viewListButtonText: {
-    color: themeColor0.bgColor(1),
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
   submitButton: {
     backgroundColor: themeColor0.bgColor(1),
     borderRadius: 10,

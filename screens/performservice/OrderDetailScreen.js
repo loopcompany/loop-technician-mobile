@@ -32,6 +32,7 @@ import jalaali from 'jalaali-js';
 import { getFormatedDate } from 'react-native-modern-datepicker';
 import { createStyles } from '../../styles/NewStyles';
 import ConfirmationModal from './../../components/ConfirmationModal';
+import usePolling from '../../hooks/usePolling';
 
 const ReviewSectionComponent = ({
   technicianOpinion,
@@ -298,7 +299,7 @@ export default function OrderDetailScreen({ route, navigation }) {
       const result = await getTechnicianChatMessages(data.user_id);
       if (result.success && result?.data?.messages) {
         // شمارش پیام‌های خوانده نشده از کاربر (is_user=1 و is_read=0)
-        const unreadCount = result?.data?.messages.filter(
+        const unreadCount = (result?.data?.messages || []).filter(
           msg => msg.is_user === 1 && msg.is_read === 0
         ).length;
         setUnreadMessagesCount(unreadCount);
@@ -317,14 +318,8 @@ export default function OrderDetailScreen({ route, navigation }) {
   );
 
   // بارگذاری پیام‌های خوانده نشده
-  React.useEffect(() => {
-    if (data?.user_id) {
-      loadUnreadMessages();
-      // رفرش هر 10 ثانیه
-      const interval = setInterval(loadUnreadMessages, 10000);
-      return () => clearInterval(interval);
-    }
-  }, [data?.user_id]);
+  // رفرش هر 10 ثانیه (فقط وقتی صفحه فعال است)
+  usePolling(loadUnreadMessages, 10000, Boolean(data?.user_id));
 
   const onRefresh = () => {
     setRefreshing(true);

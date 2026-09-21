@@ -6,7 +6,7 @@ import NewStyles from '../styles/NewStyles';
 import { themeColor1, themeColor10, themeColor4, themeColor6 } from '../theme/Color';
 import Button from './Button';
 import { useTranslation } from 'react-i18next';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 // Pre-calculate colors outside component to prevent re-renders
 const WRAPPER_BG_COLOR = themeColor10.bgColor(0.4);

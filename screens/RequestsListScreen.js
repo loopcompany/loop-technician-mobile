@@ -11,7 +11,7 @@ import {
     ScrollView,
 } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor10, themeColor11, themeColor2, themeColor3, themeColor4, themeColor6, themeColor7, themeColor8 } from '../theme/Color';

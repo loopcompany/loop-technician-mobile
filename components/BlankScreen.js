@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { Ionicons } from '@expo/vector-icons'
+import Ionicons from '@expo/vector-icons/Ionicons'
 import NewStyles from '../styles/NewStyles'
 import { themeColor4 } from '../theme/Color'
 import { useTranslation } from 'react-i18next'

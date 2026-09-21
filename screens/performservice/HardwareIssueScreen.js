@@ -132,9 +132,6 @@ const styles = StyleSheet.create({
     fontWeight: "300",
   },
   container: {
-    padding: 20,
-    // paddingBottom: 100,
-    // alignItems: 'stretch',
     padding: 30,
   },
   title: {
@@ -172,8 +169,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     marginTop: 30,
-    flexDirection: "row-reverse",
-    justifyContent: "space-between",
     alignItems: "center",
     width: "100%",
     flex: 1,

@@ -16,7 +16,7 @@ import CustomStatusBar from '../components/CustomStatusBar';
 import { themeColor0, themeColor4, themeColor6, themeColor10, themeColor13, themeColor7, themeColor3, themeColor11 } from '../theme/Color';
 import { getOrganizationOrders } from '../services/Api';
 import { formatDate, showAlert } from '../helpers/Common';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useFooter } from '../contexts/FooterProvider';
 import ScreenHeaders from '../components/ScreenHeaders';
 import { useTranslation } from 'react-i18next';

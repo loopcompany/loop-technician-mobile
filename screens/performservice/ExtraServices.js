@@ -10,13 +10,11 @@ import { addExtraServices, emptyExtraServices, fetchExtraServices, removeExtraSe
 import Button from '../../components/Button';
 import { showToastOrAlert } from '../../helpers/Common';
 import ExtraDetails from '../../components/ExtraDetails';
-import { uri } from '../../services/URL';
-import axios from 'axios';
+import api from '../../services/Api';
 import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ScreenHeaders from '../../components/ScreenHeaders';
 import { fetchOrderExtras } from '../../slices/orderExtrasSlice';
-import i18n from 'i18next';
 
 export default function ExtraServices({ route, navigation }) {
 
@@ -26,11 +24,9 @@ export default function ExtraServices({ route, navigation }) {
     const orderId = route?.params?.orderId;
     const [refreshing, setRefreshing] = useState(false);
     const [loading, setLoading] = useState(false);
-    const token = useSelector((state) => state?.auth?.token);
     const extraServices = useSelector(state => state.extraServices);
-    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
     useEffect(() => {
-        dispatch(fetchExtraServices({ categoryId, orderId, token }));
+        dispatch(fetchExtraServices({ categoryId, orderId }));
     }, []);
 
     const [activeIndex, setActiveIndex] = useState(null);
@@ -47,15 +43,9 @@ export default function ExtraServices({ route, navigation }) {
                 extras: extraServices?.items
             });
 
-            const response = await axios.post(`${uri}/technician/submit-extra-services`, {
+            const response = await api.post('/technician/submit-extra-services', {
                 order_id: orderId,
                 extras: extraServices?.items
-            }, {
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                    'Accept-Language': lang
-                }
             });
 
             console.log('✅ پاسخ ثبت خدمات:', response.data);

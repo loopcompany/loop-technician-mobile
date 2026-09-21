@@ -7,7 +7,7 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor3, themeColor4, themeColor10 } from '../theme/Color';
 import { useTranslation } from 'react-i18next';

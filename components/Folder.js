@@ -3,14 +3,13 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
-  Image,
 } from "react-native";
-import React from "react";
+import React, { memo } from "react";
+import { Image } from "expo-image";
 import { themeColor0, themeColor10 } from "../theme/Color";
 import NewStyles from "../styles/NewStyles";
 
-export default function Folder({
+function Folder({
   onPress,
   title,
   style,
@@ -28,13 +27,18 @@ export default function Folder({
 
 
       <Image
-        source={{uri:`${image}`}}
+        source={image ? { uri: image } : undefined}
         style={styles.folderIcon}
+        contentFit="contain"
+        cachePolicy="memory-disk"
+        transition={150}
       />
       <Text style={[NewStyles.title4, styles.folderText]}> {title} </Text>
     </TouchableOpacity>
   );
 }
+export default memo(Folder);
+
 const styles = StyleSheet.create({
   button: {
     backgroundColor: themeColor10.bgColor(0.2),
@@ -51,7 +55,6 @@ const styles = StyleSheet.create({
   folderIcon: {
     width: 50,
     height: 50,
-    resizeMode: "contain",
     // marginTop: 5,
     marginBottom: 2,
     ...NewStyles.border10

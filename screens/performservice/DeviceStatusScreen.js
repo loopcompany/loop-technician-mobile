@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import ScreenHeaders from '../../components/ScreenHeaders';
 import NewStyles from '../../styles/NewStyles';
-import { themeColor0, themeColor4, themeColor10 } from '../../theme/Color';
+import { themeColor0, themeColor2, themeColor4, themeColor8, themeColor10 } from '../../theme/Color';
 
 export default function DeviceStatusScreen({ navigation }) {
   const [selectedOptions, setSelectedOptions] = useState({});

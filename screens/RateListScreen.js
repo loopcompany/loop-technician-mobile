@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ScreenHeaders from '../components/ScreenHeaders';
-import Footer from './Footer';
 import { formatJalaaliDate } from '../helpers/Common';
 import { themeColor0, themeColor4 } from '../theme/Color';
 import letterRatesAPI from '../services/LetterRatesApi';

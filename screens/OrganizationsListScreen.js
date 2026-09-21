@@ -16,7 +16,7 @@ import CustomStatusBar from '../components/CustomStatusBar';
 import { themeColor0, themeColor4, themeColor6, themeColor10, themeColor13 } from '../theme/Color';
 import { getOrganizationsList } from '../services/Api';
 import { showAlert } from '../helpers/Common';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useFooter } from '../contexts/FooterProvider';
 import { uri } from '../services/URL';
 import ScreenHeaders from '../components/ScreenHeaders';
