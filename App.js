@@ -1,5 +1,5 @@
-import { StyleSheet, View, ActivityIndicator, I18nManager, Platform } from "react-native";
-import React, { useEffect, useState } from "react";
+import { View, ActivityIndicator, I18nManager, Platform } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
 
 import i18n from 'i18next';
 import { I18nextProvider, initReactI18next } from 'react-i18next';
@@ -13,82 +13,16 @@ import * as SplashScreen from "expo-splash-screen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import store from "./store";
-import { FooterProvider, useFooter } from "./contexts/FooterProvider";
+import { FooterProvider } from "./contexts/FooterProvider";
 import NotificationsGate from "./components/NotificationsGate";
-import { navigationRef } from "./services/NavigationService";
+import { navigationRef, getCurrentRouteName, reset } from "./services/NavigationService";
 import { removeToken, setToken } from "./slices/authSlice";
-import { fetchUser } from "./slices/userSlice";
-import { validateToken } from "./services/Api";
+import { emptyUser, fetchUser } from "./slices/userSlice";
+import { getToken, setUnauthorizedHandler } from "./services/session";
 
 // ✅ locales
 import en from './assets/locales/en.json';
 import fa from './assets/locales/fa.json';
-
-// screens...
-import FolderScreen from "./screens/FolderScreen";
-import SignInLanding from "./screens/auth/SignInLanding";
-import SignIn from "./screens/auth/SignIn";
-import Login from "./screens/auth/Login";
-import Welcome from "./screens/Welcome";
-import ResetPasswordScreen from "./screens/auth/ResetPasswordScreen";
-import GuideScreen from "./screens/performservice/GuideScreen";
-import HardwareIssueScreen from "./screens/performservice/HardwareIssueScreen";
-import SoftwareInstallScreen from "./screens/performservice/SoftwareInstallScreen";
-import DeviceModelInfoScreen from "./screens/performservice/DeviceModelInfoScreen";
-import OrderListScreen from "./screens/performservice/OrderListScreen";
-import OrderDetailScreen from "./screens/performservice/OrderDetailScreen";
-import ExtraServices from "./screens/performservice/ExtraServices";
-import DeviceStatusScreen from "./screens/performservice/DeviceStatusScreen";
-import UserInfoScreen from "./screens/performservice/UserInfoScreen";
-import CompletionInfoScreen from "./screens/performservice/CompletionInfoScreen";
-import AttendanceScreen from "./screens/performservice/AttendanceScreen";
-import UserHistoryScreen from "./screens/performservice/UserHistoryScreen";
-import LaptopDeliveryScreen from "./screens/performservice/LaptopDeliveryScreen";
-import LaptopDispatchScreen from "./screens/performservice/LaptopDispatchScreen";
-import PartsExpensesScreen from "./screens/performservice/PartsExpensesScreen";
-import TechnicalIssuesScreen from "./screens/performservice/TechnicalIssuesScreen";
-import ServiceCompletionScreen from "./screens/performservice/ServiceCompletionScreen";
-import NewServiceScreen from "./screens/performservice/NewServiceScreen";
-import RequestsScreen from "./screens/RequestsScreen";
-import RequestsListScreen from "./screens/RequestsListScreen";
-import LeaveRequestsListScreen from "./screens/LeaveRequestsListScreen";
-import DebtRequestsListScreen from "./screens/DebtRequestsListScreen";
-import ManpowerRequestsListScreen from "./screens/ManpowerRequestsListScreen";
-import TransferRequestsListScreen from "./screens/TransferRequestsListScreen";
-import TerminationRequestsListScreen from "./screens/TerminationRequestsListScreen";
-import PerformanceScreen from "./screens/PerformanceScreen";
-import ChangePasswordScreen from "./screens/ChangePasswordScreen";
-import PhotoArchiveScreen from "./screens/PhotoArchiveScreen";
-import DeliveryReceiptScreen from "./screens/DeliveryReceiptScreen";
-import NotesScreen from "./screens/NotesScreen";
-import ThinkingScreen from "./screens/ThinkingScreen";
-import RateListScreen from "./screens/RateListScreen";
-import IncentivePlansScreen from "./screens/IncentivePlansScreen";
-import LoopReportScreen from "./screens/performservice/LoopReportScreen";
-import FinancialReportScreen from "./screens/performservice/FinancialReportScreen";
-import MessageScreen from "./screens/performservice/MessageScreen";
-import ChatListScreen from "./screens/chat/ChatListScreen";
-import ChatRoom from "./screens/chat/ChatRoom";
-import FeedbackSuggestionScreen from "./screens/performservice/FeedbackSuggestionScreen";
-import IndexScreen from "./screens/performservice/IndexScreen";
-import PersonalInfoScreen from "./screens/performservice/PersonalInfoScreen";
-import VehicleInfoScreen from "./screens/performservice/VehicleInfoScreen";
-import FinancialInfoScreen from "./screens/performservice/FinancialInfoScreen";
-import SignInScreen from "./screens/auth/SignInScreen";
-import PhoneVerificationScreen from "./screens/auth/PhoneVerificationScreen";
-import GameMenuScreen from "./screens/game/GameMenuScreen";
-import GamePlayScreen from "./screens/game/GamePlayScreen";
-import GameResultScreen from "./screens/game/GameResultScreen";
-import AddEditNoteScreen from "./screens/notes/AddEditNoteScreen";
-import LearnMoreScreen from "./screens/resources/LearnMoreScreen";
-import AboutScreen from "./screens/resources/AboutScreen";
-import WarrantyScreen from "./screens/resources/WarrantyScreen";
-import PrivacyScreen from './screens/performservice/PrivacyScreen';
-import TrainingRegistrationScreen from './screens/TrainingRegistrationScreen';
-import OrganizationsListScreen from './screens/OrganizationsListScreen';
-import OrganizationOrdersScreen from './screens/OrganizationOrdersScreen';
-import RateCategory from './screens/RateCategory';
-import LimitAccessScreen from "./screens/auth/LimitAccessScreen";
 
 I18nManager.forceRTL(false);
 
@@ -96,13 +30,50 @@ const Stack = createNativeStackNavigator();
 
 const PERSISTENCE_KEY = 'NAVIGATION_STATE_V1';
 
+// Screens reachable without a session. Everything else requires a token.
+const PUBLIC_ROUTES = new Set([
+  'Welcome',
+  'SignInLanding',
+  'Login',
+  'SignIn',
+  'SignInScreen',
+  'PhoneVerification',
+  'ResetPasswordScreen',
+  'LimitAccessScreen',
+  'WarrantyScreen',
+  'LearnMoreScreen',
+  'AboutScreen',
+  'PrivacyScreen',
+]);
+
+const redirectToLoginIfProtected = () => {
+  const current = getCurrentRouteName();
+  if (current && !PUBLIC_ROUTES.has(current)) {
+    reset({ index: 0, routes: [{ name: 'Login' }] });
+  }
+};
+
+// A 401 from any request means the session is gone: sync redux and send the
+// user to the login screen (session storage is already cleared by then).
+setUnauthorizedHandler(() => {
+  store.dispatch(removeToken());
+  store.dispatch(emptyUser());
+  redirectToLoginIfProtected();
+});
+
+const enforceAuthGuard = () => {
+  if (!store.getState().auth.token) {
+    redirectToLoginIfProtected();
+  }
+};
+
 SplashScreen.preventAutoHideAsync();
 SplashScreen.setOptions({
   duration: 2000,
   fade: true,
 });
 
-// ✅ init i18n (مثل فایل اول) — فقط یکبار، قبل از App
+// ✅ init i18n — فقط یکبار، قبل از App
 i18n
   .use(initReactI18next)
   .init({
@@ -115,8 +86,14 @@ i18n
     interpolation: {
       escapeValue: false,
     },
-    
   });
+
+if (Platform.OS === 'web') {
+  // Older web builds persisted the whole redux state (token included) here.
+  try {
+    window.localStorage?.removeItem('reduxState');
+  } catch {}
+}
 
 // Linking configuration برای پشتیبانی از Deep Linking و Browser History
 const linking = {
@@ -136,7 +113,7 @@ const linking = {
       Login: 'login',
       SignIn: 'signup',
       SignInScreen: 'register',
-      PhoneVerificationScreen: 'verify-phone',
+      PhoneVerification: 'verify-phone',
       ResetPasswordScreen: 'reset-password',
       GuideScreen: 'guide',
       OrderListScreen: 'orders',
@@ -153,22 +130,21 @@ const linking = {
       ChangePasswordScreen: 'change-password',
       PhotoArchiveScreen: 'photos',
       NotesScreen: 'notes',
-      AddEditNoteScreen: 'notes/:noteId',
+      AddEditNote: 'notes/edit',
       RateListScreen: 'rates',
       IncentivePlansScreen: 'incentive-plans',
-      IncentiveSchemeScreen: 'incentive-scheme',
       LoopReportScreen: 'loop-report',
       FinancialReportScreen: 'financial-report',
       MessageScreen: 'messages',
       ChatListScreen: 'chats',
-      ChatRoom: 'chat/:chatId',
+      ChatRoom: 'chat/:userId',
       IndexScreen: 'index',
       PersonalInfoScreen: 'profile/personal',
       VehicleInfoScreen: 'profile/vehicle',
       FinancialInfoScreen: 'profile/financial',
-      GameMenuScreen: 'game',
-      GamePlayScreen: 'game/play',
-      GameResultScreen: 'game/result',
+      GameMenu: 'game',
+      GamePlay: 'game/play',
+      GameResult: 'game/result',
       LearnMoreScreen: 'learn-more',
       AboutScreen: 'about',
       RateCategory: 'category-rates',
@@ -181,38 +157,29 @@ const linking = {
   },
 };
 
-const InitialRouteHandler = ({ children }) => {
+/**
+ * Restores the persisted session before the navigator mounts. Only local
+ * storage is awaited; the token is validated in the background by fetchUser,
+ * and a 401 there is handled by the global unauthorized handler.
+ */
+const SessionGate = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
-  const [initialRoute, setInitialRoute] = useState('Welcome');
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const checkToken = async () => {
+    (async () => {
       try {
-        const savedToken = await AsyncStorage.getItem('userToken');
-
+        const savedToken = await getToken();
         if (savedToken) {
-          const result = await validateToken();
-          if (result.success) {
-            dispatch(setToken(savedToken));
-            dispatch(fetchUser(savedToken));
-            setInitialRoute('Welcome');
-          } else {
-            dispatch(removeToken());
-            setInitialRoute('Welcome');
-          }
-        } else {
-          setInitialRoute('Welcome');
+          dispatch(setToken(savedToken));
+          dispatch(fetchUser());
         }
       } catch (error) {
-        console.log('Error checking token:', error);
-        setInitialRoute('Welcome');
+        console.log('Error restoring session:', error);
       } finally {
         setIsLoading(false);
       }
-    };
-
-    checkToken();
+    })();
   }, [dispatch]);
 
   if (isLoading) {
@@ -223,91 +190,81 @@ const InitialRouteHandler = ({ children }) => {
     );
   }
 
-  return children(initialRoute);
+  return children;
 };
 
-// Wrapper component to access Footer context
-const AppNavigator = () => {
-  const { FooterComponent } = useFooter();
-
-  return (
-    <InitialRouteHandler>
-      {(initialRoute) => (
-        <View style={{ flex: 1 }}>
-          <Stack.Navigator
-            initialRouteName={initialRoute}
-            screenOptions={{ headerShown: false }}
-          >
-            <Stack.Screen component={Welcome} name="Welcome" options={{ headerShown: false }} />
-            <Stack.Screen component={SignInLanding} name="SignInLanding" options={{ headerShown: false }} />
-            <Stack.Screen component={FolderScreen} name="FolderScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={Login} name="Login" options={{ headerShown: false }} />
-            <Stack.Screen component={SignInScreen} name="SignInScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={SignIn} name="SignIn" options={{ headerShown: false, presentation: 'card', gestureEnabled: true }} />
-            <Stack.Screen component={ResetPasswordScreen} name="ResetPasswordScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={PhoneVerificationScreen} name="PhoneVerification" options={{ headerShown: false }} />
-            <Stack.Screen component={GuideScreen} name="GuideScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={HardwareIssueScreen} name="HardwareIssueScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={SoftwareInstallScreen} name="SoftwareInstallScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={DeviceModelInfoScreen} name="DeviceModelInfoScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={OrderListScreen} name="OrderListScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={OrderDetailScreen} name="OrderDetailScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={ChatListScreen} name="ChatListScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={ChatRoom} name="ChatRoom" options={{ headerShown: false }} />
-            <Stack.Screen component={ExtraServices} name="ExtraServices" options={{ headerShown: false }} />
-            <Stack.Screen component={DeviceStatusScreen} name="DeviceStatusScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={UserInfoScreen} name="UserInfoScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={CompletionInfoScreen} name="CompletionInfoScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={AttendanceScreen} name="AttendanceScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={UserHistoryScreen} name="UserHistoryScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={LaptopDeliveryScreen} name="LaptopDeliveryScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={LaptopDispatchScreen} name="LaptopDispatchScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={PartsExpensesScreen} name="PartsExpensesScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={TechnicalIssuesScreen} name="TechnicalIssuesScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={ServiceCompletionScreen} name="ServiceCompletionScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={NewServiceScreen} name="NewServiceScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={RequestsScreen} name="RequestsScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={RequestsListScreen} name="RequestsListScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={LeaveRequestsListScreen} name="LeaveRequestsListScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={DebtRequestsListScreen} name="DebtRequestsListScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={GameMenuScreen} name="GameMenu" options={{ headerShown: false }} />
-            <Stack.Screen component={GamePlayScreen} name="GamePlay" options={{ headerShown: false }} />
-            <Stack.Screen component={GameResultScreen} name="GameResult" options={{ headerShown: false }} />
-            <Stack.Screen component={ManpowerRequestsListScreen} name="ManpowerRequestsListScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={TransferRequestsListScreen} name="TransferRequestsListScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={TerminationRequestsListScreen} name="TerminationRequestsListScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={PerformanceScreen} name="PerformanceScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={ChangePasswordScreen} name="ChangePasswordScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={PhotoArchiveScreen} name="PhotoArchiveScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={DeliveryReceiptScreen} name="DeliveryReceiptScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={NotesScreen} name="NotesScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={AddEditNoteScreen} name="AddEditNote" options={{ headerShown: false }} />
-            <Stack.Screen component={ThinkingScreen} name="ThinkingScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={RateListScreen} name="RateListScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={IncentivePlansScreen} name="IncentivePlansScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={LoopReportScreen} name="LoopReportScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={FinancialReportScreen} name="FinancialReportScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={MessageScreen} name="MessageScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={FeedbackSuggestionScreen} name="FeedbackSuggestionScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={IndexScreen} name="IndexScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={PrivacyScreen} name="PrivacyScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={AboutScreen} name="AboutScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={RateCategory} name="RateCategory" />
-            <Stack.Screen component={LearnMoreScreen} name="LearnMoreScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={WarrantyScreen} name="WarrantyScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={PersonalInfoScreen} name="PersonalInfoScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={VehicleInfoScreen} name="VehicleInfoScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={FinancialInfoScreen} name="FinancialInfoScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={TrainingRegistrationScreen} name="TrainingRegistrationScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={OrganizationsListScreen} name="OrganizationsListScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={OrganizationOrdersScreen} name="OrganizationOrdersScreen" options={{ headerShown: false }} />
-            <Stack.Screen component={LimitAccessScreen} name="LimitAccessScreen" options={{ headerShown: false }} />
-          </Stack.Navigator>
-        </View>
-      )}
-    </InitialRouteHandler>
-  );
-};
+// Screens are loaded lazily (getComponent) so startup only evaluates the
+// modules of the first screen instead of all ~60.
+const AppNavigator = () => (
+  <View style={{ flex: 1 }}>
+    <Stack.Navigator initialRouteName="Welcome" screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="Welcome" getComponent={() => require("./screens/Welcome").default} />
+            <Stack.Screen name="SignInLanding" getComponent={() => require("./screens/auth/SignInLanding").default} />
+            <Stack.Screen name="FolderScreen" getComponent={() => require("./screens/FolderScreen").default} />
+            <Stack.Screen name="Login" getComponent={() => require("./screens/auth/Login").default} />
+            <Stack.Screen name="SignInScreen" getComponent={() => require("./screens/auth/SignInScreen").default} />
+            <Stack.Screen name="SignIn" getComponent={() => require("./screens/auth/SignIn").default} options={{ presentation: 'card', gestureEnabled: true }} />
+            <Stack.Screen name="ResetPasswordScreen" getComponent={() => require("./screens/auth/ResetPasswordScreen").default} />
+            <Stack.Screen name="PhoneVerification" getComponent={() => require("./screens/auth/PhoneVerificationScreen").default} />
+            <Stack.Screen name="GuideScreen" getComponent={() => require("./screens/performservice/GuideScreen").default} />
+            <Stack.Screen name="HardwareIssueScreen" getComponent={() => require("./screens/performservice/HardwareIssueScreen").default} />
+            <Stack.Screen name="SoftwareInstallScreen" getComponent={() => require("./screens/performservice/SoftwareInstallScreen").default} />
+            <Stack.Screen name="DeviceModelInfoScreen" getComponent={() => require("./screens/performservice/DeviceModelInfoScreen").default} />
+            <Stack.Screen name="OrderListScreen" getComponent={() => require("./screens/performservice/OrderListScreen").default} />
+            <Stack.Screen name="OrderDetailScreen" getComponent={() => require("./screens/performservice/OrderDetailScreen").default} />
+            <Stack.Screen name="ChatListScreen" getComponent={() => require("./screens/chat/ChatListScreen").default} />
+            <Stack.Screen name="ChatRoom" getComponent={() => require("./screens/chat/ChatRoom").default} />
+            <Stack.Screen name="ExtraServices" getComponent={() => require("./screens/performservice/ExtraServices").default} />
+            <Stack.Screen name="DeviceStatusScreen" getComponent={() => require("./screens/performservice/DeviceStatusScreen").default} />
+            <Stack.Screen name="UserInfoScreen" getComponent={() => require("./screens/performservice/UserInfoScreen").default} />
+            <Stack.Screen name="CompletionInfoScreen" getComponent={() => require("./screens/performservice/CompletionInfoScreen").default} />
+            <Stack.Screen name="AttendanceScreen" getComponent={() => require("./screens/performservice/AttendanceScreen").default} />
+            <Stack.Screen name="UserHistoryScreen" getComponent={() => require("./screens/performservice/UserHistoryScreen").default} />
+            <Stack.Screen name="LaptopDeliveryScreen" getComponent={() => require("./screens/performservice/LaptopDeliveryScreen").default} />
+            <Stack.Screen name="LaptopDispatchScreen" getComponent={() => require("./screens/performservice/LaptopDispatchScreen").default} />
+            <Stack.Screen name="PartsExpensesScreen" getComponent={() => require("./screens/performservice/PartsExpensesScreen").default} />
+            <Stack.Screen name="TechnicalIssuesScreen" getComponent={() => require("./screens/performservice/TechnicalIssuesScreen").default} />
+            <Stack.Screen name="ServiceCompletionScreen" getComponent={() => require("./screens/performservice/ServiceCompletionScreen").default} />
+            <Stack.Screen name="NewServiceScreen" getComponent={() => require("./screens/performservice/NewServiceScreen").default} />
+            <Stack.Screen name="RequestsScreen" getComponent={() => require("./screens/RequestsScreen").default} />
+            <Stack.Screen name="RequestsListScreen" getComponent={() => require("./screens/RequestsListScreen").default} />
+            <Stack.Screen name="LeaveRequestsListScreen" getComponent={() => require("./screens/LeaveRequestsListScreen").default} />
+            <Stack.Screen name="DebtRequestsListScreen" getComponent={() => require("./screens/DebtRequestsListScreen").default} />
+            <Stack.Screen name="GameMenu" getComponent={() => require("./screens/game/GameMenuScreen").default} />
+            <Stack.Screen name="GamePlay" getComponent={() => require("./screens/game/GamePlayScreen").default} />
+            <Stack.Screen name="GameResult" getComponent={() => require("./screens/game/GameResultScreen").default} />
+            <Stack.Screen name="ManpowerRequestsListScreen" getComponent={() => require("./screens/ManpowerRequestsListScreen").default} />
+            <Stack.Screen name="TransferRequestsListScreen" getComponent={() => require("./screens/TransferRequestsListScreen").default} />
+            <Stack.Screen name="TerminationRequestsListScreen" getComponent={() => require("./screens/TerminationRequestsListScreen").default} />
+            <Stack.Screen name="PerformanceScreen" getComponent={() => require("./screens/PerformanceScreen").default} />
+            <Stack.Screen name="ChangePasswordScreen" getComponent={() => require("./screens/ChangePasswordScreen").default} />
+            <Stack.Screen name="PhotoArchiveScreen" getComponent={() => require("./screens/PhotoArchiveScreen").default} />
+            <Stack.Screen name="DeliveryReceiptScreen" getComponent={() => require("./screens/DeliveryReceiptScreen").default} />
+            <Stack.Screen name="NotesScreen" getComponent={() => require("./screens/NotesScreen").default} />
+            <Stack.Screen name="AddEditNote" getComponent={() => require("./screens/notes/AddEditNoteScreen").default} />
+            <Stack.Screen name="ThinkingScreen" getComponent={() => require("./screens/ThinkingScreen").default} />
+            <Stack.Screen name="RateListScreen" getComponent={() => require("./screens/RateListScreen").default} />
+            <Stack.Screen name="IncentivePlansScreen" getComponent={() => require("./screens/IncentivePlansScreen").default} />
+            <Stack.Screen name="LoopReportScreen" getComponent={() => require("./screens/performservice/LoopReportScreen").default} />
+            <Stack.Screen name="FinancialReportScreen" getComponent={() => require("./screens/performservice/FinancialReportScreen").default} />
+            <Stack.Screen name="MessageScreen" getComponent={() => require("./screens/performservice/MessageScreen").default} />
+            <Stack.Screen name="FeedbackSuggestionScreen" getComponent={() => require("./screens/performservice/FeedbackSuggestionScreen").default} />
+            <Stack.Screen name="IndexScreen" getComponent={() => require("./screens/performservice/IndexScreen").default} />
+            <Stack.Screen name="PrivacyScreen" getComponent={() => require("./screens/performservice/PrivacyScreen").default} />
+            <Stack.Screen name="AboutScreen" getComponent={() => require("./screens/resources/AboutScreen").default} />
+            <Stack.Screen name="RateCategory" getComponent={() => require("./screens/RateCategory").default} />
+            <Stack.Screen name="LearnMoreScreen" getComponent={() => require("./screens/resources/LearnMoreScreen").default} />
+            <Stack.Screen name="WarrantyScreen" getComponent={() => require("./screens/resources/WarrantyScreen").default} />
+            <Stack.Screen name="PersonalInfoScreen" getComponent={() => require("./screens/performservice/PersonalInfoScreen").default} />
+            <Stack.Screen name="VehicleInfoScreen" getComponent={() => require("./screens/performservice/VehicleInfoScreen").default} />
+            <Stack.Screen name="FinancialInfoScreen" getComponent={() => require("./screens/performservice/FinancialInfoScreen").default} />
+            <Stack.Screen name="TrainingRegistrationScreen" getComponent={() => require("./screens/TrainingRegistrationScreen").default} />
+            <Stack.Screen name="OrganizationsListScreen" getComponent={() => require("./screens/OrganizationsListScreen").default} />
+            <Stack.Screen name="OrganizationOrdersScreen" getComponent={() => require("./screens/OrganizationOrdersScreen").default} />
+            <Stack.Screen name="LimitAccessScreen" getComponent={() => require("./screens/auth/LimitAccessScreen").default} />
+    </Stack.Navigator>
+  </View>
+);
 
 const App = () => {
   const [loaded, error] = useFonts({
@@ -326,24 +283,33 @@ const App = () => {
         if (Platform.OS === 'web') {
           const savedStateString = await AsyncStorage.getItem(PERSISTENCE_KEY);
           const state = savedStateString ? JSON.parse(savedStateString) : undefined;
-          const userToken = await AsyncStorage.getItem('userToken');
+          const userToken = await getToken();
           if (state !== undefined && userToken) {
             setInitialState(state);
           }
         }
+      } catch (e) {
+        console.log('Error restoring navigation state:', e);
       } finally {
         setIsReady(true);
       }
     };
 
-    if (!isReady) restoreState();
-  }, [isReady]);
+    restoreState();
+  }, []);
 
   useEffect(() => {
     if (loaded || error) {
       SplashScreen.hideAsync();
     }
   }, [loaded, error]);
+
+  const handleStateChange = useCallback((state) => {
+    enforceAuthGuard();
+    if (state && Platform.OS === 'web') {
+      AsyncStorage.setItem(PERSISTENCE_KEY, JSON.stringify(state)).catch(() => {});
+    }
+  }, []);
 
   if (!loaded && !error) return null;
   if (!isReady) return null;
@@ -353,20 +319,19 @@ const App = () => {
       <SafeAreaProvider>
         <Provider store={store}>
           <NotificationsGate />
-          <FooterProvider>
-            <NavigationContainer
-              ref={navigationRef}
-              linking={linking}
-              initialState={initialState}
-              onStateChange={(state) => {
-                if (state && Platform.OS === 'web') {
-                  AsyncStorage.setItem(PERSISTENCE_KEY, JSON.stringify(state));
-                }
-              }}
-            >
-              <AppNavigator />
-            </NavigationContainer>
-          </FooterProvider>
+          <SessionGate>
+            <FooterProvider>
+              <NavigationContainer
+                ref={navigationRef}
+                linking={linking}
+                initialState={initialState}
+                onReady={enforceAuthGuard}
+                onStateChange={handleStateChange}
+              >
+                <AppNavigator />
+              </NavigationContainer>
+            </FooterProvider>
+          </SessionGate>
         </Provider>
       </SafeAreaProvider>
     </I18nextProvider>
@@ -374,5 +339,3 @@ const App = () => {
 };
 
 export default App;
-
-const styles = StyleSheet.create({});

@@ -1,8 +1,6 @@
 import { Alert, Dimensions, Platform, ToastAndroid } from "react-native";
 import Constants from "expo-constants";
 import dayjs from "dayjs";
-import { useTranslation } from "react-i18next";
-import moment from "moment";
 import { toJalaali } from 'jalaali-js';
 var jalaali = require("jalaali-js");
 import i18n from "i18next";
@@ -243,7 +241,7 @@ export const hexToRgb = (hex) => {
     ? {
       r: parseInt(result[1], 16),
       g: parseInt(result[2], 16),
-      g: parseInt(result[3], 16),
+      b: parseInt(result[3], 16),
     }
     : null;
 };
@@ -441,7 +439,6 @@ export const formatDate = (isoDate, fa = i18n.language === 'fa') => {
 
   // ✅ اگر تاریخ قبلاً شمسی است (YYYY/MM/DD یا YYYY/M/D)، همان را برگردان
   if (/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(isoDate)) {
-    console.log('📅 formatDate - تاریخ از قبل شمسی است:', isoDate);
     return isoDate;
   }
 

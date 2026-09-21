@@ -1,21 +1,20 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-import { uri } from '../services/URL';
+import api from '../services/Api';
 
-export const fetchExtraServices = createAsyncThunk('extraServices/extraServices', async ({ categoryId, orderId, token }) => {
-    return await axios
-        .get(`${uri}/technician/extra-services`, { 
-            headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` },
-            params: { 
-                category_id: categoryId, 
-                order_id: orderId 
+// The api client attaches the session token; `token` is accepted for
+// backwards compatibility but no longer required.
+export const fetchExtraServices = createAsyncThunk('extraServices/extraServices', async ({ categoryId, orderId }) => {
+    try {
+        const response = await api.get('/technician/extra-services', {
+            params: {
+                category_id: categoryId,
+                order_id: orderId
             }
-        })
-        .then(response => response?.data)
-        .catch(error => {
-            console.log(error);
-            throw new Error(error.response?.data?.message || error.message);
-        })
+        });
+        return response?.data;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || error.message);
+    }
 })
 
 const extraSlice = createSlice({

@@ -8,7 +8,7 @@ export const fetchContacts = createAsyncThunk('contact/fetchContacts', async () 
         .then(response => {
             return response.data;
         })
-        .catch(error => { console.log(error); })
+        .catch(error => { console.log(error); throw error; })
 })
 
 const contactSlice = createSlice({

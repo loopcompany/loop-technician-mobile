@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { createStyles } from '../../styles/NewStyles';
 import { themeColor4, themeColor6 } from '../../theme/Color';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 const LimitAccessScreen = ({ route }) => {
     const params = route?.params;

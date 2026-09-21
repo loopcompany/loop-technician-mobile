@@ -1,12 +1,19 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-import { uri } from '../services/URL';
+import api from '../services/Api';
 
-export const fetchUser = createAsyncThunk('user/fetchUser', async (token) => {
-    return await axios
-        .post(`${uri}/technician/validate-token`,{}, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` } })
-        .then(response => response?.data)
-        .catch(error => { console.log(error) })
+// Payload keeps the raw response body; screens read state.user.data.data.technician.
+// The token argument is optional: the api client attaches the session token.
+export const fetchUser = createAsyncThunk('user/fetchUser', async (token, { rejectWithValue }) => {
+    try {
+        const response = await api.post(
+            '/technician/validate-token',
+            {},
+            token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
+        );
+        return response.data;
+    } catch (error) {
+        return rejectWithValue(error.response?.status ?? 'NETWORK_ERROR');
+    }
 })
 
 const userSlice = createSlice({
@@ -27,8 +34,9 @@ const userSlice = createSlice({
         })
         builder.addCase(fetchUser.rejected, (state, action) => {
             state.loading = false
-            state.data = null
-            state.error = action.error.message
+            // Keep the last known profile on network errors; a 401 is handled
+            // globally (session cleared + emptyUser).
+            state.error = String(action.payload ?? action.error.message)
         })
     },
     reducers: {

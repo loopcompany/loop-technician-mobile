@@ -15,13 +15,11 @@ import {
   registerTechnician,
   getExpertises,
   validateReferralCode,
-  testApiConnection,
-  testExpertisesEndpoint
 } from '../../services/Api';
 import { validateTechnicianRegistration } from '../../utils/validation';
 import { showAlert, showToastOrAlert } from '../../helpers/Common';
 import { useTranslation } from "react-i18next";
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSelector } from 'react-redux';
 import {
   startOtpRetriever,

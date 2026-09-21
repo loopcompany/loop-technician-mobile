@@ -9,13 +9,15 @@ import {
   ActivityIndicator
 } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useDispatch } from 'react-redux';
+import { removeToken } from '../slices/authSlice';
+import { emptyUser } from '../slices/userSlice';
 import { useTranslation } from 'react-i18next';
 import { createStyles } from '../styles/NewStyles';
 import ScreenHeaders from '../components/ScreenHeaders';
 import NewStyles from '../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor10, themeColor2, themeColor3, themeColor4, themeColor8 } from '../theme/Color';
-import { changePassword } from '../services/Api';
+import { changePassword, logoutTechnician } from '../services/Api';
 import { showAlert } from '../helpers/Common';
 import Button from '../components/Button';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -25,6 +27,7 @@ export default function ChangePasswordScreen({ navigation }) {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
   const { t, i18n } = useTranslation();
   const NewStyles = useMemo(
     () => createStyles(i18n.language),
@@ -117,8 +120,10 @@ export default function ChangePasswordScreen({ navigation }) {
                 try {
                   // Clear authentication data
                   console.log('🚪 در حال خروج و پاک کردن اطلاعات...');
-                  await AsyncStorage.removeItem('userToken');
-                  await AsyncStorage.removeItem('userData');
+                  // Detaches push, revokes the token and clears the session.
+                  await logoutTechnician();
+                  dispatch(removeToken());
+                  dispatch(emptyUser());
                   
                   // Clear inputs
                   setCurrentPassword('');

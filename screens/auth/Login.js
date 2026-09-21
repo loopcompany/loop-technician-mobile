@@ -15,16 +15,16 @@ import {
 import Svg, { Text as SvgText, Line, Rect } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor3, themeColor4, themeColor10, themeColor7, themeColor2, themeColor6, themeColor9 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import Button from '../../components/Button';
 import { useDispatch } from 'react-redux';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { loginTechnician, validateToken } from '../../services/Api';
+import { loginTechnician } from '../../services/Api';
+import { getRememberedCredentials, saveRememberedCredentials, clearRememberedCredentials } from '../../services/session';
 import { setToken } from '../../slices/authSlice';
-import { fetchUser, setUserData } from '../../slices/userSlice';
+import { fetchUser } from '../../slices/userSlice';
 import { showToastOrAlert, showAlert } from '../../helpers/Common';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from "react-i18next";
@@ -49,16 +49,14 @@ export default function Login() {
   }, []);
 
   async function loadSavedCredentials() {
-    console.log('📂 بارگذاری اطلاعات ذخیره شده...');
     try {
-      const savedReferralCode = await AsyncStorage.getItem('savedReferralCode');
-      const savedPassword = await AsyncStorage.getItem('savedPassword');
-      console.log('کد پرسنلی ذخیره شده:', savedReferralCode || 'ندارد');
-      if (savedReferralCode && savedPassword) {
-        setReferralCode(savedReferralCode);
-        setPassword(savedPassword);
+      const saved = await getRememberedCredentials();
+      if (saved.referralCode) {
+        setReferralCode(saved.referralCode);
         setRememberPassword(true);
-        console.log('✅ اطلاعات بارگذاری شد');
+      }
+      if (saved.password) {
+        setPassword(saved.password);
       }
     } catch (error) {
       console.log('❌ خطا در بارگذاری اطلاعات:', error);
@@ -88,7 +86,6 @@ export default function Login() {
   function createNewCaptcha() {
     console.log('🎨 ساخت کپچای جدید...');
     const code = generateCaptchaCode();
-    console.log('کد کپچای جدید:', code);
     const colors = [themeColor2.bgColor(1), themeColor6.bgColor(1), themeColor7.bgColor(1), themeColor9.bgColor(1), themeColor6.bgColor(1)];
     const meta = [];
     for (let i = 0; i < code.length; i++) {
@@ -161,21 +158,22 @@ export default function Login() {
       
       if (result.success && result.data?.token) {
 
-        // Save token first
-        await AsyncStorage.setItem('userToken', result.data.token);
+        // loginTechnician already persisted the session.
         dispatch(setToken(result.data.token));
-        dispatch(fetchUser(result.data.token));
+        dispatch(fetchUser());
 
-        // Save credentials if remember me is checked
-        if (rememberPassword) {
-          await AsyncStorage.setItem('savedReferralCode', referralCode.trim());
-          await AsyncStorage.setItem('savedPassword', password.trim());
-        } else {
-          await AsyncStorage.removeItem('savedReferralCode');
-          await AsyncStorage.removeItem('savedPassword');
+        // Save credentials if remember me is checked (password goes to SecureStore)
+        try {
+          if (rememberPassword) {
+            await saveRememberedCredentials(referralCode.trim(), password.trim());
+          } else {
+            await clearRememberedCredentials();
+          }
+        } catch (e) {
+          console.log('Could not update remembered credentials:', e);
         }
 
-        showToastOrAlert(t("Success"), result.message || t("Login was successful"));
+        showToastOrAlert(result.message || t("Login was successful"));
 
         navigation.reset({
           index: 0,

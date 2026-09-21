@@ -4,8 +4,15 @@ import { uri as BASE_URL, Technician_Orders, Technician_DeliveryReports } from '
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_ENDPOINTS } from './ApiEndpoints';
 import { runLogoutTask } from './notifications/logoutTask';
+import {
+  getToken,
+  saveSession,
+  clearSession,
+  clearRememberedCredentials,
+  notifyUnauthorized,
+} from './session';
 import i18n from 'i18next';
-const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+
 // Create axios instance with base configuration
 const api = axios.create({
   baseURL: BASE_URL,
@@ -13,74 +20,54 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'Accept-Language': lang
   },
 });
 
-// Request interceptor to add auth token and log requests
-api.interceptors.request.use(
-  async (config) => {
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    } catch (error) {
-      console.warn('Error getting token from AsyncStorage:', error);
+// Endpoints where a 401 means "wrong credentials", not "session expired".
+const AUTH_ENDPOINTS = ['/technician/login', '/technician/forgot-password', '/technician/verify-reset-code', '/technician/reset-password'];
+
+// Request interceptor: auth token + current language
+api.interceptors.request.use(async (config) => {
+  // Read per request: i18n is initialised after this module loads and the
+  // user can switch language at runtime.
+  config.headers['Accept-Language'] = i18n.resolvedLanguage || i18n.language || 'fa';
+
+  // Callers may pass an explicit token; otherwise use the session token.
+  if (!config.headers.Authorization) {
+    const token = await getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
-
-
-
-    return config;
-  },
-  (error) => {
-    console.log('❌ Request Setup Error:', error.message);
-    return Promise.reject(error);
   }
-);
+  return config;
+});
 
-// Response interceptor for error handling and logging
+// Response interceptor: logging and session expiry
 api.interceptors.response.use(
-  (response) => {
-    // Log successful responses
-    console.log('✅ API Response:', {
-      method: response.config.method?.toUpperCase(),
-      url: response.config.url,
-      status: response.status,
-      statusText: response.statusText
-    });
-    return response;
-  },
+  (response) => response,
   (error) => {
-    // Detailed error logging
     if (error.response) {
-      // Server responded with error status
       console.log('❌ API Error Response:', {
         method: error.config?.method?.toUpperCase(),
         url: error.config?.url,
-        fullURL: `${error.config?.baseURL}${error.config?.url}`,
         status: error.response.status,
-        statusText: error.response.statusText,
         message: error.response.data?.message || 'No message',
-        data: error.response.data
       });
 
-      // Handle 401 Unauthorized
-      if (error.response.status === 401) {
-        console.warn('🔒 Token expired or invalid - clearing auth data');
-        AsyncStorage.removeItem('userToken');
-        AsyncStorage.removeItem('userData');
+      const url = error.config?.url || '';
+      const authHeader = error.config?.headers?.Authorization;
+      const isAuthEndpoint = AUTH_ENDPOINTS.some((endpoint) => url.includes(endpoint));
+
+      // Session expired or revoked: clear storage + redux and go to login.
+      if (error.response.status === 401 && authHeader && !isAuthEndpoint && !error.config?.skipAuthRedirect) {
+        notifyUnauthorized(String(authHeader).replace(/^Bearer\s+/i, ''));
       }
     } else if (error.request) {
-      // Request made but no response received
       console.log('❌ No Response from Server:', {
         method: error.config?.method?.toUpperCase(),
         url: error.config?.url,
-        fullURL: `${error.config?.baseURL}${error.config?.url}`,
-        message: 'سرور پاسخی نداد'
       });
     } else {
-      // Something else happened
       console.log('❌ Request Error:', error.message);
     }
 
@@ -343,91 +330,6 @@ const handleError = (error) => {
 };
 
 // =============================================================================
-// DEBUG & TEST FUNCTIONS
-// =============================================================================
-
-/**
- * Test API connectivity using expertises endpoint
- */
-export const testApiConnection = async () => {
-  try {
-    console.log('🧪 Testing API connection to:', BASE_URL);
-
-    // Use expertises endpoint for testing since it's guaranteed to exist
-    const response = await api.get('/expertises', { timeout: 5000 });
-    console.log('✅ API connection test successful');
-    return {
-      success: true,
-      message: 'API connection working',
-      data: response.data
-    };
-  } catch (error) {
-    console.log('❌ API connection test failed:', error.message);
-
-    if (error.code === 'NETWORK_ERROR' || error.message.includes('Network Error')) {
-      return {
-        success: false,
-        message: 'خطا در اتصال به شبکه - لطفاً اتصال اینترنت خود را بررسی کنید'
-      };
-    }
-
-    return {
-      success: false,
-      message: `خطا در اتصال به سرور: ${error.message}`
-    };
-  }
-};
-
-/**
- * Test expertises endpoint specifically
- */
-export const testExpertisesEndpoint = async () => {
-  const fullUrl = `${BASE_URL}/expertises`;
-  console.log('🔍 Testing expertises endpoint:', fullUrl);
-
-  try {
-    // Test with fetch first to see raw response
-    const fetchResponse = await fetch(fullUrl, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Accept-Language': lang
-      },
-      timeout: 10000,
-    });
-
-    console.log('📡 Fetch response status:', fetchResponse.status);
-    console.log('📡 Fetch response headers:', fetchResponse.headers);
-
-    if (!fetchResponse.ok) {
-      const errorText = await fetchResponse.text();
-      console.log('❌ Fetch error response body:', errorText);
-      return {
-        success: false,
-        message: `HTTP ${fetchResponse.status}: ${errorText}`
-      };
-    }
-
-    const data = await fetchResponse.json();
-    console.log('✅ Fetch response data:', data);
-
-    return {
-      success: true,
-      data,
-      message: 'Expertises endpoint working'
-    };
-
-  } catch (error) {
-    console.log('❌ Test expertises endpoint failed:', error);
-    return {
-      success: false,
-      message: error.message
-    };
-  }
-};
-
-// =============================================================================
 // TECHNICIAN REGISTRATION & LOGIN APIs
 // =============================================================================
 
@@ -499,8 +401,7 @@ export const registerTechnician = async (formData, resumeFile = null) => {
 
     const response = await api.post('/technician/register', multipartData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
-        'Accept-Language': lang
+        'Content-Type': 'multipart/form-data'
       },
       timeout: 60000, // 60 seconds for file upload
     });
@@ -573,34 +474,24 @@ export const validateReferralCode = async (referralCode) => {
  */
 export const loginTechnician = async (referralCodeOrPhone, password) => {
   try {
-    console.log('📡 API loginTechnician فراخوانی شد');
-    console.log('ورودی اول:', referralCodeOrPhone);
-    console.log('رمز عبور:', password ? '***' : 'خالی');
-
+    const identifier = String(referralCodeOrPhone ?? '').trim();
     // Determine if input is phone or referral code
-    const isPhone = /^09\d{9}$/.test(referralCodeOrPhone);
-    console.log('نوع ورودی:', isPhone ? 'شماره تلفن' : 'کد معرف');
+    const isPhone = /^09\d{9}$/.test(identifier);
 
     const requestBody = {
-      ...(isPhone ? { phone: referralCodeOrPhone } : { referral_code: referralCodeOrPhone }),
+      ...(isPhone ? { phone: identifier } : { referral_code: identifier }),
       password,
     };
 
-
     const response = await api.post('/technician/login', requestBody);
-
     const result = handleResponse(response);
 
-    // Store token and user data if login successful
-    if (result.success && result.data.token) {
-      await AsyncStorage.setItem('userToken', result.data.token);
-      // Store the complete data structure (not just technician)
-      await AsyncStorage.setItem('userData', JSON.stringify(result.data));
+    if (result.success && result.data?.token) {
+      await saveSession(result.data.token, result.data);
     }
 
     return result;
   } catch (error) {
-
     return handleError(error);
   }
 };
@@ -611,7 +502,7 @@ export const loginTechnician = async (referralCodeOrPhone, password) => {
  * has to import the notifications module, which imports this one.
  */
 const removeDeviceTokenBeforeLogout = async () => {
-  const authToken = await AsyncStorage.getItem('userToken');
+  const authToken = await getToken();
   await runLogoutTask(authToken);
 };
 
@@ -620,35 +511,22 @@ const removeDeviceTokenBeforeLogout = async () => {
  */
 export const logoutTechnician = async () => {
   try {
-    console.log('🚪 شروع فرآیند خروج...');
-
     // Must happen before the logout request revokes the bearer token, otherwise
     // the device-token deletion comes back 401 and the row is left behind.
     await removeDeviceTokenBeforeLogout();
 
-    const response = await api.post('/technician/logout');
-    console.log('✅ پاسخ سرور logout:', response.status, response.data);
-
-    // Clear authentication data (but KEEP userData for next login!)
-    console.log('🗑️ پاک کردن توکن احراز هویت...');
-    await AsyncStorage.removeItem('userToken');
-    await AsyncStorage.removeItem('savedReferralCode');
-    await AsyncStorage.removeItem('savedPassword');
-    console.log('✅ توکن پاک شد (userData حفظ شد برای بار بعد)');
-    // ⚠️ Note: We DON'T remove 'userData' so it can be used after next login
-
+    // A 401 here just means the token is already dead; don't redirect twice.
+    const response = await api.post('/technician/logout', {}, { skipAuthRedirect: true });
     return handleResponse(response);
   } catch (error) {
-    console.log('❌ خطا در logout API:', error);
-    // Clear authentication data even if logout API fails
-    console.log('🗑️ پاک کردن توکن احراز هویت (در صورت خطا)...');
-    await AsyncStorage.removeItem('userToken');
-    await AsyncStorage.removeItem('savedReferralCode');
-    await AsyncStorage.removeItem('savedPassword');
-    console.log('✅ توکن پاک شد (userData حفظ شد برای بار بعد)');
     return handleError(error);
+  } finally {
+    // Always clear local auth, even if the server call fails.
+    await clearSession();
+    await clearRememberedCredentials().catch(() => {});
   }
 };
+
 export const atWork = async (token) => {
   try { 
     const response = await api.patch('/technician/profile/at-work', {}, {headers:{
@@ -759,9 +637,14 @@ export const infoAPI = {
 /**
  * Validate technician token
  */
-export const validateToken = async () => {
+export const validateToken = async (token) => {
   try {
-    const response = await api.post('/technician/validate-token');
+    const response = await api.post(
+      '/technician/validate-token',
+      {},
+      // Callers decide what an invalid token means (e.g. startup vs. mid-session).
+      { skipAuthRedirect: true, ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}) }
+    );
     return handleResponse(response);
   } catch (error) {
     console.log('❌ توکن نامعتبر یا منقضی شده');
@@ -919,8 +802,7 @@ export const updatePersonalInfo = async (data, profilePhoto = null) => {
       // Use POST with _method=PUT for Laravel compatibility with file uploads
       const response = await api.post('/technician/profile/personal-info', formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
-          'Accept-Language': lang
+          'Content-Type': 'multipart/form-data'
         },
         timeout: 60000,
       });
@@ -938,8 +820,7 @@ export const updatePersonalInfo = async (data, profilePhoto = null) => {
 
       const response = await api.put('/technician/profile/personal-info', editableData, {
         headers: {
-          'Content-Type': 'application/json',
-          'Accept-Language': lang
+          'Content-Type': 'application/json'
         },
       });
 
@@ -962,8 +843,7 @@ export const updateVehicleInfo = async (data) => {
 
     const response = await api.put('/technician/profile/vehicle-info', data, {
       headers: {
-        'Content-Type': 'application/json',
-        'Accept-Language': lang
+        'Content-Type': 'application/json'
       },
     });
 
@@ -985,8 +865,7 @@ export const updateBankInfo = async (data) => {
 
     const response = await api.put('/technician/profile/bank-info', data, {
       headers: {
-        'Content-Type': 'application/json',
-        'Accept-Language': lang
+        'Content-Type': 'application/json'
       },
     });
 
@@ -1008,8 +887,7 @@ export const changePassword = async (data) => {
 
     const response = await api.patch('/technician/profile/password', data, {
       headers: {
-        'Content-Type': 'application/json',
-        'Accept-Language': lang
+        'Content-Type': 'application/json'
       },
     });
 
@@ -1216,8 +1094,7 @@ export const updateLoopInfo = async (orderId, data) => {
  */
 export const isAuthenticated = async () => {
   try {
-    const token = await AsyncStorage.getItem('userToken');
-    return !!token;
+    return !!(await getToken());
   } catch (error) {
     return false;
   }
@@ -1240,8 +1117,7 @@ export const getStoredUserData = async () => {
  */
 export const clearAuthData = async () => {
   try {
-    await AsyncStorage.removeItem('userToken');
-    await AsyncStorage.removeItem('userData');
+    await clearSession();
     return true;
   } catch (error) {
     console.log('Error clearing auth data:', error);
@@ -1970,8 +1846,7 @@ export const uploadArchiveImages = async (images) => {
 
     const response = await api.post('/technician/archive-images', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
-        'Accept-Language': lang
+        'Content-Type': 'multipart/form-data'
       },
       timeout: 60000, // 60 ثانیه برای آپلود
     });

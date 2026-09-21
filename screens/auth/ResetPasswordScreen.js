@@ -18,10 +18,9 @@ import {
 } from "react-native-confirmation-code-field";
 import { themeColor0, themeColor3, themeColor10, themeColor2, themeColor4, themeColor6 } from "../../theme/Color";
 import { setToken } from "../../slices/authSlice";
-import { setUserData } from "../../slices/userSlice";
+import { fetchUser } from "../../slices/userSlice";
 import Button from "../../components/Button";
 import { useDispatch, useSelector } from "react-redux";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { verifyResetCode, resetPassword, requestPasswordReset } from "../../services/Api";
 import { loginTechnician } from "../../services/Api";
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -197,17 +196,15 @@ export default function ResetPasswordScreen({ navigation, route }) {
       if (result.success) {
         // Password reset successful - now auto-login with new password
         try {
-          const loginResult = await loginTechnician({
-            referralCode: params?.referralCode,
-            password: newPassword,
-          });
+          // loginTechnician(identifier, password) — it also persists the session.
+          const loginResult = await loginTechnician(
+            params?.referralCode || params?.phone,
+            newPassword,
+          );
 
           if (loginResult.success && loginResult.data?.token) {
-            // Save token to AsyncStorage and Redux
-            await AsyncStorage.setItem('userToken', loginResult.data.token);
-            await AsyncStorage.setItem('userData', JSON.stringify(loginResult.data));
             dispatch(setToken(loginResult.data.token));
-            dispatch(setUserData(loginResult.data));
+            dispatch(fetchUser());
 
             showAlert(
               t("Success"),
