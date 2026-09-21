@@ -126,6 +126,7 @@ module.exports = ({ config }) => {
 
     plugins: mergePlugins(config.plugins, [
       './plugins/withNotificationColor',
+      'expo-secure-store',
       '@react-native-firebase/app',
       '@react-native-firebase/messaging',
       [

@@ -3,11 +3,9 @@ const path = require('path');
 
 const config = getDefaultConfig(__dirname);
 
-// تنظیمات resolver
-config.resolver.sourceExts = [...config.resolver.sourceExts, 'web.js', 'web.jsx', 'web.ts', 'web.tsx'];
-
-// اضافه کردن platformExtensions
-config.resolver.platforms = ['web', 'ios', 'android'];
+// Metro already resolves *.web.js / *.native.js by platform, so sourceExts and
+// platforms stay at their defaults (overriding them let native builds pick up
+// web-only files).
 
 // Custom resolver برای react-native-maps در وب
 const originalResolveRequest = config.resolver.resolveRequest;
@@ -21,11 +19,10 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
     };
   }
 
-  // استفاده از resolver پیش‌فرض برای سایر ماژول‌ها
   if (originalResolveRequest) {
     return originalResolveRequest(context, moduleName, platform);
   }
-  
+
   return context.resolveRequest(context, moduleName, platform);
 };
 
