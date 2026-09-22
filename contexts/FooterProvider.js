@@ -285,6 +285,9 @@ const FooterRoot = memo(function FooterRoot({ isVisible }) {
   const closeMenu = useCallback(() => setMenuVisible(false), []);
 
   const handleLogoutClick = useCallback(() => {
+    // Close the menu before opening the confirmation: stacking two native
+    // modals and then dismissing both at once can leave a blank overlay.
+    setMenuVisible(false);
     setShowLogoutConfirm(true);
   }, []);
 
@@ -292,23 +295,25 @@ const FooterRoot = memo(function FooterRoot({ isVisible }) {
     setShowLogoutConfirm(value);
   }, []);
 
-  const handleLogout = useCallback(async () => {
-    try {
-      setShowLogoutConfirm(false);
-      setMenuVisible(false);
+  const handleLogout = useCallback(() => {
+    setShowLogoutConfirm(false);
+    setMenuVisible(false);
 
-      dispatch(setToken(null));
-      dispatch(emptyUser());
+    // Leave the protected screens right away instead of waiting on the network
+    // (and skip the intro video on Welcome).
+    NavigationService.reset({
+      index: 0,
+      routes: [{ name: 'SignInLanding' }],
+    });
 
-      await logoutTechnician();
+    dispatch(setToken(null));
+    dispatch(emptyUser());
 
-      NavigationService.reset({
-        index: 0,
-        routes: [{ name: 'Welcome' }],
-      });
-    } catch (error) {
+    // Server-side logout runs in the background; local session is cleared
+    // regardless of its outcome.
+    logoutTechnician().catch((error) => {
       console.log('Error during logout:', error);
-    }
+    });
   }, [dispatch]);
 
   const handleWorkat = useCallback(async () => {

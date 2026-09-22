@@ -443,10 +443,13 @@ export const verifyPhoneNumber = async (phone, code) => {
 /**
  * Resend verification code to technician
  */
-export const resendVerificationCode = async (phone) => {
+export const resendVerificationCode = async (phone, hashApp = '') => {
   try {
+    // hashApp lets Android's SMS Retriever autofill the resent code, like the
+    // first send during registration does.
     const response = await api.post('/technician/resend-code', {
       phone,
+      hashApp,
     });
 
     return handleResponse(response);
@@ -510,6 +513,7 @@ const removeDeviceTokenBeforeLogout = async () => {
  * Logout technician
  */
 export const logoutTechnician = async () => {
+  const loggingOutToken = await getToken();
   try {
     // Must happen before the logout request revokes the bearer token, otherwise
     // the device-token deletion comes back 401 and the row is left behind.
@@ -521,9 +525,12 @@ export const logoutTechnician = async () => {
   } catch (error) {
     return handleError(error);
   } finally {
-    // Always clear local auth, even if the server call fails.
-    await clearSession();
-    await clearRememberedCredentials().catch(() => {});
+    // Always clear local auth, even if the server call fails — unless the user
+    // already logged in again while this request was in flight.
+    if ((await getToken()) === loggingOutToken) {
+      await clearSession();
+      await clearRememberedCredentials().catch(() => {});
+    }
   }
 };
 

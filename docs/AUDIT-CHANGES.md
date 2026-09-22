@@ -60,6 +60,7 @@ A 401 from the login or forgot/reset-password endpoints is **not** treated as an
 | 8 | `fetchUser` swallowed errors and saved `undefined` as the user's profile. | It uses the shared API client and reports errors. On a network error, the last known profile is kept. | `slices/userSlice.js` |
 | 9 | On web, a logged-out user could open protected pages directly, for example `/orders`. | Every navigation is checked. A logged-out user on a protected screen is sent to Login. The public screens are listed in `PUBLIC_ROUTES` in `App.js`. | `App.js` |
 | 10 | Some deep links used screen names that don't exist, so the links did nothing. | Fixed `verify-phone`, `game`, `game/play`, `game/result` and `notes/edit`. Removed the link to a screen that no longer exists. | `App.js` |
+| 12 | During sign-up, "resend code" did not send `hashApp`, so Android could not autofill the resent SMS code (the first send and both password-reset sends already did). | `resendVerificationCode(phone, hashApp)` now sends it. The backend must add it to the resent SMS the same way it does for the first one. | `services/Api.js`, `screens/auth/PhoneVerificationScreen.js` |
 | 11 | The `Accept-Language` header was read once, before translations had loaded, so it never followed the user's language. | It is read on every request. | `services/Api.js` |
 
 ---

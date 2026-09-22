@@ -21,6 +21,7 @@ import { themeColor0, themeColor1, themeColor3, themeColor10 } from '../../theme
 import CustomStatusBar from '../../components/CustomStatusBar';
 import Button from '../../components/Button';
 import { verifyPhoneNumber, resendVerificationCode } from '../../services/Api';
+import { useSelector } from 'react-redux';
 import { formatTime, showAlert } from '../../helpers/Common';
 import {
   restartOtpRetriever,
@@ -31,6 +32,7 @@ import {
 
 export default function PhoneVerificationScreen({ navigation, route }) {
   const { phone, technicianId } = route.params;
+  const hashApp = useSelector(state => state.hashApp?.hash);
   const [verificationCode, setVerificationCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -149,7 +151,7 @@ export default function PhoneVerificationScreen({ navigation, route }) {
 
     try {
       await restartOtpRetriever();
-      const result = await resendVerificationCode(phone);
+      const result = await resendVerificationCode(phone, hashApp?.[0] ?? '');
 
       if (result.success) {
         showAlert('موفقیت', result.message || 'کد تأیید مجدداً ارسال شد');
