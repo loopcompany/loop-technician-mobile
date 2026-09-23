@@ -8,6 +8,9 @@ import {
   TouchableWithoutFeedback,
   ActivityIndicator,
   Platform,
+  Animated,
+  StatusBar,
+  useWindowDimensions,
 } from "react-native";
 import NewStyles from "../styles/NewStyles";
 import { themeColor0, themeColor10 } from "../theme/Color";
@@ -15,7 +18,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchContacts } from "../slices/contactSlice";
 import { useTranslation } from "react-i18next";
 import { fetchPdfDocs } from "../slices/pdfDocumentSlice";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { useEvent } from "expo";
@@ -25,12 +27,16 @@ import { setHashApp } from "../slices/hashAppSlice";
 // Intro video is 8s; never keep the user here longer than this if playback
 // fails or never reports its end (e.g. autoplay blocked on web).
 const MAX_INTRO_MS = 10000;
+// Intro video is portrait 720x1280.
+const VIDEO_ASPECT = 720 / 1280;
 
 export default function Welcome({ navigation }) {
   const [isChecking, setIsChecking] = useState(true);
   const userToken = useSelector((state) => state.auth.token);
   const dispatch = useDispatch();
   const { t } = useTranslation();
+  const { width, height } = useWindowDimensions();
+  const fadeAnim = useRef(new Animated.Value(0)).current;
   const player = useVideoPlayer(require('../assets/video/InShot_20260626_171217014.mp4'), player => {
     if (Platform.OS === 'web') {
       player.muted = true;
@@ -85,6 +91,16 @@ export default function Welcome({ navigation }) {
   }, []);
   const { isPlaying } = useEvent(player, 'playingChange', { isPlaying: player.playing });
 
+  // Fade the video in once the first frame is playing, so there is no black flash.
+  useEffect(() => {
+    if (!isPlaying) return;
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 600,
+      useNativeDriver: Platform.OS !== 'web',
+    }).start();
+  }, [isPlaying, fadeAnim]);
+
   useEffect(() => {
     if (Platform.OS === 'web' && !isPlaying && player && !finishedRef.current) {
       player.play();
@@ -95,15 +111,22 @@ export default function Welcome({ navigation }) {
 
 
 
+  // Largest 9:16 box that fits the screen, so the video is never cropped
+  // and never overflows (no scrolling on web / small screens).
+  const videoWidth = Math.min(width, height * VIDEO_ASPECT);
+  const videoSize = { width: videoWidth, height: videoWidth / VIDEO_ASPECT };
+
   if (isChecking) {
     return (
-      <SafeAreaView style={NewStyles.container}>
-        <TouchableWithoutFeedback onPress={finishIntro}>
-          <LinearGradient colors={['#1c2833', '#0b0d11', '#0b0d11']} style={{ flex: 1 }}>
-            <VideoView style={{ flex: 1 }} nativeControls={false} player={player} contentFit='contain' pointerEvents="none" />
-          </LinearGradient>
-        </TouchableWithoutFeedback>
-      </SafeAreaView>
+      <TouchableWithoutFeedback onPress={finishIntro}>
+        <View style={styles.introRoot}>
+          <StatusBar hidden animated />
+          <LinearGradient colors={['#1c2833', '#0b0d11', '#0b0d11']} style={StyleSheet.absoluteFill} />
+          <Animated.View style={[videoSize, { opacity: fadeAnim }]} pointerEvents="none">
+            <VideoView style={styles.video} nativeControls={false} player={player} contentFit='cover' />
+          </Animated.View>
+        </View>
+      </TouchableWithoutFeedback>
     );
   }
 
@@ -147,5 +170,23 @@ const styles = StyleSheet.create({
   logo: {
     width: 200,
     height: 100,
+  },
+  introRoot: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    backgroundColor: '#0b0d11',
+    ...(Platform.OS === 'web' && {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+    }),
+  },
+  video: {
+    width: '100%',
+    height: '100%',
   },
 });
