@@ -10,6 +10,8 @@ import {
   clearSession,
   clearRememberedCredentials,
   notifyUnauthorized,
+  notifyAccessDenied,
+  ACCESS_DENIED_CODE,
 } from './session';
 import i18n from 'i18next';
 
@@ -61,6 +63,16 @@ api.interceptors.response.use(
       // Session expired or revoked: clear storage + redux and go to login.
       if (error.response.status === 401 && authHeader && !isAuthEndpoint && !error.config?.skipAuthRedirect) {
         notifyUnauthorized(String(authHeader).replace(/^Bearer\s+/i, ''));
+      }
+
+      // Account suspended from the admin panel while signed in.
+      if (
+        error.response.status === 403 &&
+        error.response.data?.error_code === ACCESS_DENIED_CODE &&
+        authHeader &&
+        !error.config?.skipAuthRedirect
+      ) {
+        notifyAccessDenied(String(authHeader).replace(/^Bearer\s+/i, ''), error.response.data?.message);
       }
     } else if (error.request) {
       console.log('❌ No Response from Server:', {

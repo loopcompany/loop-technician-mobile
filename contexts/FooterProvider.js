@@ -1,10 +1,9 @@
-import React, { createContext, useCallback, useContext, useMemo, useState, useEffect, memo, } from 'react';
-import { View, Text, StyleSheet, Pressable, FlatList, Image, Linking, Modal, BackHandler, ActivityIndicator, TouchableWithoutFeedback, } from 'react-native';
+import React, { createContext, useCallback, useContext, useMemo, useState, useEffect, useRef, memo, } from 'react';
+import { View, Text, StyleSheet, Pressable, FlatList, Image, Modal, BackHandler, ActivityIndicator, TouchableOpacity, TouchableWithoutFeedback, Animated, Platform, Linking, } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector, shallowEqual } from 'react-redux';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTranslation } from 'react-i18next';
-import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 
 import { setToken } from '../slices/authSlice';
@@ -13,19 +12,23 @@ import { atWork, logoutTechnician } from '../services/Api';
 import * as NavigationService from '../services/NavigationService';
 import { navigationRef } from '../services/NavigationService';
 import ConfirmationModal from '../components/ConfirmationModal';
-import { mainUri } from '../services/URL';
+import { imageUri } from '../services/URL';
+import { callSupport } from '../helpers/support';
+import { showAlert } from '../helpers/Common';
+import { createStyles } from '../styles/NewStyles';
 import {
   colors,
+  themeColor0,
+  themeColor4,
+  themeColor6,
   themeColor7,
-  themeColor8,
-  themeColor12,
-  themeColor14,
 } from '../theme/Color';
 import { spacing } from '../theme/Spacing';
 import { radius } from '../theme/Radius';
 import { fontSize, getFontFamily } from '../theme/Typography';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setLanguage } from '../slices/languageSlice';
+import { fetchPdfDocs } from '../slices/pdfDocumentSlice';
 
 // The intro screen plays full-screen video; the footer never belongs there.
 const HIDDEN_ON_ROUTES = new Set(['Welcome']);
@@ -42,71 +45,156 @@ export const useFooter = () => {
   return context;
 };
 
-// Compact glass button that lives inside the dock. Windows 7 Aero is only the
-// visual mood here: a soft illumination on hover/press, and a brighter glass
-// fill + blue glow + underline when the item is active.
-function DockButton({ icon, image, label, active, onPress, lang }) {
-  const [hovered, setHovered] = useState(false);
+// The dock and the LOOP menu follow the user app (edits list 1405/07/03,
+// items 9, 15 and 20): a blue glass dock whose round, gently animated LOOP
+// button opens the menu.
+const shadowLg = {
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.2,
+  shadowRadius: 8,
+  elevation: 8,
+};
 
-  return (
-    <Pressable
-      onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
-      style={({ pressed }) => [
-        styles.dockBtn,
-        (hovered || pressed) && styles.dockBtnHover,
-        active && styles.dockBtnActive,
-      ]}
-    >
-      {active ? <View style={styles.activeGlow} pointerEvents="none" /> : null}
-      {image ? (
-        <Image source={image} style={styles.dockBtnImage} />
-      ) : (
-        <Ionicons
-          name={icon}
-          size={19}
-          color={active ? themeColor14.color : colors.white.bgColor(0.82)}
-        />
-      )}
-      {active ? (
-        <Text
-          style={[styles.dockBtnLabel, { fontFamily: getFontFamily('bold', lang) }]}
-          numberOfLines={1}
-        >
-          {label}
-        </Text>
-      ) : null}
-      {active ? <View style={styles.activeUnderline} pointerEvents="none" /> : null}
-    </Pressable>
-  );
-}
+const LoopMenuButton = memo(function LoopMenuButton({ onPress, accessibilityLabel }) {
+  const idleScale = useRef(new Animated.Value(1)).current;
+  const rotate = useRef(new Animated.Value(0)).current;
+  const pressScale = useRef(new Animated.Value(1)).current;
 
-const FooterMenuItem = memo(function FooterMenuItem({ item, lang, onPress }) {
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.parallel([
+          Animated.timing(idleScale, { toValue: 1.08, duration: 800, useNativeDriver: true }),
+          Animated.timing(rotate, { toValue: 1, duration: 800, useNativeDriver: true }),
+        ]),
+        Animated.parallel([
+          Animated.timing(idleScale, { toValue: 1, duration: 800, useNativeDriver: true }),
+          Animated.timing(rotate, { toValue: 0, duration: 800, useNativeDriver: true }),
+        ]),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [idleScale, rotate]);
+
   const handlePress = useCallback(() => {
-    onPress(item);
-  }, [item, onPress]);
+    pressScale.stopAnimation();
+    Animated.sequence([
+      Animated.timing(pressScale, { toValue: 0.85, duration: 80, useNativeDriver: true }),
+      Animated.spring(pressScale, { toValue: 1, friction: 4, tension: 120, useNativeDriver: true }),
+    ]).start();
+    onPress?.();
+  }, [onPress, pressScale]);
+
+  const spin = rotate.interpolate({ inputRange: [0, 1], outputRange: ['-3deg', '3deg'] });
 
   return (
-    <Pressable
-      style={({ pressed, hovered }) => [
-        styles.menuItem,
-        (pressed || hovered) && styles.menuItemHover,
-      ]}
+    <TouchableOpacity
+      testID="dock-loop-menu"
+      activeOpacity={0.85}
       onPress={handlePress}
+      style={styles.menuButton}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
     >
-      <Text
-        style={[styles.menuItemText, { fontFamily: getFontFamily('bold', lang) }]}
-        numberOfLines={1}
-      >
-        {item.title}
-      </Text>
-      <Ionicons name="chevron-back" size={14} color={colors.white.bgColor(0.35)} />
-    </Pressable>
+      <Animated.View style={{ transform: [{ scale: idleScale }, { rotate: spin }] }}>
+        <Animated.View style={{ transform: [{ scale: pressScale }] }}>
+          <Image source={require('../assets/images/start.png')} style={styles.menuLogo} />
+        </Animated.View>
+      </Animated.View>
+    </TouchableOpacity>
   );
 });
 
-const FooterMenuModal = memo(function FooterMenuModal({ visible, menuItems, userToken, lang, t, onClose, onMenuItemPress, onLogoutClick, atWork, handleWorkat, workAtLoading }) {
+// Two-segment language switch (EN / فا), same as the user app's dock.
+const LANG_SEG_WIDTH = 26;
+
+const LanguageSwitch = memo(function LanguageSwitch({ language, onToggle }) {
+  const isFa = language === 'fa';
+  const slide = useRef(new Animated.Value(isFa ? 1 : 0)).current;
+
+  useEffect(() => {
+    Animated.spring(slide, {
+      toValue: isFa ? 1 : 0,
+      useNativeDriver: true,
+      friction: 7,
+      tension: 90,
+    }).start();
+  }, [isFa, slide]);
+
+  const translateX = slide.interpolate({ inputRange: [0, 1], outputRange: [0, LANG_SEG_WIDTH] });
+
+  return (
+    <TouchableOpacity
+      testID="dock-language"
+      activeOpacity={0.8}
+      onPress={onToggle}
+      style={styles.dockAction}
+      accessibilityRole="switch"
+      accessibilityState={{ checked: isFa }}
+      accessibilityLabel="Language / زبان"
+    >
+      <View style={styles.langTrack}>
+        <Animated.View style={[styles.langThumb, { transform: [{ translateX }] }]} pointerEvents="none" />
+        <View style={styles.langSeg}>
+          <Text style={[styles.langText, !isFa && styles.langTextActive]}>EN</Text>
+        </View>
+        <View style={styles.langSeg}>
+          <Text style={[styles.langText, { fontFamily: getFontFamily('bold', 'fa') }, isFa && styles.langTextActive]}>
+            فا
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+});
+
+function DockAction({ testID, icon, image, active, onPress, accessibilityLabel }) {
+  return (
+    <TouchableOpacity
+      testID={testID}
+      activeOpacity={0.75}
+      onPress={onPress}
+      style={styles.dockAction}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityState={{ selected: !!active }}
+    >
+      {image ? (
+        <Image source={image} style={styles.dockActionImage} />
+      ) : (
+        <Ionicons name={icon} size={22} color={colors.white.color} />
+      )}
+      <View style={[styles.activeDot, !active && styles.activeDotHidden]} />
+    </TouchableOpacity>
+  );
+}
+
+// Menu icons come from the server like the user app's; until an icon is
+// uploaded (or if it fails to load) a vector icon stands in so no row is blank.
+const MenuIcon = memo(function MenuIcon({ image, icon }) {
+  const [failed, setFailed] = useState(false);
+  if (image && !failed) {
+    return <Image source={{ uri: image }} style={styles.menuItemImage} onError={() => setFailed(true)} />;
+  }
+  return (
+    <View style={[styles.menuItemImage, styles.menuItemIconFallback]}>
+      <Ionicons name={icon || 'ellipse-outline'} size={26} color={themeColor0.bgColor(1)} />
+    </View>
+  );
+});
+
+// The LOOP menu is a copy of the user app's (contexts/MenuContext.js in
+// loop-customer-mobile — edits list 1405/07/03, item 15): a full-height panel
+// on the brand blue, the account header (name, badge, and in the spot of the
+// user's points box the technician's activity on/off, item 17), one white row
+// per item with a 50×50 icon, and close + logout at the bottom.
+const FooterMenuModal = memo(function FooterMenuModal({ visible, menuItems, userToken, user, lang, t, onClose, onMenuItemPress, onLogoutClick, atWork, handleWorkat, workAtLoading }) {
+  const insets = useSafeAreaInsets();
+  const NewStyles = useMemo(() => createStyles(lang), [lang]);
+  const writing = useMemo(() => ({ writingDirection: lang === 'fa' ? 'rtl' : 'ltr' }), [lang]);
+
   useEffect(() => {
     if (!visible) return undefined;
 
@@ -123,89 +211,115 @@ const FooterMenuModal = memo(function FooterMenuModal({ visible, menuItems, user
 
   const renderItem = useCallback(
     ({ item }) => (
-      <FooterMenuItem item={item} lang={lang} onPress={onMenuItemPress} />
+      <TouchableOpacity
+        testID={`menu-item-${item.id}`}
+        style={[styles.menuItem, NewStyles.row]}
+        onPress={() => onMenuItemPress(item)}
+      >
+        <MenuIcon image={item.image} icon={item.icon} />
+        <Text style={[NewStyles.text10, writing]}>{item.title}</Text>
+      </TouchableOpacity>
     ),
-    [lang, onMenuItemPress]
+    [NewStyles, writing, onMenuItemPress]
   );
 
   const keyExtractor = useCallback((item) => item.id.toString(), []);
+
+  const isOn = atWork == 1;
+
+  const renderHeader = () => (userToken ? (
+    <View style={[styles.menuHeader, NewStyles.center]}>
+      {!!user?.name && (
+        <Text style={[NewStyles.title, writing, styles.menuHeaderName]}>{user.name}</Text>
+      )}
+      <Text style={styles.menuHeaderBadge}>{t('Technician')}</Text>
+
+      {/* Activity on/off — always green when on, red when off (item 17). */}
+      <Pressable
+        testID="menu-at-work"
+        onPress={handleWorkat}
+        disabled={workAtLoading}
+        accessibilityRole="switch"
+        accessibilityState={{ checked: isOn, busy: workAtLoading }}
+        style={({ pressed }) => [
+          styles.atWorkButton,
+          NewStyles.row,
+          NewStyles.center,
+          NewStyles.border10,
+          { backgroundColor: isOn ? themeColor7.bgColor(1) : themeColor6.bgColor(1) },
+          pressed && styles.pressed,
+        ]}
+      >
+        {workAtLoading ? (
+          <ActivityIndicator size="small" color={colors.white.color} />
+        ) : (
+          <Ionicons name="power" size={18} color={colors.white.color} />
+        )}
+        <Text style={[NewStyles.title, writing, styles.atWorkText]}>
+          {isOn ? t('Activity status: On') : t('Activity status: Off')}
+        </Text>
+      </Pressable>
+    </View>
+  ) : null);
 
   return (
     <Modal
       transparent
       visible={visible}
-      animationType="fade"
-      statusBarTranslucent
       onRequestClose={onClose}
+      animationType="fade"
+      // Edge-to-edge Android: without these the modal ends under the system
+      // navigation bar and close/logout can't be tapped on some phones. The
+      // modal covers the whole screen and pads itself by the insets.
+      statusBarTranslucent
+      navigationBarTranslucent
     >
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.menuOverlay}>
-          <TouchableWithoutFeedback>
-            <View style={styles.menuPanel}>
-              <BlurView intensity={100} tint="dark" style={StyleSheet.absoluteFill} />
-              <LinearGradient
-                colors={[colors.white.bgColor(0.12), themeColor12.bgColor(0.22), colors.black.bgColor(0.34)]}
-                locations={[0, 0.5, 1]}
-                style={StyleSheet.absoluteFill}
-              />
-              <LinearGradient
-                colors={[colors.white.bgColor(0.3), colors.white.bgColor(0)]}
-                style={styles.topSheen}
-                pointerEvents="none"
-              />
-              <View style={styles.menuHandle} />
-              <FlatList
-                data={menuItems}
-                keyExtractor={keyExtractor}
-                renderItem={renderItem}
-                contentContainerStyle={styles.list}
-                keyboardShouldPersistTaps="handled"
-                showsVerticalScrollIndicator={false}
-              />
+      <View style={styles.menuOverlay}>
+        <View
+          testID="loop-menu"
+          style={[
+            styles.menuPanel,
+            { paddingTop: insets?.top || 0, paddingBottom: insets?.bottom || 0 },
+          ]}
+        >
+          <FlatList
+            ListHeaderComponent={renderHeader}
+            data={menuItems}
+            keyExtractor={keyExtractor}
+            renderItem={renderItem}
+            contentContainerStyle={styles.menuList}
+            showsVerticalScrollIndicator={false}
+          />
 
-              {userToken ? (
-                <View style={styles.bottomButtons}>
-                  <Pressable
-                    style={({ pressed, hovered }) => [
-                      styles.sheetBtn,
-                      (pressed || hovered) && styles.sheetBtnHover,
-                    ]}
-                    onPress={onLogoutClick}
-                  >
-                    <Ionicons name="log-out-outline" size={16} color={themeColor14.color} />
-                    <Text
-                      style={[styles.sheetBtnText, { fontFamily: getFontFamily('bold', lang) }]}
-                    >
-                      {t('Logout')}
-                    </Text>
-                  </Pressable>
-
-                  <Pressable
-                    onPress={handleWorkat}
-                    disabled={workAtLoading}
-                    style={({ pressed, hovered }) => [
-                      styles.sheetBtn,
-                      (pressed || hovered) && styles.sheetBtnHover,
-                      atWork == 1 && styles.sheetBtnOn,
-                    ]}
-                  >
-                    {workAtLoading ? (
-                      <ActivityIndicator size="small" color={themeColor14.color} />
-                    ) : (
-                      <Ionicons name="power-outline" size={16} color={themeColor14.color} />
-                    )}
-                    <Text
-                      style={[styles.sheetBtnText, { fontFamily: getFontFamily('bold', lang) }]}
-                    >
-                      {atWork == 1 ? t('On') : t('Off')}
-                    </Text>
-                  </Pressable>
-                </View>
-              ) : null}
-            </View>
-          </TouchableWithoutFeedback>
+          <View style={[styles.menuBottom, NewStyles.rowWrapper]}>
+            <TouchableOpacity
+              testID="menu-close"
+              style={styles.menuClose}
+              onPress={onClose}
+              accessibilityRole="button"
+              accessibilityLabel={t('Close')}
+            >
+              <Ionicons name="close" size={20} color={themeColor4.bgColor(1)} />
+            </TouchableOpacity>
+            {userToken ? (
+              <TouchableOpacity
+                testID="menu-logout"
+                style={[styles.logoutButton, NewStyles.row, NewStyles.center]}
+                onPress={onLogoutClick}
+              >
+                <Ionicons name="power" size={20} color="#fff" />
+                <Text style={styles.logoutText}>{t('Log out of account')}</Text>
+              </TouchableOpacity>
+            ) : null}
+          </View>
         </View>
-      </TouchableWithoutFeedback>
+
+        {/* The rest of the screen stays visible (as in the user app); tapping
+            it closes the menu. */}
+        <TouchableWithoutFeedback onPress={onClose}>
+          <View style={styles.menuBackdrop} />
+        </TouchableWithoutFeedback>
+      </View>
     </Modal>
   );
 });
@@ -219,7 +333,6 @@ const FooterRoot = memo(function FooterRoot({ isVisible }) {
   const dispatch = useDispatch();
 
   const userToken = useSelector((state) => state.auth.token);
-  const user = useSelector((state) => state.user?.data?.data?.technician);
   const [loading, setLoading] = useState(false);
 
   const userData = useSelector(
@@ -227,24 +340,7 @@ const FooterRoot = memo(function FooterRoot({ isVisible }) {
     shallowEqual
   );
 
-  const contact = useSelector(
-    (state) => state.contacts?.data?.data,
-    shallowEqual
-  );
-
   const insets = useSafeAreaInsets();
-
-  // System-tray clock — inspired by the Windows 7 taskbar corner clock.
-  const [now, setNow] = useState(new Date());
-  useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 30000);
-    return () => clearInterval(timer);
-  }, []);
-  const timeLabel = now.toLocaleTimeString('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
 
   // Active-route tracking. FooterRoot renders outside NavigationContainer, so
   // the navigation hooks are not available — read the current route off the
@@ -320,86 +416,97 @@ const FooterRoot = memo(function FooterRoot({ isVisible }) {
     try {
       setLoading(true);
 
-      await atWork(userToken);
+      const result = await atWork(userToken);
+      if (!result?.success) {
+        showAlert(t('Error'), result?.message || t('Could not change the activity status.'), [], t);
+      }
     } catch (error) {
-      console.log('Error during at work change:', error);
+      showAlert(t('Error'), t('Could not change the activity status.'), [], t);
     } finally {
+      // Re-read the profile either way so the button shows the server's state.
+      await dispatch(fetchUser(userToken));
       setLoading(false);
-      dispatch(fetchUser(userToken));
     }
-  }, [dispatch, userToken]);
+  }, [dispatch, userToken, t]);
 
-  const handleDeleteAccount = useCallback(() => {
-    Linking.openURL(`${mainUri}/delete-account-request`);
-  }, []);
+  const pdfDocs = useSelector((state) => state.pdf?.data);
+  useEffect(() => {
+    // The handbook link comes from /pdf-documents, normally fetched on the intro
+    // screen — fetch it here too when the app was opened past that screen.
+    if (menuVisible && !pdfDocs) dispatch(fetchPdfDocs());
+  }, [menuVisible, pdfDocs, dispatch]);
 
+  const openHandbook = useCallback(() => {
+    if (pdfDocs?.tech) {
+      Linking.openURL(`${imageUri}/${pdfDocs.tech}`);
+    } else {
+      showAlert(t('Error'), t('The technician handbook is not available right now. Please try again.'), [], t);
+    }
+  }, [pdfDocs?.tech, t]);
+
+  // Items per the edits list 1405/07/03: "Home" (15) and "Delete Account" (10)
+  // removed — accounts are deleted from the admin panel only; Privacy (15) and
+  // the rules / technician handbook (18) added; Organizations (19) and Learn
+  // More (16) kept. Titles, icons and order follow the user app's menu.
   const menuItemsLoggedIn = useMemo(
     () => [
       {
-        id: '1',
+        id: 'organizations',
         title: t('Organizations'),
         screen: 'OrganizationsListScreen',
+        icon: 'business-outline',
         apple_check: userData?.apple_check,
       },
       {
-        id: '2',
-        title: t('Home'),
-        screen: 'FolderScreen',
+        id: 'handbook',
+        title: t('Rules / Technician handbook'),
+        action: openHandbook,
+        icon: 'book-outline',
       },
       {
-        id: '3',
-        title: t('Delete Account'),
-        action: handleDeleteAccount,
-      },
-      {
-        id: '4',
+        id: 'warranty',
         title: t('Warranty / Guarantee'),
         screen: 'WarrantyScreen',
+        image: `${imageUri}/userfolder/WarrantyScreen.png`,
+        icon: 'shield-checkmark-outline',
         apple_check: userData?.apple_check,
       },
       {
-        id: '5',
+        id: 'learn-more',
         title: t('Learn More'),
         screen: 'LearnMoreScreen',
+        image: `${imageUri}/userfolder/LearnMoreScreen.png`,
+        icon: 'help-circle-outline',
         apple_check: userData?.apple_check,
       },
       {
-        id: '6',
-        title: t('About Us'),
+        id: 'about',
+        title: t('Terms / About Loop'),
         screen: 'AboutScreen',
+        image: `${imageUri}/userfolder/AboutScreen.png`,
+        icon: 'information-circle-outline',
+        apple_check: userData?.apple_check,
+      },
+      {
+        id: 'privacy',
+        title: t('Privacy'),
+        screen: 'PrivacyPolicyScreen',
+        image: `${imageUri}/userfolder/PrivacyScreen.png`,
+        icon: 'lock-closed-outline',
         apple_check: userData?.apple_check,
       },
     ],
-    [t, userData?.apple_check, handleDeleteAccount]
+    [t, userData?.apple_check, openHandbook]
   );
 
   const menuItemsLoggedOut = useMemo(
     () => [
-      {
-        id: '1',
-        title: t('Login'),
-        screen: 'Login',
-      },
-      {
-        id: '2',
-        title: t('Sign Up'),
-        screen: 'SignIn',
-      },
-      {
-        id: '3',
-        title: t('Warranty / Guarantee'),
-        screen: 'WarrantyScreen',
-      },
-      {
-        id: '4',
-        title: t('Learn More'),
-        screen: 'LearnMoreScreen',
-      },
-      {
-        id: '5',
-        title: t('About Us'),
-        screen: 'AboutScreen',
-      },
+      { id: 'login', title: t('Login'), screen: 'Login', icon: 'log-in-outline' },
+      { id: 'signup', title: t('Sign Up'), screen: 'SignIn', icon: 'person-add-outline' },
+      { id: 'warranty', title: t('Warranty / Guarantee'), screen: 'WarrantyScreen', image: `${imageUri}/userfolder/WarrantyScreen.png`, icon: 'shield-checkmark-outline' },
+      { id: 'learn-more', title: t('Learn More'), screen: 'LearnMoreScreen', image: `${imageUri}/userfolder/LearnMoreScreen.png`, icon: 'help-circle-outline' },
+      { id: 'about', title: t('Terms / About Loop'), screen: 'AboutScreen', image: `${imageUri}/userfolder/AboutScreen.png`, icon: 'information-circle-outline' },
+      { id: 'privacy', title: t('Privacy'), screen: 'PrivacyPolicyScreen', image: `${imageUri}/userfolder/PrivacyScreen.png`, icon: 'lock-closed-outline' },
     ],
     [t]
   );
@@ -449,53 +556,10 @@ const FooterRoot = memo(function FooterRoot({ isVisible }) {
     changeLanguage(i18n.language === 'en' ? 'fa' : 'en');
   }, [changeLanguage, i18n.language]);
 
-  const navItems = useMemo(
-    () => [
-      { key: 'menu', icon: 'grid-outline', label: 'منو', action: 'menu' },
-      { key: 'orders', icon: 'receipt-outline', label: 'سفارش‌ها', screen: 'OrderListScreen' },
-      { key: 'call', icon: 'call-outline', label: 'تماس', action: 'call' },
-      {
-        key: 'support',
-        image: require('../assets/images/support.webp'),
-        label: 'پشتیبانی',
-        action: 'support',
-      },
-      { key: 'account', icon: 'person-outline', label: 'حساب', screen: 'PersonalInfoScreen' },
-    ],
-    []
-  );
-
-  const isActive = useCallback(
-    (item) => {
-      if (item.action === 'menu') return menuVisible;
-      if (item.screen) return item.screen === currentRoute;
-      return false;
-    },
-    [menuVisible, currentRoute]
-  );
-
-  const handleDockPress = useCallback(
-    (item) => {
-      if (item.action === 'menu') {
-        setMenuVisible((v) => !v);
-        return;
-      }
-      if (item.action === 'call') {
-        Linking.openURL('tel:02121164552');
-        return;
-      }
-      if (item.action === 'support') {
-        NavigationService.navigate('MessageScreen');
-        setMenuVisible(false);
-        return;
-      }
-      if (item.screen) {
-        NavigationService.navigate(item.screen);
-        setMenuVisible(false);
-      }
-    },
-    []
-  );
+  const goTo = useCallback((screen) => {
+    setMenuVisible(false);
+    NavigationService.navigate(screen);
+  }, []);
 
   // Derived from the route rather than toggled by screens, so a login that
   // doesn't pass back through Welcome can't leave the footer stuck hidden.
@@ -506,74 +570,48 @@ const FooterRoot = memo(function FooterRoot({ isVisible }) {
       {userToken ? (
         <SafeAreaView
           edges={{ top: 'off', bottom: 'off' }}
-          style={[styles.footerRoot, { bottom: insets?.bottom }]}
+          style={[styles.footerRoot, { bottom: (insets?.bottom || 0) + spacing.sm }]}
           pointerEvents="box-none"
         >
-          {/* Floating bottom dock with a glassy (Aero) mood — not a pixel
-              rebuild: a dark glass dock with compact icon buttons. */}
           <View style={styles.dockShadow}>
+            {/* Blurred page + translucent brand-blue scrim: the dock's content is
+                white, the scrim keeps it readable on light and dark screens. */}
             <View style={styles.dock}>
-              <BlurView intensity={100} tint="dark" style={StyleSheet.absoluteFill} />
-              <LinearGradient
-                colors={[colors.white.bgColor(0.14), themeColor12.bgColor(0.16), colors.black.bgColor(0.24)]}
-                locations={[0, 0.5, 1]}
-                style={StyleSheet.absoluteFill}
-              />
-              <LinearGradient
-                colors={[colors.white.bgColor(0.35), colors.white.bgColor(0)]}
-                style={styles.topSheen}
-                pointerEvents="none"
-              />
-              <View style={styles.topEdge} pointerEvents="none" />
-              <LinearGradient
-                colors={[colors.black.bgColor(0), colors.black.bgColor(0.22)]}
-                style={styles.bottomShade}
-                pointerEvents="none"
-              />
+              <BlurView intensity={35} tint="default" style={StyleSheet.absoluteFill} pointerEvents="none" />
+              <View style={styles.dockScrim} pointerEvents="none" />
+              <View style={styles.dockTopEdge} pointerEvents="none" />
 
-              <View style={styles.dockRow}>
-                <View style={styles.navGroup}>
-                  {navItems.map((item) => (
-                    <DockButton
-                      key={item.key}
-                      icon={item.icon}
-                      image={item.image}
-                      label={item.label}
-                      lang={lang}
-                      active={isActive(item)}
-                      onPress={() => handleDockPress(item)}
-                    />
-                  ))}
-                </View>
+              <LoopMenuButton onPress={openMenu} accessibilityLabel={t('Menu')} />
 
-                <View style={styles.trayDivider} />
+              <LanguageSwitch language={i18n.language} onToggle={toggleLanguage} />
 
-                <Pressable style={styles.tray} onPress={toggleLanguage}>
-                  <Ionicons
-                    name="globe-outline"
-                    size={13}
-                    color={colors.white.bgColor(0.7)}
-                  />
-                  <Text
-                    style={[styles.trayText, { fontFamily: getFontFamily('bold', lang) }]}
-                  >
-                    {t(i18n.language)}
-                  </Text>
-                  <Text
-                    style={[styles.trayClock, { fontFamily: getFontFamily('bold', lang) }]}
-                  >
-                    {timeLabel}
-                  </Text>
-                  {user?.referral_code ? (
-                    <Text
-                      style={[styles.trayCode, { fontFamily: getFontFamily('bold', lang) }]}
-                      numberOfLines={1}
-                    >
-                      {user.referral_code}
-                    </Text>
-                  ) : null}
-                </Pressable>
-              </View>
+              <DockAction
+                testID="dock-orders"
+                icon="receipt-outline"
+                accessibilityLabel={t('Orders')}
+                active={currentRoute === 'OrderListScreen'}
+                onPress={() => goTo('OrderListScreen')}
+              />
+              <DockAction
+                testID="dock-call"
+                icon="call-outline"
+                accessibilityLabel={t('Call Support')}
+                onPress={() => callSupport(t)}
+              />
+              <DockAction
+                testID="dock-support"
+                image={require('../assets/images/support-nobg.png')}
+                accessibilityLabel={t('Support')}
+                active={currentRoute === 'MessageScreen'}
+                onPress={() => goTo('MessageScreen')}
+              />
+              <DockAction
+                testID="dock-account"
+                icon="person-outline"
+                accessibilityLabel={t('Account')}
+                active={currentRoute === 'PersonalInfoScreen'}
+                onPress={() => goTo('PersonalInfoScreen')}
+              />
             </View>
           </View>
         </SafeAreaView>
@@ -583,12 +621,13 @@ const FooterRoot = memo(function FooterRoot({ isVisible }) {
         visible={menuVisible}
         menuItems={menuItems}
         userToken={userToken}
+        user={userData}
         lang={lang}
         t={t}
         onClose={closeMenu}
         onMenuItemPress={handleMenuItemPress}
         onLogoutClick={handleLogoutClick}
-        atWork={user?.at_work}
+        atWork={userData?.at_work}
         handleWorkat={handleWorkat}
         workAtLoading={loading}
       />
@@ -644,7 +683,6 @@ export const FooterProvider = ({ children }) => {
   };
   useEffect(() => {
     loadLanguage();
-    console.log('Loading lang');
   }, []);
   return (
     <FooterContext.Provider value={value}>
@@ -658,220 +696,195 @@ const styles = StyleSheet.create({
   // Anchors the dock to the bottom of the screen without blocking touches
   // outside its own bounds.
   footerRoot: {
-    position: 'absolute',
+    position: Platform.OS === 'web' ? 'fixed' : 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
+    paddingHorizontal: spacing.md,
+    zIndex: 10,
   },
-
-  // Outer view carries the soft floating shadow; inner view clips the glass.
   dockShadow: {
-    marginHorizontal: spacing.md,
-    marginTop: spacing.sm,
-    marginBottom: spacing.md,
     borderRadius: radius.lg,
-    backgroundColor: colors.black.bgColor(0.04),
-    shadowColor: colors.black.color,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.28,
-    shadowRadius: 22,
-    elevation: 12,
+    backgroundColor: 'transparent',
+    ...shadowLg,
   },
+  // Layout does not depend on the language: the LOOP button stays on the left.
   dock: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm,
     borderRadius: radius.lg,
     overflow: 'hidden',
+    backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: colors.white.bgColor(0.3),
+    borderColor: colors.white.bgColor(0.6),
   },
-  topSheen: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 40,
+  dockScrim: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: colors.primary.bgColor(0.58),
   },
-  topEdge: {
+  dockTopEdge: {
     position: 'absolute',
     top: 0,
     left: spacing.lg,
     right: spacing.lg,
     height: 1,
-    backgroundColor: colors.white.bgColor(0.6),
+    backgroundColor: colors.white.bgColor(0.85),
   },
-  bottomShade: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 22,
-  },
-  dockRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.sm,
-    minHeight: 58,
-  },
-  navGroup: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  dockBtn: {
-    flexDirection: 'row',
+  menuButton: {
+    width: 52,
+    height: 52,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.xs,
-    minWidth: 40,
-    height: 40,
-    paddingHorizontal: spacing.sm,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.white.bgColor(0),
-    overflow: 'hidden',
   },
-  dockBtnHover: {
-    backgroundColor: colors.white.bgColor(0.09),
-    borderColor: colors.white.bgColor(0.16),
-  },
-  dockBtnActive: {
-    backgroundColor: themeColor8.bgColor(0.2),
-    borderColor: themeColor8.bgColor(0.55),
-    shadowColor: themeColor8.color,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.9,
-    shadowRadius: 10,
-    elevation: 6,
-  },
-  dockBtnImage: {
-    width: 22,
-    height: 22,
+  menuLogo: {
+    width: 34,
+    height: 34,
     resizeMode: 'contain',
   },
-  activeGlow: {
-    position: 'absolute',
-    top: -8,
-    alignSelf: 'center',
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    backgroundColor: themeColor8.bgColor(0.28),
-  },
-  activeUnderline: {
-    position: 'absolute',
-    bottom: 3,
-    alignSelf: 'center',
-    width: 16,
-    height: 2,
-    borderRadius: 1,
-    backgroundColor: themeColor14.color,
-  },
-  dockBtnLabel: {
-    color: themeColor14.color,
-    fontSize: fontSize.xs,
-  },
-  trayDivider: {
-    width: 1,
-    height: 22,
-    backgroundColor: colors.white.bgColor(0.16),
-    marginHorizontal: spacing.sm,
-  },
-  tray: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    paddingHorizontal: spacing.xs,
-  },
-  trayText: {
-    color: colors.white.bgColor(0.75),
-    fontSize: fontSize.xs,
-  },
-  trayClock: {
-    color: colors.white.bgColor(1),
-    fontSize: fontSize.sm,
-    letterSpacing: 0.5,
-  },
-  trayCode: {
-    color: colors.white.bgColor(0.6),
-    fontSize: fontSize.xs,
-    maxWidth: 64,
-  },
-
-  // Bottom-sheet style menu, same dark glass language as the dock.
-  menuOverlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: colors.black.bgColor(0.3),
-  },
-  menuPanel: {
-    maxHeight: '72%',
-    borderTopLeftRadius: radius.lg,
-    borderTopRightRadius: radius.lg,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.white.bgColor(0.28),
-    paddingBottom: spacing.lg,
-  },
-  menuHandle: {
-    alignSelf: 'center',
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.white.bgColor(0.25),
-    marginTop: spacing.sm,
-    marginBottom: spacing.xs,
-  },
-  list: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-  },
-  menuItem: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingVertical: 12,
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.white.bgColor(0.06),
-  },
-  menuItemHover: {
-    backgroundColor: colors.white.bgColor(0.08),
-  },
-  menuItemText: {
-    flex: 1,
-    color: colors.white.bgColor(0.9),
-    fontSize: fontSize.sm,
-    textAlign: 'right',
-  },
-  bottomButtons: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.sm,
-  },
-  sheetBtn: {
-    flex: 1,
-    flexDirection: 'row',
+  dockAction: {
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.xs,
-    paddingVertical: 10,
+    minWidth: 40,
+    paddingVertical: spacing.xs,
     borderRadius: radius.md,
+  },
+  dockActionImage: {
+    width: 30,
+    height: 30,
+    resizeMode: 'contain',
+  },
+  activeDot: {
+    width: 14,
+    height: 2,
+    borderRadius: 1,
+    marginTop: 3,
+    backgroundColor: colors.white.color,
+  },
+  activeDotHidden: {
+    backgroundColor: 'transparent',
+  },
+  langTrack: {
+    flexDirection: 'row',
+    borderRadius: radius.pill,
+    backgroundColor: colors.primary.bgColor(0.16),
     borderWidth: 1,
-    borderColor: colors.white.bgColor(0.16),
-    backgroundColor: colors.white.bgColor(0.06),
+    borderColor: colors.white.bgColor(0.6),
+    padding: 2,
+    overflow: 'hidden',
   },
-  sheetBtnHover: {
-    backgroundColor: colors.white.bgColor(0.12),
+  langThumb: {
+    position: 'absolute',
+    top: 2,
+    left: 2,
+    width: LANG_SEG_WIDTH,
+    bottom: 2,
+    borderRadius: radius.pill,
+    backgroundColor: colors.white.bgColor(0.95),
   },
-  sheetBtnOn: {
-    backgroundColor: themeColor7.bgColor(0.35),
-    borderColor: themeColor7.bgColor(0.6),
+  langSeg: {
+    width: LANG_SEG_WIDTH,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 3,
   },
-  sheetBtnText: {
-    color: themeColor14.color,
+  langText: {
     fontSize: fontSize.xs,
+    fontFamily: getFontFamily('bold', 'en'),
+    color: colors.white.color,
+  },
+  langTextActive: {
+    color: colors.primary.color,
+  },
+
+  // LOOP menu — values copied from the user app's MenuContext styles.
+  menuOverlay: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  menuPanel: {
+    // No width: like the user app the panel is as wide as its content.
+    backgroundColor: themeColor0.bgColor(1),
+  },
+  menuBackdrop: {
+    flex: 1,
+  },
+  menuHeader: {
+    backgroundColor: themeColor4.bgColor(1),
+    padding: 15,
+  },
+  menuHeaderName: {
+    marginBottom: spacing.xs,
+    textAlign: 'center',
+  },
+  menuHeaderBadge: {
+    marginBottom: spacing.md,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.pill,
+    backgroundColor: colors.primary.bgColor(0.12),
+    color: colors.primary.color,
+    fontSize: fontSize.xs,
+    fontFamily: getFontFamily('bold', 'fa'),
+    textAlign: 'center',
+    overflow: 'hidden',
+  },
+  // Same box as the user app's "Your points" (90% wide, 10 vertical padding).
+  atWorkButton: {
+    paddingVertical: 10,
+    paddingHorizontal: spacing.sm,
+    width: '90%',
+    gap: spacing.sm,
+  },
+  atWorkText: {
+    color: colors.white.color,
+    fontSize: 14,
+  },
+  pressed: {
+    opacity: 0.85,
+  },
+  menuList: {
+    paddingTop: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 15,
+    backgroundColor: themeColor0.bgColor(1),
+  },
+  menuItem: {
+    backgroundColor: themeColor4.bgColor(1),
+    paddingVertical: 2,
+    paddingHorizontal: 20,
+    width: '100%',
+    gap: 5,
+  },
+  menuItemImage: {
+    width: 50,
+    height: 50,
+  },
+  menuItemIconFallback: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  menuBottom: {
+    padding: 10,
+    backgroundColor: themeColor0.bgColor(1),
+  },
+  menuClose: {
+    padding: 10,
+  },
+  logoutButton: {
+    backgroundColor: themeColor6.bgColor(1),
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    gap: 8,
+  },
+  logoutText: {
+    color: '#fff',
+    fontSize: 14,
+    fontFamily: 'VazirBold',
   },
 });

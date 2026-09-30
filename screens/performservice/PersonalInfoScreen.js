@@ -30,6 +30,36 @@ import { fetchUser, setUserData } from '../../slices/userSlice';
 import { uri as BASE_URL } from '../../services/URL';
 import Button from '../../components/Button';
 import { useTranslation } from 'react-i18next';
+import Ionicons from '@expo/vector-icons/Ionicons';
+
+// Edits list 1405/07/03, item 11: the technician may only edit and save these
+// fields; everything else in the profile is managed from the admin panel.
+export const EDITABLE_PERSONAL_FIELDS = [
+  'marital_status',
+  'education_status',
+  'licence_date',
+  'certificate_issue_date',
+];
+
+// Values are what the backend stores (marital_status is validated as in:مجرد,متأهل);
+// labels are translation keys, same lists as the sign-up form.
+const MARITAL_OPTIONS = [
+  { label: 'Married', value: 'متأهل' },
+  { label: 'Single', value: 'مجرد' },
+];
+const EDUCATION_OPTIONS = [
+  { label: 'Diploma', value: 'دیپلم' },
+  { label: 'Post graduate', value: 'فوق دیپلم' },
+  { label: "Bachelor's degree", value: 'لیسانس' },
+  { label: "Master's degree", value: 'فوق لیسانس' },
+  { label: 'Ph.D', value: 'دکتری' },
+];
+
+export const pickEditablePersonalFields = (data) =>
+  EDITABLE_PERSONAL_FIELDS.reduce((acc, key) => {
+    acc[key] = data?.[key] ?? '';
+    return acc;
+  }, {});
 
 export default function PersonalInfoScreen({ navigation }) {
   const dispatch = useDispatch();
@@ -82,8 +112,7 @@ export default function PersonalInfoScreen({ navigation }) {
   // Load user data from AsyncStorage if not in Redux
   useEffect(() => {
     const loadUserData = async () => {
-
-
+      if (!userData) return;
 
       setPersonalData({
         name: userData.name && userData.family
@@ -149,6 +178,16 @@ export default function PersonalInfoScreen({ navigation }) {
       updateField('certificate_issue_date', selectedCertificateIssueDate);
     }
   }, [showCertificateIssueDatePicker, selectedCertificateIssueDate]);
+
+  // A value stored before this list existed still shows up (and is kept) instead
+  // of the picker silently jumping to the first option.
+  const educationOptions = useMemo(() => {
+    const current = personalData.education_status;
+    if (!current || EDUCATION_OPTIONS.some((option) => option.value === current)) {
+      return EDUCATION_OPTIONS;
+    }
+    return [...EDUCATION_OPTIONS, { label: current, value: current }];
+  }, [personalData.education_status]);
 
   const updateField = (field, value) => {
     setPersonalData(prev => ({
@@ -321,27 +360,11 @@ export default function PersonalInfoScreen({ navigation }) {
     setShowBirthDatePicker(false);
   };
 
-  // Save personal info
+  // Save personal info — only the fields the technician is allowed to edit
   const handleSave = async () => {
-    // Validation
-    if (personalData.email && !personalData.email.includes('@')) {
-      showAlert(t('Error'), t('Enter a valid email address'));
-      return;
-    }
-
-    if (personalData.home_postal_code && personalData.home_postal_code.length !== 10) {
-      showAlert(t('Error'), t('Postal code must be 10 digits'));
-      return;
-    }
-
-    if (personalData.melicode && personalData.melicode.length !== 10) {
-      showAlert(t('Error'), t('National ID must be 10 digits'));
-      return;
-    }
-
     setSaving(true);
     try {
-      const result = await updatePersonalInfo(personalData, profilePhoto);
+      const result = await updatePersonalInfo(pickEditablePersonalFields(personalData), profilePhoto);
 
       if (result.success) {
         console.log('✅ نتیجه دریافتی از API:', JSON.stringify(result, null, 2));
@@ -475,7 +498,7 @@ export default function PersonalInfoScreen({ navigation }) {
             </View>
             <View style={{ alignItems: 'flex-end' }}>
               <Text style={NewStyles.title}>{personalData.name}</Text>
-              <Text style={NewStyles.title}>{userData.phone}</Text>
+              <Text style={NewStyles.title}>{userData?.phone}</Text>
             </View>
 
           </View>
@@ -550,40 +573,39 @@ export default function PersonalInfoScreen({ navigation }) {
               />
             </View>
 
-            <View style={styles.boxedRow}>
+            {/* Editable (edits list 1405/07/03, item 11) */}
+            <View style={[styles.boxedRow, styles.editableRow]}>
               <Text style={styles.fieldKey}>{t('Marital status')}:</Text>
-              {/* <View style={[styles.boxedInput, { paddingVertical: 0 }]}>
-                  <Picker
-                    selectedValue={personalData.marital_status || 'متأهل'}
-                    onValueChange={(value) => updateField('marital_status', value)}
-                    style={{ width: '100%' }}
-                    enabled={!saving}
-                  >
-                    <Picker.Item label={t('Married')} value="متأهل" />
-                    <Picker.Item label={t('Single')} value="مجرد" />
-                  </Picker>
-                </View> */}
-              <TextInput
-                style={styles.boxedInput}
-                value={personalData.marital_status == 'متأهل' ? t('Married') : t('Single')}
-                onChangeText={(value) => updateField('serial_number', value)}
-                placeholder={t('Birth certificate number')}
-                placeholderTextColor={themeColor3.bgColor(1)}
-                keyboardType="number-pad"
-                editable={false}
-              />
+              <Picker
+                selectedValue={personalData.marital_status}
+                onValueChange={(value) => updateField('marital_status', value)}
+                style={styles.picker}
+                enabled={!saving}
+              >
+                {!personalData.marital_status && (
+                  <Picker.Item label={t('Select...')} value="" />
+                )}
+                {MARITAL_OPTIONS.map((option) => (
+                  <Picker.Item key={option.value} label={t(option.label)} value={option.value} />
+                ))}
+              </Picker>
             </View>
 
-            <View style={styles.boxedRow}>
+            <View style={[styles.boxedRow, styles.editableRow]}>
               <Text style={styles.fieldKey}>{t('Education level')}:</Text>
-              <TextInput
-                style={styles.boxedInput}
-                value={personalData.education_status}
-                onChangeText={(value) => updateField('education_status', value)}
-                placeholder={t("Diploma / Bachelor's / Master's")}
-                placeholderTextColor={themeColor3.bgColor(1)}
-                editable={false}
-              />
+              <Picker
+                selectedValue={personalData.education_status}
+                onValueChange={(value) => updateField('education_status', value)}
+                style={styles.picker}
+                enabled={!saving}
+              >
+                {!personalData.education_status && (
+                  <Picker.Item label={t('Select...')} value="" />
+                )}
+                {educationOptions.map((option) => (
+                  <Picker.Item key={option.value} label={t(option.label)} value={option.value} />
+                ))}
+              </Picker>
             </View>
             <View style={styles.boxedRow}>
               <Text style={styles.fieldKey}>{t('Landline')}:</Text>
@@ -621,28 +643,28 @@ export default function PersonalInfoScreen({ navigation }) {
                 editable={false}
               />
             </View>
-            <View style={styles.boxedRow}>
+            <TouchableOpacity
+              style={[styles.boxedRow, styles.editableRow]}
+              onPress={() => setShowLicenceDatePicker(true)}
+              disabled={saving}
+            >
               <Text style={styles.fieldKey}>{t('License expiry date')}:</Text>
-              <TextInput
-                style={styles.boxedInput}
-                value={personalData.licence_date}
-                onChangeText={(value) => updateField('licence_date', value)}
-                placeholder={t('License expiry date')}
-                placeholderTextColor={themeColor3.bgColor(1)}
-                editable={false}
-              />
-            </View>
-            <View style={styles.boxedRow}>
+              <Text style={[styles.boxedInput, styles.dateValue, !personalData.licence_date && styles.placeholderText]}>
+                {personalData.licence_date || t('License expiry date')}
+              </Text>
+              <Ionicons name="calendar-outline" size={18} color={themeColor0.bgColor(1)} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.boxedRow, styles.editableRow]}
+              onPress={() => setShowCertificateIssueDatePicker(true)}
+              disabled={saving}
+            >
               <Text style={styles.fieldKey}>{t('License issue date')}:</Text>
-              <TextInput
-                style={styles.boxedInput}
-                value={personalData.certificate_issue_date}
-                onChangeText={(value) => updateField('certificate_issue_date', value)}
-                placeholder={t('License issue date')}
-                placeholderTextColor={themeColor3.bgColor(1)}
-                editable={false}
-              />
-            </View>
+              <Text style={[styles.boxedInput, styles.dateValue, !personalData.certificate_issue_date && styles.placeholderText]}>
+                {personalData.certificate_issue_date || t('License issue date')}
+              </Text>
+              <Ionicons name="calendar-outline" size={18} color={themeColor0.bgColor(1)} />
+            </TouchableOpacity>
             <View>
               <View style={[NewStyles.row, { gap: 10 }]}>
                 <View style={[styles.boxedRow, { flex: 1 }]}>
@@ -729,7 +751,7 @@ export default function PersonalInfoScreen({ navigation }) {
               <Text style={styles.fieldKey}>{t("Activity start date")}:</Text>
               <TextInput
                 style={[styles.boxedInput]}
-                value={formatDate(userData.created_at)}
+                value={formatDate(userData?.created_at)}
                 placeholder={t('"Activity start date"')}
                 placeholderTextColor={themeColor3.bgColor(1)}
                 editable={false}
@@ -932,6 +954,23 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
   fieldKey: {
     ...NewStyles.text10,
     fontSize: 12,
+  },
+  // Rows the technician can change get the brand border so they stand out
+  // from the read-only ones.
+  editableRow: {
+    borderColor: themeColor0.bgColor(1),
+    borderWidth: 1.5,
+  },
+  picker: {
+    flex: 1,
+    height: 45,
+    color: themeColor10.bgColor(1),
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+  },
+  dateValue: {
+    textAlignVertical: 'center',
+    lineHeight: 45,
   },
 });
 

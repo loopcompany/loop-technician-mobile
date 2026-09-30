@@ -1791,5 +1791,18 @@
   "Request settlement": "درخواست تسویه حساب",
   "Report a wrong amount": "گزارش مغایرت مبلغ",
   "Previous year": "سال قبل",
-  "Next year": "سال بعد"
+  "Next year": "سال بعد",
+  "Technician code": "کد تکنسینی",
+  "Menu": "منو",
+  "Activity status: On": "وضعیت فعالیت: روشن",
+  "Activity status: Off": "وضعیت فعالیت: خاموش",
+  "Could not change the activity status.": "تغییر وضعیت فعالیت انجام نشد.",
+  "Send a message / ticket to support": "ارسال پیام / تیکت به پشتیبانی",
+  "How would you like to contact support?": "از چه طریقی با پشتیبانی در ارتباط باشید؟",
+  "Settlements are handled by support. How would you like to contact them?": "تسویه حساب توسط پشتیبانی انجام می‌شود. از چه طریقی با پشتیبانی در ارتباط باشید؟",
+  "Settlement request ticket": "درخواست تسویه حساب\nتکنسین: {{technician}}\nموجودی فعلی: {{amount}} تومان\nلطفاً تسویه حساب انجام شود.",
+  "Wrong amount report ticket": "گزارش مغایرت مبلغ\nتکنسین: {{technician}}\nشماره سفارش / تراکنش: \nتوضیحات: ",
+  "Restriction or deactivation page, for the following reasons": "صفحه محدودیت یا غیرفعال شدن، به دلایل زیر",
+  "Rules / Technician handbook": "قوانین / کتابچه تکنسین",
+  "The technician handbook is not available right now. Please try again.": "کتابچه تکنسین در حال حاضر در دسترس نیست. لطفاً دوباره تلاش کنید."
 }

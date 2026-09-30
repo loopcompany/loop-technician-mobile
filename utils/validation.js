@@ -1,6 +1,7 @@
 /**
  * Validation utilities for technician registration and login forms
  */
+import { validateRegistrationBirthDate } from './registrationAge';
 
 /**
  * Validate Iranian national ID (Meli Code)
@@ -141,39 +142,10 @@ export const convertShamsiToGregorian = (shamsiDate) => {
 };
 
 /**
- * Validate birth date (supports both Shamsi and Gregorian)
+ * Validate birth date (supports both Shamsi and Gregorian). The age rule is in
+ * utils/registrationAge.js (birth year ≤ current Jalali year − 18).
  */
-export const validateBirthDate = (birthDate) => {
-  if (!birthDate) {
-    return { isValid: false, message: 'تاریخ تولد الزامی است' };
-  }
-
-  let date;
-
-  // Check if it's a Persian date (starts with 13 or 14)
-  if (birthDate.match(/^1[34]/)) {
-    date = convertShamsiToGregorian(birthDate);
-    if (!date) {
-      return { isValid: false, message: 'فرمت تاریخ شمسی صحیح نیست (مثال: 1379/08/27)' };
-    }
-  } else {
-    // Try as Gregorian date
-    date = new Date(birthDate);
-  }
-
-  const today = new Date();
-  const age = today.getFullYear() - date.getFullYear();
-
-  if (isNaN(date.getTime())) {
-    return { isValid: false, message: 'فرمت تاریخ تولد صحیح نیست' };
-  }
-
-  if (age < 18 || age > 80) {
-    return { isValid: false, message: 'سن باید بین 18 تا 80 سال باشد' };
-  }
-
-  return { isValid: true, message: 'تاریخ تولد معتبر است' };
-};
+export const validateBirthDate = (birthDate) => validateRegistrationBirthDate(birthDate);
 
 /**
  * Validate license date (supports Shamsi format)

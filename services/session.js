@@ -111,3 +111,37 @@ export const notifyUnauthorized = async (rejectedToken) => {
     }, 1000);
   }
 };
+
+// ---------------------------------------------------------------------------
+// Suspended accounts. When the admin panel turns a technician's access off,
+// /technician/validate-token answers 403 ACCESS_DENIED while the old token
+// stays valid everywhere else, so the app has to end the session itself.
+// App.js registers a handler that signs out and shows LimitAccessScreen
+// (edits list 1405/07/03, item 5).
+// ---------------------------------------------------------------------------
+
+export const ACCESS_DENIED_CODE = 'ACCESS_DENIED';
+
+let accessDeniedHandler = null;
+let accessDeniedPending = false;
+
+export const setAccessDeniedHandler = (fn) => {
+  accessDeniedHandler = fn;
+};
+
+export const notifyAccessDenied = async (rejectedToken, message) => {
+  const current = await getToken();
+  if (!current || (rejectedToken && rejectedToken !== current)) return;
+
+  if (accessDeniedPending) return;
+  accessDeniedPending = true;
+  try {
+    // The handler signs out (which clears the session) — clearing it here first
+    // would leave the push device token registered on the server.
+    await accessDeniedHandler?.(message);
+  } finally {
+    setTimeout(() => {
+      accessDeniedPending = false;
+    }, 1000);
+  }
+};

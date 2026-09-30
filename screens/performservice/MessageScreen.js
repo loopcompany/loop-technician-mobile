@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -22,7 +22,7 @@ import { getTicketsList, sendTicketMessage } from '../../services/Api';
 import { formatDate, formatDateTime, showAlert } from '../../helpers/Common';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-export default function MessageScreen({ navigation }) {
+export default function MessageScreen({ navigation, route }) {
   const { t, i18n } = useTranslation();
   const NewStyles = useMemo(
     () => createStyles(i18n.language),
@@ -36,6 +36,17 @@ export default function MessageScreen({ navigation }) {
   const [sending, setSending] = useState(false);
   const [showMessages, setShowMessages] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  // Other screens (e.g. the financial report's settlement request) can open this
+  // screen with a pre-written ticket in route.params.draft for the technician
+  // to review and send.
+  const draft = route?.params?.draft;
+  useEffect(() => {
+    if (draft) {
+      setMessageText(draft);
+      navigation.setParams({ draft: undefined });
+    }
+  }, [draft, navigation]);
 
   // دریافت لیست پیام‌ها
   const fetchMessages = async () => {

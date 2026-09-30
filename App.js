@@ -18,7 +18,8 @@ import NotificationsGate from "./components/NotificationsGate";
 import { navigationRef, getCurrentRouteName, reset } from "./services/NavigationService";
 import { removeToken, setToken } from "./slices/authSlice";
 import { emptyUser, fetchUser } from "./slices/userSlice";
-import { getToken, setUnauthorizedHandler } from "./services/session";
+import { getToken, setAccessDeniedHandler, setUnauthorizedHandler } from "./services/session";
+import { logoutTechnician } from "./services/Api";
 
 // ✅ locales
 import en from './assets/locales/en.json';
@@ -44,6 +45,7 @@ const PUBLIC_ROUTES = new Set([
   'LearnMoreScreen',
   'AboutScreen',
   'PrivacyScreen',
+  'PrivacyPolicyScreen',
 ]);
 
 const redirectToLoginIfProtected = () => {
@@ -59,6 +61,26 @@ setUnauthorizedHandler(() => {
   store.dispatch(removeToken());
   store.dispatch(emptyUser());
   redirectToLoginIfProtected();
+});
+
+// A navigation reset requested before the navigator is ready (e.g. the
+// profile check on app start) is applied from onReady instead of being lost.
+let pendingReset = null;
+const resetWhenReady = (state) => {
+  if (navigationRef.isReady()) {
+    reset(state);
+  } else {
+    pendingReset = state;
+  }
+};
+
+// Suspended from the admin panel while signed in: sign out (also unregisters
+// this device's push token) and show why (edits list 1405/07/03, item 5).
+setAccessDeniedHandler((message) => {
+  store.dispatch(removeToken());
+  store.dispatch(emptyUser());
+  resetWhenReady({ index: 0, routes: [{ name: 'LimitAccessScreen', params: { message } }] });
+  logoutTechnician().catch(() => {});
 });
 
 const enforceAuthGuard = () => {
@@ -150,6 +172,8 @@ const linking = {
       RateCategory: 'category-rates',
       WarrantyScreen: 'warranty',
       PrivacyScreen: 'privacy',
+      PrivacyPolicyScreen: 'privacy-policy',
+      LimitAccessScreen: 'limit-access',
       TrainingRegistrationScreen: 'training-registration',
       OrganizationsListScreen: 'organizations',
       OrganizationOrdersScreen: 'organizations/:organizationId/orders',
@@ -162,6 +186,14 @@ const linking = {
  * storage is awaited; the token is validated in the background by fetchUser,
  * and a 401 there is handled by the global unauthorized handler.
  */
+const handleNavigationReady = () => {
+  if (pendingReset) {
+    reset(pendingReset);
+    pendingReset = null;
+  }
+  enforceAuthGuard();
+};
+
 const SessionGate = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const dispatch = useDispatch();
@@ -251,6 +283,7 @@ const AppNavigator = () => (
             <Stack.Screen name="FeedbackSuggestionScreen" getComponent={() => require("./screens/performservice/FeedbackSuggestionScreen").default} />
             <Stack.Screen name="IndexScreen" getComponent={() => require("./screens/performservice/IndexScreen").default} />
             <Stack.Screen name="PrivacyScreen" getComponent={() => require("./screens/performservice/PrivacyScreen").default} />
+            <Stack.Screen name="PrivacyPolicyScreen" getComponent={() => require("./screens/resources/PrivacyPolicyScreen").default} />
             <Stack.Screen name="AboutScreen" getComponent={() => require("./screens/resources/AboutScreen").default} />
             <Stack.Screen name="RateCategory" getComponent={() => require("./screens/RateCategory").default} />
             <Stack.Screen name="LearnMoreScreen" getComponent={() => require("./screens/resources/LearnMoreScreen").default} />
@@ -325,7 +358,7 @@ const App = () => {
                 ref={navigationRef}
                 linking={linking}
                 initialState={initialState}
-                onReady={enforceAuthGuard}
+                onReady={handleNavigationReady}
                 onStateChange={handleStateChange}
               >
                 <AppNavigator />

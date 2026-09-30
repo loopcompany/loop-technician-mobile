@@ -217,7 +217,15 @@ export default function FolderScreen({ navigation }) {
                   source={userData?.profile_photo_path ? { uri: userData?.profile_photo_path } : require('../assets/technician.png')}
                   style={[{ height: 70, width: 70, }, NewStyles.border100]}
                 />
-                <Text style={NewStyles.title10}>{userData?.name}</Text>
+                <View>
+                  <Text style={NewStyles.title10}>{userData?.name}</Text>
+                  {/* Technician code sits under the name (edits list 1405/07/03, item 12) */}
+                  {userData?.referral_code ? (
+                    <Text style={[NewStyles.text10, styles.technicianCode]}>
+                      {t("Technician code")}: {userData.referral_code}
+                    </Text>
+                  ) : null}
+                </View>
               </View>
               <View style={NewStyles.row}>
                 {Array.from({ length: 5 }).map((_, index) => (
@@ -306,6 +314,11 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
   },
   creditAmount: {
     fontSize: 14,
+  },
+  technicianCode: {
+    fontSize: 12,
+    color: themeColor0.bgColor(1),
+    marginTop: 2,
   },
   creditNegative: {
     color: '#D12929',

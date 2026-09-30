@@ -7,8 +7,6 @@ import {
   ScrollView,
   ActivityIndicator,
   RefreshControl,
-  Linking,
-  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -21,11 +19,12 @@ import ScreenHeaders from '../../components/ScreenHeaders';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import { themeColor0, themeColor2, themeColor4, themeColor6, themeColor7, themeColor8, themeColor10, themeColor11 } from '../../theme/Color';
 import { isDebitTransaction, transactionVisual } from '../../helpers/transactions';
-import { formatAmount, formatDate, langIsRTL, showAlert, toAmount } from '../../helpers/Common';
+import { formatAmount, formatDate, langIsRTL, toAmount } from '../../helpers/Common';
 import { getTransactions } from '../../services/Api';
 import { fetchUser } from '../../slices/userSlice';
+import { callSupport } from '../../helpers/support';
+import SupportContactModal from '../../components/SupportContactModal';
 
-const SUPPORT_PHONE = '02122656819';
 const RECENT_LIMIT = 5;
 
 export default function FinancialReportScreen({ navigation }) {
@@ -42,6 +41,8 @@ export default function FinancialReportScreen({ navigation }) {
   const [transactions, setTransactions] = useState([]);
   const [txStatus, setTxStatus] = useState('loading'); // loading | ready | error
   const [refreshing, setRefreshing] = useState(false);
+  // Settlement request / wrong-amount report: { title, message, draft } or null
+  const [supportRequest, setSupportRequest] = useState(null);
 
   const wallet = toAmount(technician?.wallet);
   const totalSettlements = toAmount(technician?.total_settlements) ?? 0;
@@ -104,29 +105,27 @@ export default function FinancialReportScreen({ navigation }) {
     fetchRecentTransactions();
   };
 
-  const callSupport = async () => {
-    const url = `tel:${SUPPORT_PHONE}`;
-    try {
-      await Linking.openURL(url);
-    } catch (err) {
-      if (Platform.OS === 'web') {
-        try {
-          window.open(url, '_self');
-        } catch (webErr) {
-          showAlert(t('Error'), t('There was a problem starting the call.'));
-        }
-      } else {
-        showAlert(t('Error'), t('Phone calls are not available on your device.'));
-      }
-    }
+  // Both requests can reach support two ways (edits list 1405/07/03, items 13
+  // and 14): a phone call, or a ticket pre-filled with the request so the
+  // technician only has to review and send it on the messages screen.
+  const openSupportRequest = (title, message, draft) => {
+    setSupportRequest({ title, message, draft });
   };
 
-  const confirmCall = (title, message) => {
-    showAlert(title, message, [
-      { text: t('Cancel'), style: 'cancel' },
-      { text: t('Call Support'), onPress: callSupport },
-    ]);
+  const handleSupportCall = () => {
+    setSupportRequest(null);
+    callSupport(t);
   };
+
+  const handleSupportMessage = () => {
+    const draft = supportRequest?.draft;
+    setSupportRequest(null);
+    navigation.navigate('MessageScreen', { draft });
+  };
+
+  const technicianLine = [technician?.name, technician?.referral_code && `(${technician.referral_code})`]
+    .filter(Boolean)
+    .join(' ');
 
   const hasDebt = wallet !== null && wallet < 0;
   // Lifetime earnings = what's already been paid out + what's still in the wallet.
@@ -337,7 +336,11 @@ export default function FinancialReportScreen({ navigation }) {
     <View style={styles.card}>
       <TouchableOpacity
         style={[NewStyles.rowWrapper, styles.actionRow, styles.txDivider]}
-        onPress={() => confirmCall(t('Settlement request'), t('Settlements are handled by support. Do you want to call now?'))}
+        onPress={() => openSupportRequest(
+          t('Settlement request'),
+          t('Settlements are handled by support. How would you like to contact them?'),
+          t('Settlement request ticket', { technician: technicianLine, amount: formatAmount(wallet) })
+        )}
       >
         <View style={[NewStyles.row, styles.gap10]}>
           <View style={[styles.txIcon, { backgroundColor: themeColor0.bgColor(0.12) }]}>
@@ -349,7 +352,11 @@ export default function FinancialReportScreen({ navigation }) {
       </TouchableOpacity>
       <TouchableOpacity
         style={[NewStyles.rowWrapper, styles.actionRow]}
-        onPress={() => confirmCall(t('Error report'), t('Do you want to contact support?'))}
+        onPress={() => openSupportRequest(
+          t('Error report'),
+          t('How would you like to contact support?'),
+          t('Wrong amount report ticket', { technician: technicianLine })
+        )}
       >
         <View style={[NewStyles.row, styles.gap10]}>
           <View style={[styles.txIcon, { backgroundColor: themeColor11.bgColor(0.15) }]}>
@@ -391,6 +398,15 @@ export default function FinancialReportScreen({ navigation }) {
           {renderActions()}
         </ScrollView>
       </LinearGradient>
+
+      <SupportContactModal
+        visible={!!supportRequest}
+        title={supportRequest?.title}
+        message={supportRequest?.message}
+        onCall={handleSupportCall}
+        onMessage={handleSupportMessage}
+        onClose={() => setSupportRequest(null)}
+      />
     </SafeAreaView>
   );
 }

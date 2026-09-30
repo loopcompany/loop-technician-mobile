@@ -1788,5 +1788,18 @@
   "Request settlement": "Request settlement",
   "Report a wrong amount": "Report a wrong amount",
   "Previous year": "Previous year",
-  "Next year": "Next year"
+  "Next year": "Next year",
+  "Technician code": "Technician code",
+  "Menu": "Menu",
+  "Activity status: On": "Activity: On",
+  "Activity status: Off": "Activity: Off",
+  "Could not change the activity status.": "Could not change the activity status.",
+  "Send a message / ticket to support": "Send a message / ticket to support",
+  "How would you like to contact support?": "How would you like to contact support?",
+  "Settlements are handled by support. How would you like to contact them?": "Settlements are handled by support. How would you like to contact them?",
+  "Settlement request ticket": "Settlement request\nTechnician: {{technician}}\nCurrent balance: {{amount}} Toman\nPlease settle my account.",
+  "Wrong amount report ticket": "Wrong amount report\nTechnician: {{technician}}\nOrder number / transaction: \nDescription: ",
+  "Restriction or deactivation page, for the following reasons": "Restriction or deactivation page, for the following reasons",
+  "Rules / Technician handbook": "Rules / Technician handbook",
+  "The technician handbook is not available right now. Please try again.": "The technician handbook is not available right now. Please try again."
 }

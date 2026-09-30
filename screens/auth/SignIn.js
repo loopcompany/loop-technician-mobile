@@ -18,6 +18,7 @@ import {
 } from '../../services/Api';
 import { validateTechnicianRegistration } from '../../utils/validation';
 import { showAlert, showToastOrAlert } from '../../helpers/Common';
+import { getMaxRegistrationBirthDate } from '../../utils/registrationAge';
 import { useTranslation } from "react-i18next";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSelector } from 'react-redux';
@@ -147,12 +148,8 @@ export default function SignIn({ navigation }) {
     return getFormatedDate(new Date(), 'jYYYY/jMM/jDD');
   }, []);
 
-  // محاسبه حداکثر تاریخ تولد (18 سال پیش) برای حداقل سن 18 سال
-  const maxBirthDate = useMemo(() => {
-    const date18YearsAgo = new Date();
-    date18YearsAgo.setFullYear(date18YearsAgo.getFullYear() - 18);
-    return getFormatedDate(date18YearsAgo, 'jYYYY/jMM/jDD');
-  }, []);
+  // آخرین تاریخ تولد مجاز برای ثبت‌نام: پایان سالِ (سال شمسی جاری − ۱۸)
+  const maxBirthDate = useMemo(() => getMaxRegistrationBirthDate(), []);
 
   // محاسبه تاریخ 10 سال آینده برای گواهینامه (یک بار)
   const tenYearsLater = useMemo(() => {
@@ -1307,8 +1304,8 @@ export default function SignIn({ navigation }) {
         setDatePickerModal={setBirthDateModal}
         birthDate={formData.birth_date}
         setBirthDate={(date) => updateField('birth_date', normalizeGregorianDate(date))}
-        maximumDate={'1386/12/29'}
-        isCurrentDate={'1386/12/29'}
+        maximumDate={maxBirthDate}
+        isCurrentDate={maxBirthDate}
         minimumDate={'1364/01/01'}
       />
 

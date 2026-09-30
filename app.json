@@ -2,7 +2,7 @@
   "expo": {
     "name": "looptech",
     "slug": "looptech",
-    "owner": "mehrdadtorki",
+    "owner": "nimagomrok",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -46,7 +46,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "6673cfa0-f064-4730-916e-d19a669af16f"
+        "projectId": "951245d0-c815-403e-8eb7-ad9484b97c5d"
       }
     }
   }
