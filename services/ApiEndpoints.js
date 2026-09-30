@@ -11,6 +11,11 @@ export const API_ENDPOINTS = {
     PRIVACY: '/info/privacy',
     WARRANTY: '/info/warranties',
   },
+  // Technician saved addresses (same shape as the user app's /addresses)
+  ADDRESSES: {
+    LIST: '/technician/addresses',
+    DETAIL: '/technician/addresses/{id}',
+  },
   // Technician Admin Report Violations
   ADMIN_VIOLATIONS: {
     LIST: '/technician/admin-report-violations',

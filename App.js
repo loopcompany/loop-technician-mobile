@@ -44,6 +44,7 @@ const PUBLIC_ROUTES = new Set([
   'WarrantyScreen',
   'LearnMoreScreen',
   'AboutScreen',
+  'HandbookScreen',
   'PrivacyScreen',
   'PrivacyPolicyScreen',
 ]);
@@ -169,6 +170,10 @@ const linking = {
       GameResult: 'game/result',
       LearnMoreScreen: 'learn-more',
       AboutScreen: 'about',
+      HandbookScreen: 'rules',
+      SavedAddressesScreen: 'saved-addresses',
+      AddNewAddress: 'add-address',
+      Map: 'map',
       RateCategory: 'category-rates',
       WarrantyScreen: 'warranty',
       PrivacyScreen: 'privacy',
@@ -288,6 +293,10 @@ const AppNavigator = () => (
             <Stack.Screen name="RateCategory" getComponent={() => require("./screens/RateCategory").default} />
             <Stack.Screen name="LearnMoreScreen" getComponent={() => require("./screens/resources/LearnMoreScreen").default} />
             <Stack.Screen name="WarrantyScreen" getComponent={() => require("./screens/resources/WarrantyScreen").default} />
+            <Stack.Screen name="HandbookScreen" getComponent={() => require("./screens/resources/HandbookScreen").default} />
+            <Stack.Screen name="SavedAddressesScreen" getComponent={() => require("./screens/SavedAddressesScreen").default} />
+            <Stack.Screen name="AddNewAddress" getComponent={() => require("./screens/address/AddNewAddress").default} />
+            <Stack.Screen name="Map" getComponent={() => require("./screens/address/Map").default} />
             <Stack.Screen name="PersonalInfoScreen" getComponent={() => require("./screens/performservice/PersonalInfoScreen").default} />
             <Stack.Screen name="VehicleInfoScreen" getComponent={() => require("./screens/performservice/VehicleInfoScreen").default} />
             <Stack.Screen name="FinancialInfoScreen" getComponent={() => require("./screens/performservice/FinancialInfoScreen").default} />

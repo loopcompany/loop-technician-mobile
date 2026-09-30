@@ -1,265 +1,183 @@
-import React, { useState, useEffect,useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import NewStyles from '../../styles/NewStyles';
-import ScreenHeaders from '../../components/ScreenHeaders';
 import { useTranslation } from 'react-i18next';
+
+import ScreenHeaders from '../../components/ScreenHeaders';
 import { createStyles } from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor4, themeColor10 } from '../../theme/Color';
-import { infoAPI } from '../../services/Api';
-import { showToastOrAlert } from '../../helpers/Common';
-import BlankScreen from '../../components/BlankScreen';
-import { RefreshControl } from 'react-native';
-import Loader from '../../components/Loader';
+import {
+  ABOUT_HEADING,
+  ABOUT_TAGLINE,
+  ABOUT_INTRO,
+  ABOUT_SECTIONS,
+  ABOUT_BRAND,
+  ABOUT_MOTTO,
+  ABOUT_SLOGAN,
+} from '../../assets/content/aboutLoop';
+
+// About LOOP (LOOP menu item 07). The text ships with the app — it comes from
+// «درباره ما اپ تکنسین.docx» — so it is Persian and always laid out
+// right-to-left, whatever the app language.
+const PILLAR_ICONS = ['construct', 'hardware-chip', 'shield-checkmark'];
 
 export default function AboutScreen() {
-  const { t, i18n } = useTranslation();
-  const NewStyles = useMemo(
-    () => createStyles(i18n.language),
-    [i18n.language]
-  );
-    const styles = useMemo(()=> createLocalStyles(NewStyles), [NewStyles]);
-  const [terms, setTerms] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [expandedItems, setExpandedItems] = useState({});
+  const { t } = useTranslation();
+  const NewStyles = useMemo(() => createStyles('fa'), []);
+  const styles = useMemo(() => createLocalStyles(NewStyles), [NewStyles]);
 
-  useEffect(() => {
-    loadTerms();
-  }, [isRefreshing]);
-
-  const loadTerms = async () => {
-    try {
-      const response = await infoAPI.getTerms();
-
-      if (response.status === 'success') {
-        setTerms(response.data);
-        // Expand first item by default
-        if (response.data.length > 0) {
-          setExpandedItems({ [response.data[0].id]: true });
-        }
-      } else {
-        showToastOrAlert(t('Error loading privacy policy.'));
-      }
-    } catch (error) {
-      console.log('Error loading terms:', error);
-      showToastOrAlert(t('Error loading privacy policy.'));
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  };
-
-  const toggleExpanded = (id) => {
-    setExpandedItems(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
-  };
-
-  const renderTermItem = ({ item }) => {
-    const isExpanded = expandedItems[item.id];
-
-    return (
-      <View key={item.id} style={styles.termItem}>
-        <TouchableOpacity
-          style={styles.termHeader}
-          onPress={() => toggleExpanded(item.id)}
-        >
-          <Ionicons
-            name={isExpanded ? "chevron-up" : "chevron-down"}
-            size={20}
-            color={themeColor4.bgColor(1)}
-          />
-          <Text style={styles.termTitle}>{item.title}</Text>
-        </TouchableOpacity>
-
-        {isExpanded && (
-          <View style={styles.termContent}>
-            <Text style={styles.termDescription}>{item.description}</Text>
-          </View>
-        )}
-      </View>
-    );
-  };
-  if (isLoading) {
-    return (
-      <Loader />
-    )
-  }
   return (
     <SafeAreaView edges={{ top: 'off', bottom: 'off' }} style={NewStyles.container}>
-      <ScreenHeaders title={t('Terms / About Loop')} />
-      <FlatList
-        data={terms}
-        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={() => { setIsRefreshing(true) }} />}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.termsContainer}
-        renderItem={renderTermItem}
-        ListEmptyComponent={() => {
-          return (
-            <BlankScreen />
-          )
-        }}
+      <ScreenHeaders title={t('About us')} />
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={[styles.hero, NewStyles.center]}>
+          <Image source={require('../../assets/images/loop-logo-sphere.jpg')} style={styles.heroLogo} />
+          <Text style={[NewStyles.title, styles.heroHeading]}>{ABOUT_HEADING}</Text>
+          <Text style={[NewStyles.text10, styles.heroTagline]}>{ABOUT_TAGLINE}</Text>
+        </View>
 
-      />
+        <View style={styles.card}>
+          {ABOUT_INTRO.map((paragraph) => (
+            <Text key={paragraph} style={styles.paragraph}>{paragraph}</Text>
+          ))}
+        </View>
+
+        {ABOUT_SECTIONS.map((section) => (
+          <View key={section.title} style={styles.card}>
+            <View style={[NewStyles.row, styles.sectionHeader]}>
+              <View style={styles.sectionMarker} />
+              <Text style={[NewStyles.title, styles.sectionTitle]}>{section.title}</Text>
+            </View>
+            {!!section.subtitle && (
+              <Text style={[NewStyles.title10, styles.sectionSubtitle]}>{section.subtitle}</Text>
+            )}
+            {section.paragraphs.map((paragraph) => (
+              <Text key={paragraph} style={styles.paragraph}>{paragraph}</Text>
+            ))}
+            {section.pillars?.map((pillar, index) => (
+              <View key={pillar.title} style={[NewStyles.row, styles.pillar]}>
+                <View style={[styles.pillarIcon, NewStyles.center]}>
+                  <Ionicons name={PILLAR_ICONS[index] || 'star'} size={20} color={themeColor4.bgColor(1)} />
+                </View>
+                <View style={styles.pillarBody}>
+                  <Text style={[NewStyles.title10, styles.pillarTitle]}>{pillar.title}</Text>
+                  <Text style={styles.paragraph}>{pillar.text}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        ))}
+
+        <View style={[styles.closing, NewStyles.center]}>
+          <Text style={styles.closingBrand}>{ABOUT_BRAND}</Text>
+          <Text style={styles.closingMotto}>{ABOUT_MOTTO}</Text>
+          <Text style={[NewStyles.title4, styles.closingSlogan]}>{ABOUT_SLOGAN}</Text>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const createLocalStyles = (NewStyles) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#e0f0ff',
-  },
-  header: {
-    padding: 20,
-    backgroundColor: themeColor4.bgColor(1),
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontFamily: 'VazirBold',
-    color: '#fff',
-    textAlign: 'center',
-    marginVertical: 10,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    fontFamily: 'VazirLight',
-    color: '#fff',
-    textAlign: 'center',
-    opacity: 0.9,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 50,
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    fontFamily: 'VazirLight',
-    color: themeColor10.bgColor(0.7),
-  },
-  termsContainer: {
+  content: {
     padding: 15,
-    paddingBottom:130
+    paddingBottom: 130,
   },
-  termItem: {
+  hero: {
+    paddingVertical: 10,
+    marginBottom: 10,
+  },
+  heroLogo: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+  },
+  heroHeading: {
+    fontSize: 22,
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  heroTagline: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  card: {
     backgroundColor: '#fff',
     borderRadius: 10,
+    padding: 15,
     marginBottom: 10,
-    overflow: 'hidden',
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
   },
-  termHeader: {
-        ...NewStyles.row,
-    alignItems: 'center',
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+  sectionHeader: {
+    gap: 8,
+    marginBottom: 4,
   },
-  termTitle: {
+  sectionMarker: {
+    width: 4,
+    height: 20,
+    borderRadius: 2,
+    backgroundColor: themeColor1.bgColor(1),
+  },
+  sectionTitle: {
     flex: 1,
-    fontSize: 16,
-    fontFamily: 'VazirBold',
-    color: '#333',
-    ...NewStyles.text10,
-    marginRight: 10,
+    fontSize: 17,
   },
-  termContent: {
-    padding: 15,
-    backgroundColor: '#f9f9f9',
-  },
-  termDescription: {
+  sectionSubtitle: {
     fontSize: 14,
-    fontFamily: 'VazirLight',
-    color: '#666',
-    ...NewStyles.text10,
-    lineHeight: 22,
-    marginBottom: 10,
+    color: themeColor10.bgColor(0.6),
+    marginBottom: 6,
   },
-  termDate: {
+  paragraph: {
+    ...NewStyles.text10,
+    fontSize: 14,
+    lineHeight: 25,
+    color: themeColor10.bgColor(0.8),
+    marginTop: 4,
+  },
+  pillar: {
+    alignItems: 'flex-start',
+    gap: 10,
+    marginTop: 10,
+  },
+  pillarIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: themeColor0.bgColor(1),
+  },
+  pillarBody: {
+    flex: 1,
+  },
+  pillarTitle: {
+    fontSize: 15,
+  },
+  closing: {
+    marginTop: 6,
+    padding: 20,
+    borderRadius: 10,
+    backgroundColor: themeColor0.bgColor(1),
+  },
+  closingBrand: {
+    fontSize: 26,
+    letterSpacing: 6,
+    fontFamily: 'VazirBold',
+    color: themeColor1.bgColor(1),
+    textAlign: 'center',
+  },
+  closingMotto: {
     fontSize: 12,
     fontFamily: 'VazirLight',
-    color: themeColor10.bgColor(0.6),
-    ...NewStyles.text10,
-    fontStyle: 'italic',
-  },
-  aboutSection: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 20,
-    marginTop: 10,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  aboutTitle: {
-    fontSize: 18,
-    fontFamily: 'VazirBold',
-    color: themeColor4.bgColor(1),
+    color: themeColor4.bgColor(0.85),
     textAlign: 'center',
-    marginBottom: 15,
+    marginTop: 4,
   },
-  aboutText: {
-    fontSize: 14,
-    fontFamily: 'VazirLight',
-    color: '#666',
-    ...NewStyles.text10,
-    lineHeight: 22,
-    marginBottom: 20,
-  },
-  contactInfo: {
-    borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
-    paddingTop: 15,
-  },
-  contactTitle: {
-    fontSize: 16,
-    fontFamily: 'VazirBold',
-    color: '#333',
-    ...NewStyles.text10,
-    marginBottom: 10,
-  },
-  contactText: {
-    fontSize: 14,
-    fontFamily: 'VazirLight',
-    color: '#666',
-   ...NewStyles.text10,
-    marginBottom: 5,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 50,
-  },
-  emptyText: {
-    fontSize: 16,
-    fontFamily: 'VazirLight',
-    color: themeColor10.bgColor(0.7),
-    marginTop: 15,
-    marginBottom: 20,
-  },
-  retryButton: {
-    backgroundColor: themeColor4.bgColor(1),
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  retryText: {
-    color: '#fff',
-    fontSize: 14,
-    fontFamily: 'VazirBold',
+  closingSlogan: {
+    marginTop: 10,
   },
 });

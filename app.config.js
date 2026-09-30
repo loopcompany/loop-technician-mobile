@@ -127,6 +127,14 @@ module.exports = ({ config }) => {
     plugins: mergePlugins(config.plugins, [
       './plugins/withNotificationColor',
       'expo-secure-store',
+      [
+        // Saved addresses: "my location" on the map and device reverse geocoding.
+        'expo-location',
+        {
+          locationWhenInUsePermission:
+            'Loop uses your location to place the pin on the map when you add an address.',
+        },
+      ],
       '@react-native-firebase/app',
       '@react-native-firebase/messaging',
       [

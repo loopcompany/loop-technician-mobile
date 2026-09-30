@@ -653,6 +653,37 @@ export const infoAPI = {
     }
   }
 };
+
+// Saved addresses (LOOP menu item 03). Mirrors the user app's addressAPI;
+// responses are `{ success, data, message }`.
+const addressDetail = (id) => API_ENDPOINTS.ADDRESSES.DETAIL.replace('{id}', id);
+
+export const addressAPI = {
+  getAll: async () => {
+    const response = await api.get(API_ENDPOINTS.ADDRESSES.LIST);
+    return response.data;
+  },
+
+  getById: async (id) => {
+    const response = await api.get(addressDetail(id));
+    return response.data;
+  },
+
+  create: async (data) => {
+    const response = await api.post(API_ENDPOINTS.ADDRESSES.LIST, data);
+    return response.data;
+  },
+
+  update: async (id, data) => {
+    const response = await api.put(addressDetail(id), data);
+    return response.data;
+  },
+
+  delete: async (id) => {
+    const response = await api.delete(addressDetail(id));
+    return response.data;
+  },
+};
 /**
  * Validate technician token
  */

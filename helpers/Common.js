@@ -369,6 +369,13 @@ export const validateMelicode = (melicode) => {
   return { isValid: false, message: 'کد ملی وارد شده معتبر نیست' };
 };
 
+// Persian and Arabic digits → Latin.
+export function convertToEnglish(str) {
+  return String(str ?? '')
+    .replace(/[۰-۹]/g, (char) => '۰۱۲۳۴۵۶۷۸۹'.indexOf(char))
+    .replace(/[٠-٩]/g, (char) => '٠١٢٣٤٥٦٧٨٩'.indexOf(char));
+}
+
 export const faDigitsToEn = (str = '') =>
   str.replace(/[۰-۹]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
 

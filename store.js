@@ -7,6 +7,8 @@ import extraSlice from './slices/extraSlice';
 import orderExtrasSlice from './slices/orderExtrasSlice';
 import pdfSlice from './slices/pdfDocumentSlice';
 import hashAppSlice from './slices/hashAppSlice';
+import addressSlice from './slices/addressSlice';
+import radiusSlice from './slices/radiusSlice';
 
 // Nothing is persisted here: the session is restored from storage on launch
 // (see App.js), and user data is refetched, so no token or personal data ends
@@ -21,6 +23,8 @@ const store = configureStore({
     orderExtras: orderExtrasSlice,
     pdf: pdfSlice,
     hashApp: hashAppSlice,
+    address: addressSlice,
+    radius: radiusSlice,
   },
 });
 

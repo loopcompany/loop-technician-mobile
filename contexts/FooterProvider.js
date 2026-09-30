@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useMemo, useState, useEffect, useRef, memo, } from 'react';
-import { View, Text, StyleSheet, Pressable, FlatList, Image, Modal, BackHandler, ActivityIndicator, TouchableOpacity, TouchableWithoutFeedback, Animated, Platform, Linking, } from 'react-native';
+import { View, Text, StyleSheet, Pressable, FlatList, Image, Modal, BackHandler, ActivityIndicator, TouchableOpacity, TouchableWithoutFeedback, Animated, Platform, } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector, shallowEqual } from 'react-redux';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -28,7 +28,17 @@ import { radius } from '../theme/Radius';
 import { fontSize, getFontFamily } from '../theme/Typography';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setLanguage } from '../slices/languageSlice';
-import { fetchPdfDocs } from '../slices/pdfDocumentSlice';
+
+// LOOP menu icons 01–07, in menu order.
+const MENU_ICONS = {
+  organizations: require('../assets/images/menu/01-organizations.png'),
+  wallet: require('../assets/images/menu/02-wallet.png'),
+  savedAddresses: require('../assets/images/menu/03-saved-addresses.png'),
+  warranty: require('../assets/images/menu/04-warranty.png'),
+  faq: require('../assets/images/menu/05-faq.png'),
+  rules: require('../assets/images/menu/06-rules.png'),
+  about: require('../assets/images/menu/07-about.png'),
+};
 
 // The intro screen plays full-screen video; the footer never belongs there.
 const HIDDEN_ON_ROUTES = new Set(['Welcome']);
@@ -171,12 +181,14 @@ function DockAction({ testID, icon, image, active, onPress, accessibilityLabel }
   );
 }
 
-// Menu icons come from the server like the user app's; until an icon is
-// uploaded (or if it fails to load) a vector icon stands in so no row is blank.
+// Menu icons ship with the app (MENU_ICONS); the rest come from the server
+// like the user app's, and until one is uploaded (or if it fails to load) a
+// vector icon stands in so no row is blank.
 const MenuIcon = memo(function MenuIcon({ image, icon }) {
   const [failed, setFailed] = useState(false);
   if (image && !failed) {
-    return <Image source={{ uri: image }} style={styles.menuItemImage} onError={() => setFailed(true)} />;
+    const source = typeof image === 'string' ? { uri: image } : image;
+    return <Image source={source} style={styles.menuItemImage} onError={() => setFailed(true)} />;
   }
   return (
     <View style={[styles.menuItemImage, styles.menuItemIconFallback]}>
@@ -429,62 +441,56 @@ const FooterRoot = memo(function FooterRoot({ isVisible }) {
     }
   }, [dispatch, userToken, t]);
 
-  const pdfDocs = useSelector((state) => state.pdf?.data);
-  useEffect(() => {
-    // The handbook link comes from /pdf-documents, normally fetched on the intro
-    // screen — fetch it here too when the app was opened past that screen.
-    if (menuVisible && !pdfDocs) dispatch(fetchPdfDocs());
-  }, [menuVisible, pdfDocs, dispatch]);
-
-  const openHandbook = useCallback(() => {
-    if (pdfDocs?.tech) {
-      Linking.openURL(`${imageUri}/${pdfDocs.tech}`);
-    } else {
-      showAlert(t('Error'), t('The technician handbook is not available right now. Please try again.'), [], t);
-    }
-  }, [pdfDocs?.tech, t]);
-
   // Items per the edits list 1405/07/03: "Home" (15) and "Delete Account" (10)
-  // removed — accounts are deleted from the admin panel only; Privacy (15) and
-  // the rules / technician handbook (18) added; Organizations (19) and Learn
-  // More (16) kept. Titles, icons and order follow the user app's menu.
+  // removed — accounts are deleted from the admin panel only. Items 01–07 and
+  // their icons (assets/images/menu) follow the design's order; Privacy (15)
+  // stays last.
   const menuItemsLoggedIn = useMemo(
     () => [
       {
         id: 'organizations',
-        title: t('Organizations'),
+        title: t('Organizational / Corporate'),
         screen: 'OrganizationsListScreen',
-        icon: 'business-outline',
+        image: MENU_ICONS.organizations,
         apple_check: userData?.apple_check,
       },
       {
-        id: 'handbook',
-        title: t('Rules / Technician handbook'),
-        action: openHandbook,
-        icon: 'book-outline',
+        id: 'wallet',
+        title: t('Wallet'),
+        screen: 'FinancialReportScreen',
+        image: MENU_ICONS.wallet,
+      },
+      {
+        id: 'saved-addresses',
+        title: t('Saved addresses'),
+        screen: 'SavedAddressesScreen',
+        image: MENU_ICONS.savedAddresses,
       },
       {
         id: 'warranty',
-        title: t('Warranty / Guarantee'),
+        title: t('Warranty test deadline'),
         screen: 'WarrantyScreen',
-        image: `${imageUri}/userfolder/WarrantyScreen.png`,
-        icon: 'shield-checkmark-outline',
+        image: MENU_ICONS.warranty,
         apple_check: userData?.apple_check,
       },
       {
-        id: 'learn-more',
-        title: t('Learn More'),
+        id: 'faq',
+        title: t('FAQ'),
         screen: 'LearnMoreScreen',
-        image: `${imageUri}/userfolder/LearnMoreScreen.png`,
-        icon: 'help-circle-outline',
+        image: MENU_ICONS.faq,
         apple_check: userData?.apple_check,
+      },
+      {
+        id: 'rules',
+        title: t('Rules'),
+        screen: 'HandbookScreen',
+        image: MENU_ICONS.rules,
       },
       {
         id: 'about',
-        title: t('Terms / About Loop'),
+        title: t('About us'),
         screen: 'AboutScreen',
-        image: `${imageUri}/userfolder/AboutScreen.png`,
-        icon: 'information-circle-outline',
+        image: MENU_ICONS.about,
         apple_check: userData?.apple_check,
       },
       {
@@ -496,16 +502,17 @@ const FooterRoot = memo(function FooterRoot({ isVisible }) {
         apple_check: userData?.apple_check,
       },
     ],
-    [t, userData?.apple_check, openHandbook]
+    [t, userData?.apple_check]
   );
 
   const menuItemsLoggedOut = useMemo(
     () => [
       { id: 'login', title: t('Login'), screen: 'Login', icon: 'log-in-outline' },
       { id: 'signup', title: t('Sign Up'), screen: 'SignIn', icon: 'person-add-outline' },
-      { id: 'warranty', title: t('Warranty / Guarantee'), screen: 'WarrantyScreen', image: `${imageUri}/userfolder/WarrantyScreen.png`, icon: 'shield-checkmark-outline' },
-      { id: 'learn-more', title: t('Learn More'), screen: 'LearnMoreScreen', image: `${imageUri}/userfolder/LearnMoreScreen.png`, icon: 'help-circle-outline' },
-      { id: 'about', title: t('Terms / About Loop'), screen: 'AboutScreen', image: `${imageUri}/userfolder/AboutScreen.png`, icon: 'information-circle-outline' },
+      { id: 'warranty', title: t('Warranty test deadline'), screen: 'WarrantyScreen', image: MENU_ICONS.warranty },
+      { id: 'faq', title: t('FAQ'), screen: 'LearnMoreScreen', image: MENU_ICONS.faq },
+      { id: 'rules', title: t('Rules'), screen: 'HandbookScreen', image: MENU_ICONS.rules },
+      { id: 'about', title: t('About us'), screen: 'AboutScreen', image: MENU_ICONS.about },
       { id: 'privacy', title: t('Privacy'), screen: 'PrivacyPolicyScreen', image: `${imageUri}/userfolder/PrivacyScreen.png`, icon: 'lock-closed-outline' },
     ],
     [t]
