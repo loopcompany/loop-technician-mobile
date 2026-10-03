@@ -1,4 +1,4 @@
-import React, { useState,useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import Button from "../../components/Button";
 import NewStyles from "../../styles/NewStyles";
 import { themeColor10, themeColor4 } from "../../theme/Color";
 import { requestPasswordReset } from "../../services/Api";
+import { getSavedPersonnelCode } from "../../services/session";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { showAlert } from "../../helpers/Common";
 import { createStyles } from '../../styles/NewStyles';
@@ -38,6 +39,13 @@ export default function SignInScreen({ navigation }) {
   const [nationalId, setNationalId] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Pre-fill the personnel code saved at login, unless the user typed one already.
+  useEffect(() => {
+    getSavedPersonnelCode().then((code) => {
+      if (code) setReferralCode((current) => current || code);
+    });
+  }, []);
 
   const validateInputs = () => {
     if (!referralCode.trim()) {

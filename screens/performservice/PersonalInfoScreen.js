@@ -466,6 +466,21 @@ export default function PersonalInfoScreen({ navigation }) {
           dispatch(fetchUser(userToken))
         }} />}>
 
+          {/* Account security (technician edits — «فیلد امنیت حساب») */}
+          <TouchableOpacity
+            testID="open-account-security"
+            style={[NewStyles.row, styles.securityButton]}
+            onPress={() => navigation.navigate('AccountSecurityScreen')}
+          >
+            <Ionicons name="shield-checkmark-outline" size={22} color={themeColor0.bgColor(1)} />
+            <Text style={[NewStyles.title10, styles.securityButtonText]}>{t('Account security')}</Text>
+            <Ionicons
+              name={i18n.language === 'fa' ? 'chevron-back' : 'chevron-forward'}
+              size={20}
+              color={themeColor3.bgColor(1)}
+            />
+          </TouchableOpacity>
+
           {/* big blue header similar to screenshot */}
           <View style={styles.bigHeader}>
             <Text style={styles.bigHeaderText}>{t('Personal Information')}</Text>
@@ -825,6 +840,20 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     paddingBottom:120
+  },
+  securityButton: {
+    width: '100%',
+    gap: 10,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: themeColor4.bgColor(1),
+    borderWidth: 1,
+    borderColor: themeColor0.bgColor(0.25),
+  },
+  securityButtonText: {
+    flex: 1,
+    fontSize: 15,
   },
   bigHeader: {
     width: '100%',

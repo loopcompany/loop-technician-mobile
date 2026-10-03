@@ -37,6 +37,11 @@ export default function PrivacyScreen({ navigation }) {
       id: 3,
       title: t('Financial information'),
       screen: 'FinancialInfoScreen'
+    },
+    {
+      id: 4,
+      title: t('Account security'),
+      screen: 'AccountSecurityScreen'
     }
   ];
 

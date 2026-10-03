@@ -49,36 +49,42 @@ export const clearSession = async () => {
 };
 
 // ---------------------------------------------------------------------------
-// "Remember me" credentials. The password never goes to AsyncStorage (plain
-// text on disk / localStorage); on native it lives in the Keychain/Keystore,
-// on web it is not remembered at all.
+// Saved personnel code. Once a hired technician signs in with "save personnel
+// code" ticked, the code stays on the device — logout does not clear it — and
+// only the password is typed on later logins (technician edits 1405/07/10,
+// item 1). The password itself is never remembered.
+// The key is the one the old "remember me" used, so codes saved by earlier
+// builds carry over.
 // ---------------------------------------------------------------------------
 
-const canStorePassword = Platform.OS !== 'web';
+const canUseSecureStore = Platform.OS !== 'web';
 
-export const saveRememberedCredentials = async (referralCode, password) => {
-  await AsyncStorage.setItem(REMEMBERED_CODE_KEY, referralCode);
-  if (canStorePassword) {
-    await SecureStore.setItemAsync(SECURE_PASSWORD_KEY, password);
-  }
-};
-
-export const clearRememberedCredentials = async () => {
-  await AsyncStorage.multiRemove([REMEMBERED_CODE_KEY, REMEMBERED_PASSWORD_KEY]);
-  if (canStorePassword) {
+// Earlier builds could remember the password (SecureStore, and before that
+// AsyncStorage in plain text); wipe both.
+const wipeLegacyPassword = async () => {
+  await AsyncStorage.removeItem(REMEMBERED_PASSWORD_KEY).catch(() => {});
+  if (canUseSecureStore) {
     await SecureStore.deleteItemAsync(SECURE_PASSWORD_KEY).catch(() => {});
   }
 };
 
-export const getRememberedCredentials = async () => {
-  // Older builds kept the password in AsyncStorage in plain text; wipe it.
-  await AsyncStorage.removeItem(REMEMBERED_PASSWORD_KEY).catch(() => {});
+export const getSavedPersonnelCode = async () => {
+  await wipeLegacyPassword();
+  try {
+    return (await AsyncStorage.getItem(REMEMBERED_CODE_KEY)) || null;
+  } catch {
+    return null;
+  }
+};
 
-  const referralCode = await AsyncStorage.getItem(REMEMBERED_CODE_KEY);
-  const password = canStorePassword
-    ? await SecureStore.getItemAsync(SECURE_PASSWORD_KEY).catch(() => null)
-    : null;
-  return { referralCode, password };
+export const savePersonnelCode = async (referralCode) => {
+  const code = String(referralCode ?? '').trim();
+  if (!code) return;
+  await AsyncStorage.setItem(REMEMBERED_CODE_KEY, code);
+};
+
+export const clearSavedPersonnelCode = async () => {
+  await AsyncStorage.removeItem(REMEMBERED_CODE_KEY);
 };
 
 // ---------------------------------------------------------------------------

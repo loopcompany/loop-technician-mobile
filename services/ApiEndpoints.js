@@ -21,7 +21,16 @@ export const API_ENDPOINTS = {
     LIST: '/technician/admin-report-violations',
     DETAIL: '/technician/admin-report-violations/{id}',
     REPLY: '/technician/admin-report-violations/{id}/reply',
-  }
+  },
+  // Account security: signed-in devices and sessions (docs/Backend-Account-Security.md)
+  SECURITY: {
+    DEVICES: '/technician/security/devices',
+    DEVICE: '/technician/security/devices/{id}',
+    LOGOUT_OTHERS: '/technician/security/logout-others',
+    SESSIONS: '/technician/security/sessions',
+    SESSION: '/technician/security/sessions/{id}',
+    CURRENT_DEVICE: '/technician/security/current-device',
+  },
 };
 
 // Helper function to build full URL

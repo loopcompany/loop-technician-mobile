@@ -22,7 +22,7 @@ import CustomStatusBar from '../../components/CustomStatusBar';
 import Button from '../../components/Button';
 import { useDispatch } from 'react-redux';
 import { loginTechnician } from '../../services/Api';
-import { getRememberedCredentials, saveRememberedCredentials, clearRememberedCredentials } from '../../services/session';
+import { getSavedPersonnelCode, savePersonnelCode, clearSavedPersonnelCode } from '../../services/session';
 import { setToken } from '../../slices/authSlice';
 import { fetchUser } from '../../slices/userSlice';
 import { showToastOrAlert, showAlert } from '../../helpers/Common';
@@ -35,7 +35,11 @@ export default function Login() {
   const [referralCode, setReferralCode] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberPassword, setRememberPassword] = useState(false);
+  // Technician edits 1405/07/10, item 1: once saved, the personnel code is shown
+  // locked and only the password is typed. undefined = not read from storage yet.
+  const [savedCode, setSavedCode] = useState(undefined);
+  const [useOtherCode, setUseOtherCode] = useState(false);
+  const [saveCode, setSaveCode] = useState(true);
   const [captcha, setCaptcha] = useState('');
   const [captchaMeta, setCaptchaMeta] = useState([]);
   const [noiseMeta, setNoiseMeta] = useState([]);
@@ -45,22 +49,27 @@ export default function Login() {
   useEffect(() => {
     console.log('✅ کامپوننت Login بارگذاری شد');
     createNewCaptcha();
-    loadSavedCredentials();
+    loadSavedCode();
   }, []);
 
-  async function loadSavedCredentials() {
-    try {
-      const saved = await getRememberedCredentials();
-      if (saved.referralCode) {
-        setReferralCode(saved.referralCode);
-        setRememberPassword(true);
-      }
-      if (saved.password) {
-        setPassword(saved.password);
-      }
-    } catch (error) {
-      console.log('❌ خطا در بارگذاری اطلاعات:', error);
+  async function loadSavedCode() {
+    const code = await getSavedPersonnelCode();
+    setSavedCode(code);
+    if (code) {
+      setReferralCode(code);
     }
+  }
+
+  const isCodeLocked = !!savedCode && !useOtherCode;
+
+  function switchToOtherCode() {
+    setUseOtherCode(true);
+    setReferralCode('');
+  }
+
+  function switchToSavedCode() {
+    setUseOtherCode(false);
+    setReferralCode(savedCode);
   }
 
 
@@ -162,15 +171,18 @@ export default function Login() {
         dispatch(setToken(result.data.token));
         dispatch(fetchUser());
 
-        // Save credentials if remember me is checked (password goes to SecureStore)
+        // Keep the personnel code for the next logins if asked to. The server's
+        // code is preferred so a login by phone number still saves the code.
         try {
-          if (rememberPassword) {
-            await saveRememberedCredentials(referralCode.trim(), password.trim());
-          } else {
-            await clearRememberedCredentials();
+          if (saveCode) {
+            await savePersonnelCode(result.data?.technician?.referral_code || referralCode);
+          } else if (!useOtherCode) {
+            // Signing in once with another code must not forget the code
+            // already saved on this device.
+            await clearSavedPersonnelCode();
           }
         } catch (e) {
-          console.log('Could not update remembered credentials:', e);
+          console.log('Could not update the saved personnel code:', e);
         }
 
         showToastOrAlert(result.message || t("Login was successful"));
@@ -263,17 +275,48 @@ export default function Login() {
               <View style={styles.formContainer}>
                 <View style={styles.inputContainer}>
                   <Text style={NewStyles.title1}>{t("Personnel code")}</Text>
-                  <TextInput
-                    style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
-                    value={referralCode}
-                    onChangeText={setReferralCode}
-                    placeholder={t("Personnel code")}
-                    placeholderTextColor={themeColor10.bgColor(0.9)}
-                    textAlign="center"
-                    editable={!isLoading}
-                    autoCapitalize="characters"
-                    maxLength={20}
-                  />
+                  {isCodeLocked ? (
+                    <View style={[NewStyles.border10, styles.lockedCode]} testID="login-saved-code">
+                      <Ionicons name="lock-closed" size={16} color={themeColor4.bgColor(1)} />
+                      <Text style={[NewStyles.title1, styles.lockedCodeText]}>{savedCode}</Text>
+                    </View>
+                  ) : (
+                    <TextInput
+                      style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10]}
+                      value={referralCode}
+                      onChangeText={setReferralCode}
+                      placeholder={t("Personnel code")}
+                      placeholderTextColor={themeColor10.bgColor(0.9)}
+                      textAlign="center"
+                      editable={!isLoading && savedCode !== undefined}
+                      autoCapitalize="characters"
+                      maxLength={20}
+                    />
+                  )}
+                  <View style={styles.codeOptionsRow}>
+                    {savedCode ? (
+                      <TouchableOpacity
+                        onPress={isCodeLocked ? switchToOtherCode : switchToSavedCode}
+                        disabled={isLoading}
+                      >
+                        <Text style={styles.switchCodeText}>
+                          {isCodeLocked ? t("Sign in with another personnel code") : t("Use the saved personnel code")}
+                        </Text>
+                      </TouchableOpacity>
+                    ) : null}
+                    <TouchableOpacity
+                      style={styles.checkboxContainer}
+                      onPress={() => setSaveCode(!saveCode)}
+                      disabled={isLoading}
+                    >
+                      <Text style={styles.checkboxText}>{t("Save personnel code")}</Text>
+                      <View style={[styles.checkbox, saveCode && styles.checkboxChecked]}>
+                        {saveCode && (
+                          <Ionicons name="checkmark" size={14} color="white" />
+                        )}
+                      </View>
+                    </TouchableOpacity>
+                  </View>
                 </View>
                 <View style={styles.inputContainer}>
                   <Text style={NewStyles.title1}>{t("Password")}</Text>
@@ -297,18 +340,6 @@ export default function Login() {
                       editable={!isLoading}
                     />
                   </View>
-                  <TouchableOpacity
-                    style={styles.checkboxContainer}
-                    onPress={() => setRememberPassword(!rememberPassword)}
-                    disabled={isLoading}
-                  >
-                    <Text style={styles.checkboxText}>{t("Remember password")}</Text>
-                    <View style={[styles.checkbox, rememberPassword && styles.checkboxChecked]}>
-                      {rememberPassword && (
-                        <Ionicons name="checkmark" size={14} color="white" />
-                      )}
-                    </View>
-                  </TouchableOpacity>
                 </View>
                 <View style={styles.captchaContainer}>
                   <View style={styles.captchaBox}>
@@ -458,11 +489,40 @@ const styles = StyleSheet.create({
     top: 12,
     zIndex: 1,
   },
+  lockedCode: {
+    height: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: themeColor4.bgColor(0.15),
+    borderWidth: 1,
+    borderColor: themeColor4.bgColor(0.5),
+  },
+  lockedCodeText: {
+    fontSize: 18,
+    letterSpacing: 2,
+  },
+  codeOptionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  switchCodeText: {
+    ...NewStyles.text4,
+    fontSize: 13,
+    color: themeColor1.bgColor(1),
+    textDecorationLine: 'underline',
+    marginTop: 10,
+  },
   checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
     marginTop: 10,
+    marginLeft: 'auto',
   },
   checkbox: {
     width: 18,

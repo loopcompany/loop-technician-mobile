@@ -2,13 +2,13 @@ import axios from 'axios';
 import { Platform } from 'react-native';
 import { uri as BASE_URL, Technician_Orders, Technician_DeliveryReports } from './URL';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_ENDPOINTS } from './ApiEndpoints';
+import { API_ENDPOINTS, buildEndpointWithParams } from './ApiEndpoints';
 import { runLogoutTask } from './notifications/logoutTask';
+import { getDeviceInfo } from './deviceInfo';
 import {
   getToken,
   saveSession,
   clearSession,
-  clearRememberedCredentials,
   notifyUnauthorized,
   notifyAccessDenied,
   ACCESS_DENIED_CODE,
@@ -493,7 +493,12 @@ export const loginTechnician = async (referralCodeOrPhone, password) => {
     // Determine if input is phone or referral code
     const isPhone = /^09\d{9}$/.test(identifier);
 
+    // Device details let the backend label this session in "Account security".
+    // They are optional for the server, so a failure here must not block login.
+    const deviceInfo = await getDeviceInfo().catch(() => ({}));
+
     const requestBody = {
+      ...deviceInfo,
       ...(isPhone ? { phone: identifier } : { referral_code: identifier }),
       password,
     };
@@ -538,12 +543,74 @@ export const logoutTechnician = async () => {
     return handleError(error);
   } finally {
     // Always clear local auth, even if the server call fails — unless the user
-    // already logged in again while this request was in flight.
+    // already logged in again while this request was in flight. The saved
+    // personnel code is kept on purpose: the next login only asks for the password.
     if ((await getToken()) === loggingOutToken) {
       await clearSession();
-      await clearRememberedCredentials().catch(() => {});
     }
   }
+};
+
+// =============================================================================
+// ACCOUNT SECURITY — signed-in devices and sessions
+// Contract: docs/Backend-Account-Security.md
+// =============================================================================
+
+const { SECURITY } = API_ENDPOINTS;
+
+export const securityAPI = {
+  getDevices: async () => {
+    try {
+      return handleResponse(await api.get(SECURITY.DEVICES));
+    } catch (error) {
+      return handleError(error);
+    }
+  },
+
+  logoutDevice: async (deviceKey) => {
+    try {
+      const url = buildEndpointWithParams(SECURITY.DEVICE, { id: encodeURIComponent(deviceKey) });
+      return handleResponse(await api.delete(url));
+    } catch (error) {
+      return handleError(error);
+    }
+  },
+
+  logoutOtherDevices: async () => {
+    try {
+      return handleResponse(await api.post(SECURITY.LOGOUT_OTHERS));
+    } catch (error) {
+      return handleError(error);
+    }
+  },
+
+  getSessions: async () => {
+    try {
+      return handleResponse(await api.get(SECURITY.SESSIONS));
+    } catch (error) {
+      return handleError(error);
+    }
+  },
+
+  endSession: async (sessionId) => {
+    try {
+      const url = buildEndpointWithParams(SECURITY.SESSION, { id: encodeURIComponent(sessionId) });
+      return handleResponse(await api.delete(url));
+    } catch (error) {
+      return handleError(error);
+    }
+  },
+
+  // Attaches this device's details to the current session (also refreshes the
+  // app version after an update).
+  syncCurrentDevice: async () => {
+    try {
+      const deviceInfo = await getDeviceInfo();
+      return handleResponse(await api.put(SECURITY.CURRENT_DEVICE, deviceInfo));
+    } catch (error) {
+      return handleError(error);
+    }
+  },
 };
 
 export const atWork = async (token) => {

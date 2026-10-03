@@ -15,6 +15,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import store from "./store";
 import { FooterProvider } from "./contexts/FooterProvider";
 import NotificationsGate from "./components/NotificationsGate";
+import DeviceSessionGate from "./components/DeviceSessionGate";
 import { navigationRef, getCurrentRouteName, reset } from "./services/NavigationService";
 import { removeToken, setToken } from "./slices/authSlice";
 import { emptyUser, fetchUser } from "./slices/userSlice";
@@ -165,6 +166,10 @@ const linking = {
       PersonalInfoScreen: 'profile/personal',
       VehicleInfoScreen: 'profile/vehicle',
       FinancialInfoScreen: 'profile/financial',
+      AccountSecurityScreen: 'profile/security',
+      ActiveDevicesScreen: 'profile/security/devices',
+      LogoutOtherDevicesScreen: 'profile/security/logout-others',
+      SessionsScreen: 'profile/security/sessions',
       GameMenu: 'game',
       GamePlay: 'game/play',
       GameResult: 'game/result',
@@ -300,6 +305,10 @@ const AppNavigator = () => (
             <Stack.Screen name="PersonalInfoScreen" getComponent={() => require("./screens/performservice/PersonalInfoScreen").default} />
             <Stack.Screen name="VehicleInfoScreen" getComponent={() => require("./screens/performservice/VehicleInfoScreen").default} />
             <Stack.Screen name="FinancialInfoScreen" getComponent={() => require("./screens/performservice/FinancialInfoScreen").default} />
+            <Stack.Screen name="AccountSecurityScreen" getComponent={() => require("./screens/security/AccountSecurityScreen").default} />
+            <Stack.Screen name="ActiveDevicesScreen" getComponent={() => require("./screens/security/ActiveDevicesScreen").default} />
+            <Stack.Screen name="LogoutOtherDevicesScreen" getComponent={() => require("./screens/security/LogoutOtherDevicesScreen").default} />
+            <Stack.Screen name="SessionsScreen" getComponent={() => require("./screens/security/SessionsScreen").default} />
             <Stack.Screen name="TrainingRegistrationScreen" getComponent={() => require("./screens/TrainingRegistrationScreen").default} />
             <Stack.Screen name="OrganizationsListScreen" getComponent={() => require("./screens/OrganizationsListScreen").default} />
             <Stack.Screen name="OrganizationOrdersScreen" getComponent={() => require("./screens/OrganizationOrdersScreen").default} />
@@ -361,6 +370,7 @@ const App = () => {
       <SafeAreaProvider>
         <Provider store={store}>
           <NotificationsGate />
+          <DeviceSessionGate />
           <SessionGate>
             <FooterProvider>
               <NavigationContainer

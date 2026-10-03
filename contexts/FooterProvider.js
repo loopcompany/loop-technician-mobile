@@ -6,9 +6,9 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTranslation } from 'react-i18next';
 import { BlurView } from 'expo-blur';
 
-import { setToken } from '../slices/authSlice';
-import { emptyUser, fetchUser } from '../slices/userSlice';
-import { atWork, logoutTechnician } from '../services/Api';
+import { fetchUser } from '../slices/userSlice';
+import { atWork } from '../services/Api';
+import { signOut } from '../services/signOut';
 import * as NavigationService from '../services/NavigationService';
 import { navigationRef } from '../services/NavigationService';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -406,22 +406,7 @@ const FooterRoot = memo(function FooterRoot({ isVisible }) {
   const handleLogout = useCallback(() => {
     setShowLogoutConfirm(false);
     setMenuVisible(false);
-
-    // Leave the protected screens right away instead of waiting on the network
-    // (and skip the intro video on Welcome).
-    NavigationService.reset({
-      index: 0,
-      routes: [{ name: 'SignInLanding' }],
-    });
-
-    dispatch(setToken(null));
-    dispatch(emptyUser());
-
-    // Server-side logout runs in the background; local session is cleared
-    // regardless of its outcome.
-    logoutTechnician().catch((error) => {
-      console.log('Error during logout:', error);
-    });
+    signOut(dispatch);
   }, [dispatch]);
 
   const handleWorkat = useCallback(async () => {
