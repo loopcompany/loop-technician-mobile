@@ -1900,5 +1900,6 @@
   "Session created": "Session created",
   "Expires": "Expires",
   "No expiry": "No expiry",
-  "Session status": "Session status"
+  "Session status": "Session status",
+  "Devices show where your account is signed in; sessions show every sign-in (token) of your account that is active in the system. One device may have more than one session.": "Devices show where your account is signed in; sessions show every sign-in (token) of your account that is active in the system. One device may have more than one session."
 }

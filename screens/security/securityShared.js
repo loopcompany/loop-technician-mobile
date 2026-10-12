@@ -93,14 +93,26 @@ export const formatDateTime = (value, t, lang) => {
 
 const capitalize = (text) => (text ? text.charAt(0).toUpperCase() + text.slice(1) : '');
 
-/** "Samsung SM-A225F", "Apple iPhone 13" — without repeating the brand. */
+// Android only reports the model code (e.g. "SM-A225F"); the backend may add
+// the marketing name ("Galaxy A22") as `device_name`.
+const marketingName = (item) => String(item?.device_name ?? '').trim();
+
+/** "Samsung Galaxy A22", "Apple iPhone 13" — without repeating the brand. */
 export const deviceTitle = (item, t) => {
   const brand = capitalize(String(item?.device_brand ?? '').trim());
-  const model = String(item?.device_model ?? '').trim();
+  const model = marketingName(item) || String(item?.device_model ?? '').trim();
   if (brand && model) {
     return model.toLowerCase().startsWith(brand.toLowerCase()) ? model : `${brand} ${model}`;
   }
   return brand || model || t('Unknown device');
+};
+
+/** "Galaxy A22 (SM-A225F)" when the marketing name is known, else the model code. */
+export const modelLabel = (item) => {
+  const name = marketingName(item);
+  const model = String(item?.device_model ?? '').trim();
+  if (name && model && name.toLowerCase() !== model.toLowerCase()) return `${name} (${model})`;
+  return name || model || '—';
 };
 
 const DEVICE_TYPES = {

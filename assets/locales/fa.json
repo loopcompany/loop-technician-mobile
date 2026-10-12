@@ -1903,5 +1903,6 @@
   "Session created": "زمان ایجاد نشست",
   "Expires": "زمان انقضا",
   "No expiry": "بدون انقضا",
-  "Session status": "وضعیت نشست"
+  "Session status": "وضعیت نشست",
+  "Devices show where your account is signed in; sessions show every sign-in (token) of your account that is active in the system. One device may have more than one session.": "دستگاه‌ها نشان می‌دهند حساب شما روی چه دستگاه‌هایی فعال است؛ نشست‌ها همهٔ ورودهای (توکن‌های) فعال حساب شما در سیستم را نشان می‌دهند. یک دستگاه ممکن است بیش از یک نشست داشته باشد."
 }

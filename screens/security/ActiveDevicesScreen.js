@@ -17,6 +17,7 @@ import {
   errorText,
   formatDateTime,
   deviceTitle,
+  modelLabel,
   deviceTypeLabel,
   deviceIcon,
   osLabel,
@@ -117,7 +118,7 @@ export default function ActiveDevicesScreen() {
             </CardHeader>
 
             <InfoRow label={t('Device type')} value={deviceTypeLabel(device.device_type, t)} />
-            <InfoRow label={t('Device model')} value={orDash(device.device_model)} />
+            <InfoRow label={t('Device model')} value={modelLabel(device)} />
             <InfoRow label={t('Operating system')} value={osLabel(device)} />
             <InfoRow label={t('App version')} value={orDash(device.app_version)} />
             <InfoRow label={t('Device ID')} value={orDash(device.device_id)} />

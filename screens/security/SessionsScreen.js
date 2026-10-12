@@ -3,11 +3,12 @@ import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 import ScreenHeaders from '../../components/ScreenHeaders';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import { createStyles } from '../../styles/NewStyles';
-import { themeColor10 } from '../../theme/Color';
+import { themeColor10, themeColor11 } from '../../theme/Color';
 import { securityAPI } from '../../services/Api';
 import { signOut } from '../../services/signOut';
 import { showAlert, showToastOrAlert } from '../../helpers/Common';
@@ -89,6 +90,14 @@ export default function SessionsScreen() {
         contentContainerStyle={styles.content}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
       >
+        {/* How sessions differ from "Active devices" (as the spec explains it). */}
+        <View style={[NewStyles.row, styles.tip]}>
+          <Ionicons name="information-circle-outline" size={20} color={themeColor11.bgColor(1)} />
+          <Text style={[NewStyles.text10, styles.tipText]}>
+            {t('Devices show where your account is signed in; sessions show every sign-in (token) of your account that is active in the system. One device may have more than one session.')}
+          </Text>
+        </View>
+
         <ListState
           loading={loading}
           error={error}
@@ -149,5 +158,18 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     fontSize: 13,
     color: themeColor10.bgColor(0.6),
     marginBottom: 10,
+  },
+  tip: {
+    gap: 8,
+    alignItems: 'flex-start',
+    padding: 12,
+    marginBottom: 12,
+    borderRadius: 10,
+    backgroundColor: themeColor11.bgColor(0.08),
+  },
+  tipText: {
+    flex: 1,
+    fontSize: 12,
+    lineHeight: 22,
   },
 });
