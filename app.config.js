@@ -128,11 +128,20 @@ module.exports = ({ config }) => {
       './plugins/withNotificationColor',
       'expo-secure-store',
       [
-        // Saved addresses: "my location" on the map and device reverse geocoding.
+        // Saved addresses: "my location" on the map and device reverse geocoding;
+        // field-service reports: the location sent when a visit starts.
         'expo-location',
         {
           locationWhenInUsePermission:
-            'Loop uses your location to place the pin on the map when you add an address.',
+            'Loop uses your location to place the pin on the map when you add an address and to record where a field visit starts.',
+        },
+      ],
+      [
+        // Field-service reports: photos of the site taken or picked by the technician.
+        'expo-image-picker',
+        {
+          photosPermission: 'Loop accesses your photos so you can attach them to your reports.',
+          cameraPermission: 'Loop uses the camera so you can take photos of the site for your reports.',
         },
       ],
       '@react-native-firebase/app',

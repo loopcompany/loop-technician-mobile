@@ -31,6 +31,14 @@ export const API_ENDPOINTS = {
     SESSION: '/technician/security/sessions/{id}',
     CURRENT_DEVICE: '/technician/security/current-device',
   },
+  // Field-service daily report of an organization order (docs/Backend-Field-Service-Daily-Report.md)
+  FIELD_SERVICE: {
+    REPORT: '/technician/orders/{order}/field-service',
+    START: '/technician/orders/{order}/field-service/start',
+    VISIT: '/technician/orders/{order}/field-service/{visit}',
+    PHOTOS: '/technician/orders/{order}/field-service/{visit}/photos',
+    PHOTO: '/technician/orders/{order}/field-service/{visit}/photos/{photo}',
+  },
 };
 
 // Helper function to build full URL

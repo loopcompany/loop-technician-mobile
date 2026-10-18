@@ -613,6 +613,88 @@ export const securityAPI = {
   },
 };
 
+// =============================================================================
+// FIELD SERVICE — daily report of an organization order
+// Contract: docs/Backend-Field-Service-Daily-Report.md
+// =============================================================================
+
+const { FIELD_SERVICE } = API_ENDPOINTS;
+
+const fieldServiceUrl = (endpoint, params) => buildEndpointWithParams(
+  endpoint,
+  Object.fromEntries(Object.entries(params).map(([key, value]) => [key, encodeURIComponent(value)]))
+);
+
+export const fieldServiceAPI = {
+  // Order/organization info, location, work_status and the visits history.
+  getReport: async (orderId) => {
+    try {
+      return handleResponse(await api.get(fieldServiceUrl(FIELD_SERVICE.REPORT, { order: orderId })));
+    } catch (error) {
+      return handleError(error);
+    }
+  },
+
+  // Arrival time is set by the server. `coords` is optional: both latitude and
+  // longitude are sent, or neither.
+  startVisit: async (orderId, coords = null) => {
+    try {
+      const hasCoords = Number.isFinite(coords?.latitude) && Number.isFinite(coords?.longitude);
+      const body = hasCoords ? { latitude: coords.latitude, longitude: coords.longitude } : {};
+      return handleResponse(await api.post(fieldServiceUrl(FIELD_SERVICE.START, { order: orderId }), body));
+    } catch (error) {
+      return handleError(error);
+    }
+  },
+
+  // `photo`: an image-picker asset ({ uri, mimeType, fileName, file? }).
+  // `kind`: before | after | problem | part | other.
+  uploadPhoto: async (orderId, visitId, photo, kind) => {
+    try {
+      const formData = new FormData();
+      const name = photo.fileName || `photo_${Date.now()}.jpg`;
+      if (Platform.OS === 'web') {
+        // The picker gives a File on web; older versions only a data/blob URI.
+        const blob = photo.file ?? await (await fetch(photo.uri)).blob();
+        formData.append('photo', blob, name);
+      } else {
+        formData.append('photo', { uri: photo.uri, name, type: photo.mimeType || 'image/jpeg' });
+      }
+      formData.append('kind', kind);
+
+      const url = fieldServiceUrl(FIELD_SERVICE.PHOTOS, { order: orderId, visit: visitId });
+      const response = await api.post(url, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 60000,
+      });
+      return handleResponse(response);
+    } catch (error) {
+      return handleError(error);
+    }
+  },
+
+  deletePhoto: async (orderId, visitId, photoId) => {
+    try {
+      const url = fieldServiceUrl(FIELD_SERVICE.PHOTO, { order: orderId, visit: visitId, photo: photoId });
+      return handleResponse(await api.delete(url));
+    } catch (error) {
+      return handleError(error);
+    }
+  },
+
+  // "Finish and submit report"; also re-submits a report the organization
+  // sent back with `changes_requested` (same visit). Departure time and
+  // duration are computed by the server.
+  submitVisit: async (orderId, visitId, report) => {
+    try {
+      const url = fieldServiceUrl(FIELD_SERVICE.VISIT, { order: orderId, visit: visitId });
+      return handleResponse(await api.put(url, report));
+    } catch (error) {
+      return handleError(error);
+    }
+  },
+};
+
 export const atWork = async (token) => {
   try { 
     const response = await api.patch('/technician/profile/at-work', {}, {headers:{

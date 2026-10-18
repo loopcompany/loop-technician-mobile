@@ -142,6 +142,7 @@ const linking = {
       GuideScreen: 'guide',
       OrderListScreen: 'orders',
       OrderDetailScreen: 'order/:orderId',
+      FieldServiceReportScreen: 'order/:orderId/field-service',
       NewServiceScreen: 'new-service',
       RequestsScreen: 'requests',
       RequestsListScreen: 'requests/list',
@@ -254,6 +255,7 @@ const AppNavigator = () => (
             <Stack.Screen name="DeviceModelInfoScreen" getComponent={() => require("./screens/performservice/DeviceModelInfoScreen").default} />
             <Stack.Screen name="OrderListScreen" getComponent={() => require("./screens/performservice/OrderListScreen").default} />
             <Stack.Screen name="OrderDetailScreen" getComponent={() => require("./screens/performservice/OrderDetailScreen").default} />
+            <Stack.Screen name="FieldServiceReportScreen" getComponent={() => require("./screens/fieldservice/FieldServiceReportScreen").default} />
             <Stack.Screen name="ChatListScreen" getComponent={() => require("./screens/chat/ChatListScreen").default} />
             <Stack.Screen name="ChatRoom" getComponent={() => require("./screens/chat/ChatRoom").default} />
             <Stack.Screen name="ExtraServices" getComponent={() => require("./screens/performservice/ExtraServices").default} />

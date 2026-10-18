@@ -22,7 +22,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import ScreenHeaders from '../../components/ScreenHeaders';
 import { themeColor0, themeColor3, themeColor4, themeColor5, themeColor6, themeColor7 } from '../../theme/Color';
-import { getTechnicianOrderById, submitTechnicianDescription, setOffToOrder, arriveToOrder, createOrderReport, updateOrderReport, getOrderReport, getOrderReportByOrderId, sendOrderToLoop, updateLoopInfo, startRepair, createDeliveryReport, updateDeliveryReport, getDeliveryReportByOrderId, verifyDeliveryReportWithCode, resendDeliveryReportCode, endOrder, getTechnicianChatMessages, cancelOrderByTechnician, submitEmergencyHelp, submitTechnicianOpinion, doneInPlace } from '../../services/Api';
+import { getTechnicianOrderById, submitTechnicianDescription, setOffToOrder, arriveToOrder, createOrderReport, updateOrderReport, getOrderReport, getOrderReportByOrderId, sendOrderToLoop, updateLoopInfo, startRepair, createDeliveryReport, updateDeliveryReport, getDeliveryReportByOrderId, verifyDeliveryReportWithCode, resendDeliveryReportCode, endOrder, getTechnicianChatMessages, cancelOrderByTechnician, submitEmergencyHelp, submitTechnicianOpinion, doneInPlace, fieldServiceAPI } from '../../services/Api';
 import { showToastOrAlert, formatDate, formatDateTime, formatPrice, showAlert, langIsRTL, handleError } from '../../helpers/Common';
 import AccordionHeader from '../../components/AccordionHeader';
 import DetailConponent from './DetailConponent';
@@ -33,6 +33,7 @@ import { getFormatedDate } from 'react-native-modern-datepicker';
 import { createStyles } from '../../styles/NewStyles';
 import ConfirmationModal from './../../components/ConfirmationModal';
 import usePolling from '../../hooks/usePolling';
+import { workStatusInfo } from '../fieldservice/fieldServiceShared';
 
 const ReviewSectionComponent = ({
   technicianOpinion,
@@ -121,6 +122,9 @@ export default function OrderDetailScreen({ route, navigation }) {
 
 
   const [data, setData] = useState(null);
+  // Field-service daily report summary; only organization orders assigned to
+  // this technician have one (the endpoint answers 403/404 otherwise).
+  const [fieldService, setFieldService] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -252,6 +256,7 @@ export default function OrderDetailScreen({ route, navigation }) {
 
       if (result.success) {
         setData(result.data);
+        loadFieldService();
         // تنظیم مقادیر اولیه از دیتا
         if (result.data?.date) {
           setSelectedDate(result.data.date);
@@ -288,6 +293,15 @@ export default function OrderDetailScreen({ route, navigation }) {
     } finally {
       setLoading(false);
       setRefreshing(false);
+    }
+  };
+
+  const loadFieldService = async () => {
+    const result = await fieldServiceAPI.getReport(orderId);
+    if (result.success && result.data && typeof result.data === 'object') {
+      setFieldService({ work_status: result.data.work_status ?? null });
+    } else if (result.status === 403 || result.status === 404) {
+      setFieldService(null);
     }
   };
 
@@ -1080,6 +1094,27 @@ export default function OrderDetailScreen({ route, navigation }) {
               showDetails &&
               <DetailConponent data={data} renderRow={renderRow} />
             }
+
+            {fieldService && (
+              <TouchableOpacity
+                testID="field-service-entry"
+                style={[NewStyles.rowWrapper, NewStyles.border10, styles.fieldServiceEntry]}
+                onPress={() => navigation.navigate('FieldServiceReportScreen', { orderId })}
+              >
+                <Ionicons name="clipboard-outline" size={22} color={themeColor5.bgColor(1)} />
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text style={[NewStyles.title1, { color: themeColor5.bgColor(1), fontSize: 15 }]}>
+                    {t("Field service daily report")}
+                  </Text>
+                  {workStatusInfo(fieldService.work_status) && (
+                    <Text style={[NewStyles.text4, { fontSize: 12 }]}>
+                      {t(workStatusInfo(fieldService.work_status).label)}
+                    </Text>
+                  )}
+                </View>
+                <Ionicons name={!isRtl ? "chevron-forward-outline" : "chevron-back-outline"} size={20} color={themeColor5.bgColor(1)} />
+              </TouchableOpacity>
+            )}
 
             <AccordionHeader
               title={t("User information")}
@@ -2516,6 +2551,16 @@ const createLocalStyles = (NewStyles) => StyleSheet.create({
     marginBottom: 15,
     borderRadius: 10,
     gap: 10,
+  },
+  fieldServiceEntry: {
+    width: '90%',
+    maxWidth: 800,
+    alignSelf: 'center',
+    marginBottom: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    gap: 10,
+    backgroundColor: themeColor0.bgColor(1),
   },
   contentSection: {
     backgroundColor: themeColor4.bgColor(1),
